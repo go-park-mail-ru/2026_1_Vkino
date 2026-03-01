@@ -74,7 +74,7 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 
 
 func (h *Handler) refresh(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("refresh_token")
+	cookie, err := r.Cookie(h.service.cfg.RefreshCookieName)
 	if err != nil {
 		httpjson.WriteError(w, http.StatusUnauthorized, "unauthorized")
 		return
