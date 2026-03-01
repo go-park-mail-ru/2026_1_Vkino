@@ -1,8 +1,7 @@
 services:
-  api:
-    build:
-      context: ..
-      dockerfile: /build/image/Dockerfile
-    expose:
-      - 8080
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+      - 443:443
     restart: always
