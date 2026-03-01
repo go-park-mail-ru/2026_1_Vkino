@@ -1,11 +1,18 @@
 package db
 
 import (
-	"encoding/json"
 	"errors"
-	"sync"
 	"time"
+
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/serializer"
+	"github.com/google/uuid"
 )
+
+func init() {
+	serializer.RegisterType(User{})
+	serializer.RegisterType(time.Time{})
+	serializer.RegisterType(uuid.UUID{})
+}
 
 var (
 	ErrUserNotFound      = errors.New("user not found")
@@ -13,7 +20,7 @@ var (
 )
 
 type User struct {
-	ID               int32
+	ID               uuid.UUID
 	Login            string
 	Password         string
 	RegistrationDate time.Time
@@ -22,25 +29,16 @@ type User struct {
 	UpdatedAt        time.Time
 }
 
-type Repository struct {
-	mu   sync.RWMutex
-	tbls map[string]map[string][]byte
+func (u *User) Name() string {
+	return "users"
 }
 
-func InitRepo() *Repository {
-	return &Repository{
-		tbls: map[string]map[string][]byte{
-			"users": make(map[string][]byte),
-		},
-	}
+func UserSerialize(value User) ([]byte, error) {
+	return serializer.Serialize(value)
 }
 
-func deserialize(data []byte, value any) error {
-	return json.Unmarshal(data, value)
-}
-
-func serialize(value any) ([]byte, error) {
-	return json.Marshal(value)
+func UserDeserialize(data []byte, value *User) error {
+	return serializer.Deserialize(data, value)
 }
 
 func (repo *Repository) GetUserByLogin(login string) (*User, error) {
@@ -53,11 +51,30 @@ func (repo *Repository) GetUserByLogin(login string) (*User, error) {
 	}
 
 	var user User
-	if err := deserialize(userData, &user); err != nil {
+	if err := UserDeserialize(userData, &user); err != nil {
 		return nil, err
 	}
 
 	return &user, nil
+}
+
+func (repo *Repository) GetUserByID(id uuid.UUID) (*User, error) {
+	repo.mu.RLock()
+	defer repo.mu.RUnlock()
+
+	users := repo.tbls["users"]
+
+	for _, userData := range users {
+		var user User
+		if err := UserDeserialize(userData, &user); err != nil {
+			return nil, err
+		}
+
+		if user.ID == id {
+			return &user, nil
+		}
+	}
+	return nil, ErrUserNotFound
 }
 
 func (repo *Repository) CreateUser(login string, password string) (*User, error) {
@@ -70,8 +87,8 @@ func (repo *Repository) CreateUser(login string, password string) (*User, error)
 
 	now := time.Now()
 
-	user := &User{
-		ID:               int32(len(repo.tbls["users"]) + 1),
+	user := User{
+		ID:               uuid.New(),
 		Login:            login,
 		Password:         password,
 		RegistrationDate: now,
@@ -80,14 +97,14 @@ func (repo *Repository) CreateUser(login string, password string) (*User, error)
 		UpdatedAt:        now,
 	}
 
-	data, err := serialize(user)
+	data, err := UserSerialize(user)
 	if err != nil {
 		return nil, err
 	}
 
 	repo.tbls["users"][login] = data
 
-	return user, nil
+	return &user, nil
 }
 
 func (repo *Repository) UpdateUser(login string, password string) (*User, error) {
@@ -100,14 +117,14 @@ func (repo *Repository) UpdateUser(login string, password string) (*User, error)
 	}
 
 	var user User
-	err := deserialize(userData, &user)
+	err := UserDeserialize(userData, &user)
 	if err != nil {
 		return nil, err
 	}
 
 	now := time.Now()
 
-	updatedUser := &User{
+	updatedUser := User{
 		ID:               user.ID,
 		Login:            login,
 		Password:         password,
@@ -117,13 +134,13 @@ func (repo *Repository) UpdateUser(login string, password string) (*User, error)
 		UpdatedAt:        now,
 	}
 
-	data, err := serialize(updatedUser)
+	data, err := UserSerialize(updatedUser)
 	if err != nil {
 		return nil, err
 	}
 
 	repo.tbls["users"][login] = data
-	return updatedUser, nil
+	return &updatedUser, nil
 }
 
 func (repo *Repository) GetUsers() ([]*User, error) {
@@ -134,7 +151,7 @@ func (repo *Repository) GetUsers() ([]*User, error) {
 
 	for _, userData := range repo.tbls["users"] {
 		var user User
-		if err := deserialize(userData, &user); err != nil {
+		if err := UserDeserialize(userData, &user); err != nil {
 			return nil, err
 		}
 
@@ -156,27 +173,18 @@ func (repo *Repository) DeleteUser(login string) error {
 	}
 
 	var user User
-	if err := deserialize(userData, &user); err != nil {
+	if err := UserDeserialize(userData, &user); err != nil {
 		return err
 	}
 
 	user.IsActive = false
 	user.UpdatedAt = time.Now()
 
-	data, err := serialize(user)
+	data, err := UserSerialize(user)
 	if err != nil {
 		return err
 	}
 
 	repo.tbls["users"][login] = data
 	return nil
-}
-
-func (repo *Repository) FillMockData() {
-	repo.CreateUser("user1", "123")
-	repo.CreateUser("user2", "234")
-	repo.CreateUser("user3", "456")
-	repo.CreateUser("user4", "456")
-	repo.CreateUser("user5", "456")
-
 }
