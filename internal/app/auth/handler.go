@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpjson"
+	apperrors "github.com/go-park-mail-ru/2026_1_VKino/internal/app/errors"
 )
 
 type Handler struct {
@@ -47,7 +48,7 @@ func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 
 	tokens, err := h.service.SignUp(req.Email, req.Password)
 	if err != nil {
-		writeServiceError(w, err)
+		apperrors.WriteServiceError(w, err)
 		return
 	}
 	setRefreshCookie(h, w, tokens.RefreshToken)
@@ -64,7 +65,7 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 
 	tokens, err := h.service.SignIn(req.Email, req.Password)
 	if err != nil {
-		writeServiceError(w, err)
+		apperrors.WriteServiceError(w, err)
 		return
 	}
 	setRefreshCookie(h, w, tokens.RefreshToken)
@@ -81,12 +82,12 @@ func (h *Handler) refresh(w http.ResponseWriter, r *http.Request) {
 
 	email, err := h.service.validateRefreshToken(cookie.Value)
 	if err != nil {
-		writeServiceError(w, err)
+		apperrors.WriteServiceError(w, err)
 		return
 	}
 	tokenPair, err := h.service.refresh(email)
 	if err != nil {
-		writeServiceError(w, err)
+		apperrors.WriteServiceError(w, err)
 		return
 	}
 

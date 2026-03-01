@@ -3,8 +3,8 @@ package auth
 import (
 	"fmt"
 	"time"
-	"errors"
 
+	apperrors "github.com/go-park-mail-ru/2026_1_VKino/internal/app/errors"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -22,13 +22,6 @@ type Service struct {
 	userMap map[string]string
 	userSessions map[string]TokenPair
 }
-
-var (
-	ErrUserAlreadyExists = errors.New("user already exists")
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrNoSession = errors.New("no session")
-	ErrInvalidToken = errors.New("invalid token")
-)
 
 func NewService(cfg Config) *Service {
 	// дефолты
@@ -109,12 +102,12 @@ func (s *Service) tokenPairGenerate(user User) (TokenPair, error) {
 func (s *Service) SignIn(email, password string) (TokenPair, error) {
 	user, err := s.getUserByEmail(email)
 	if err != nil {
-		return TokenPair{}, ErrInvalidCredentials
+		return TokenPair{}, apperrors.ErrInvalidCredentials
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return TokenPair{}, ErrInvalidCredentials
+		return TokenPair{}, apperrors.ErrInvalidCredentials
 	}
 	return s.tokenPairGenerate(user)
 }
@@ -123,7 +116,7 @@ func (s *Service) SignIn(email, password string) (TokenPair, error) {
 func (s *Service) SignUp(email, password string) (TokenPair, error) {
 	_, err := s.getUserByEmail(email)
 	if err == nil {
-		return TokenPair{}, ErrUserAlreadyExists
+		return TokenPair{}, apperrors.ErrUserAlreadyExists
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -141,12 +134,12 @@ func (s *Service) refresh(email string) (TokenPair, error) {
 	// переписать
 	_, exists := s.userSessions[email]
 	if !exists {
-		return TokenPair{}, ErrNoSession
+		return TokenPair{}, apperrors.ErrNoSession
 	}
 
 	user, err := s.getUserByEmail(email)
 	if err != nil {
-		return TokenPair{}, ErrNoSession
+		return TokenPair{}, apperrors.ErrNoSession
 	}
 
 	return s.tokenPairGenerate(user)
@@ -155,17 +148,17 @@ func (s *Service) refresh(email string) (TokenPair, error) {
 func (s *Service) parseToken(tokenString string) (*jwt.RegisteredClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if token.Method == nil || token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
-			return nil, ErrInvalidToken
+			return nil, apperrors.ErrInvalidToken
 		}
 		return []byte(s.cfg.JWTSecret), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrInvalidToken, err)
+		return nil, fmt.Errorf("%w: %v", apperrors.ErrInvalidToken, err)
 	}
 
 	claims, ok := token.Claims.(*jwt.RegisteredClaims)
 	if !ok || !token.Valid {
-		return nil, ErrInvalidToken
+		return nil, apperrors.ErrInvalidToken
 	}
 
 	return claims, nil
@@ -178,7 +171,7 @@ func (s *Service) validateAccessToken(tokenString string) (string, error) {
 	}
 
 	if claims.Subject == "" {
-		return "", ErrInvalidToken
+		return "", apperrors.ErrInvalidToken
 	}
 
 	return claims.Subject, nil
@@ -191,17 +184,17 @@ func (s *Service) validateRefreshToken(tokenString string) (string, error) {
 	}
 
 	if claims.Subject == "" {
-		return "", ErrInvalidToken
+		return "", apperrors.ErrInvalidToken
 	}
 
 	// refresh должен совпадать с сохранённым у пользователя
 	tokenPair, exists := s.userSessions[claims.Subject]
 	if !exists {
-		return "", ErrNoSession
+		return "", apperrors.ErrNoSession
 	}
 
 	if tokenPair.RefreshToken != tokenString {
-		return "", ErrInvalidToken
+		return "", apperrors.ErrInvalidToken
 	}
 
 	return claims.Subject, nil

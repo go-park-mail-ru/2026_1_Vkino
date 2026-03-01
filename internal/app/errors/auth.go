@@ -1,10 +1,17 @@
-package auth
+package apperrors
 
 import (
-	"errors"
+	stderrors "errors"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpjson"
+)
+
+var (
+	ErrUserAlreadyExists  = stderrors.New("user already exists")
+	ErrInvalidCredentials = stderrors.New("invalid credentials")
+	ErrNoSession          = stderrors.New("no session")
+	ErrInvalidToken       = stderrors.New("invalid token")
 )
 
 type httpErr struct {
@@ -21,17 +28,17 @@ var errToHTTP = map[error]httpErr{
 }
 
 // перекладывать статус и тело в writeError
-func writeServiceError(w http.ResponseWriter, err error) {
+func WriteServiceError(w http.ResponseWriter, err error) {
 	var key error
 
 	switch {
-	case errors.Is(err, ErrUserAlreadyExists):
+	case stderrors.Is(err, ErrUserAlreadyExists):
 		key = ErrUserAlreadyExists
-	case errors.Is(err, ErrInvalidCredentials):
+	case stderrors.Is(err, ErrInvalidCredentials):
 		key = ErrInvalidCredentials
-	case errors.Is(err, ErrNoSession):
+	case stderrors.Is(err, ErrNoSession):
 		key = ErrNoSession
-	case errors.Is(err, ErrInvalidToken):
+	case stderrors.Is(err, ErrInvalidToken):
 		key = ErrInvalidToken
 	default:
 		httpjson.WriteError(w, http.StatusInternalServerError, "internal server error")
