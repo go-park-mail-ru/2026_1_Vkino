@@ -1,2 +1,14 @@
 server:
   port: 8080
+  timeouts:
+    read_header: "5s"
+    read: "10s"
+    write: "15s"
+    idle: "60s"
+
+auth:
+  jwt_secret: "dev-secret"
+  access_token_ttl: "15m"
+  refresh_token_ttl: "336h"         # 14 дней
+  refresh_cookie_name: "refresh_token"
+  cookie_secure: false              # для localhost false
