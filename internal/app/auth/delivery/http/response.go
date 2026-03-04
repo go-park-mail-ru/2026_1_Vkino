@@ -1,9 +1,10 @@
-package httpjson
+package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
-	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -12,9 +13,11 @@ type errorResponse struct {
 }
 
 func WriteError(w http.ResponseWriter, status int, message string) {
-	WriteJSON(w, status, errorResponse{Error: message})
+	err := WriteJSON(w, status, errorResponse{Error: message})
+	if err != nil {
+		log.Printf("error writing response: %v", err)
+	}
 }
-
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
 	b, err := json.Marshal(v)
@@ -33,10 +36,16 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 }
 
 func ReadJSON(r *http.Request, dst any) error {
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("error in closing body %v\n", err)
+		}
+	}(r.Body)
 
 	dec := json.NewDecoder(r.Body)
-	// Если клиент пришлёт лишние поля, которых нет в dst, будет ошибка.
+
+	// если клиент пришлёт лишние поля, которых нет в dst, будет ошибка.
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(dst); err != nil {
@@ -48,8 +57,9 @@ func ReadJSON(r *http.Request, dst any) error {
 		if err == io.EOF {
 			return nil
 		}
+
 		return err
 	}
+
 	return fmt.Errorf("request body must contain a single JSON object")
 }
-

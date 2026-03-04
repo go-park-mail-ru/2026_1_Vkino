@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/cmd/api/app"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth"
 )
 
 func main() {
-	err := app.Run()
+	err := auth.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
