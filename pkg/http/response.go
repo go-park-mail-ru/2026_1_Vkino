@@ -18,6 +18,7 @@ func ErrResponse(w http.ResponseWriter, status int, message string) {
 
 func Response(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
 	b, err := json.Marshal(v)
 
 	if err != nil {

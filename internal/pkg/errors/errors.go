@@ -18,7 +18,7 @@ var errToHTTP = map[error]HttpErr{
 	authdomain.ErrInvalidCredentials: {status: http.StatusUnauthorized, message: "invalid credentials"},
 	authdomain.ErrNoSession:          {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInvalidToken:       {status: http.StatusUnauthorized, message: "unauthorized"},
-	authdomain.ErrOther:              {status: http.StatusInternalServerError, message: "internal server error"},
+	authdomain.ErrInternal:           {status: http.StatusInternalServerError, message: "internal server error"},
 }
 
 func MapError(err error) (int, string) {
@@ -26,12 +26,11 @@ func MapError(err error) (int, string) {
 
 	for k, v := range errToHTTP {
 		if stderrors.Is(err, k) {
-			mappedError = v
-			break
+			return v.status, v.message
 		}
 	}
-	if mappedError.status == 0 {
-		mappedError = errToHTTP[authdomain.ErrOther]
-	}
+
+	mappedError = errToHTTP[authdomain.ErrInternal]
+
 	return mappedError.status, mappedError.message
 }

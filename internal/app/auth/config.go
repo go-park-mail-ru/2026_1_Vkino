@@ -4,15 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	"github.com/spf13/viper"
 )
-
-type Config struct {
-	Server httpserver.Config `mapstructure:"server"`
-	Auth   usecase.Config    `mapstructure:"auth"`
-}
 
 func LoadConfig(path string, cfg any) error {
 	v := viper.New()

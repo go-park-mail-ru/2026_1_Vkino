@@ -34,6 +34,7 @@ func New(opts ...Option) *Server {
 	for _, opt := range opts {
 		opt(s)
 	}
+
 	return s
 }
 

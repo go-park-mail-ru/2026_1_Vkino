@@ -18,3 +18,7 @@ type SignUpRequest struct {
 type AccessTokenResponse struct {
 	AccessToken string `json:"access_token"`
 }
+
+func (u *TokenPair) Name() string {
+	return "sessions"
+}

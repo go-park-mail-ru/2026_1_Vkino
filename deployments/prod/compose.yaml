@@ -7,8 +7,3 @@ services:
     restart: always
   vkinoapi:
     image: vkino-back:latest
-    container_name: vkino-api
-    restart: always
-    ports:
-      - 8080
-

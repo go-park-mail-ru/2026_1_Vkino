@@ -37,6 +37,7 @@ func (s *SessionRepo) GetSession(email string) (*domain.TokenPair, error) {
 		if errors.Is(err, ErrNotFound) || errors.Is(err, ErrTableNotFound) {
 			return &domain.TokenPair{}, domain.ErrNoSession
 		}
+
 		return &domain.TokenPair{}, err
 	}
 
@@ -54,6 +55,7 @@ func (s *SessionRepo) DeleteSession(email string) error {
 		if errors.Is(err, ErrNotFound) || errors.Is(err, ErrTableNotFound) {
 			return domain.ErrNoSession
 		}
+
 		return err
 	}
 

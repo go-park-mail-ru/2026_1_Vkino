@@ -47,7 +47,6 @@ func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 
 		email, err := m.usecase.ValidateAccessToken(accessToken)
 		if err != nil {
-
 			authHttp.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
 
 			return

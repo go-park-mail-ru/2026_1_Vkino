@@ -1,12 +1,15 @@
 package httpserver
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 type Option func(*Server)
 
-func Addr(addr string) Option {
+func Port(port int) Option {
 	return func(s *Server) {
-		s.server.Addr = addr
+		s.server.Addr = fmt.Sprintf(":%d", port)
 	}
 }
 
