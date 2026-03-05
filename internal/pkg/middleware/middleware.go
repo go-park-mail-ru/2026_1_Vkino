@@ -5,9 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	authHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/delivery/http"
-
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+	authHttp "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 )
 
 type ctxKey string
@@ -15,7 +14,7 @@ type ctxKey string
 const UserEmailKey ctxKey = "user_email"
 
 type AuthMiddleware struct {
-	usecase *usecase.AuthUsecase
+	usecase usecase.Usecase
 }
 
 func NewAuthMiddleware(u *usecase.AuthUsecase) *AuthMiddleware {
@@ -27,28 +26,29 @@ func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := strings.TrimSpace(r.Header.Get("Authorization"))
 		if authHeader == "" {
-			authHttp.WriteError(w, http.StatusUnauthorized, "unauthorized")
+			authHttp.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
 
 			return
 		}
 
 		const bearerPrefix = "Bearer "
 		if !strings.HasPrefix(authHeader, bearerPrefix) {
-			authHttp.WriteError(w, http.StatusUnauthorized, "unauthorized")
+			authHttp.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
 
 			return
 		}
 
 		accessToken := strings.TrimSpace(strings.TrimPrefix(authHeader, bearerPrefix))
 		if accessToken == "" {
-			authHttp.WriteError(w, http.StatusUnauthorized, "unauthorized")
+			authHttp.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
 
 			return
 		}
 
 		email, err := m.usecase.ValidateAccessToken(accessToken)
 		if err != nil {
-			authHttp.WriteError(w, http.StatusUnauthorized, "unauthorized")
+
+			authHttp.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
 
 			return
 		}

@@ -12,30 +12,27 @@ type errorResponse struct {
 	Error string
 }
 
-func WriteError(w http.ResponseWriter, status int, message string) {
-	err := WriteJSON(w, status, errorResponse{Error: message})
-	if err != nil {
-		log.Printf("error writing response: %v", err)
-	}
+func ErrResponse(w http.ResponseWriter, status int, message string) {
+	Response(w, status, errorResponse{Error: message})
 }
 
-func WriteJSON(w http.ResponseWriter, status int, v any) error {
+func Response(w http.ResponseWriter, status int, v any) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	b, err := json.Marshal(v)
+
 	if err != nil {
-		return fmt.Errorf("marshal json: %w", err)
+		log.Printf("marshal json error: %v", err)
+		ErrResponse(w, http.StatusInternalServerError, "internal server error")
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
 
 	if _, err := w.Write(append(b, '\n')); err != nil {
-		return fmt.Errorf("write response: %w", err)
+		log.Printf("write response error: %v", err)
 	}
-
-	return nil
 }
 
-func ReadJSON(r *http.Request, dst any) error {
+func Read(r *http.Request, dst any) error {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {

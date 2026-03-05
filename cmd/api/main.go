@@ -1,13 +1,15 @@
 package main
 
 import (
+	"flag"
 	"log"
-
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth"
 )
 
 func main() {
-	err := auth.Run()
+	configPath := flag.String("config", "", "config file path")
+	flag.Parse()
+
+	err := Run(configPath)
 	if err != nil {
 		log.Fatal(err)
 	}

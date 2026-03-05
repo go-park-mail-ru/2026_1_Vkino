@@ -1,20 +1,19 @@
 package errors
 
 import (
-	"encoding/json"
 	stderrors "errors"
-	authdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"log"
 	"net/http"
+
+	authdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
 )
 
-type httpErr struct {
+type HttpErr struct {
 	status  int
 	message string
 }
 
 // мапа внутренняя ошибка -> внешний ответ.
-var errToHTTP = map[error]httpErr{
+var errToHTTP = map[error]HttpErr{
 	authdomain.ErrUserAlreadyExists:  {status: http.StatusConflict, message: "user already exists"},
 	authdomain.ErrInvalidCredentials: {status: http.StatusUnauthorized, message: "invalid credentials"},
 	authdomain.ErrNoSession:          {status: http.StatusUnauthorized, message: "unauthorized"},
@@ -22,35 +21,17 @@ var errToHTTP = map[error]httpErr{
 	authdomain.ErrOther:              {status: http.StatusInternalServerError, message: "internal server error"},
 }
 
-type errorResponse struct {
-	Error string `json:"error"`
-}
+func MapError(err error) (int, string) {
+	var mappedError HttpErr
 
-// перекладывать статус и тело в writeError
-
-func WriteServiceError(w http.ResponseWriter, err error) {
-	var key error
-
-	switch {
-	case stderrors.Is(err, authdomain.ErrUserAlreadyExists):
-		key = authdomain.ErrUserAlreadyExists
-	case stderrors.Is(err, authdomain.ErrInvalidCredentials):
-		key = authdomain.ErrInvalidCredentials
-	case stderrors.Is(err, authdomain.ErrNoSession):
-		key = authdomain.ErrNoSession
-	case stderrors.Is(err, authdomain.ErrInvalidToken):
-		key = authdomain.ErrInvalidToken
-	default:
-		key = authdomain.ErrOther
+	for k, v := range errToHTTP {
+		if stderrors.Is(err, k) {
+			mappedError = v
+			break
+		}
 	}
-
-	mapped := errToHTTP[key]
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(mapped.status)
-
-	err = json.NewEncoder(w).Encode(errorResponse{Error: mapped.message})
-	if err != nil {
-		log.Printf("error marshaling error: %v\n", err)
+	if mappedError.status == 0 {
+		mappedError = errToHTTP[authdomain.ErrOther]
 	}
+	return mappedError.status, mappedError.message
 }

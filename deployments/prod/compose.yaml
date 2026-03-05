@@ -5,3 +5,10 @@ services:
       - 80:80
       - 443:443
     restart: always
+  vkinoapi:
+    image: vkino-back:latest
+    container_name: vkino-api
+    restart: always
+    ports:
+      - 8080
+

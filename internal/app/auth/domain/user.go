@@ -3,6 +3,7 @@ package domain
 import (
 	"time"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serializer"
 	"github.com/google/uuid"
 )
 
@@ -16,35 +17,14 @@ type User struct {
 	UpdatedAt        time.Time
 }
 
-type TokenPair struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+func (u *User) Name() string {
+	return "users"
 }
 
-type SignInRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+func Serialize[T any](v T) ([]byte, error) {
+	return serializer.Serialize(v)
 }
 
-type SignUpRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+func Deserialize[T any](data []byte, v *T) error {
+	return serializer.Deserialize(data, v)
 }
-
-type AccessTokenResponse struct {
-	AccessToken string `json:"access_token"`
-}
-
-// TODO сделать на дженериках
-
-// func (u *User) Name() string {
-//	return "users"
-// }
-//
-// func UserSerialize(user User) ([]byte, error) {
-//	return serializer.Serialize(user)
-// }
-//
-// func UserDeserialize(data []byte, user *User) error {
-//	return serializer.Deserialize(data, user)
-// }

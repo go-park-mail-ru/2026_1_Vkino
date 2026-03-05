@@ -24,27 +24,11 @@ type AuthUsecase struct {
 	cfg         Config
 }
 
-func NewAuthUsecase(userRepo repository.UserRepo, sessionRepo repository.SessionRepo, cfg *Config) *AuthUsecase {
-	if cfg.JWTSecret == "" {
-		cfg.JWTSecret = "dev-secret"
-	}
-
-	if cfg.AccessTokenTTL == 0 {
-		cfg.AccessTokenTTL = 15 * time.Minute
-	}
-
-	if cfg.RefreshTokenTTL == 0 {
-		cfg.RefreshTokenTTL = 14 * 24 * time.Hour
-	}
-
-	if cfg.RefreshCookieName == "" {
-		cfg.RefreshCookieName = "refresh_token"
-	}
-
+func NewAuthUsecase(userRepo repository.UserRepo, sessionRepo repository.SessionRepo, cfg Config) *AuthUsecase {
 	return &AuthUsecase{
 		userRepo:    userRepo,
 		sessionRepo: sessionRepo,
-		cfg:         *cfg,
+		cfg:         cfg,
 	}
 }
 

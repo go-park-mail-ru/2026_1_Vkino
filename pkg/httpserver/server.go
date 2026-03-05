@@ -17,16 +17,26 @@ type Config struct {
 	Timeouts TimeoutsConfig `mapstructure:"timeouts"`
 }
 
-func RunServer(addr string, handler http.Handler, t TimeoutsConfig) error {
-	s := http.Server{
-		Addr:    addr,
-		Handler: handler,
+type Server struct {
+	server *http.Server
+	mux    *http.ServeMux
+}
 
-		ReadHeaderTimeout: t.ReadHeader,
-		ReadTimeout:       t.Read,
-		WriteTimeout:      t.Write,
-		IdleTimeout:       t.Idle,
+func New(opts ...Option) *Server {
+	mux := http.NewServeMux()
+	s := &Server{
+		mux: mux,
+		server: &http.Server{
+			Handler: mux,
+		},
 	}
 
-	return s.ListenAndServe()
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+func (s *Server) Run() error {
+	return s.server.ListenAndServe()
 }

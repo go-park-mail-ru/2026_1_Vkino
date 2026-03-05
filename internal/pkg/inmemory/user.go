@@ -1,11 +1,10 @@
-package mapDB
+package inmemory
 
 import (
 	"errors"
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serializer"
 	"github.com/google/uuid"
 )
 
@@ -33,7 +32,7 @@ func (r *UserRepo) GetUserByEmail(email string) (*domain.User, error) {
 	}
 
 	var user domain.User
-	if err := serializer.Deserialize(data, &user); err != nil {
+	if err := domain.Deserialize(data, &user); err != nil {
 		return nil, err
 	}
 
@@ -52,7 +51,7 @@ func (r *UserRepo) GetUserByID(id uuid.UUID) (*domain.User, error) {
 
 	for _, data := range allData {
 		var user domain.User
-		if err := serializer.Deserialize(data, &user); err != nil {
+		if err := domain.Deserialize(data, &user); err != nil {
 			return nil, err
 		}
 
@@ -77,7 +76,7 @@ func (r *UserRepo) CreateUser(login string, password string) (*domain.User, erro
 		UpdatedAt:        now,
 	}
 
-	data, err := serializer.Serialize(user)
+	data, err := domain.Serialize(user)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +102,7 @@ func (r *UserRepo) UpdateUser(login string, password string) (*domain.User, erro
 	user.Password = password
 	user.UpdatedAt = time.Now()
 
-	data, err := serializer.Serialize(*user)
+	data, err := domain.Serialize(*user)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +128,7 @@ func (r *UserRepo) GetAllUsers() ([]*domain.User, error) {
 
 	for _, data := range allData {
 		var user domain.User
-		if err := serializer.Deserialize(data, &user); err != nil {
+		if err := domain.Deserialize(data, &user); err != nil {
 			return nil, err
 		}
 

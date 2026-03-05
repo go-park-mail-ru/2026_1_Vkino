@@ -1,4 +1,4 @@
-package mapDB
+package inmemory
 
 import (
 	"errors"

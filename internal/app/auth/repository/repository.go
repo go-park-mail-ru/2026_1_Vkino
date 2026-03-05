@@ -16,6 +16,6 @@ type UserRepo interface {
 
 type SessionRepo interface {
 	SaveSession(email string, tokens domain.TokenPair) error
-	GetSession(email string) (domain.TokenPair, error)
+	GetSession(email string) (*domain.TokenPair, error)
 	DeleteSession(email string) error
 }

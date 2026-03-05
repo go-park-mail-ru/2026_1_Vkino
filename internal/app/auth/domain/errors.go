@@ -1,13 +1,13 @@
 package domain
 
 import (
-	stderrors "errors"
+	"errors"
 )
 
 var (
-	ErrUserAlreadyExists  = stderrors.New("user already exists")
-	ErrInvalidCredentials = stderrors.New("invalid credentials")
-	ErrNoSession          = stderrors.New("no session")
-	ErrInvalidToken       = stderrors.New("invalid token")
-	ErrOther              = stderrors.New("this error now not exists")
+	ErrUserAlreadyExists  = errors.New("user already exists")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrNoSession          = errors.New("no session")
+	ErrInvalidToken       = errors.New("invalid token")
+	ErrOther              = errors.New("this error now not exists")
 )
