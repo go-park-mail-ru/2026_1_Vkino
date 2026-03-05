@@ -3,7 +3,12 @@ package serializer
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
+	"errors"
+)
+
+var (
+	ErrDeserialize = errors.New("deserialization failed")
+	ErrSerialize   = errors.New("serialization failed")
 )
 
 func RegisterType(value any) {
@@ -12,10 +17,11 @@ func RegisterType(value any) {
 
 func Serialize(value any) ([]byte, error) {
 	var buf bytes.Buffer
+
 	enc := gob.NewEncoder(&buf)
 
 	if err := enc.Encode(value); err != nil {
-		return nil, fmt.Errorf("serialization failed: %w", err)
+		return nil, ErrSerialize
 	}
 
 	return buf.Bytes(), nil
@@ -23,14 +29,14 @@ func Serialize(value any) ([]byte, error) {
 
 func Deserialize(data []byte, value any) error {
 	if value == nil {
-		return fmt.Errorf("deserialization failed: nil pointer")
+		return ErrDeserialize
 	}
 
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
 	if err := dec.Decode(value); err != nil {
-		return fmt.Errorf("deserialization failed: %w", err)
+		return ErrDeserialize
 	}
 
 	return nil

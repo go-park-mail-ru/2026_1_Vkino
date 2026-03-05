@@ -5,7 +5,7 @@ ENV GOOS=linux
 
 RUN apk update --no-cache && apk add --no-cache tzdata
 
-COPY go.mod  /vkinoapi/
+COPY go.mod go.sum /vkinoapi/
 
 WORKDIR /vkinoapi
 
@@ -13,7 +13,7 @@ RUN go mod download
 
 COPY . /vkinoapi
 
-RUN go build -ldflags="-w -s" -o /vkinoapi/bin/vkinoapi ./cmd/api/main.go
+RUN go build -ldflags="-w -s" -o /vkinoapi/bin/vkinoapi ./cmd/api/
 
 FROM golang:1.26.0-alpine3.23
 
