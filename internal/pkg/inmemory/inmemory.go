@@ -1,4 +1,4 @@
-package db
+package inmemory
 
 import (
 	"errors"
@@ -46,6 +46,7 @@ func (db *DB) Save(tableName string, key string, data []byte) error {
 	}
 
 	table[key] = data
+
 	return nil
 }
 
@@ -64,6 +65,7 @@ func (db *DB) Update(tableName string, key string, data []byte) error {
 	}
 
 	table[key] = data
+
 	return nil
 }
 
@@ -98,6 +100,7 @@ func (db *DB) Delete(tableName string, key string) error {
 	}
 
 	delete(table, key)
+
 	return nil
 }
 
@@ -112,6 +115,7 @@ func (db *DB) GetAll(tableName string) (map[string][]byte, error) {
 
 	result := make(map[string][]byte)
 	maps.Copy(result, table)
+
 	return result, nil
 }
 
@@ -120,5 +124,6 @@ func (db *DB) TableExists(tableName string) bool {
 	defer db.mu.RUnlock()
 
 	_, exists := db.tbls[tableName]
+
 	return exists
 }

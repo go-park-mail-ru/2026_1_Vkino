@@ -1,13 +1,16 @@
 package main
 
 import (
+	"flag"
 	"log"
-
-	"github.com/go-park-mail-ru/2026_1_VKino/cmd/api/app"
 )
 
 func main() {
-	err := app.Run()
+	configPath := flag.String("config", "", "config file path")
+
+	flag.Parse()
+
+	err := Run(configPath)
 	if err != nil {
 		log.Fatal(err)
 	}
