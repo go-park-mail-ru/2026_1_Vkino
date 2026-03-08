@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	authdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+
+	repo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/inmemory"
 )
 
 type HttpErr struct {
@@ -19,6 +21,7 @@ var errToHTTP = map[error]HttpErr{
 	authdomain.ErrNoSession:          {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInvalidToken:       {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInternal:           {status: http.StatusInternalServerError, message: "internal server error"},
+	repo.ErrSelectionNotFound:        {status: http.StatusNotFound, message: "selection not found"},
 }
 
 func MapError(err error) (int, string) {
