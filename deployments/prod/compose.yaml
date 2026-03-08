@@ -13,6 +13,8 @@ services:
     image: saucesamba/vkino-back:latest
     platform: linux/amd64
     command: ./vkinoapi --config=/usr/local/etc/config.yaml
+    ports:                      
+      - "8080:8080"
     volumes:
       - ./vkinoapi/config.yaml:/usr/local/etc/config.yaml
     restart: always

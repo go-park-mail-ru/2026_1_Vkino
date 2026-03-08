@@ -6,9 +6,14 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/cmd/api/app"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth"
+
 	authHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/delivery/http"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+	authDomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+	authUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+
+	movieHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/delivery/http"
+	movieDomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
+	movieUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/inmemory"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 )
@@ -23,16 +28,20 @@ func Run(configPath *string) error {
 	log.Printf("Server started on %d", cfg.Server.Port)
 
 	db := inmemory.NewDB([]inmemory.Named{
-		&domain.User{},
-		&domain.TokenPair{},
+		&authDomain.User{},
+		&authDomain.TokenPair{},
+		&movieDomain.SelectionResponse{},
 	})
 
 	userRepo := inmemory.NewUserRepo(db)
 	sessionRepo := inmemory.NewSessionRepo(db)
+	movieRepo := inmemory.NewMovieRepo(db)
 
-	authUsecase := usecase.NewAuthUsecase(userRepo, sessionRepo, cfg.Auth)
+	authUsecase := authUsecase.NewAuthUsecase(userRepo, sessionRepo, cfg.Auth)
+	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo)
 
 	authHandler := authHttp.NewHandler(authUsecase)
+	movieHadler := movieHttp.NewHandler(movieUsecase)
 
 	server := httpserver.New(
 		httpserver.Port(cfg.Server.Port),
@@ -40,6 +49,7 @@ func Run(configPath *string) error {
 		httpserver.WithRoute("/sign-up", authHandler.SignUp),
 		httpserver.WithRoute("/sign-in", authHandler.SignIn),
 		httpserver.WithRoute("/refresh", authHandler.Refresh),
+		httpserver.WithRoute("/lists/movies/{selection}", movieHadler.GetSelectionByTitle),
 	)
 
 	return server.Run()
