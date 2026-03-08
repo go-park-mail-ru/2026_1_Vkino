@@ -15,12 +15,21 @@ func NewMovieUsecase(movieRepo repository.MovieRepo) *MovieUsecase {
 	}
 }
 
+func (m *MovieUsecase) GetAllSelections() ([]domain.SelectionResponse, error) {
+	selections, err := m.movieRepo.GetAllSelections()
+
+	if err != nil {
+		return nil, err
+	}
+	return selections, nil
+}
+
 func (m *MovieUsecase) GetSelectionByTitle(title string) (*domain.SelectionResponse, error) {
-	selections, err := m.movieRepo.GetSelectionByTitle(title)
+	selection, err := m.movieRepo.GetSelectionByTitle(title)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return selections, nil
+	return selection, nil
 }

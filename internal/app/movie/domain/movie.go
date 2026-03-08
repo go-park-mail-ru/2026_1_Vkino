@@ -12,7 +12,7 @@ type Movie struct {
 	Description        string
 	ContentType        string
 	ReleaseYear        int
-	DurationSeconds    int
+	Duration           time.Time // в БД DurationSeconds, но лучше поменять и там
 	AgeLimit           int
 	OriginalLanguageID int
 	CountryID          int

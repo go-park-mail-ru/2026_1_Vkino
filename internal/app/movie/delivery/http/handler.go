@@ -18,13 +18,20 @@ func NewHandler(u usecase.Usecase) *Handler {
 	return &Handler{usecase: u}
 }
 
-func (h *Handler) GetSelectionByTitle(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		httppkg.ErrResponse(w, http.StatusMethodNotAllowed, "method not allowed")
+func (h *Handler) GetAllSelections(w http.ResponseWriter, r *http.Request) {
+	selections, err := h.usecase.GetAllSelections()
+
+	if err != nil {
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
 		return
 	}
 
-	title := strings.TrimPrefix(r.URL.Path, "/lists/movies/")
+	httppkg.Response(w, http.StatusOK, selections)
+}
+
+func (h *Handler) GetSelectionByTitle(w http.ResponseWriter, r *http.Request) {
+	title := strings.TrimPrefix(r.URL.Path, "/movie/selection/")
 
 	if title == "" {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "selection is required")

@@ -5,5 +5,6 @@ import (
 )
 
 type Usecase interface {
+	GetAllSelections() ([]domain.SelectionResponse, error)
 	GetSelectionByTitle(title string) (*domain.SelectionResponse, error)
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/cmd/api/app"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 
 	authHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/delivery/http"
 	authDomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
@@ -41,15 +42,18 @@ func Run(configPath *string) error {
 	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo)
 
 	authHandler := authHttp.NewHandler(authUsecase)
-	movieHadler := movieHttp.NewHandler(movieUsecase)
+	movieHandler := movieHttp.NewHandler(movieUsecase)
 
 	server := httpserver.New(
 		httpserver.Port(cfg.Server.Port),
 		httpserver.Timeout(cfg.Server.Timeouts),
-		httpserver.WithRoute("/sign-up", authHandler.SignUp),
-		httpserver.WithRoute("/sign-in", authHandler.SignIn),
-		httpserver.WithRoute("/refresh", authHandler.Refresh),
-		httpserver.WithRoute("/lists/movies/{selection}", movieHadler.GetSelectionByTitle),
+		httpserver.WithMiddleware(middleware.CorsMiddleware),
+		httpserver.WithRoute("POST /auth/sign-up", authHandler.SignUp),
+		httpserver.WithRoute("POST /auth/sign-in", authHandler.SignIn),
+		httpserver.WithRoute("POST /auth/refresh", authHandler.Refresh),
+		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
+		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
+		// httpserver.WithRoute("GET /movie/{moviename}", movieHandler.GetMovieById) -- страница для проверки зарега
 	)
 
 	return server.Run()

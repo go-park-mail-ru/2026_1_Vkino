@@ -27,3 +27,9 @@ func WithRoute(pattern string, handler http.HandlerFunc) Option {
 		s.mux.HandleFunc(pattern, handler)
 	}
 }
+
+func WithMiddleware(mw Middleware) Option {
+	return func(s *Server) {
+		s.middlewares = append(s.middlewares, mw)
+	}
+}

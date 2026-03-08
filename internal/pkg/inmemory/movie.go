@@ -75,23 +75,23 @@ func (r *MovieRepo) initMockSelections() {
 		},
 	}
 
-	selections := map[string]*domain.SelectionResponse{
+	selections := map[string]domain.SelectionResponse{
 		"popular": {
 			Title: "Популярные",
-			Movies: []*domain.MoviePreview{
-				&movies[0], &movies[1], &movies[2], &movies[3], &movies[4],
+			Movies: []domain.MoviePreview{
+				movies[0], movies[1], movies[2], movies[3], movies[4], movies[0], movies[1], movies[2], movies[3], movies[4],
 			},
 		},
 		"new": {
 			Title: "Новинки",
-			Movies: []*domain.MoviePreview{
-				&movies[0], &movies[1], &movies[2], &movies[3], &movies[4],
+			Movies: []domain.MoviePreview{
+				movies[0], movies[1], movies[2], movies[3], movies[4], movies[0], movies[1], movies[2], movies[3], movies[4],
 			},
 		},
 		"top": {
 			Title: "Топ-10",
-			Movies: []*domain.MoviePreview{
-				&movies[0], &movies[1], &movies[2], &movies[3], &movies[4], // убрал movies[5]
+			Movies: []domain.MoviePreview{
+				movies[0], movies[1], movies[2], movies[3], movies[4], movies[0], movies[1], movies[2], movies[3], movies[4],
 			},
 		},
 	}
@@ -117,17 +117,17 @@ func (r *MovieRepo) GetSelectionByTitle(title string) (*domain.SelectionResponse
 	return &selection, nil
 }
 
-func (r *MovieRepo) GetAllSelections() ([]*domain.SelectionResponse, error) {
+func (r *MovieRepo) GetAllSelections() ([]domain.SelectionResponse, error) {
 	allData, err := r.db.GetAll("selections")
 	if err != nil {
-		return []*domain.SelectionResponse{}, nil
+		return []domain.SelectionResponse{}, err
 	}
 
-	var selections []*domain.SelectionResponse
+	var selections []domain.SelectionResponse
 	for _, data := range allData {
 		var sel domain.SelectionResponse
 		if err := domain.Deserialize(data, &sel); err == nil {
-			selections = append(selections, &sel)
+			selections = append(selections, sel)
 		}
 	}
 
