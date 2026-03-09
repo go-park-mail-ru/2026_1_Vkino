@@ -21,6 +21,7 @@ func NewAuthMiddleware(u *usecase.AuthUsecase) *AuthMiddleware {
 	return &AuthMiddleware{usecase: u}
 }
 
+// Middleware валидирует access token и кладёт email пользователя в context.
 func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := strings.TrimSpace(r.Header.Get("Authorization"))

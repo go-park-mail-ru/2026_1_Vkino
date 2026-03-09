@@ -51,6 +51,8 @@ func Run(configPath *string) error {
 		httpserver.WithRoute("POST /auth/sign-up", authHandler.SignUp),
 		httpserver.WithRoute("POST /auth/sign-in", authHandler.SignIn),
 		httpserver.WithRoute("POST /auth/refresh", authHandler.Refresh),
+		httpserver.WithRoute("POST /auth/me", authHandler.Me),
+		httpserver.WithRoute("POST /auth/logout", authHandler.Logout),
 		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
 		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
 		// httpserver.WithRoute("GET /movie/{moviename}", movieHandler.GetMovieById) -- страница для проверки зарега

@@ -2,7 +2,11 @@ package domain
 
 type TokenPair struct {
 	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	RefreshToken string `json:"-"`
+}
+
+type MeResponse struct {
+	Email string `json:"email"`
 }
 
 type SignInRequest struct {
