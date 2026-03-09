@@ -5,8 +5,9 @@ type TokenPair struct {
 	RefreshToken string `json:"-"`
 }
 
-type MeResponse struct {
-	Email string `json:"email"`
+type Response struct {
+	Email   string `json:"email,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 type SignInRequest struct {

@@ -54,7 +54,7 @@ func Run(configPath *string) error {
 		httpserver.WithRoute("POST /auth/sign-in", authHandler.SignIn),
 		httpserver.WithRoute("POST /auth/refresh", authHandler.Refresh),
 		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware),
-		httpserver.WithMiddlewareRoute("GET /auth/logout", authHandler.Logout, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.Logout, authMiddleware.Middleware),
 		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
 		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
 		// httpserver.WithRoute("GET /movie/{moviename}", movieHandler.GetMovieById) -- страница для проверки зарега

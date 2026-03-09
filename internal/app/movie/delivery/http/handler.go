@@ -33,7 +33,7 @@ func (h *Handler) GetAllSelections(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetSelectionByTitle(w http.ResponseWriter, r *http.Request) {
 	title := strings.TrimPrefix(r.URL.Path, "/movie/selection/")
 
-	if title == "" {
+	if len(title) == 0 {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "selection is required")
 		return
 	}

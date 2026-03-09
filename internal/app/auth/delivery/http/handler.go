@@ -103,17 +103,21 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httppkg.Response(w, http.StatusOK, domain.MeResponse{
+	httppkg.Response(w, http.StatusOK, domain.Response{
 		Email: email,
 	})
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	// TODO
+
 	cfg := h.usecase.GetConfig()
 
 	_, err := r.Cookie(cfg.RefreshCookieName)
 	if err != nil {
-		httppkg.Response(w, http.StatusOK, map[string]string{"message": "user wasn't authorized"})
+		httppkg.Response(w, http.StatusOK, domain.Response{
+			Message: "user wasn't authorized",
+		})
 		return
 	}
 
@@ -128,15 +132,10 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1,
 	}
 	http.SetCookie(w, deletedCookie)
-	// logout пока не потестила, потому что:
 
-	// надо на фронте чистить access token после logout
-	// и еще можно хранить блэклист access токенов, которые теперь невалидны
-	// (потому что кто-то умный может проставить в заголовках старый access после logout,
-	// но такая ситуация очень маловероятна + access скоро истечет)
-	// плюс, нарушаем тогда концепцию jwt, если будем дополнительно токены хранить
-
-	httppkg.Response(w, http.StatusOK, map[string]string{"message": "logged out"})
+	httppkg.Response(w, http.StatusOK, domain.Response{
+		Message: "successfully log out",
+	})
 }
 
 func (h *Handler) RefreshCookie(refreshToken string) *http.Cookie {

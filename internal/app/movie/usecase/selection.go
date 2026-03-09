@@ -24,11 +24,11 @@ func (m *MovieUsecase) GetAllSelections() ([]domain.SelectionResponse, error) {
 	return selections, nil
 }
 
-func (m *MovieUsecase) GetSelectionByTitle(title string) (*domain.SelectionResponse, error) {
+func (m *MovieUsecase) GetSelectionByTitle(title string) (domain.SelectionResponse, error) {
 	selection, err := m.movieRepo.GetSelectionByTitle(title)
 
 	if err != nil {
-		return nil, err
+		return domain.SelectionResponse{}, err
 	}
 
 	return selection, nil
