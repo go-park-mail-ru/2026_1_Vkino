@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/errors"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 )
 
@@ -90,6 +91,56 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	httppkg.Response(w, http.StatusOK, domain.AccessTokenResponse{
 		AccessToken: tokenPair.AccessToken,
+	})
+}
+
+func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
+	email, ok := middleware.UserEmailFromContext(r.Context())
+
+	if !ok {
+		httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	httppkg.Response(w, http.StatusOK, domain.Response{
+		Email: email,
+	})
+}
+
+func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {
+	cfg := h.usecase.GetConfig()
+
+	email, ok := middleware.UserEmailFromContext(r.Context())
+
+	if !ok {
+		httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
+
+		// тут не нужна проверка, потому что через мидлвар прошло
+		// для отладки оставила, чтобы если что поймать ошибку
+		return
+	}
+
+	err := h.usecase.LogOut(email)
+	if err != nil {
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
+		return
+	}
+
+	deletedCookie := &http.Cookie{
+		Name:     cfg.RefreshCookieName,
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   cfg.CookieSecure,
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+	}
+	http.SetCookie(w, deletedCookie)
+
+	httppkg.Response(w, http.StatusOK, domain.Response{
+		Message: "successfully log out",
 	})
 }
 

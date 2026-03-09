@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -101,6 +102,17 @@ func (u *AuthUsecase) ValidateRefreshToken(tokenString string) (string, error) {
 	}
 
 	return claims.Subject, nil
+}
+
+func (u *AuthUsecase) LogOut(email string) error {
+	err := u.sessionRepo.DeleteSession(email)
+	if err != nil {
+		if errors.Is(err, domain.ErrNoSession) {
+			return nil
+		}
+		return err
+	}
+	return nil
 }
 
 func (u *AuthUsecase) ValidateAccessToken(tokenString string) (string, error) {
