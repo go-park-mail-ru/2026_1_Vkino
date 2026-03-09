@@ -8,5 +8,6 @@ type Usecase interface {
 	Refresh(email string) (domain.TokenPair, error)
 	ValidateRefreshToken(tokenString string) (string, error)
 	ValidateAccessToken(tokenString string) (string, error)
+	LogOut(email string) error
 	GetConfig() Config
 }

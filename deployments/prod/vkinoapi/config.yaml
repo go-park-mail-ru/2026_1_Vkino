@@ -5,7 +5,8 @@ server:
     read: "10s"
     write: "15s"
     idle: "60s"
-
+  cors:
+    
 auth:
   jwt_secret: "dev-secret"
   access_token_ttl: "15m"

@@ -12,9 +12,16 @@ type TimeoutsConfig struct {
 	Idle       time.Duration `mapstructure:"idle"`
 }
 
+type CORSConfig struct {
+	AllowedOrigins   []string      `mapstructure:"allowed_origins"`
+	AllowCredentials bool          `mapstructure:"allow_credentials"`
+	MaxAge           time.Duration `mapstructure:"max_age"`
+}
+
 type Config struct {
 	Port     int            `mapstructure:"port"`
 	Timeouts TimeoutsConfig `mapstructure:"timeouts"`
+	CORS     CORSConfig     `mapstructure:"cors"`
 }
 
 type Middleware func(http.Handler) http.Handler

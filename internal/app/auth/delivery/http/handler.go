@@ -99,7 +99,6 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 
 	if !ok {
 		httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
-
 		return
 	}
 
@@ -108,16 +107,23 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
-	// TODO
-
+func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {
 	cfg := h.usecase.GetConfig()
 
-	_, err := r.Cookie(cfg.RefreshCookieName)
+	email, ok := middleware.UserEmailFromContext(r.Context())
+
+	if !ok {
+		httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
+
+		// тут не нужна проверка, потому что через мидлвар прошло
+		// для отладки оставила, чтобы если что поймать ошибку
+		return
+	}
+
+	err := h.usecase.LogOut(email)
 	if err != nil {
-		httppkg.Response(w, http.StatusOK, domain.Response{
-			Message: "user wasn't authorized",
-		})
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
 		return
 	}
 
