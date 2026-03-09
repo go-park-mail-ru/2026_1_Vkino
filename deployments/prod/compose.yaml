@@ -10,7 +10,7 @@ services:
       - ./logs/nginx:/var/log/nginx
     restart: always
   vkinoapi:
-    image: saucesamba/vkino-back:latest
+    image: saucesamba/vkino-back:v0.1.0
     platform: linux/amd64
     command: ./vkinoapi --config=/usr/local/etc/config.yaml
     volumes:
