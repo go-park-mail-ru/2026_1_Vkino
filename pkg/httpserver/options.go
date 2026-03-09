@@ -3,6 +3,8 @@ package httpserver
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 )
 
 type Option func(*Server)
@@ -25,6 +27,17 @@ func Timeout(t TimeoutsConfig) Option {
 func WithRoute(pattern string, handler http.HandlerFunc) Option {
 	return func(s *Server) {
 		s.mux.HandleFunc(pattern, handler)
+	}
+}
+
+func WithMiddlewareRoute(pattern string, handler http.HandlerFunc, middlewares ...func(http.Handler) http.Handler) Option {
+	return func(s *Server) {
+		wrappedHandler := middleware.Chain(
+			http.HandlerFunc(handler),
+			middlewares...,
+		)
+
+		s.mux.Handle(pattern, wrappedHandler)
 	}
 }
 

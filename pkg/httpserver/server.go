@@ -44,11 +44,6 @@ func New(opts ...Option) *Server {
 	return s
 }
 
-func (s *Server) Use(mw Middleware) {
-	s.middlewares = append(s.middlewares, mw)
-	s.server.Handler = s.applyMiddlewares(s.mux)
-}
-
 func (s *Server) applyMiddlewares(h http.Handler) http.Handler {
 	for i := len(s.middlewares) - 1; i >= 0; i-- {
 		h = s.middlewares[i](h)
