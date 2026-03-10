@@ -13,7 +13,7 @@
 ## 🚀 Попробовать
 
 Оцените наш сервис в действии:
-[vkino.tech](https://vkino.tech)
+[vkino.tech](http://vkino.tech)
 
 ## 🥋 Наша команда
 
