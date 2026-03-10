@@ -2,18 +2,20 @@ services:
   nginx:
     image: nginx:latest
     container_name: front-nginx
+    restart: always
     ports:
       - 80:80
       - 443:443
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./logs/nginx:/var/log/nginx
-      - ../../../../../frontend:/usr/share/nginx/html:ro
-    restart: always
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
   vkinoapi:
     image: saucesamba/vkino-back:v0.1.1
     platform: linux/amd64
+    restart: always
     command: ./vkinoapi --config=/usr/local/etc/config.yaml
     volumes:
       - ./vkinoapi/config.yaml:/usr/local/etc/config.yaml
-    restart: always
