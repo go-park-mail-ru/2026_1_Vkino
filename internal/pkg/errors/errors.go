@@ -4,7 +4,11 @@ import (
 	stderrors "errors"
 	"net/http"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth"
 	authdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
+	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 
 	repo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/inmemory"
 )
@@ -21,7 +25,18 @@ var errToHTTP = map[error]HttpErr{
 	authdomain.ErrNoSession:          {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInvalidToken:       {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInternal:           {status: http.StatusInternalServerError, message: "internal server error"},
-	repo.ErrSelectionNotFound:        {status: http.StatusNotFound, message: "selection not found"},
+
+	repo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
+
+	usecase.ErrSessionSave:    {status: http.StatusInternalServerError, message: "session save error"},
+	usecase.ErrTokenGenerate:  {status: http.StatusInternalServerError, message: "token generate error"},
+	usecase.ErrBcryptGenerate: {status: http.StatusInternalServerError, message: "bcrypt generate error"},
+
+	auth.ErrReadingConfig:     {status: http.StatusInternalServerError, message: "invalid config"},
+	auth.ErrUmarshalingConfig: {status: http.StatusInternalServerError, message: "invalid config"},
+	http.ErrNoCookie:          {status: http.StatusUnauthorized, message: "unauthorized"},
+	middleware.ErrMidlware:    {status: http.StatusUnauthorized, message: "unauthorized"},
+	httppkg.ErrInvalidJson:    {status: http.StatusBadRequest, message: "invalid json body"},
 }
 
 func MapError(err error) (int, string) {

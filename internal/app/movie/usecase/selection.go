@@ -21,6 +21,7 @@ func (m *MovieUsecase) GetAllSelections() ([]domain.SelectionResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return selections, nil
 }
 

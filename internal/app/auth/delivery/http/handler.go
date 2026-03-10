@@ -22,7 +22,8 @@ func NewHandler(u usecase.Usecase) *Handler {
 func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var req domain.SignUpRequest
 	if err := httppkg.Read(r, &req); err != nil {
-		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid json body")
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
 
 		return
 	}
@@ -43,7 +44,8 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 	var req domain.SignInRequest
 	if err := httppkg.Read(r, &req); err != nil {
-		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid json body")
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
 
 		return
 	}
@@ -66,7 +68,8 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := r.Cookie(cfg.RefreshCookieName)
 	if err != nil {
-		httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
 
 		return
 	}
@@ -95,10 +98,12 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
-	email, ok := middleware.UserEmailFromContext(r.Context())
+	email, err := middleware.UserEmailFromContext(r.Context())
 
-	if !ok {
-		httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
+	if err != nil {
+		status, message := errors.MapError(middleware.ErrMidlware)
+		httppkg.ErrResponse(w, status, message)
+
 		return
 	}
 
@@ -110,20 +115,20 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {
 	cfg := h.usecase.GetConfig()
 
-	email, ok := middleware.UserEmailFromContext(r.Context())
+	email, err := middleware.UserEmailFromContext(r.Context())
 
-	if !ok {
-		httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
+	if err != nil {
+		status, message := errors.MapError(middleware.ErrMidlware)
+		httppkg.ErrResponse(w, status, message)
 
-		// тут не нужна проверка, потому что через мидлвар прошло
-		// для отладки оставила, чтобы если что поймать ошибку
 		return
 	}
 
-	err := h.usecase.LogOut(email)
+	err = h.usecase.LogOut(email)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
+
 		return
 	}
 

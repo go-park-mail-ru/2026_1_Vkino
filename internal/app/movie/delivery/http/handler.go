@@ -34,7 +34,7 @@ func (h *Handler) GetSelectionByTitle(w http.ResponseWriter, r *http.Request) {
 	title := strings.TrimPrefix(r.URL.Path, "/movie/selection/")
 
 	if len(title) == 0 {
-		httppkg.ErrResponse(w, http.StatusBadRequest, "selection is required")
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid selection")
 		return
 	}
 

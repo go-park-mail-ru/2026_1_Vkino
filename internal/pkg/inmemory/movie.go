@@ -15,12 +15,45 @@ type MovieRepo struct {
 func NewMovieRepo(db *DB) *MovieRepo {
 	s := &MovieRepo{db: db}
 	s.initMockSelections()
+
 	return s
 }
 
 var (
 	ErrSelectionNotFound = errors.New("selection not found")
 )
+
+func (r *MovieRepo) GetSelectionByTitle(title string) (domain.SelectionResponse, error) {
+	data, err := r.db.Get("selections", title)
+	if err != nil {
+		return domain.SelectionResponse{}, ErrSelectionNotFound
+	}
+
+	var selection domain.SelectionResponse
+	if err := serializer.Deserialize(data, &selection); err != nil {
+		return domain.SelectionResponse{}, err
+	}
+
+	return selection, nil
+}
+
+func (r *MovieRepo) GetAllSelections() ([]domain.SelectionResponse, error) {
+	allData, err := r.db.GetAll("selections")
+	if err != nil {
+		return []domain.SelectionResponse{}, err
+	}
+
+	var selections []domain.SelectionResponse
+
+	for _, data := range allData {
+		var sel domain.SelectionResponse
+		if err := serializer.Deserialize(data, &sel); err == nil {
+			selections = append(selections, sel)
+		}
+	}
+
+	return selections, nil
+}
 
 func (r *MovieRepo) initMockSelections() {
 	movies := []domain.MoviePreview{
@@ -101,36 +134,4 @@ func (r *MovieRepo) initMockSelections() {
 		selectionData, _ := serializer.Serialize(selection)
 		r.db.Save("selections", key, selectionData)
 	}
-
-}
-
-func (r *MovieRepo) GetSelectionByTitle(title string) (domain.SelectionResponse, error) {
-	data, err := r.db.Get("selections", title)
-	if err != nil {
-		return domain.SelectionResponse{}, ErrSelectionNotFound
-	}
-
-	var selection domain.SelectionResponse
-	if err := serializer.Deserialize(data, &selection); err != nil {
-		return domain.SelectionResponse{}, err
-	}
-
-	return selection, nil
-}
-
-func (r *MovieRepo) GetAllSelections() ([]domain.SelectionResponse, error) {
-	allData, err := r.db.GetAll("selections")
-	if err != nil {
-		return []domain.SelectionResponse{}, err
-	}
-
-	var selections []domain.SelectionResponse
-	for _, data := range allData {
-		var sel domain.SelectionResponse
-		if err := serializer.Deserialize(data, &sel); err == nil {
-			selections = append(selections, sel)
-		}
-	}
-
-	return selections, nil
 }

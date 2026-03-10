@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -23,11 +23,11 @@ func LoadConfig(path string, cfg any) error {
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	if err := v.ReadInConfig(); err != nil {
-		return fmt.Errorf("error reading config file, %w", err)
+		return errors.Join(ErrReadingConfig, err)
 	}
 
 	if err := v.Unmarshal(cfg); err != nil {
-		return fmt.Errorf("error unmarshalling config, %w", err)
+		return errors.Join(ErrUmarshalingConfig, err)
 	}
 
 	return nil
