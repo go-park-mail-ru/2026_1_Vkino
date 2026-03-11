@@ -2,10 +2,14 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"log"
 	"net/http"
+)
+
+var (
+	ErrInvalidJson = errors.New("invalid json body")
 )
 
 type errorResponse struct {
@@ -59,5 +63,5 @@ func Read(r *http.Request, dst any) error {
 		return err
 	}
 
-	return fmt.Errorf("request body must contain a single JSON object")
+	return ErrInvalidJson
 }

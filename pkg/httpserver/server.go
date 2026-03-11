@@ -51,13 +51,13 @@ func New(opts ...Option) *Server {
 	return s
 }
 
+func (s *Server) Run() error {
+	return s.server.ListenAndServe()
+}
+
 func (s *Server) applyMiddlewares(h http.Handler) http.Handler {
 	for i := len(s.middlewares) - 1; i >= 0; i-- {
 		h = s.middlewares[i](h)
 	}
 	return h
-}
-
-func (s *Server) Run() error {
-	return s.server.ListenAndServe()
 }

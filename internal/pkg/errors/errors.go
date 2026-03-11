@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	authdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
+	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 
 	repo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/inmemory"
 )
@@ -21,7 +23,12 @@ var errToHTTP = map[error]HttpErr{
 	authdomain.ErrNoSession:          {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInvalidToken:       {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInternal:           {status: http.StatusInternalServerError, message: "internal server error"},
-	repo.ErrSelectionNotFound:        {status: http.StatusNotFound, message: "selection not found"},
+
+	repo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
+	
+	http.ErrNoCookie:       {status: http.StatusUnauthorized, message: "unauthorized"},
+	middleware.ErrMidlware: {status: http.StatusUnauthorized, message: "unauthorized"},
+	httppkg.ErrInvalidJson: {status: http.StatusBadRequest, message: "invalid json body"},
 }
 
 func MapError(err error) (int, string) {

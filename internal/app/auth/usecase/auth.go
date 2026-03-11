@@ -110,8 +110,10 @@ func (u *AuthUsecase) LogOut(email string) error {
 		if errors.Is(err, domain.ErrNoSession) {
 			return nil
 		}
+
 		return err
 	}
+
 	return nil
 }
 
@@ -147,17 +149,15 @@ func (u *AuthUsecase) tokenGenerate(user string, tokenTTL time.Duration) (string
 	return stringToken, nil
 }
 
-// TODO подумать над тем нужно ли реализовывать toString(domain.User) или просто передавать email
-
 func (u *AuthUsecase) tokenPairGenerate(user *domain.User) (domain.TokenPair, error) {
 	accessToken, err := u.tokenGenerate(user.Email, u.cfg.AccessTokenTTL)
 	if err != nil {
-		return domain.TokenPair{}, fmt.Errorf("access token generate error: %w", err)
+		return domain.TokenPair{}, fmt.Errorf("token generate error: %w", err)
 	}
 
 	refreshToken, err := u.tokenGenerate(user.Email, u.cfg.RefreshTokenTTL)
 	if err != nil {
-		return domain.TokenPair{}, fmt.Errorf("refresh token generate error: %w", err)
+		return domain.TokenPair{}, fmt.Errorf("token generate error: %w", err)
 	}
 
 	tokenPair := domain.TokenPair{
@@ -167,7 +167,7 @@ func (u *AuthUsecase) tokenPairGenerate(user *domain.User) (domain.TokenPair, er
 
 	err = u.sessionRepo.SaveSession(user.Email, tokenPair)
 	if err != nil {
-		return domain.TokenPair{}, fmt.Errorf("failed to save session: %w", err)
+		return domain.TokenPair{}, fmt.Errorf("save session: %w", err)
 	}
 
 	return tokenPair, nil
