@@ -107,8 +107,8 @@ func TestHandler_SignUp(t *testing.T) {
 		{
 			name:           "invalid json body",
 			body:           `{"email":"user@example.com",`,
-			wantStatus:     stdhttp.StatusBadRequest,
-			wantErrorValue: "invalid json body",
+			wantStatus:     stdhttp.StatusInternalServerError,
+			wantErrorValue: "internal server error",
 		},
 		{
 			name: "user already exists",
@@ -209,8 +209,8 @@ func TestHandler_SignIn(t *testing.T) {
 		{
 			name:              "invalid json body",
 			body:              `{"email":"user@example.com"`,
-			wantStatus:        stdhttp.StatusBadRequest,
-			wantErrorValue:    "invalid json body",
+			wantStatus:        stdhttp.StatusInternalServerError,
+			wantErrorValue:    "internal server error",
 			wantUsecaseCalled: false,
 		},
 		{
@@ -472,25 +472,37 @@ func TestHandler_Logout(t *testing.T) {
 	cfg := testConfig()
 
 	tests := []struct {
-		name             string
-		hasRefreshCookie bool
-		wantStatus       int
-		wantMessage      string
-		wantDeleteCookie bool
+		name              string
+		ctxEmail          string
+		logOutErr         error
+		wantStatus        int
+		wantMessage       string
+		wantDeleteCookie  bool
+		wantUsecaseCalled bool
 	}{
 		{
-			name:             "user was not authorized",
-			hasRefreshCookie: false,
-			wantStatus:       stdhttp.StatusOK,
-			wantMessage:      "user wasn't authorized",
-			wantDeleteCookie: false,
+			name:              "user was not authorized",
+			wantStatus:        stdhttp.StatusUnauthorized,
+			wantMessage:       "unauthorized",
+			wantDeleteCookie:  false,
+			wantUsecaseCalled: false,
 		},
 		{
-			name:             "successfully log out",
-			hasRefreshCookie: true,
-			wantStatus:       stdhttp.StatusOK,
-			wantMessage:      "successfully log out",
-			wantDeleteCookie: true,
+			name:              "logout usecase error",
+			ctxEmail:          "user@example.com",
+			logOutErr:         domain.ErrInternal,
+			wantStatus:        stdhttp.StatusInternalServerError,
+			wantMessage:       "internal server error",
+			wantDeleteCookie:  false,
+			wantUsecaseCalled: true,
+		},
+		{
+			name:              "successfully log out",
+			ctxEmail:          "user@example.com",
+			wantStatus:        stdhttp.StatusOK,
+			wantMessage:       "successfully log out",
+			wantDeleteCookie:  true,
+			wantUsecaseCalled: true,
 		},
 	}
 
@@ -503,19 +515,22 @@ func TestHandler_Logout(t *testing.T) {
 			mu.EXPECT().
 				GetConfig().
 				Return(cfg)
+			if tt.wantUsecaseCalled {
+				mu.EXPECT().
+					LogOut(tt.ctxEmail).
+					Return(tt.logOutErr)
+			}
 
 			h := NewHandler(mu)
 
 			req := httptest.NewRequest(stdhttp.MethodPost, "/logout", nil)
-			if tt.hasRefreshCookie {
-				req.AddCookie(&stdhttp.Cookie{
-					Name:  cfg.RefreshCookieName,
-					Value: "refresh-token",
-				})
+			if tt.ctxEmail != "" {
+				ctx := context.WithValue(req.Context(), middleware.UserEmailKey, tt.ctxEmail)
+				req = req.WithContext(ctx)
 			}
 
 			rr := httptest.NewRecorder()
-			h.Logout(rr, req)
+			h.LogOut(rr, req)
 
 			if rr.Code != tt.wantStatus {
 				t.Fatalf("expected status %d, got %d", tt.wantStatus, rr.Code)

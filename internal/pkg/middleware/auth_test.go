@@ -120,9 +120,9 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 			next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				nextCalled = true
 
-				email, ok := UserEmailFromContext(r.Context())
-				if !ok {
-					t.Fatal("expected email in context")
+				email, err := UserEmailFromContext(r.Context())
+				if err != nil {
+					t.Fatalf("expected email in context, got error: %v", err)
 				}
 				nextEmail = email
 
@@ -169,32 +169,38 @@ func TestUserEmailFromContext(t *testing.T) {
 		name      string
 		ctx       context.Context
 		wantEmail string
-		wantOK    bool
+		wantErr   bool
 	}{
 		{
 			name:      "email exists",
 			ctx:       context.WithValue(context.Background(), UserEmailKey, "user@example.com"),
 			wantEmail: "user@example.com",
-			wantOK:    true,
+			wantErr:   false,
 		},
 		{
-			name:   "email missing",
-			ctx:    context.Background(),
-			wantOK: false,
+			name:    "email missing",
+			ctx:     context.Background(),
+			wantErr: true,
 		},
 		{
-			name:   "wrong type in context",
-			ctx:    context.WithValue(context.Background(), UserEmailKey, 123),
-			wantOK: false,
+			name:    "wrong type in context",
+			ctx:     context.WithValue(context.Background(), UserEmailKey, 123),
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			email, ok := UserEmailFromContext(tt.ctx)
+			email, err := UserEmailFromContext(tt.ctx)
 
-			if ok != tt.wantOK {
-				t.Fatalf("expected ok=%v, got %v", tt.wantOK, ok)
+			if tt.wantErr {
+				if !errors.Is(err, ErrMidlware) {
+					t.Fatalf("expected ErrMidlware, got %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
 			}
 			if email != tt.wantEmail {
 				t.Fatalf("expected email %q, got %q", tt.wantEmail, email)

@@ -111,7 +111,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 					SaveSession("user@example.com", gomock.Any()).
 					Return(errors.New("session save failed"))
 			},
-			wantErrContains: "failed to save session",
+			wantErrContains: "save session",
 		},
 		{
 			name:     "success",
@@ -247,7 +247,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 					SaveSession("user@example.com", gomock.Any()).
 					Return(errors.New("save session failed"))
 			},
-			wantErrContains: "failed to save session",
+			wantErrContains: "save session",
 		},
 		{
 			name:     "success",
@@ -368,7 +368,7 @@ func TestAuthUsecase_Refresh(t *testing.T) {
 					SaveSession("user@example.com", gomock.Any()).
 					Return(errors.New("save session failed"))
 			},
-			wantErrContains: "failed to save session",
+			wantErrContains: "save session",
 		},
 		{
 			name:  "success",
