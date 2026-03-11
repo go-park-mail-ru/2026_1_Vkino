@@ -55,7 +55,7 @@ func (u *AuthUsecase) SignUp(email, password string) (domain.TokenPair, error) {
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return domain.TokenPair{}, errors.Join(ErrBcryptGenerate, err)
+		return domain.TokenPair{}, fmt.Errorf("bcrypt generate error: %w", err)
 	}
 
 	user, err := u.userRepo.CreateUser(email, string(passwordHash))
@@ -152,12 +152,12 @@ func (u *AuthUsecase) tokenGenerate(user string, tokenTTL time.Duration) (string
 func (u *AuthUsecase) tokenPairGenerate(user *domain.User) (domain.TokenPair, error) {
 	accessToken, err := u.tokenGenerate(user.Email, u.cfg.AccessTokenTTL)
 	if err != nil {
-		return domain.TokenPair{}, errors.Join(ErrTokenGenerate, err)
+		return domain.TokenPair{}, fmt.Errorf("token generate error: %w", err)
 	}
 
 	refreshToken, err := u.tokenGenerate(user.Email, u.cfg.RefreshTokenTTL)
 	if err != nil {
-		return domain.TokenPair{}, errors.Join(ErrTokenGenerate, err)
+		return domain.TokenPair{}, fmt.Errorf("token generate error: %w", err)
 	}
 
 	tokenPair := domain.TokenPair{
@@ -167,7 +167,7 @@ func (u *AuthUsecase) tokenPairGenerate(user *domain.User) (domain.TokenPair, er
 
 	err = u.sessionRepo.SaveSession(user.Email, tokenPair)
 	if err != nil {
-		return domain.TokenPair{}, errors.Join(ErrSessionSave, err)
+		return domain.TokenPair{}, fmt.Errorf("save session: %w", err)
 	}
 
 	return tokenPair, nil
