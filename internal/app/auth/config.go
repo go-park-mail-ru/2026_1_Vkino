@@ -24,7 +24,6 @@ func LoadConfig(path string, cfg any) error {
 
 	if err := v.ReadInConfig(); err != nil {
 		return fmt.Errorf("error reading config file, %w", err)
-
 	}
 
 	if err := v.Unmarshal(cfg); err != nil {
