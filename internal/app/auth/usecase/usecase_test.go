@@ -205,7 +205,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 		{
 			name:     "user already exists",
 			email:    "user@example.com",
-			password: "qwerty",
+			password: "qwerty1",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
 					GetUserByEmail("user@example.com").
@@ -216,7 +216,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 		{
 			name:     "create user error",
 			email:    "user@example.com",
-			password: "qwerty",
+			password: "qwerty1",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
 					GetUserByEmail("user@example.com").
@@ -230,7 +230,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 		{
 			name:     "save session error",
 			email:    "user@example.com",
-			password: "qwerty",
+			password: "qwerty1",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
 					GetUserByEmail("user@example.com").
@@ -238,7 +238,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 				userRepo.EXPECT().
 					CreateUser("user@example.com", gomock.Any()).
 					DoAndReturn(func(email, password string) (*domain.User, error) {
-						if err := bcrypt.CompareHashAndPassword([]byte(password), []byte("qwerty")); err != nil {
+						if err := bcrypt.CompareHashAndPassword([]byte(password), []byte("qwerty1")); err != nil {
 							t.Errorf("password not properly hashed: %v", err)
 						}
 						return &domain.User{Email: email}, nil
@@ -252,7 +252,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 		{
 			name:     "success",
 			email:    "user@example.com",
-			password: "qwerty",
+			password: "qwerty1",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
 					GetUserByEmail("user@example.com").
@@ -260,7 +260,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 				userRepo.EXPECT().
 					CreateUser("user@example.com", gomock.Any()).
 					DoAndReturn(func(email, password string) (*domain.User, error) {
-						if err := bcrypt.CompareHashAndPassword([]byte(password), []byte("qwerty")); err != nil {
+						if err := bcrypt.CompareHashAndPassword([]byte(password), []byte("qwerty1")); err != nil {
 							t.Errorf("password not properly hashed: %v", err)
 						}
 						return &domain.User{Email: email}, nil
