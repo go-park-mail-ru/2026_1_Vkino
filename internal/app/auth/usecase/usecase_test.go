@@ -1,4 +1,4 @@
-package usecase
+package usecase_test
 
 import (
 	"errors"
@@ -7,14 +7,15 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/mocks"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase/mocks"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func testConfig() Config {
-	return Config{
+func testConfig() usecase.Config {
+	return usecase.Config{
 		JWTSecret:         "super-secret-key",
 		AccessTokenTTL:    time.Hour,
 		RefreshTokenTTL:   24 * time.Hour,
@@ -34,8 +35,25 @@ func hashPassword(t *testing.T, password string) string {
 	return string(hash)
 }
 
-func newTestUsecase(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) *AuthUsecase {
-	return NewAuthUsecase(userRepo, sessionRepo, testConfig())
+func newTestUsecase(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) *usecase.AuthUsecase {
+	return usecase.NewAuthUsecase(userRepo, sessionRepo, testConfig())
+}
+
+func makeToken(t *testing.T, secret, subject string, ttl time.Duration, method jwt.SigningMethod) string {
+	t.Helper()
+
+	token := jwt.NewWithClaims(method, jwt.RegisteredClaims{
+		Subject:   subject,
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+	})
+
+	tokenString, err := token.SignedString([]byte(secret))
+	if err != nil {
+		t.Fatalf("sign token: %v", err)
+	}
+
+	return tokenString
 }
 
 func TestAuthUsecase_SignIn(t *testing.T) {
@@ -426,37 +444,29 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		makeToken  func(t *testing.T, u *AuthUsecase) string
+		makeToken  func(t *testing.T, u *usecase.AuthUsecase) string
 		setupMocks func(sessionRepo *mocks.MockSessionRepo, token string)
 		wantEmail  string
 		wantErrIs  error
 	}{
 		{
 			name: "invalid token string",
-			makeToken: func(t *testing.T, u *AuthUsecase) string {
+			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
 				return "not-a-jwt"
 			},
 			wantErrIs: domain.ErrInvalidToken,
 		},
 		{
 			name: "empty subject",
-			makeToken: func(t *testing.T, u *AuthUsecase) string {
-				token, err := u.tokenGenerate("", time.Hour)
-				if err != nil {
-					t.Fatalf("generate token: %v", err)
-				}
-				return token
+			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
+				return makeToken(t, u.GetConfig().JWTSecret, "", time.Hour, jwt.SigningMethodHS256)
 			},
 			wantErrIs: domain.ErrInvalidToken,
 		},
 		{
 			name: "no session",
-			makeToken: func(t *testing.T, u *AuthUsecase) string {
-				token, err := u.tokenGenerate("user@example.com", time.Hour)
-				if err != nil {
-					t.Fatalf("generate token: %v", err)
-				}
-				return token
+			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
+				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS256)
 			},
 			setupMocks: func(sessionRepo *mocks.MockSessionRepo, token string) {
 				sessionRepo.EXPECT().
@@ -467,12 +477,8 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 		},
 		{
 			name: "refresh token mismatch",
-			makeToken: func(t *testing.T, u *AuthUsecase) string {
-				token, err := u.tokenGenerate("user@example.com", time.Hour)
-				if err != nil {
-					t.Fatalf("generate token: %v", err)
-				}
-				return token
+			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
+				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS256)
 			},
 			setupMocks: func(sessionRepo *mocks.MockSessionRepo, token string) {
 				sessionRepo.EXPECT().
@@ -483,12 +489,8 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 		},
 		{
 			name: "success",
-			makeToken: func(t *testing.T, u *AuthUsecase) string {
-				token, err := u.tokenGenerate("user@example.com", time.Hour)
-				if err != nil {
-					t.Fatalf("generate token: %v", err)
-				}
-				return token
+			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
+				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS256)
 			},
 			setupMocks: func(sessionRepo *mocks.MockSessionRepo, token string) {
 				sessionRepo.EXPECT().
@@ -541,36 +543,28 @@ func TestAuthUsecase_ValidateAccessToken(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		makeToken func(t *testing.T, u *AuthUsecase) string
+		makeToken func(t *testing.T, u *usecase.AuthUsecase) string
 		wantEmail string
 		wantErrIs error
 	}{
 		{
 			name: "invalid token string",
-			makeToken: func(t *testing.T, u *AuthUsecase) string {
+			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
 				return "bad-token"
 			},
 			wantErrIs: domain.ErrInvalidToken,
 		},
 		{
 			name: "empty subject",
-			makeToken: func(t *testing.T, u *AuthUsecase) string {
-				token, err := u.tokenGenerate("", time.Hour)
-				if err != nil {
-					t.Fatalf("generate token: %v", err)
-				}
-				return token
+			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
+				return makeToken(t, u.GetConfig().JWTSecret, "", time.Hour, jwt.SigningMethodHS256)
 			},
 			wantErrIs: domain.ErrInvalidToken,
 		},
 		{
 			name: "success",
-			makeToken: func(t *testing.T, u *AuthUsecase) string {
-				token, err := u.tokenGenerate("user@example.com", time.Hour)
-				if err != nil {
-					t.Fatalf("generate token: %v", err)
-				}
-				return token
+			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
+				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS256)
 			},
 			wantEmail: "user@example.com",
 		},
@@ -604,7 +598,7 @@ func TestAuthUsecase_ValidateAccessToken(t *testing.T) {
 	}
 }
 
-func TestAuthUsecase_parseToken(t *testing.T) {
+func TestAuthUsecase_ValidateAccessToken_ParseScenarios(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -613,65 +607,29 @@ func TestAuthUsecase_parseToken(t *testing.T) {
 	u := newTestUsecase(mocks.NewMockUserRepo(ctrl), mocks.NewMockSessionRepo(ctrl))
 
 	t.Run("wrong signing method", func(t *testing.T) {
-		// Подготовка (Setup)
-		token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.RegisteredClaims{
-			Subject:   "user@example.com",
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		})
-
-		tokenString, err := token.SignedString([]byte(u.cfg.JWTSecret))
-		if err != nil {
-			t.Fatalf("sign token: %v", err)
-		}
-
-		// Действие (Action)
-		_, err = u.parseToken(tokenString)
-
-		// Проверка (Assert)
+		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS512)
+		_, err := u.ValidateAccessToken(tokenString)
 		if !errors.Is(err, domain.ErrInvalidToken) {
 			t.Fatalf("expected error %v, got %v", domain.ErrInvalidToken, err)
 		}
 	})
 
 	t.Run("expired token", func(t *testing.T) {
-		// Подготовка (Setup)
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-			Subject:   "user@example.com",
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(-time.Hour)),
-			IssuedAt:  jwt.NewNumericDate(time.Now().Add(-2 * time.Hour)),
-		})
-
-		tokenString, err := token.SignedString([]byte(u.cfg.JWTSecret))
-		if err != nil {
-			t.Fatalf("sign token: %v", err)
-		}
-
-		// Действие (Action)
-		_, err = u.parseToken(tokenString)
-
-		// Проверка (Assert)
+		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", -time.Hour, jwt.SigningMethodHS256)
+		_, err := u.ValidateAccessToken(tokenString)
 		if !errors.Is(err, domain.ErrInvalidToken) {
 			t.Fatalf("expected error %v, got %v", domain.ErrInvalidToken, err)
 		}
 	})
 
 	t.Run("success", func(t *testing.T) {
-		// Подготовка (Setup)
-		tokenString, err := u.tokenGenerate("user@example.com", time.Hour)
-		if err != nil {
-			t.Fatalf("generate token: %v", err)
-		}
-
-		// Действие (Action)
-		claims, err := u.parseToken(tokenString)
-
-		// Проверка (Assert)
+		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS256)
+		email, err := u.ValidateAccessToken(tokenString)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if claims.Subject != "user@example.com" {
-			t.Fatalf("expected subject %q, got %q", "user@example.com", claims.Subject)
+		if email != "user@example.com" {
+			t.Fatalf("expected email %q, got %q", "user@example.com", email)
 		}
 	})
 }
@@ -684,7 +642,7 @@ func TestAuthUsecase_GetConfig(t *testing.T) {
 
 	// Подготовка (Setup)
 	cfg := testConfig()
-	u := NewAuthUsecase(mocks.NewMockUserRepo(ctrl), mocks.NewMockSessionRepo(ctrl), cfg)
+	u := usecase.NewAuthUsecase(mocks.NewMockUserRepo(ctrl), mocks.NewMockSessionRepo(ctrl), cfg)
 
 	// Действие (Action)
 	got := u.GetConfig()

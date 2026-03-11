@@ -22,6 +22,14 @@ func (d serializerDog) Sound() string {
 	return "woof"
 }
 
+type serializerCat struct {
+	Name string
+}
+
+func (c serializerCat) Sound() string {
+	return "meow"
+}
+
 type serializerZoo struct {
 	Animal serializerAnimal
 }
@@ -48,7 +56,7 @@ func TestSerialize(t *testing.T) {
 		{
 			name: "unregistered interface value",
 			value: serializerZoo{
-				Animal: serializerDog{Name: "Bob"},
+				Animal: serializerCat{Name: "Bob"},
 			},
 			wantErrIs: ErrSerialize,
 		},
@@ -60,7 +68,7 @@ func TestSerialize(t *testing.T) {
 
 			if tt.wantErrIs != nil {
 				if !errors.Is(err, tt.wantErrIs) {
-					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
+					t.Errorf("expected error %v, got %v", tt.wantErrIs, err)
 				}
 				return
 			}
