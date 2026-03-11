@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -source=./repository.go -destination=../usecase/mocks/repository_mock.go -package=mocks
 type UserRepo interface {
 	GetUserByEmail(email string) (*domain.User, error)
 	GetUserByID(id uuid.UUID) (*domain.User, error)

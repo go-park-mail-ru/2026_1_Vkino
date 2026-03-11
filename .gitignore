@@ -4,3 +4,6 @@ build/bin/
 .vscode/
 vendor/
 logs/
+.gocache/
+.gomodcache/
+coverage*.out

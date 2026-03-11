@@ -2,6 +2,7 @@ package usecase
 
 import "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
 
+//go:generate mockgen -source=./usecase.go -destination=./mocks/usecase_mock.go -package=mocks
 type Usecase interface {
 	SignIn(email, password string) (domain.TokenPair, error)
 	SignUp(email, password string) (domain.TokenPair, error)

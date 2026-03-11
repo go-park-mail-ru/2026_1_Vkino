@@ -28,6 +28,8 @@ func Response(w http.ResponseWriter, status int, v any) {
 	if err != nil {
 		log.Printf("marshal json error: %v", err)
 		ErrResponse(w, http.StatusInternalServerError, "internal server error")
+		
+		return
 	}
 
 	w.WriteHeader(status)
