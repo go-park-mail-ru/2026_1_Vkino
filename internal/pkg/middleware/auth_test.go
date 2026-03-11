@@ -8,68 +8,10 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+	usecasemocks "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase/mocks"
+	"go.uber.org/mock/gomock"
 )
-
-type mockUsecase struct {
-	signInFn               func(email, password string) (domain.TokenPair, error)
-	signUpFn               func(email, password string) (domain.TokenPair, error)
-	refreshFn              func(email string) (domain.TokenPair, error)
-	validateRefreshTokenFn func(token string) (string, error)
-	validateAccessTokenFn  func(token string) (string, error)
-	getConfigFn            func() usecase.Config
-}
-
-func (m *mockUsecase) SignIn(email, password string) (domain.TokenPair, error) {
-	if m.signInFn == nil {
-		panic("unexpected call: SignIn")
-	}
-	return m.signInFn(email, password)
-}
-
-func (m *mockUsecase) SignUp(email, password string) (domain.TokenPair, error) {
-	if m.signUpFn == nil {
-		panic("unexpected call: SignUp")
-	}
-	return m.signUpFn(email, password)
-}
-
-func (m *mockUsecase) Refresh(email string) (domain.TokenPair, error) {
-	if m.refreshFn == nil {
-		panic("unexpected call: Refresh")
-	}
-	return m.refreshFn(email)
-}
-
-func (m *mockUsecase) ValidateRefreshToken(token string) (string, error) {
-	if m.validateRefreshTokenFn == nil {
-		panic("unexpected call: ValidateRefreshToken")
-	}
-	return m.validateRefreshTokenFn(token)
-}
-
-func (m *mockUsecase) ValidateAccessToken(token string) (string, error) {
-	if m.validateAccessTokenFn == nil {
-		panic("unexpected call: ValidateAccessToken")
-	}
-	return m.validateAccessTokenFn(token)
-}
-
-func (m *mockUsecase) GetConfig() usecase.Config {
-	if m.getConfigFn == nil {
-		return usecase.Config{
-			JWTSecret:         "test-secret",
-			AccessTokenTTL:    time.Hour,
-			RefreshTokenTTL:   24 * time.Hour,
-			RefreshCookieName: "refresh_token",
-			CookieSecure:      true,
-		}
-	}
-	return m.getConfigFn()
-}
 
 func assertJSONContainsStringValue(t *testing.T, rr *httptest.ResponseRecorder, want string) {
 	t.Helper()
@@ -160,20 +102,20 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var validateCalled bool
-			var gotToken string
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mu := usecasemocks.NewMockUsecase(ctrl)
+			if tt.wantValidateCalled {
+				mu.EXPECT().
+					ValidateAccessToken(tt.wantToken).
+					Return(tt.validateEmail, tt.validateErr)
+			}
+
 			var nextCalled bool
 			var nextEmail string
 
-			mock := &mockUsecase{
-				validateAccessTokenFn: func(token string) (string, error) {
-					validateCalled = true
-					gotToken = token
-					return tt.validateEmail, tt.validateErr
-				},
-			}
-
-			m := &AuthMiddleware{usecase: mock}
+			m := &AuthMiddleware{usecase: mu}
 
 			next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				nextCalled = true
@@ -198,14 +140,6 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 
 			if rr.Code != tt.wantStatus {
 				t.Fatalf("expected status %d, got %d", tt.wantStatus, rr.Code)
-			}
-
-			if validateCalled != tt.wantValidateCalled {
-				t.Fatalf("expected ValidateAccessToken called=%v, got %v", tt.wantValidateCalled, validateCalled)
-			}
-
-			if tt.wantValidateCalled && gotToken != tt.wantToken {
-				t.Fatalf("expected token %q, got %q", tt.wantToken, gotToken)
 			}
 
 			if nextCalled != tt.wantNextCalled {

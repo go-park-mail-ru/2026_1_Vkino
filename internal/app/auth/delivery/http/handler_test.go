@@ -11,59 +11,10 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+	usecasemocks "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase/mocks"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
+	"go.uber.org/mock/gomock"
 )
-
-type mockUsecase struct {
-	signInFn               func(email, password string) (domain.TokenPair, error)
-	signUpFn               func(email, password string) (domain.TokenPair, error)
-	refreshFn              func(email string) (domain.TokenPair, error)
-	validateRefreshTokenFn func(token string) (string, error)
-	validateAccessTokenFn  func(token string) (string, error)
-	getConfigFn            func() usecase.Config
-}
-
-func (m *mockUsecase) SignIn(email, password string) (domain.TokenPair, error) {
-	if m.signInFn == nil {
-		panic("unexpected call: SignIn")
-	}
-	return m.signInFn(email, password)
-}
-
-func (m *mockUsecase) SignUp(email, password string) (domain.TokenPair, error) {
-	if m.signUpFn == nil {
-		panic("unexpected call: SignUp")
-	}
-	return m.signUpFn(email, password)
-}
-
-func (m *mockUsecase) Refresh(email string) (domain.TokenPair, error) {
-	if m.refreshFn == nil {
-		panic("unexpected call: Refresh")
-	}
-	return m.refreshFn(email)
-}
-
-func (m *mockUsecase) ValidateRefreshToken(token string) (string, error) {
-	if m.validateRefreshTokenFn == nil {
-		panic("unexpected call: ValidateRefreshToken")
-	}
-	return m.validateRefreshTokenFn(token)
-}
-
-func (m *mockUsecase) ValidateAccessToken(token string) (string, error) {
-	if m.validateAccessTokenFn == nil {
-		panic("unexpected call: ValidateAccessToken")
-	}
-	return m.validateAccessTokenFn(token)
-}
-
-func (m *mockUsecase) GetConfig() usecase.Config {
-	if m.getConfigFn == nil {
-		panic("unexpected call: GetConfig")
-	}
-	return m.getConfigFn()
-}
 
 func testConfig() usecase.Config {
 	return usecase.Config{
@@ -152,15 +103,12 @@ func TestHandler_SignUp(t *testing.T) {
 		wantAccessToken   string
 		wantCookie        bool
 		wantUsecaseCalled bool
-		wantEmail         string
-		wantPassword      string
 	}{
 		{
-			name:              "invalid json body",
-			body:              `{"email":"user@example.com",`,
-			wantStatus:        stdhttp.StatusBadRequest,
-			wantErrorValue:    "invalid json body",
-			wantUsecaseCalled: false,
+			name:           "invalid json body",
+			body:           `{"email":"user@example.com",`,
+			wantStatus:     stdhttp.StatusBadRequest,
+			wantErrorValue: "invalid json body",
 		},
 		{
 			name: "user already exists",
@@ -172,8 +120,6 @@ func TestHandler_SignUp(t *testing.T) {
 			wantStatus:        stdhttp.StatusConflict,
 			wantErrorValue:    "user already exists",
 			wantUsecaseCalled: true,
-			wantEmail:         "user@example.com",
-			wantPassword:      "qwerty",
 		},
 		{
 			name: "success",
@@ -189,25 +135,25 @@ func TestHandler_SignUp(t *testing.T) {
 			wantAccessToken:   "access-1",
 			wantCookie:        true,
 			wantUsecaseCalled: true,
-			wantEmail:         "user@example.com",
-			wantPassword:      "qwerty",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var called bool
-			var gotEmail string
-			var gotPassword string
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-			mu := &mockUsecase{
-				getConfigFn: func() usecase.Config { return cfg },
-				signUpFn: func(email, password string) (domain.TokenPair, error) {
-					called = true
-					gotEmail = email
-					gotPassword = password
-					return tt.signUpResp, tt.signUpErr
-				},
+			mu := usecasemocks.NewMockUsecase(ctrl)
+
+			if tt.wantUsecaseCalled {
+				mu.EXPECT().
+					SignUp("user@example.com", "qwerty").
+					Return(tt.signUpResp, tt.signUpErr)
+			}
+			if tt.wantCookie {
+				mu.EXPECT().
+					GetConfig().
+					Return(cfg)
 			}
 
 			h := NewHandler(mu)
@@ -220,19 +166,6 @@ func TestHandler_SignUp(t *testing.T) {
 
 			if rr.Code != tt.wantStatus {
 				t.Fatalf("expected status %d, got %d", tt.wantStatus, rr.Code)
-			}
-
-			if called != tt.wantUsecaseCalled {
-				t.Fatalf("expected SignUp called=%v, got %v", tt.wantUsecaseCalled, called)
-			}
-
-			if called {
-				if gotEmail != tt.wantEmail {
-					t.Fatalf("expected email %q, got %q", tt.wantEmail, gotEmail)
-				}
-				if gotPassword != tt.wantPassword {
-					t.Fatalf("expected password %q, got %q", tt.wantPassword, gotPassword)
-				}
 			}
 
 			if tt.wantErrorValue != "" {
@@ -314,18 +247,20 @@ func TestHandler_SignIn(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var called bool
-			var gotEmail string
-			var gotPassword string
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-			mu := &mockUsecase{
-				getConfigFn: func() usecase.Config { return cfg },
-				signInFn: func(email, password string) (domain.TokenPair, error) {
-					called = true
-					gotEmail = email
-					gotPassword = password
-					return tt.signInResp, tt.signInErr
-				},
+			mu := usecasemocks.NewMockUsecase(ctrl)
+
+			if tt.wantUsecaseCalled {
+				mu.EXPECT().
+					SignIn(tt.wantEmail, tt.wantPassword).
+					Return(tt.signInResp, tt.signInErr)
+			}
+			if tt.wantCookie {
+				mu.EXPECT().
+					GetConfig().
+					Return(cfg)
 			}
 
 			h := NewHandler(mu)
@@ -338,19 +273,6 @@ func TestHandler_SignIn(t *testing.T) {
 
 			if rr.Code != tt.wantStatus {
 				t.Fatalf("expected status %d, got %d", tt.wantStatus, rr.Code)
-			}
-
-			if called != tt.wantUsecaseCalled {
-				t.Fatalf("expected SignIn called=%v, got %v", tt.wantUsecaseCalled, called)
-			}
-
-			if called {
-				if gotEmail != tt.wantEmail {
-					t.Fatalf("expected email %q, got %q", tt.wantEmail, gotEmail)
-				}
-				if gotPassword != tt.wantPassword {
-					t.Fatalf("expected password %q, got %q", tt.wantPassword, gotPassword)
-				}
 			}
 
 			if tt.wantErrorValue != "" {
@@ -436,23 +358,28 @@ func TestHandler_Refresh(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var validateCalled bool
-			var refreshCalled bool
-			var gotRefreshEmail string
-			var gotValidateToken string
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-			mu := &mockUsecase{
-				getConfigFn: func() usecase.Config { return cfg },
-				validateRefreshTokenFn: func(token string) (string, error) {
-					validateCalled = true
-					gotValidateToken = token
-					return tt.validateEmail, tt.validateErr
-				},
-				refreshFn: func(email string) (domain.TokenPair, error) {
-					refreshCalled = true
-					gotRefreshEmail = email
-					return tt.refreshResp, tt.refreshErr
-				},
+			mu := usecasemocks.NewMockUsecase(ctrl)
+			getConfigCalls := 1
+			if tt.wantCookie {
+				getConfigCalls = 2
+			}
+			mu.EXPECT().
+				GetConfig().
+				Return(cfg).
+				Times(getConfigCalls)
+
+			if tt.wantValidateCalled {
+				mu.EXPECT().
+					ValidateRefreshToken(tt.refreshCookieValue).
+					Return(tt.validateEmail, tt.validateErr)
+			}
+			if tt.wantRefreshCalled {
+				mu.EXPECT().
+					Refresh(tt.validateEmail).
+					Return(tt.refreshResp, tt.refreshErr)
 			}
 
 			h := NewHandler(mu)
@@ -470,20 +397,6 @@ func TestHandler_Refresh(t *testing.T) {
 
 			if rr.Code != tt.wantStatus {
 				t.Fatalf("expected status %d, got %d", tt.wantStatus, rr.Code)
-			}
-
-			if validateCalled != tt.wantValidateCalled {
-				t.Fatalf("expected ValidateRefreshToken called=%v, got %v", tt.wantValidateCalled, validateCalled)
-			}
-			if refreshCalled != tt.wantRefreshCalled {
-				t.Fatalf("expected Refresh called=%v, got %v", tt.wantRefreshCalled, refreshCalled)
-			}
-
-			if tt.wantValidateCalled && gotValidateToken != tt.refreshCookieValue {
-				t.Fatalf("expected refresh token %q, got %q", tt.refreshCookieValue, gotValidateToken)
-			}
-			if tt.wantRefreshCalled && gotRefreshEmail != tt.validateEmail {
-				t.Fatalf("expected refresh email %q, got %q", tt.validateEmail, gotRefreshEmail)
 			}
 
 			if tt.wantErrorValue != "" {
@@ -530,7 +443,10 @@ func TestHandler_Me(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(&mockUsecase{})
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			h := NewHandler(usecasemocks.NewMockUsecase(ctrl))
 
 			req := httptest.NewRequest(stdhttp.MethodGet, "/me", nil)
 			if tt.ctxEmail != "" {
@@ -580,9 +496,15 @@ func TestHandler_Logout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := NewHandler(&mockUsecase{
-				getConfigFn: func() usecase.Config { return cfg },
-			})
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mu := usecasemocks.NewMockUsecase(ctrl)
+			mu.EXPECT().
+				GetConfig().
+				Return(cfg)
+
+			h := NewHandler(mu)
 
 			req := httptest.NewRequest(stdhttp.MethodPost, "/logout", nil)
 			if tt.hasRefreshCookie {
@@ -623,9 +545,15 @@ func TestHandler_RefreshCookie(t *testing.T) {
 	t.Parallel()
 
 	cfg := testConfig()
-	h := NewHandler(&mockUsecase{
-		getConfigFn: func() usecase.Config { return cfg },
-	})
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mu := usecasemocks.NewMockUsecase(ctrl)
+	mu.EXPECT().
+		GetConfig().
+		Return(cfg)
+
+	h := NewHandler(mu)
 
 	before := time.Now()
 	cookie := h.RefreshCookie("refresh-value")

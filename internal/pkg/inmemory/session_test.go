@@ -27,13 +27,13 @@ func TestSessionRepo_SaveSession(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name          string
-		withTable     bool
-		email         string
-		initialTokens *domain.TokenPair
-		saveTokens    domain.TokenPair
-		wantErrIs     error
-		wantStored    *domain.TokenPair
+		name           string
+		withTable      bool
+		email          string
+		initialTokens  *domain.TokenPair
+		saveTokens     domain.TokenPair
+		wantErrIs      error
+		expectedStored *domain.TokenPair
 	}{
 		{
 			name:      "save new session",
@@ -43,7 +43,7 @@ func TestSessionRepo_SaveSession(t *testing.T) {
 				AccessToken:  "access-1",
 				RefreshToken: "refresh-1",
 			},
-			wantStored: &domain.TokenPair{
+			expectedStored: &domain.TokenPair{
 				AccessToken:  "access-1",
 				RefreshToken: "refresh-1",
 			},
@@ -60,7 +60,7 @@ func TestSessionRepo_SaveSession(t *testing.T) {
 				AccessToken:  "new-access",
 				RefreshToken: "new-refresh",
 			},
-			wantStored: &domain.TokenPair{
+			expectedStored: &domain.TokenPair{
 				AccessToken:  "new-access",
 				RefreshToken: "new-refresh",
 			},
@@ -105,8 +105,8 @@ func TestSessionRepo_SaveSession(t *testing.T) {
 				t.Fatalf("get saved session: %v", err)
 			}
 
-			if *got != *tt.wantStored {
-				t.Fatalf("expected stored tokens %+v, got %+v", *tt.wantStored, *got)
+			if tt.expectedStored != nil && *got != *tt.expectedStored {
+				t.Fatalf("expected stored tokens %+v, got %+v", *tt.expectedStored, *got)
 			}
 		})
 	}
