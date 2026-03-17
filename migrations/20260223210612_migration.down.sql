@@ -1,3 +1,5 @@
+BEGIN;
+
 drop table if exists user_session;
 drop table if exists payment;
 drop table if exists friend;
@@ -16,3 +18,5 @@ drop table if exists genre;
 drop table if exists users;
 
 drop function if exists set_updated_at();
+
+COMMIT;
