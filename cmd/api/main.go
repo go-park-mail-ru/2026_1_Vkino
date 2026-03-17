@@ -1,7 +1,17 @@
 package main
 
-import "log"
+import (
+	"flag"
+	"log"
+)
 
 func main() {
-	log.Println("hello, world")
+	configPath := flag.String("config", "", "config file path")
+
+	flag.Parse()
+
+	err := Run(configPath)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

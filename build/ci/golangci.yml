@@ -41,6 +41,7 @@ linters:
     - gochecknoinits
     - nonamedreturns
     - gochecknoglobals
+    - depguard
 
   settings:
     lll:

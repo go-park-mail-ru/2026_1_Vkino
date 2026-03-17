@@ -1,1 +1,9 @@
+.idea
 .DS_Store
+build/bin/
+.vscode/
+vendor/
+logs/
+.gocache/
+.gomodcache/
+coverage*.out
