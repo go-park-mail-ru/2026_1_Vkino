@@ -29,6 +29,7 @@ func selectionsToMap(selections []domain.SelectionResponse) map[string]int {
 	for _, s := range selections {
 		result[s.Title] = len(s.Movies)
 	}
+
 	return result
 }
 
@@ -99,12 +100,14 @@ func TestMovieRepo_GetSelectionByTitle(t *testing.T) {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 
 			case tt.wantAnyErr:
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
+
 				return
 
 			default:

@@ -58,6 +58,7 @@ func assertCookie(t *testing.T, rr *httptest.ResponseRecorder, wantName, wantVal
 	if got.Name != wantName {
 		t.Fatalf("expected cookie name %q, got %q", wantName, got.Name)
 	}
+
 	if got.Value != wantValue {
 		t.Fatalf("expected cookie value %q, got %q", wantValue, got.Value)
 	}
@@ -150,6 +151,7 @@ func TestHandler_SignUp(t *testing.T) {
 					SignUp("user@example.com", "qwerty").
 					Return(tt.signUpResp, tt.signUpErr)
 			}
+
 			if tt.wantCookie {
 				mu.EXPECT().
 					GetConfig().
@@ -171,6 +173,7 @@ func TestHandler_SignUp(t *testing.T) {
 			if tt.wantErrorValue != "" {
 				assertJSONContainsStringValue(t, rr, tt.wantErrorValue)
 				assertNoCookies(t, rr)
+
 				return
 			}
 
@@ -257,6 +260,7 @@ func TestHandler_SignIn(t *testing.T) {
 					SignIn(tt.wantEmail, tt.wantPassword).
 					Return(tt.signInResp, tt.signInErr)
 			}
+
 			if tt.wantCookie {
 				mu.EXPECT().
 					GetConfig().
@@ -278,6 +282,7 @@ func TestHandler_SignIn(t *testing.T) {
 			if tt.wantErrorValue != "" {
 				assertJSONContainsStringValue(t, rr, tt.wantErrorValue)
 				assertNoCookies(t, rr)
+
 				return
 			}
 
@@ -362,10 +367,12 @@ func TestHandler_Refresh(t *testing.T) {
 			defer ctrl.Finish()
 
 			mu := usecasemocks.NewMockUsecase(ctrl)
+
 			getConfigCalls := 1
 			if tt.wantCookie {
 				getConfigCalls = 2
 			}
+
 			mu.EXPECT().
 				GetConfig().
 				Return(cfg).
@@ -376,6 +383,7 @@ func TestHandler_Refresh(t *testing.T) {
 					ValidateRefreshToken(tt.refreshCookieValue).
 					Return(tt.validateEmail, tt.validateErr)
 			}
+
 			if tt.wantRefreshCalled {
 				mu.EXPECT().
 					Refresh(tt.validateEmail).
@@ -402,6 +410,7 @@ func TestHandler_Refresh(t *testing.T) {
 			if tt.wantErrorValue != "" {
 				assertJSONContainsStringValue(t, rr, tt.wantErrorValue)
 				assertNoCookies(t, rr)
+
 				return
 			}
 
@@ -443,6 +452,8 @@ func TestHandler_Me(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -515,6 +526,7 @@ func TestHandler_Logout(t *testing.T) {
 			mu.EXPECT().
 				GetConfig().
 				Return(cfg)
+
 			if tt.wantUsecaseCalled {
 				mu.EXPECT().
 					LogOut(tt.ctxEmail).
@@ -543,9 +555,11 @@ func TestHandler_Logout(t *testing.T) {
 				if setCookieHeader == "" {
 					t.Fatal("expected delete cookie header, got empty")
 				}
+
 				if !strings.Contains(setCookieHeader, cfg.RefreshCookieName+"=") {
 					t.Fatalf("expected delete cookie for %q, got %q", cfg.RefreshCookieName, setCookieHeader)
 				}
+
 				if !strings.Contains(setCookieHeader, "Expires=") {
 					t.Fatalf("expected Expires in delete cookie, got %q", setCookieHeader)
 				}
@@ -560,6 +574,7 @@ func TestHandler_RefreshCookie(t *testing.T) {
 	t.Parallel()
 
 	cfg := testConfig()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -577,18 +592,23 @@ func TestHandler_RefreshCookie(t *testing.T) {
 	if cookie.Name != cfg.RefreshCookieName {
 		t.Fatalf("expected cookie name %q, got %q", cfg.RefreshCookieName, cookie.Name)
 	}
+
 	if cookie.Value != "refresh-value" {
 		t.Fatalf("expected cookie value %q, got %q", "refresh-value", cookie.Value)
 	}
+
 	if cookie.Path != "/" {
 		t.Fatalf("expected path %q, got %q", "/", cookie.Path)
 	}
+
 	if !cookie.HttpOnly {
 		t.Fatal("expected HttpOnly=true")
 	}
+
 	if cookie.Secure != cfg.CookieSecure {
 		t.Fatalf("expected Secure=%v, got %v", cfg.CookieSecure, cookie.Secure)
 	}
+
 	if cookie.SameSite != stdhttp.SameSiteLaxMode {
 		t.Fatalf("expected SameSite=%v, got %v", stdhttp.SameSiteLaxMode, cookie.SameSite)
 	}

@@ -1,11 +1,12 @@
 package httpserver
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPort(t *testing.T) {
@@ -33,6 +34,7 @@ func TestWithRoute(t *testing.T) {
 	handlerCalled := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handlerCalled = true
+
 		w.WriteHeader(http.StatusOK)
 	})
 

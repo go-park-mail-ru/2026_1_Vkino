@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"errors"
+	"log"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serializer"
@@ -131,7 +132,10 @@ func (r *MovieRepo) initMockSelections() {
 	}
 
 	for key, selection := range selections {
-		selectionData, _ := serializer.Serialize(selection)
+		selectionData, err := serializer.Serialize(selection)
+		if err != nil {
+			log.Println(err)
+		}
 		r.db.Save("selections", key, selectionData)
 	}
 }

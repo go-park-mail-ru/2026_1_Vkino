@@ -15,11 +15,13 @@ func (m sessionTestModel) Name() string {
 
 func newTestSessionRepo(withSessionsTable bool) *SessionRepo {
 	models := []Named{}
+
 	if withSessionsTable {
 		models = append(models, sessionTestModel("sessions"))
 	}
 
 	db := NewDB(models)
+
 	return NewSessionRepo(db)
 }
 
@@ -93,6 +95,7 @@ func TestSessionRepo_SaveSession(t *testing.T) {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 			}
 
@@ -186,6 +189,7 @@ func TestSessionRepo_GetSession(t *testing.T) {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 			}
 
@@ -193,6 +197,7 @@ func TestSessionRepo_GetSession(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
+
 				return
 			}
 
@@ -263,6 +268,7 @@ func TestSessionRepo_DeleteSession(t *testing.T) {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 			}
 

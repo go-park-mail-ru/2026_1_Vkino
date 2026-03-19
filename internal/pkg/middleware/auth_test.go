@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -71,7 +72,7 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 		{
 			name:               "validate access token error",
 			authHeader:         "Bearer bad-token",
-			validateErr:        errors.New("invalid token"),
+			validateErr:        fmt.Errorf("invalid token"),
 			wantStatus:         http.StatusUnauthorized,
 			wantBodyValue:      "unauthorized",
 			wantNextCalled:     false,
@@ -113,6 +114,7 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 			}
 
 			var nextCalled bool
+
 			var nextEmail string
 
 			m := &AuthMiddleware{usecase: mu}
@@ -124,6 +126,7 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 				if err != nil {
 					t.Fatalf("expected email in context, got error: %v", err)
 				}
+
 				nextEmail = email
 
 				w.WriteHeader(http.StatusOK)
@@ -148,6 +151,7 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 
 			if tt.wantBodyValue != "" {
 				assertJSONContainsStringValue(t, rr, tt.wantBodyValue)
+
 				return
 			}
 
@@ -191,17 +195,22 @@ func TestUserEmailFromContext(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			email, err := UserEmailFromContext(tt.ctx)
 
 			if tt.wantErr {
 				if !errors.Is(err, ErrMidlware) {
 					t.Fatalf("expected ErrMidlware, got %v", err)
 				}
+
 				return
 			}
+
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if email != tt.wantEmail {
 				t.Fatalf("expected email %q, got %q", tt.wantEmail, email)
 			}

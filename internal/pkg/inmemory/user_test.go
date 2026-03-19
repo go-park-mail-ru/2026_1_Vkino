@@ -23,6 +23,7 @@ func newTestUserRepo(withUsersTable bool) *UserRepo {
 	}
 
 	db := NewDB(models)
+
 	return NewUserRepo(db)
 }
 
@@ -31,6 +32,7 @@ func usersByEmail(users []*domain.User) map[string]*domain.User {
 	for _, user := range users {
 		result[user.Email] = user
 	}
+
 	return result
 }
 
@@ -102,6 +104,7 @@ func TestUserRepo_GetUserByEmail(t *testing.T) {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 			}
 
@@ -109,15 +112,18 @@ func TestUserRepo_GetUserByEmail(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
+
 				return
 			}
 
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if got == nil {
 				t.Fatal("expected non-nil user")
 			}
+
 			if got.Email != tt.wantEmail {
 				t.Fatalf("expected email %q, got %q", tt.wantEmail, got.Email)
 			}
@@ -156,6 +162,7 @@ func TestUserRepo_GetUserByID(t *testing.T) {
 			withTable: true,
 			prepare: func(t *testing.T, repo *UserRepo) uuid.UUID {
 				t.Helper()
+
 				return uuid.New()
 			},
 			wantErrIs: ErrUserNotFound,
@@ -165,6 +172,7 @@ func TestUserRepo_GetUserByID(t *testing.T) {
 			withTable: false,
 			prepare: func(t *testing.T, repo *UserRepo) uuid.UUID {
 				t.Helper()
+
 				return uuid.New()
 			},
 			wantErrIs: ErrUserNotFound,
@@ -197,6 +205,7 @@ func TestUserRepo_GetUserByID(t *testing.T) {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 			}
 
@@ -204,18 +213,22 @@ func TestUserRepo_GetUserByID(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
+
 				return
 			}
 
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if got == nil {
 				t.Fatal("expected non-nil user")
 			}
+
 			if got.ID != id {
 				t.Fatalf("expected id %v, got %v", id, got.ID)
 			}
+
 			if got.Email != tt.wantEmail {
 				t.Fatalf("expected email %q, got %q", tt.wantEmail, got.Email)
 			}
@@ -285,6 +298,7 @@ func TestUserRepo_CreateUser(t *testing.T) {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 			}
 
@@ -292,33 +306,42 @@ func TestUserRepo_CreateUser(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
+
 				return
 			}
 
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if got == nil {
 				t.Fatal("expected non-nil user")
 			}
+
 			if got.ID == uuid.Nil {
 				t.Fatal("expected non-zero uuid")
 			}
+
 			if got.Email != tt.wantEmail {
 				t.Fatalf("expected email %q, got %q", tt.wantEmail, got.Email)
 			}
+
 			if got.Password != tt.wantPassword {
 				t.Fatalf("expected password %q, got %q", tt.wantPassword, got.Password)
 			}
+
 			if !got.IsActive {
 				t.Fatal("expected IsActive=true")
 			}
+
 			if got.RegistrationDate.Before(before) || got.RegistrationDate.After(after) {
 				t.Fatalf("unexpected registration date: %v", got.RegistrationDate)
 			}
+
 			if got.CreatedAt.Before(before) || got.CreatedAt.After(after) {
 				t.Fatalf("unexpected created_at: %v", got.CreatedAt)
 			}
+
 			if got.UpdatedAt.Before(before) || got.UpdatedAt.After(after) {
 				t.Fatalf("unexpected updated_at: %v", got.UpdatedAt)
 			}
@@ -327,6 +350,7 @@ func TestUserRepo_CreateUser(t *testing.T) {
 			if err != nil {
 				t.Fatalf("get created user: %v", err)
 			}
+
 			if stored.Email != got.Email {
 				t.Fatalf("expected stored email %q, got %q", got.Email, stored.Email)
 			}
@@ -414,6 +438,7 @@ func TestUserRepo_UpdateUser(t *testing.T) {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 			}
 
@@ -421,15 +446,18 @@ func TestUserRepo_UpdateUser(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
+
 				return
 			}
 
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if got == nil {
 				t.Fatal("expected non-nil user")
 			}
+
 			if got.Password != tt.wantPassword {
 				t.Fatalf("expected password %q, got %q", tt.wantPassword, got.Password)
 			}
@@ -438,11 +466,13 @@ func TestUserRepo_UpdateUser(t *testing.T) {
 			if err != nil {
 				t.Fatalf("get updated user: %v", err)
 			}
+
 			if stored.Password != tt.wantPassword {
 				t.Fatalf("expected stored password %q, got %q", tt.wantPassword, stored.Password)
 			}
 
-			if tt.wantUpdatedDiff && oldUser != nil && !stored.UpdatedAt.After(oldUser.UpdatedAt) && !stored.UpdatedAt.Equal(oldUser.UpdatedAt) {
+			if tt.wantUpdatedDiff && oldUser != nil && !stored.UpdatedAt.After(oldUser.UpdatedAt) &&
+				!stored.UpdatedAt.Equal(oldUser.UpdatedAt) {
 				t.Fatalf("expected updated_at to be >= old updated_at, old=%v new=%v", oldUser.UpdatedAt, stored.UpdatedAt)
 			}
 		})
@@ -477,10 +507,12 @@ func TestUserRepo_GetAllUsers(t *testing.T) {
 				}
 
 				inactiveUser.IsActive = false
+
 				data, err := serializer.Serialize(*inactiveUser)
 				if err != nil {
 					t.Fatalf("serialize inactive user: %v", err)
 				}
+
 				if err := repo.db.Update("users", inactiveUser.Email, data); err != nil {
 					t.Fatalf("update inactive user: %v", err)
 				}
@@ -526,12 +558,14 @@ func TestUserRepo_GetAllUsers(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
+
 				return
 			}
 
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if len(got) != tt.wantLen {
 				t.Fatalf("expected %d users, got %d", tt.wantLen, len(got))
 			}
@@ -599,6 +633,7 @@ func TestUserRepo_DeleteUser(t *testing.T) {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 			}
 

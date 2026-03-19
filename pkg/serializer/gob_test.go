@@ -64,18 +64,22 @@ func TestSerialize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			data, err := Serialize(tt.value)
 
 			if tt.wantErrIs != nil {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Errorf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 			}
 
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if len(data) == 0 {
 				t.Fatal("expected non-empty serialized data")
 			}
@@ -138,15 +142,18 @@ func TestDeserialize(t *testing.T) {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
+
 				return
 			}
 
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			if tt.target == nil {
 				t.Fatal("expected non-nil target")
 			}
+
 			if *tt.target != *tt.want {
 				t.Fatalf("expected %+v, got %+v", *tt.want, *tt.target)
 			}
@@ -168,6 +175,7 @@ func TestSerializeDeserialize_RoundTrip(t *testing.T) {
 	}
 
 	var dst serializerTestUser
+
 	err = Deserialize(data, &dst)
 	if err != nil {
 		t.Fatalf("deserialize: %v", err)
@@ -196,6 +204,7 @@ func TestRegisterType(t *testing.T) {
 	}
 
 	var got serializerZoo
+
 	err = Deserialize(data, &got)
 	if err != nil {
 		t.Fatalf("deserialize after register: %v", err)
