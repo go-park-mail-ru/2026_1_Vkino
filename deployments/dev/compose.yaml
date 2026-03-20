@@ -20,6 +20,4 @@ services:
     volumes:
       - ../../configs/api.yaml:/etc/vkino/config.yaml
     command: ./vkinoapi --config=/etc/vkino/config.yaml
-
-
-
+    

@@ -5,6 +5,9 @@ PACKAGES_NO_MOCKS := $(shell go list ./... | grep -v '/mocks$$')
 init:
 	cp .github/hooks/* .git/hooks
 	chmod +x .git/hooks/*
+	migrate create -ext sql -dir ./migrations migration
+
+MIGRATIONS_DIR := ./migrations
 
 test:
 	go test $(PACKAGES_NO_MOCKS) -cover
