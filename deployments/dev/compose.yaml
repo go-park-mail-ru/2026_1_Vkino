@@ -1,34 +1,23 @@
 services:
-  vkino-api-dev:
-    build:
-      context: ../..
-      dockerfile: build/image/Dockerfile
-    container_name: vkino-back
-    restart: always
-    ports:
-      - 8080:8080
-    volumes:
-      - ../../configs/api.yaml:/etc/vkino/config.yaml
-    command: ./vkinoapi --config=/etc/vkino/config.yaml
-    networks:
-      - vkino-network
-
   nginx:
     image: nginx:latest
-    container_name: vkino-nginx
+    container_name: front-nginx
+    restart: always
     ports:
       - 80:80
       - 443:443
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    restart: always
+      - ./logs/nginx:/var/log/nginx
     extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - vkino-api-dev
-    networks:
-      - vkino-network
+      - host.docker.internal:host-gateway
 
-networks:
-  vkino-network:
-    driver: bridge
+  vkino-api-dev:
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+    restart: always
+    volumes:
+      - ../../configs/api.yaml:/etc/vkino/config.yaml
+    command: ./vkinoapi --config=/etc/vkino/config.yaml
+    

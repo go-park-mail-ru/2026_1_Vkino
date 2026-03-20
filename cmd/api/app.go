@@ -49,14 +49,19 @@ func Run(configPath *string) error {
 	server := httpserver.New(
 		httpserver.Port(cfg.Server.Port),
 		httpserver.Timeout(cfg.Server.Timeouts),
+
 		httpserver.WithMiddleware(middleware.CorsMiddleware),
+		httpserver.WithMiddleware(middleware.RecoveryMiddleware),
+
 		httpserver.WithRoute("POST /auth/sign-up", authHandler.SignUp),
 		httpserver.WithRoute("POST /auth/sign-in", authHandler.SignIn),
 		httpserver.WithRoute("POST /auth/refresh", authHandler.Refresh),
-		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware),
-		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.LogOut, authMiddleware.Middleware),
 		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
 		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
+
+		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.LogOut, authMiddleware.Middleware),
+
 		// httpserver.WithRoute("GET /movie/{moviename}", movieHandler.GetMovieById) -- страница для проверки зарега
 	)
 

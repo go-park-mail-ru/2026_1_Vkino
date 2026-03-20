@@ -24,6 +24,7 @@ func (h *Handler) GetAllSelections(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
+
 		return
 	}
 
@@ -35,6 +36,7 @@ func (h *Handler) GetSelectionByTitle(w http.ResponseWriter, r *http.Request) {
 
 	if len(title) == 0 {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid selection")
+
 		return
 	}
 
@@ -42,6 +44,7 @@ func (h *Handler) GetSelectionByTitle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
+
 		return
 	}
 

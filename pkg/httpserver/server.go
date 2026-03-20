@@ -59,5 +59,6 @@ func (s *Server) applyMiddlewares(h http.Handler) http.Handler {
 	for i := len(s.middlewares) - 1; i >= 0; i-- {
 		h = s.middlewares[i](h)
 	}
+
 	return h
 }

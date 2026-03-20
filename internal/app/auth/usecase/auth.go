@@ -51,6 +51,7 @@ func (u *AuthUsecase) SignUp(email, password string) (domain.TokenPair, error) {
 	if !(domain.Validate(email, password)) {
 		return domain.TokenPair{}, domain.ErrInvalidCredentials
 	}
+
 	_, err := u.userRepo.GetUserByEmail(email)
 	if err == nil {
 		return domain.TokenPair{}, domain.ErrUserAlreadyExists

@@ -14,7 +14,7 @@ import (
 type TestCaseResponse struct {
 	Name           string
 	StatusCode     int
-	Data           interface{}
+	Data           any
 	ExpectedStatus int
 	ExpectedBody   string
 }
@@ -60,7 +60,7 @@ type TestCaseRead struct {
 	Name        string
 	RequestBody string
 	ExpectedErr bool
-	ExpectedDst interface{}
+	ExpectedDst any
 }
 
 func TestRead(t *testing.T) {
@@ -117,7 +117,7 @@ func TestRead(t *testing.T) {
 			if tc.ExpectedErr {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, tc.ExpectedDst, dst)
 			}
 		})

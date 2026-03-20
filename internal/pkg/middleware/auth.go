@@ -63,5 +63,6 @@ func UserEmailFromContext(ctx context.Context) (string, error) {
 	if !ok {
 		return "", ErrMidlware
 	}
+
 	return email, nil
 }
