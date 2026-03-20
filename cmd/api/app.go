@@ -49,18 +49,19 @@ func Run(configPath *string) error {
 	server := httpserver.New(
 		httpserver.Port(cfg.Server.Port),
 		httpserver.Timeout(cfg.Server.Timeouts),
+
 		httpserver.WithMiddleware(middleware.CorsMiddleware),
-		httpserver.WithMiddlewareRoute("POST /auth/sign-up", authHandler.SignUp, middleware.RecoveryMiddleware),
-		httpserver.WithMiddlewareRoute("POST /auth/sign-in", authHandler.SignIn, middleware.RecoveryMiddleware),
-		httpserver.WithMiddlewareRoute("POST /auth/refresh", authHandler.Refresh, middleware.RecoveryMiddleware),
-		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware,
-			middleware.RecoveryMiddleware),
-		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.LogOut, authMiddleware.Middleware,
-			middleware.RecoveryMiddleware),
-		httpserver.WithMiddlewareRoute("GET /movie/selection/all", movieHandler.GetAllSelections,
-			middleware.RecoveryMiddleware),
-		httpserver.WithMiddlewareRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle,
-			middleware.RecoveryMiddleware),
+		httpserver.WithMiddleware(middleware.RecoveryMiddleware),
+
+		httpserver.WithRoute("POST /auth/sign-up", authHandler.SignUp),
+		httpserver.WithRoute("POST /auth/sign-in", authHandler.SignIn),
+		httpserver.WithRoute("POST /auth/refresh", authHandler.Refresh),
+		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
+		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
+
+		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.LogOut, authMiddleware.Middleware),
+
 		// httpserver.WithRoute("GET /movie/{moviename}", movieHandler.GetMovieById) -- страница для проверки зарега
 	)
 
