@@ -11,4 +11,6 @@ type Selection struct {
 	Title     string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+
+	Movies []Movie `json:"movies"`
 }

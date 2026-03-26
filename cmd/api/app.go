@@ -32,6 +32,8 @@ func Run(configPath *string) error {
 		&authDomain.User{},
 		&authDomain.TokenPair{},
 		&movieDomain.SelectionResponse{},
+		&movieDomain.MovieResponse{},
+		&movieDomain.ActorResponse{},
 	})
 
 	userRepo := inmemory.NewUserRepo(db)
@@ -58,6 +60,8 @@ func Run(configPath *string) error {
 		httpserver.WithRoute("POST /auth/refresh", authHandler.Refresh),
 		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
 		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
+		httpserver.WithRoute("GET /movie/{id}", movieHandler.GetMovieByID),
+		httpserver.WithRoute("GET /movie/actor/{id}", movieHandler.GetActorByID),
 
 		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.LogOut, authMiddleware.Middleware),
