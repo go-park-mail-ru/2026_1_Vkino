@@ -74,3 +74,26 @@ func (h *Handler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
 
 	httppkg.Response(w, http.StatusOK, movie)
 }
+
+func (h *Handler) GetActorByID(w http.ResponseWriter, r *http.Request) {
+	idParam := r.PathValue("id")
+	if len(idParam) == 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid actor id")
+		return
+	}
+
+	id, err := uuid.Parse(idParam)
+	if err != nil {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid actor id")
+		return
+	}
+
+	actor, err := h.usecase.GetActorByID(id)
+	if err != nil {
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
+		return
+	}
+
+	httppkg.Response(w, http.StatusOK, actor)
+}

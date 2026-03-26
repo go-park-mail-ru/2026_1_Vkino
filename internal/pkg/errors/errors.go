@@ -26,7 +26,8 @@ var errToHTTP = map[error]HttpErr{
 
 	repo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
 	repo.ErrMovieNotFound:     {status: http.StatusNotFound, message: "movie not found"},
-	
+	repo.ErrActorNotFound:     {status: http.StatusNotFound, message: "actor not found"},
+
 	http.ErrNoCookie:       {status: http.StatusUnauthorized, message: "unauthorized"},
 	middleware.ErrMidlware: {status: http.StatusUnauthorized, message: "unauthorized"},
 	httppkg.ErrInvalidJson: {status: http.StatusBadRequest, message: "invalid json body"},

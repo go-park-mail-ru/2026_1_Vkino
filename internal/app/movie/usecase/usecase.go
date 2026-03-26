@@ -9,4 +9,5 @@ type Usecase interface {
 	GetAllSelections() ([]domain.SelectionResponse, error)
 	GetSelectionByTitle(title string) (domain.SelectionResponse, error)
 	GetMovieByID(id uuid.UUID) (domain.MovieResponse, error)
+	GetActorByID(id uuid.UUID) (domain.ActorResponse, error)
 }

@@ -21,7 +21,6 @@ type Movie struct {
 	CreatedAt          time.Time `json:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at"`
 	// связанные сущности
-	Genres      []string `json:"genres"`
-	
-	// Actors	[]Actor `json:"actors"`
+	Genres             []string `json:"genres"`
+	Actors             []ActorPreview `json:"actors"`
 }

@@ -172,11 +172,20 @@ create table if not exists actor (
         constraint actor_name_length
             check (char_length(full_name) > 0 and char_length(full_name) <= 512),
 
-    birthday date null,
+    birthdate date null,
 	
     biography text null
         constraint actor_biography_length
             check (biography is null or char_length(biography) <= 2000),
+    
+    country_id int not null
+        references country (id)
+            on update cascade
+            on delete restrict,
+
+    picture_file_key text not null
+        constraint actor_picture_file_key_length
+            check (char_length(picture_file_key) > 0 and char_length(picture_file_key) <= 1024),
 
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
