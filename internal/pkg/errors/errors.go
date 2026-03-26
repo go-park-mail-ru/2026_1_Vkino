@@ -25,6 +25,7 @@ var errToHTTP = map[error]HttpErr{
 	authdomain.ErrInternal:           {status: http.StatusInternalServerError, message: "internal server error"},
 
 	repo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
+	repo.ErrMovieNotFound:     {status: http.StatusNotFound, message: "movie not found"},
 	
 	http.ErrNoCookie:       {status: http.StatusUnauthorized, message: "unauthorized"},
 	middleware.ErrMidlware: {status: http.StatusUnauthorized, message: "unauthorized"},
