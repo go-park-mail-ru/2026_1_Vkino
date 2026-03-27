@@ -5,7 +5,7 @@ import "github.com/google/uuid"
 type ActorPreview struct {
 	ID             uuid.UUID `json:"id"`
 	FullName       string    `json:"full_name"`
-	PictureFileKey string    `json:"img_url"`
+	ImgUrl         string    `json:"img_url"`
 }
 
 type ActorResponse struct {
@@ -14,7 +14,7 @@ type ActorResponse struct {
 	Biography      string         `json:"biography"`
 	BirthDate      string         `json:"birth_date"`
 	CountryID      int            `json:"country_id"`
-	PictureFileKey string         `json:"img_url"`
+	ImgUrl         string         `json:"img_url"`
 	Movies         []MoviePreview `json:"movies"`
 }
 

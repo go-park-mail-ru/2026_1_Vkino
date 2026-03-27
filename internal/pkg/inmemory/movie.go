@@ -109,17 +109,17 @@ func (r *MovieRepo) initMockData() {
 
 	actorPreview := func(id uuid.UUID, fullName, img string) domain.ActorPreview {
 		return domain.ActorPreview{
-			ID:             id,
-			FullName:       fullName,
-			PictureFileKey: img,
+			ID:       id,
+			FullName: fullName,
+			ImgUrl:   img,
 		}
 	}
 
 	moviePreview := func(id uuid.UUID, title, img string) domain.MoviePreview {
 		return domain.MoviePreview{
-			ID:             id,
-			Title:          title,
-			PictureFileKey: img,
+			ID:     id,
+			Title:  title,
+			ImgUrl: img,
 		}
 	}
 
@@ -135,7 +135,7 @@ func (r *MovieRepo) initMockData() {
 			AgeLimit:           16,
 			OriginalLanguageID: languageEnglish,
 			CountryID:          countryUSA,
-			PictureFileKey:     "img/1.jpg",
+			ImgUrl:             "img/1.jpg",
 			Genres:             []string{"Фантастика", "Драма", "Приключения"},
 			Actors: []domain.ActorPreview{
 				actorPreview(chalametID, "Тимати Шаламе", "img/actors/chalamet.jpg"),
@@ -154,7 +154,7 @@ func (r *MovieRepo) initMockData() {
 			AgeLimit:           18,
 			OriginalLanguageID: languageEnglish,
 			CountryID:          countryUSA,
-			PictureFileKey:     "img/2.jpeg",
+			ImgUrl:             "img/2.jpeg",
 			Genres:             []string{"Драма", "Триллер"},
 			Actors: []domain.ActorPreview{
 				actorPreview(phoenixID, "Хоакин Феникс", "img/actors/phoenix.jpg"),
@@ -171,7 +171,7 @@ func (r *MovieRepo) initMockData() {
 			AgeLimit:           16,
 			OriginalLanguageID: languageEnglish,
 			CountryID:          countryUSA,
-			PictureFileKey:     "img/3.jpg",
+			ImgUrl:             "img/3.jpg",
 			Genres:             []string{"Боевик", "Криминал", "Драма"},
 			Actors: []domain.ActorPreview{
 				actorPreview(baleID, "Кристиан Бейл", "img/actors/bale.jpg"),
@@ -188,7 +188,7 @@ func (r *MovieRepo) initMockData() {
 			AgeLimit:           12,
 			OriginalLanguageID: languageEnglish,
 			CountryID:          countryUSA,
-			PictureFileKey:     "img/4.jpg",
+			ImgUrl:             "img/4.jpg",
 			Genres:             []string{"Драма", "Триллер", "Детектив"},
 			Actors: []domain.ActorPreview{
 				actorPreview(baleID, "Кристиан Бейл", "img/actors/bale.jpg"),
@@ -205,7 +205,7 @@ func (r *MovieRepo) initMockData() {
 			AgeLimit:           12,
 			OriginalLanguageID: languageEnglish,
 			CountryID:          countryUSA,
-			PictureFileKey:     "img/5.jpg",
+			ImgUrl:             "img/5.jpg",
 			Genres:             []string{"Биография", "Драма", "Спорт"},
 			Actors: []domain.ActorPreview{
 				actorPreview(baleID, "Кристиан Бейл", "img/actors/bale.jpg"),
@@ -220,7 +220,7 @@ func (r *MovieRepo) initMockData() {
 			Biography:      "Американский актёр, известный ролями в драматических и фантастических фильмах.",
 			BirthDate:      "1995-12-27",
 			CountryID:      countryUSA,
-			PictureFileKey: "img/actors/chalamet.jpg",
+			ImgUrl:         "img/actors/chalamet.jpg",
 			Movies: []domain.MoviePreview{
 				moviePreview(duneID, "Дюна: Часть Вторая", "img/1.jpg"),
 			},
@@ -231,7 +231,7 @@ func (r *MovieRepo) initMockData() {
 			Biography:      "Американская актриса и певица.",
 			BirthDate:      "1996-09-01",
 			CountryID:      countryUSA,
-			PictureFileKey: "img/actors/zendaya.jpg",
+			ImgUrl:         "img/actors/zendaya.jpg",
 			Movies: []domain.MoviePreview{
 				moviePreview(duneID, "Дюна: Часть Вторая", "img/1.jpg"),
 			},
@@ -242,7 +242,7 @@ func (r *MovieRepo) initMockData() {
 			Biography:      "Испанский актёр, лауреат премии «Оскар».",
 			BirthDate:      "1969-03-01",
 			CountryID:      countrySpain,
-			PictureFileKey: "img/actors/bardem.jpg",
+			ImgUrl:         "img/actors/bardem.jpg",
 			Movies: []domain.MoviePreview{
 				moviePreview(duneID, "Дюна: Часть Вторая", "img/1.jpg"),
 			},
@@ -253,7 +253,7 @@ func (r *MovieRepo) initMockData() {
 			Biography:      "Американский актёр, известный интенсивными драматическими ролями.",
 			BirthDate:      "1974-10-28",
 			CountryID:      countryUSA,
-			PictureFileKey: "img/actors/phoenix.jpg",
+			ImgUrl:         "img/actors/phoenix.jpg",
 			Movies: []domain.MoviePreview{
 				moviePreview(jokerID, "Джокер", "img/2.jpeg"),
 			},
@@ -264,7 +264,7 @@ func (r *MovieRepo) initMockData() {
 			Biography:      "Британский актёр, известный ролями в психологически и физически сложных образах.",
 			BirthDate:      "1974-01-30",
 			CountryID:      countryUK,
-			PictureFileKey: "img/actors/bale.jpg",
+			ImgUrl:         "img/actors/bale.jpg",
 			Movies: []domain.MoviePreview{
 				moviePreview(darkKnightID, "Тёмный рыцарь", "img/3.jpg"),
 				moviePreview(prestigeID, "Престиж", "img/4.jpg"),
