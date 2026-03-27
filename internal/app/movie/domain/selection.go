@@ -12,5 +12,5 @@ type Selection struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	Movies []Movie `json:"movies"`
+	Movies    []Movie   `json:"movies"`
 }
