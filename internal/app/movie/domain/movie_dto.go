@@ -10,18 +10,19 @@ type MoviePreview struct {
 
 
 type MovieResponse struct {
-	ID              uuid.UUID      `json:"id"`
-	Title           string         `json:"title"`
-	Description     string         `json:"description"`
-	PictureFileKey  string         `json:"img_url"`
-	CoverFileKey    string         `json:"cover_img_url"`
-	DurationMinutes int            `json:"duration_minutes"`
-	AgeLimit        int            `json:"age_limit"`
-	ReleaseYear     int            `json:"release_year"`
-	Country         string         `json:"country"`
-	Director        string         `json:"director"`
-	Genres          []string       `json:"genres"`
-	Actors          []ActorPreview `json:"actors"`
+	ID                 uuid.UUID      `json:"id"`
+	Title              string         `json:"title"`
+	Description        string         `json:"description"`
+	Director           string         `json:"director"`
+	ContentType        string         `json:"content_type"`
+	ReleaseYear        int            `json:"release_year"`
+	DurationSeconds    int            `json:"duration_seconds"`
+	AgeLimit           int            `json:"age_limit"`
+	OriginalLanguageID int            `json:"original_language_id"`
+	CountryID          int            `json:"country_id"`
+	PictureFileKey     string         `json:"img_url"`
+	Genres             []string       `json:"genres"`
+	Actors             []ActorPreview `json:"actors"`
 }
 
 func (m *MovieResponse) Name() string {
