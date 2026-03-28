@@ -17,6 +17,8 @@ services:
       context: ../..
       dockerfile: build/image/Dockerfile
     restart: always
+    ports:
+      - 8080:8080
     volumes:
       - ../../configs/api.yaml:/etc/vkino/config.yaml
     command: ./vkinoapi --config=/etc/vkino/config.yaml
