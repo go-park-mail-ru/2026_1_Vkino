@@ -11,13 +11,40 @@ services:
       - ./logs/nginx:/var/log/nginx
     extra_hosts:
       - host.docker.internal:host-gateway
+    depends_on:
+      - vkino-api-dev
 
   vkino-api-dev:
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
+
     restart: always
     volumes:
       - ../../configs/api.yaml:/etc/vkino/config.yaml
     command: ./vkinoapi --config=/etc/vkino/config.yaml
-    
+
+  db:
+    image: postgres:latest
+    environment:
+       POSTGRES_USER: ${DB_USER}
+       POSTGRES_PASSWORD: ${DB_PASSWORD}
+       POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql
+
+volumes:
+  db-data: 

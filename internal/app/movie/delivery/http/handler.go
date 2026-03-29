@@ -20,7 +20,7 @@ func NewHandler(u usecase.Usecase) *Handler {
 }
 
 func (h *Handler) GetAllSelections(w http.ResponseWriter, r *http.Request) {
-	selections, err := h.usecase.GetAllSelections()
+	selections, err := h.usecase.GetAllSelections(r.Context())
 
 	if err != nil {
 		status, message := errors.MapError(err)
@@ -41,7 +41,7 @@ func (h *Handler) GetSelectionByTitle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	selection, err := h.usecase.GetSelectionByTitle(title)
+	selection, err := h.usecase.GetSelectionByTitle(r.Context(), title)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -65,7 +65,7 @@ func (h *Handler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	movie, err := h.usecase.GetMovieByID(id)
+	movie, err := h.usecase.GetMovieByID(r.Context(), id)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -88,7 +88,7 @@ func (h *Handler) GetActorByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actor, err := h.usecase.GetActorByID(id)
+	actor, err := h.usecase.GetActorByID(r.Context(), id)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)

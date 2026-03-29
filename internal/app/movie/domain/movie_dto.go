@@ -8,7 +8,6 @@ type MoviePreview struct {
 	PictureFileKey string    `json:"img_url"`
 }
 
-
 type MovieResponse struct {
 	ID                 uuid.UUID      `json:"id"`
 	Title              string         `json:"title"`

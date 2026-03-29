@@ -28,7 +28,7 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokens, err := h.usecase.SignUp(req.Email, req.Password)
+	tokens, err := h.usecase.SignUp(r.Context(), req.Email, req.Password)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -50,7 +50,7 @@ func (h *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokens, err := h.usecase.SignIn(req.Email, req.Password)
+	tokens, err := h.usecase.SignIn(r.Context(), req.Email, req.Password)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -74,7 +74,7 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email, err := h.usecase.ValidateRefreshToken(cookie.Value)
+	email, err := h.usecase.ValidateRefreshToken(r.Context(), cookie.Value)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -82,7 +82,7 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenPair, err := h.usecase.Refresh(email)
+	tokenPair, err := h.usecase.Refresh(r.Context(), email)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -98,7 +98,7 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
-	email, err := middleware.UserEmailFromContext(r.Context())
+	auth, err := middleware.AuthFromContext(r.Context())
 
 	if err != nil {
 		status, message := errors.MapError(middleware.ErrMidlware)
@@ -108,14 +108,14 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httppkg.Response(w, http.StatusOK, domain.Response{
-		Email: email,
+		Email: auth.Email,
 	})
 }
 
 func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {
 	cfg := h.usecase.GetConfig()
 
-	email, err := middleware.UserEmailFromContext(r.Context())
+	auth, err := middleware.AuthFromContext(r.Context())
 
 	if err != nil {
 		status, message := errors.MapError(middleware.ErrMidlware)
@@ -124,7 +124,7 @@ func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.usecase.LogOut(email)
+	err = h.usecase.LogOut(r.Context(), auth.Email)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
