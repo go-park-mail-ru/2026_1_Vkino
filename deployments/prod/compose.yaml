@@ -23,19 +23,16 @@ services:
     command: ./vkinoapi --config=/usr/local/etc/config.yaml
     volumes:
       - ./vkinoapi/config.yaml:/usr/local/etc/config.yaml
-    working_dir: /vkinoapi 
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
     networks:
       - app-network  
-    ports:
-    - "127.0.0.1:8080:8080" 
     depends_on:
       db:
         condition: service_healthy
 
   db:
-    image: postgres:latest
+    image: postgres:18.3
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -46,8 +43,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    ports:
-      - "127.0.0.1:5432:5432"
     volumes:
       - db-data:/var/lib/postgresql
     networks:

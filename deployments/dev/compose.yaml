@@ -12,9 +12,9 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     depends_on:
-      - vkino-api-dev
+      - vkinoapi
 
-  vkino-api-dev:
+  vkinoapi:
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
@@ -30,7 +30,8 @@ services:
     command: ./vkinoapi --config=/etc/vkino/config.yaml
 
   db:
-    image: postgres:latest
+    container_name: dev-postgres
+    image: postgres:18.3
     environment:
        POSTGRES_USER: ${POSTGRES_USER}
        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

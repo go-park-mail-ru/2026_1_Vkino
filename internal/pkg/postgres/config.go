@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+const (
+	DefaultMaxPoolSize  = 1
+	DefaultConnAttempts = 10
+	DefaultConnTimeout  = time.Second
+)
+
 type Config struct {
 	Host         string        `mapstructure:"host"`
 	Port         int           `mapstructure:"port"`
@@ -15,6 +21,18 @@ type Config struct {
 	MaxPoolSize  int           `mapstructure:"max_pool_size"`
 	ConnAttempts int           `mapstructure:"conn_attempts"`
 	ConnTimeout  time.Duration `mapstructure:"conn_timeout"`
+}
+
+func (c *Config) SetDefaults() {
+	if c.MaxPoolSize == 0 {
+		c.MaxPoolSize = DefaultMaxPoolSize
+	}
+	if c.ConnAttempts == 0 {
+		c.ConnAttempts = DefaultConnAttempts
+	}
+	if c.ConnTimeout == 0 {
+		c.ConnTimeout = DefaultConnTimeout
+	}
 }
 
 func (c *Config) DSN() string {

@@ -11,10 +11,10 @@ import (
 )
 
 type MovieRepo struct {
-	db *Postgres
+	db *Client
 }
 
-func NewMovieRepo(db *Postgres) *MovieRepo {
+func NewMovieRepo(db *Client) *MovieRepo {
 	return &MovieRepo{db: db}
 }
 
@@ -25,16 +25,7 @@ var (
 )
 
 func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error) {
-	sql := `
-select m.id, m.title, m.picture_file_key
-from movie m 
-join movie_to_selection mts ON (mts.movie_id = m.id)
-where mts.selection_id = (select id from selection where title=$1)
-`
-	// нужен ли таймаут внутренний?
-
-	rows, err := r.db.Pool.Query(ctx, sql, title)
-	fmt.Println(err)
+	rows, err := r.db.Pool.Query(ctx, sqlGetSelectionByTitle, title)
 	if err != nil {
 		return domain.SelectionResponse{}, fmt.Errorf("unable to query selections: %w", err)
 	}
@@ -51,22 +42,14 @@ where mts.selection_id = (select id from selection where title=$1)
 		moviePreviews = append(moviePreviews, moviePreview)
 	}
 
-	var selection domain.SelectionResponse
-	selection.Title = title
-	selection.Movies = moviePreviews
-
-	return selection, nil
+	return domain.SelectionResponse{
+		Title:  title,
+		Movies: moviePreviews,
+	}, nil
 }
 
 func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error) {
-	sqlTitles := "select title from selection"
-
-	fmt.Println("start selections")
-
-	rows, err := r.db.Pool.Query(ctx, sqlTitles)
-
-	fmt.Println("query ok?", err)
-
+	rows, err := r.db.Pool.Query(ctx, sqlGetAllSelectionTitles)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query selection titles: %w", err)
 	}
@@ -77,7 +60,6 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.SelectionRes
 	for rows.Next() {
 		var selectionTitle string
 		err := rows.Scan(&selectionTitle)
-		fmt.Println("scanning rows", err)
 		if err != nil {
 			return nil, fmt.Errorf("unable to read selection title: %w", err)
 		}
@@ -92,22 +74,18 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.SelectionRes
 
 	for _, title := range selectionTitles {
 		selection, err := r.GetSelectionByTitle(ctx, title)
-		fmt.Println(err)
 		if err != nil {
 			return nil, fmt.Errorf("unable to get selection by title %s: %w", title, err)
 		}
 		selections = append(selections, selection)
 	}
-	fmt.Println(selections)
+
 	return selections, nil
 }
 
 func (r *MovieRepo) GetMovieByID(ctx context.Context, id uuid.UUID) (domain.MovieResponse, error) {
-	sql := `select title, description, director, content_type, release_year, 
-    duration_seconds, age_limit, original_language_id, country_id, picture_file_key from movie where id=$1`
-
 	var movieResponse domain.MovieResponse
-	err := r.db.Pool.QueryRow(ctx, sql, id).Scan(
+	err := r.db.Pool.QueryRow(ctx, sqlGetMovieByID, id).Scan(
 		&movieResponse.ID,
 		&movieResponse.Title,
 		&movieResponse.Description,
@@ -128,20 +106,8 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, id uuid.UUID) (domain.Movi
 }
 
 func (r *MovieRepo) GetActorByID(ctx context.Context, id uuid.UUID) (domain.ActorResponse, error) {
-	sql := `
-	SELECT 
-		id,
-		full_name, 
-		birthdate, 
-		biography, 
-		country_id, 
-		picture_file_key 
-	FROM actor 
-	WHERE id = $1
-	`
-
 	var actor domain.ActorResponse
-	err := r.db.Pool.QueryRow(ctx, sql, id).Scan(
+	err := r.db.Pool.QueryRow(ctx, sqlGetActorByID, id).Scan(
 		&actor.ID,
 		&actor.FullName,
 		&actor.BirthDate,

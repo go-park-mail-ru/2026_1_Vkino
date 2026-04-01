@@ -9,13 +9,14 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type UserRepo struct {
-	db *Postgres
+	db *Client
 }
 
-func NewUserRepo(db *Postgres) *UserRepo {
+func NewUserRepo(db *Client) *UserRepo {
 	return &UserRepo{db: db}
 }
 
@@ -25,11 +26,8 @@ var (
 )
 
 func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
-	sql := `select id, email, password_hash, registration_date, is_active, created_at, updated_at 
-	from users where email = $1`
-
 	var user domain.User
-	err := r.db.Pool.QueryRow(ctx, sql, email).Scan(
+	err := r.db.Pool.QueryRow(ctx, sqlGetUserByEmail, email).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Password,
@@ -39,7 +37,6 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 		&user.UpdatedAt,
 	)
 	if err != nil {
-		// TODO выяснить какую ошибку вернет постгрес при already exists
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrUserNotFound
 		}
@@ -50,11 +47,8 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 }
 
 func (r *UserRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
-	sql := `select id, email, password_hash, registration_date, is_active, created_at, updated_at 
-	from users where id = $1`
-
 	var user domain.User
-	err := r.db.Pool.QueryRow(ctx, sql, id).Scan(
+	err := r.db.Pool.QueryRow(ctx, sqlGetUserByID, id).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Password,
@@ -74,46 +68,32 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*domain.User,
 }
 
 func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (*domain.User, error) {
-	now := time.Now()
-	userID := uuid.New()
+	var user domain.User
 
-	sql := `insert into users (id, email, password_hash, registration_date, is_active, created_at, updated_at) 
-	values ($1, $2, $3, $4, $5, $6, $7)`
-
-	_, err := r.db.Pool.Exec(ctx, sql,
-		userID,
-		email,
-		passwordHash,
-		now,
-		true,
-		now,
-		now,
+	err := r.db.Pool.QueryRow(ctx, sqlCreateUser, email, passwordHash).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Password,
+		&user.RegistrationDate,
+		&user.IsActive,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
+
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil, ErrUserAlreadyExists
+		}
 		return nil, fmt.Errorf("create user: %w", err)
 	}
 
-	return &domain.User{
-		ID:               userID,
-		Email:            email,
-		Password:         passwordHash,
-		RegistrationDate: now,
-		IsActive:         true,
-		CreatedAt:        now,
-		UpdatedAt:        now,
-	}, nil
+	return &user, nil
 }
 
 func (r *UserRepo) UpdateUser(ctx context.Context, email, passwordHash string) (*domain.User, error) {
-	sql := `
-		UPDATE users 
-		SET password_hash = $1, updated_at = $2 
-		WHERE email = $3 
-		RETURNING id, email, password_hash, registration_date, is_active, created_at, updated_at
-	`
-
 	var user domain.User
-	err := r.db.Pool.QueryRow(ctx, sql, passwordHash, time.Now(), email).Scan(
+	err := r.db.Pool.QueryRow(ctx, sqlUpdateUser, passwordHash, time.Now(), email).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Password,
@@ -133,9 +113,7 @@ func (r *UserRepo) UpdateUser(ctx context.Context, email, passwordHash string) (
 }
 
 func (r *UserRepo) DeleteUser(ctx context.Context, email string) error {
-	sql := `delete from users where email = $1`
-
-	tag, err := r.db.Pool.Exec(ctx, sql, email)
+	tag, err := r.db.Pool.Exec(ctx, sqlDeleteUser, email)
 	if err != nil {
 		return fmt.Errorf("delete user: %w", err)
 	}

@@ -25,11 +25,8 @@ func Run(configPath *string) error {
 
 	log.Printf("Server started on %d", cfg.Server.Port)
 
-	dsn := cfg.Postgres.DSN()
-
 	options := postgres.BuildPostgresOptions(&cfg.Postgres)
-
-	pgDB, err := postgres.New(dsn, options...)
+	pgDB, err := postgres.New(cfg.Postgres, options...)
 
 	if err != nil {
 		return fmt.Errorf("failed to connect to postgres: %w", err)

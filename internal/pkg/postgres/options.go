@@ -4,22 +4,22 @@ import (
 	"time"
 )
 
-type Option func(*Postgres)
+type Option func(*Client)
 
 func MaxPoolSize(size int) Option {
-	return func(p *Postgres) {
+	return func(p *Client) {
 		p.maxPoolSize = size
 	}
 }
 
 func ConnAttempts(attempts int) Option {
-	return func(c *Postgres) {
+	return func(c *Client) {
 		c.connAttempts = attempts
 	}
 }
 
 func ConnTimeout(timeout time.Duration) Option {
-	return func(c *Postgres) {
+	return func(c *Client) {
 		c.connTimeout = timeout
 	}
 }

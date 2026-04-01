@@ -21,13 +21,12 @@ type Config struct {
 func LoadConfig(path string, cfg any) error {
 	v := viper.New()
 
+	const defaultConfigPath = "configs/api.yaml"
 	// если не запускаем конкретный конфиг - используем локальный
-	if path != "" {
+	if len(path) != 0 {
 		v.SetConfigFile(path)
 	} else {
-		v.AddConfigPath("configs/")
-		v.SetConfigName("api")
-		v.SetConfigType("yaml")
+		v.SetConfigFile(defaultConfigPath)
 	}
 
 	v.AutomaticEnv()
