@@ -11,13 +11,51 @@ services:
       - ./logs/nginx:/var/log/nginx
     extra_hosts:
       - host.docker.internal:host-gateway
+    depends_on:
+      - vkinoapi
 
-  vkino-api-dev:
+  vkinoapi:
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
+
     restart: always
     volumes:
       - ../../configs/api.yaml:/etc/vkino/config.yaml
     command: ./vkinoapi --config=/etc/vkino/config.yaml
-    
+
+  db:
+    container_name: dev-postgres
+    image: postgres:18.3
+    environment:
+       POSTGRES_USER: ${POSTGRES_USER}
+       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+       POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql
+      
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ../../migrations:/migrations
+    command: ["-path", "/migrations", "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable", "up"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  db-data: 
