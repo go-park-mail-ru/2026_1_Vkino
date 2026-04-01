@@ -46,6 +46,16 @@ services:
       - '5432:5432'
     volumes:
       - db-data:/var/lib/postgresql
+      
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ../../migrations:/migrations
+    command: ["-path", "/migrations", "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable", "up"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
 
 volumes:
   db-data: 
