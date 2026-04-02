@@ -33,21 +33,27 @@ func NewS3Storage(_ context.Context, cfg Config) (*S3Storage, error) {
 	if cfg.Bucket == "" {
 		return nil, fmt.Errorf("storage: bucket is required")
 	}
+
 	if cfg.AccessKeyID == "" {
 		return nil, fmt.Errorf("storage: access key is required")
 	}
+
 	if cfg.SecretAccessKey == "" {
 		return nil, fmt.Errorf("storage: secret key is required")
 	}
+
 	if cfg.InternalEndpoint == "" {
 		return nil, fmt.Errorf("storage: internal endpoint is required")
 	}
+
 	if cfg.PublicEndpoint == "" {
 		return nil, fmt.Errorf("storage: public endpoint is required")
 	}
+
 	if cfg.PresignTTL == 0 {
 		cfg.PresignTTL = 15 * time.Minute
 	}
+
 	if cfg.PresignTTL < 0 {
 		return nil, fmt.Errorf("storage: presign ttl must be positive")
 	}
@@ -103,6 +109,7 @@ func (s *S3Storage) PutObject(
 	if key == "" {
 		return fmt.Errorf("storage: empty object key")
 	}
+
 	if body == nil {
 		return fmt.Errorf("storage: nil object body")
 	}
@@ -110,6 +117,7 @@ func (s *S3Storage) PutObject(
 	_, err := s.client.PutObject(ctx, s.bucket, key, body, size, minio.PutObjectOptions{
 		ContentType: contentType,
 	})
+
 	if err != nil {
 		return fmt.Errorf("%w: put object %q: %w", ErrUploadFailed, key, err)
 	}
@@ -138,9 +146,11 @@ func (s *S3Storage) PresignGetObject(
 	if key == "" {
 		return "", fmt.Errorf("storage: empty object key")
 	}
+
 	if ttl == 0 {
 		ttl = s.presignTTL
 	}
+
 	if ttl < 0 {
 		return "", fmt.Errorf("storage: ttl must be positive")
 	}
@@ -158,5 +168,6 @@ func (s *S3Storage) GetObject(ctx context.Context, key string) (io.ReadCloser, e
     if err != nil {
         return nil, fmt.Errorf("storage: get object %q: %w", key, err)
     }
+    
     return obj, nil
 }
