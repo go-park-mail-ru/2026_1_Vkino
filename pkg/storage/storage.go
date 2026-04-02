@@ -22,4 +22,9 @@ type FileStorage interface {
         key string,
         ttl time.Duration,
     ) (string, error)
+
+    GetObject(
+        ctx context.Context,
+        key string,
+    ) (io.ReadCloser, error)
 }
