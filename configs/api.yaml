@@ -12,3 +12,15 @@ auth:
   refresh_token_ttl: "336h"         # 14 дней
   refresh_cookie_name: "refresh_token"
   cookie_secure: false              # для localhost false
+
+s3:
+  internal_endpoint: "minio:9000"
+  public_endpoint: "localhost:9000"
+  region: "us-east-1"
+  access_key_id: "minioadmin"
+  secret_access_key: "minioadmin"
+  bucket_images: "vkino-images"
+  bucket_videos: "vkino-videos"
+  use_ssl: false
+  use_path_style: true
+  presign_ttl: "15m"
