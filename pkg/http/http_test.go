@@ -44,7 +44,12 @@ func TestResponse(t *testing.T) {
 			Response(w, tc.StatusCode, tc.Data)
 
 			resp := w.Result()
-			defer resp.Body.Close()
+			defer func() {
+				err := resp.Body.Close()
+				if err != nil {
+					t.Logf("Failed to close response body: %v", err)
+				}
+			}()
 
 			assert.Equal(t, tc.ExpectedStatus, resp.StatusCode)
 			assert.Equal(t, "application/json; charset=utf-8", resp.Header.Get("Content-Type"))

@@ -2,13 +2,13 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	"strings"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/errors"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
-	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -59,7 +59,7 @@ func (h *Handler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := uuid.Parse(idParam)
+	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid movie id")
 		return
@@ -82,7 +82,7 @@ func (h *Handler) GetActorByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := uuid.Parse(idParam)
+	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid actor id")
 		return

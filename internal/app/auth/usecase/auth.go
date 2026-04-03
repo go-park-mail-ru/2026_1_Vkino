@@ -9,12 +9,11 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/repository"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type CustomClaims struct {
-	UserID uuid.UUID `json:"user_id"`
+	UserID int64 `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
@@ -33,7 +32,7 @@ type AuthUsecase struct {
 }
 
 type AuthContext struct {
-	UserId uuid.UUID
+	UserId int64
 	Email  string
 }
 
@@ -158,7 +157,7 @@ func (u *AuthUsecase) GetConfig() Config {
 	return u.cfg
 }
 
-func (u *AuthUsecase) tokenGenerate(userEmail string, userID uuid.UUID, tokenTTL time.Duration) (string, error) {
+func (u *AuthUsecase) tokenGenerate(userEmail string, userID int64, tokenTTL time.Duration) (string, error) {
 	claims := CustomClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{

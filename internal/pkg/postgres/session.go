@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -19,7 +18,7 @@ func NewSessionRepo(db *Client) *SessionRepo {
 	return &SessionRepo{db: db}
 }
 
-func (s *SessionRepo) SaveSession(ctx context.Context, userId uuid.UUID, refreshToken string, expiresAt time.Time) error {
+func (s *SessionRepo) SaveSession(ctx context.Context, userId int64, refreshToken string, expiresAt time.Time) error {
 	_, err := s.db.Pool.Exec(ctx, sqlSaveSession, userId, refreshToken, expiresAt)
 	if err != nil {
 		return fmt.Errorf("fail to save session: %w", err)
@@ -28,7 +27,7 @@ func (s *SessionRepo) SaveSession(ctx context.Context, userId uuid.UUID, refresh
 	return nil
 }
 
-func (s *SessionRepo) GetSession(ctx context.Context, userId uuid.UUID) (string, error) {
+func (s *SessionRepo) GetSession(ctx context.Context, userId int64) (string, error) {
 	var refreshToken string
 	var expiresAt time.Time
 
@@ -49,7 +48,7 @@ func (s *SessionRepo) GetSession(ctx context.Context, userId uuid.UUID) (string,
 	return refreshToken, nil
 }
 
-func (s *SessionRepo) DeleteSession(ctx context.Context, userId uuid.UUID) error {
+func (s *SessionRepo) DeleteSession(ctx context.Context, userId int64) error {
 	_, err := s.db.Pool.Exec(ctx, sqlDeleteSession, userId)
 	if err != nil {
 		return fmt.Errorf("delete session: %w", err)

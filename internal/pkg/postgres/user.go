@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -46,7 +45,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 	return &user, nil
 }
 
-func (r *UserRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
 	var user domain.User
 	err := r.db.Pool.QueryRow(ctx, sqlGetUserByID, id).Scan(
 		&user.ID,

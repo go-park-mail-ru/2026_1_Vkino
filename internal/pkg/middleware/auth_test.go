@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
 	usecasemocks "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase/mocks"
-	"github.com/google/uuid"
 	"go.uber.org/mock/gomock"
 )
 
@@ -36,7 +35,7 @@ func assertJSONContainsStringValue(t *testing.T, rr *httptest.ResponseRecorder, 
 func TestAuthMiddleware_Middleware(t *testing.T) {
 	t.Parallel()
 
-	testUserID := uuid.New()
+	testUserID := int64(1)
 
 	tests := []struct {
 		name               string
@@ -160,7 +159,7 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 
 			if tt.wantContextAuth != nil {
 				if nextAuth.UserId != tt.wantContextAuth.UserId {
-					t.Fatalf("expected context user_id %q, got %q", tt.wantContextAuth.UserId, nextAuth.UserId)
+					t.Fatalf("expected context user_id %v, got %v", tt.wantContextAuth.UserId, nextAuth.UserId)
 				}
 				if nextAuth.Email != tt.wantContextAuth.Email {
 					t.Fatalf("expected context email %q, got %q", tt.wantContextAuth.Email, nextAuth.Email)
@@ -177,7 +176,7 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 func TestAuthFromContext(t *testing.T) {
 	t.Parallel()
 
-	testUserID := uuid.New()
+	testUserID := int64(1)
 
 	tests := []struct {
 		name     string
@@ -222,7 +221,7 @@ func TestAuthFromContext(t *testing.T) {
 			}
 
 			if auth.UserId != tt.wantAuth.UserId {
-				t.Fatalf("expected user_id %q, got %q", tt.wantAuth.UserId, auth.UserId)
+				t.Fatalf("expected user_id %v, got %v", tt.wantAuth.UserId, auth.UserId)
 			}
 			if auth.Email != tt.wantAuth.Email {
 				t.Fatalf("expected email %q, got %q", tt.wantAuth.Email, auth.Email)

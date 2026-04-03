@@ -3,10 +3,10 @@ package inmemory
 import (
 	"errors"
 	"log"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serializer"
-	"github.com/google/uuid"
 )
 
 type MovieRepo struct {
@@ -58,8 +58,8 @@ func (r *MovieRepo) GetAllSelections() ([]domain.SelectionResponse, error) {
 	return selections, nil
 }
 
-func (r *MovieRepo) GetMovieByID(id uuid.UUID) (domain.MovieResponse, error) {
-	data, err := r.db.Get("movies", id.String())
+func (r *MovieRepo) GetMovieByID(id int64) (domain.MovieResponse, error) {
+	data, err := r.db.Get("movies", strconv.FormatInt(id, 10))
 	if err != nil {
 		return domain.MovieResponse{}, ErrMovieNotFound
 	}
@@ -72,8 +72,8 @@ func (r *MovieRepo) GetMovieByID(id uuid.UUID) (domain.MovieResponse, error) {
 	return movie, nil
 }
 
-func (r *MovieRepo) GetActorByID(id uuid.UUID) (domain.ActorResponse, error) {
-	data, err := r.db.Get("actors", id.String())
+func (r *MovieRepo) GetActorByID(id int64) (domain.ActorResponse, error) {
+	data, err := r.db.Get("actors", strconv.FormatInt(id, 10))
 	if err != nil {
 		return domain.ActorResponse{}, ErrActorNotFound
 	}
@@ -95,19 +95,20 @@ func (r *MovieRepo) initMockData() {
 		contentTypeFilm      = "film"
 	)
 
-	chalametID := uuid.New()
-	zendayaID := uuid.New()
-	bardemID := uuid.New()
-	phoenixID := uuid.New()
-	baleID := uuid.New()
+	var (
+		chalametID   int64 = 1
+		zendayaID    int64 = 2
+		bardemID     int64 = 3
+		phoenixID    int64 = 4
+		baleID       int64 = 5
+		duneID       int64 = 101
+		jokerID      int64 = 102
+		darkKnightID int64 = 103
+		prestigeID   int64 = 104
+		fordFerrariID int64 = 105
+	)
 
-	duneID := uuid.New()
-	jokerID := uuid.New()
-	darkKnightID := uuid.New()
-	prestigeID := uuid.New()
-	fordFerrariID := uuid.New()
-
-	actorPreview := func(id uuid.UUID, fullName, img string) domain.ActorPreview {
+	actorPreview := func(id int64, fullName, img string) domain.ActorPreview {
 		return domain.ActorPreview{
 			ID:             id,
 			FullName:       fullName,
@@ -115,7 +116,7 @@ func (r *MovieRepo) initMockData() {
 		}
 	}
 
-	moviePreview := func(id uuid.UUID, title, img string) domain.MoviePreview {
+	moviePreview := func(id int64, title, img string) domain.MoviePreview {
 		return domain.MoviePreview{
 			ID:             id,
 			Title:          title,
@@ -280,7 +281,7 @@ func (r *MovieRepo) initMockData() {
 			continue
 		}
 
-		if err := r.db.Save("movies", movie.ID.String(), movieData); err != nil {
+		if err := r.db.Save("movies", strconv.FormatInt(movie.ID, 10), movieData); err != nil {
 			log.Println(err)
 		}
 	}
@@ -292,7 +293,7 @@ func (r *MovieRepo) initMockData() {
 			continue
 		}
 
-		if err := r.db.Save("actors", actor.ID.String(), actorData); err != nil {
+		if err := r.db.Save("actors", strconv.FormatInt(actor.ID, 10), actorData); err != nil {
 			log.Println(err)
 		}
 	}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -83,7 +82,7 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.SelectionRes
 	return selections, nil
 }
 
-func (r *MovieRepo) GetMovieByID(ctx context.Context, id uuid.UUID) (domain.MovieResponse, error) {
+func (r *MovieRepo) GetMovieByID(ctx context.Context, id int64) (domain.MovieResponse, error) {
 	var movieResponse domain.MovieResponse
 	err := r.db.Pool.QueryRow(ctx, sqlGetMovieByID, id).Scan(
 		&movieResponse.ID,
@@ -105,7 +104,7 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, id uuid.UUID) (domain.Movi
 	return movieResponse, nil
 }
 
-func (r *MovieRepo) GetActorByID(ctx context.Context, id uuid.UUID) (domain.ActorResponse, error) {
+func (r *MovieRepo) GetActorByID(ctx context.Context, id int64) (domain.ActorResponse, error) {
 	var actor domain.ActorResponse
 	err := r.db.Pool.QueryRow(ctx, sqlGetActorByID, id).Scan(
 		&actor.ID,
