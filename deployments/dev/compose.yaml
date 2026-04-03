@@ -4,8 +4,8 @@ services:
     container_name: front-nginx
     restart: always
     ports:
-      - 80:80
-      - 443:443
+      - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./logs/nginx:/var/log/nginx
@@ -18,26 +18,23 @@ services:
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
-    ports:
-      - 8080:8080
-    depends_on:
-      db:
-        condition: service_healthy
-
     restart: always
     ports:
-      - 8080:8080
+      - "8080:8080"
     volumes:
       - ../../configs/api.yaml:/etc/vkino/config.yaml
     command: ./vkinoapi --config=/etc/vkino/config.yaml
+    depends_on:
+      db:
+        condition: service_healthy
 
   db:
     container_name: dev-postgres
     image: postgres:18.3
     environment:
-       POSTGRES_USER: ${POSTGRES_USER}
-       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-       POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -45,19 +42,58 @@ services:
       retries: 5
       start_period: 30s
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
-      - db-data:/var/lib/postgresql
-      
+      - db-data:/var/lib/postgresql/data
+
   migrate:
     image: migrate/migrate
     volumes:
       - ../../migrations:/migrations
-    command: ["-path", "/migrations", "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable", "up"]
+    command:
+      [
+        "-path",
+        "/migrations",
+        "-database",
+        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable",
+        "up"
+      ]
     depends_on:
       db:
         condition: service_healthy
     restart: "no"
 
+  minio:
+    image: minio/minio:latest
+    container_name: vkino-minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin; do
+        echo 'waiting for minio...';
+        sleep 2;
+      done;
+      /usr/bin/mc mb -p local/vkino-images || true;
+      /usr/bin/mc mb -p local/vkino-videos || true;
+      /usr/bin/mc anonymous set none local/vkino-images || true;
+      /usr/bin/mc anonymous set none local/vkino-videos || true;
+      exit 0;
+      "
+
 volumes:
-  db-data: 
+  db-data:
+  minio_data:

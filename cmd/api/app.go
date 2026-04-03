@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -17,6 +18,7 @@ import (
 	movieUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/inmemory"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
+	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
 func Run(configPath *string) error {
@@ -40,8 +42,23 @@ func Run(configPath *string) error {
 	sessionRepo := inmemory.NewSessionRepo(db)
 	movieRepo := inmemory.NewMovieRepo(db)
 
+	s3Storage, err := storagepkg.NewS3Storage(context.Background(), storagepkg.Config{
+        InternalEndpoint: cfg.S3.InternalEndpoint,
+        PublicEndpoint:   cfg.S3.PublicEndpoint,
+        Region:           cfg.S3.Region,
+        AccessKeyID:      cfg.S3.AccessKeyID,
+        SecretAccessKey:  cfg.S3.SecretAccessKey,
+        Bucket:           cfg.S3.BucketImages,
+        UseSSL:           cfg.S3.UseSSL,
+        UsePathStyle:     cfg.S3.UsePathStyle,
+        PresignTTL:       cfg.S3.PresignTTL,
+    })
+    if err != nil {
+        return fmt.Errorf("init image storage: %w", err)
+    }
+
 	authUsecase := authUsecase.NewAuthUsecase(userRepo, sessionRepo, cfg.Auth)
-	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo)
+	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo, s3Storage)
 
 	authHandler := authHttp.NewHandler(authUsecase)
 	movieHandler := movieHttp.NewHandler(movieUsecase)
