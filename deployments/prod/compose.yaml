@@ -13,8 +13,6 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - app-network 
-    depends_on:
-      - vkinoapi
 
   vkinoapi:
     image: timarc/vkino-back:v0.1.5
@@ -27,9 +25,6 @@ services:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
     networks:
       - app-network  
-    depends_on:
-      db:
-        condition: service_healthy
 
   db:
     image: postgres:18.3
@@ -53,9 +48,6 @@ services:
     volumes:
       - ../../migrations:/migrations
     command: ["-path", "/migrations", "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable", "up"]
-    depends_on:
-      db:
-        condition: service_healthy
     restart: "no"
     networks:
       - app-network 
