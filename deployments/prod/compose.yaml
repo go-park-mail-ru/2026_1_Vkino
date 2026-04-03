@@ -11,6 +11,10 @@ services:
       - ./logs/nginx:/var/log/nginx
     extra_hosts:
       - host.docker.internal:host-gateway
+    networks:
+      - app-network 
+    depends_on:
+      - vkinoapi
 
   vkinoapi:
     image: timarc/vkino-back:v0.1.5
@@ -19,3 +23,45 @@ services:
     command: ./vkinoapi --config=/usr/local/etc/config.yaml
     volumes:
       - ./vkinoapi/config.yaml:/usr/local/etc/config.yaml
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
+    networks:
+      - app-network  
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18.3
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - db-data:/var/lib/postgresql
+    networks:
+      - app-network 
+
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ../../migrations:/migrations
+    command: ["-path", "/migrations", "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable", "up"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - app-network 
+
+networks:
+  app-network:  
+
+volumes:
+  db-data:
