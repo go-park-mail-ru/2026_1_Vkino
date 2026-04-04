@@ -5,16 +5,22 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/repository"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
 type MovieUsecase struct {
-	movieRepo repository.MovieRepo
+	movieRepo    repository.MovieRepo
+	fileStorage  storage.FileStorage
 }
 
-func NewMovieUsecase(movieRepo repository.MovieRepo) *MovieUsecase {
-	return &MovieUsecase{
-		movieRepo: movieRepo,
-	}
+func NewMovieUsecase(
+    movieRepo repository.MovieRepo,
+    fileStorage storage.FileStorage,
+) *MovieUsecase {
+    return &MovieUsecase{
+        movieRepo: movieRepo,
+        fileStorage: fileStorage,
+    }
 }
 
 func (m *MovieUsecase) GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error) {

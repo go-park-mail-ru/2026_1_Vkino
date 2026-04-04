@@ -34,7 +34,7 @@ func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (doma
 
 	for rows.Next() {
 		var moviePreview domain.MoviePreview
-		err := rows.Scan(&moviePreview.ID, &moviePreview.Title, &moviePreview.PictureFileKey)
+		err := rows.Scan(&moviePreview.ID, &moviePreview.Title, &moviePreview.ImgUrl)
 		if err != nil {
 			return domain.SelectionResponse{}, fmt.Errorf("unable to read moviePreview: %w", err)
 		}

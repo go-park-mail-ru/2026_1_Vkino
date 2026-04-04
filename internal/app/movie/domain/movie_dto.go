@@ -1,9 +1,9 @@
 package domain
 
 type MoviePreview struct {
-	ID             int64  `json:"id"`
-	Title          string    `json:"title"`
-	PictureFileKey string    `json:"img_url"`
+	ID     int64  `json:"id"`
+	Title  string `json:"title"`
+	ImgUrl string `json:"img_url"`
 }
 
 type MovieResponse struct {

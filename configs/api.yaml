@@ -42,3 +42,15 @@ cors:
     - Authorization
   allow_credentials: true
   max_age: 3600
+
+s3:
+  internal_endpoint: "minio:9000"
+  public_endpoint: "localhost:9000"
+  region: "us-east-1"
+  access_key_id: "minioadmin"
+  secret_access_key: "minioadmin"
+  bucket_images: "vkino-images"
+  bucket_videos: "vkino-videos"
+  use_ssl: false
+  use_path_style: true
+  presign_ttl: "15m"

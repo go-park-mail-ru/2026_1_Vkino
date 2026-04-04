@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"github.com/spf13/viper"
 )
 
@@ -16,6 +17,7 @@ type Config struct {
 	Auth     usecase.Config        `mapstructure:"auth"`
 	Postgres postgres.Config       `mapstructure:"postgres"`
 	CORS     middleware.CORSConfig `mapstructure:"cors"`
+	S3       storage.S3Config      `mapstructure:"s3"`
 }
 
 func LoadConfig(path string, cfg any) error {

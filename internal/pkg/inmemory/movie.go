@@ -88,23 +88,23 @@ func (r *MovieRepo) GetActorByID(id int64) (domain.ActorResponse, error) {
 
 func (r *MovieRepo) initMockData() {
 	const (
-		countryUSA           = 1
-		countrySpain         = 2
-		countryUK            = 3
-		languageEnglish      = 1
-		contentTypeFilm      = "film"
+		countryUSA      = 1
+		countrySpain    = 2
+		countryUK       = 3
+		languageEnglish = 1
+		contentTypeFilm = "film"
 	)
 
 	var (
-		chalametID   int64 = 1
-		zendayaID    int64 = 2
-		bardemID     int64 = 3
-		phoenixID    int64 = 4
-		baleID       int64 = 5
-		duneID       int64 = 101
-		jokerID      int64 = 102
-		darkKnightID int64 = 103
-		prestigeID   int64 = 104
+		chalametID    int64 = 1
+		zendayaID     int64 = 2
+		bardemID      int64 = 3
+		phoenixID     int64 = 4
+		baleID        int64 = 5
+		duneID        int64 = 101
+		jokerID       int64 = 102
+		darkKnightID  int64 = 103
+		prestigeID    int64 = 104
 		fordFerrariID int64 = 105
 	)
 
@@ -118,9 +118,9 @@ func (r *MovieRepo) initMockData() {
 
 	moviePreview := func(id int64, title, img string) domain.MoviePreview {
 		return domain.MoviePreview{
-			ID:             id,
-			Title:          title,
-			PictureFileKey: img,
+			ID:     id,
+			Title:  title,
+			ImgUrl: img,
 		}
 	}
 

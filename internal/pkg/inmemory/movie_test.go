@@ -172,7 +172,7 @@ func TestMovieRepo_GetAllSelections(t *testing.T) {
 						{
 							ID:             999,
 							Title:          "The Godfather",
-							PictureFileKey: "img/godfather.jpg",
+							ImgUrl: "img/godfather.jpg",
 						},
 					},
 				}
