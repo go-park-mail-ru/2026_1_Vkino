@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serializer"
-	"github.com/google/uuid"
 )
 
 type testModel string
@@ -49,19 +48,19 @@ func TestMovieRepo_GetSelectionByTitle(t *testing.T) {
 			name:       "success popular",
 			title:      "popular",
 			wantTitle:  "Популярные",
-			wantMovies: 10,
+			wantMovies: 5,
 		},
 		{
 			name:       "success new",
 			title:      "new",
 			wantTitle:  "Новинки",
-			wantMovies: 10,
+			wantMovies: 5,
 		},
 		{
 			name:       "success top",
 			title:      "top",
 			wantTitle:  "Топ-10",
-			wantMovies: 10,
+			wantMovies: 5,
 		},
 		{
 			name:      "selection not found",
@@ -140,9 +139,9 @@ func TestMovieRepo_GetAllSelections(t *testing.T) {
 			name:      "default selections",
 			wantCount: 3,
 			wantMap: map[string]int{
-				"Популярные": 10,
-				"Новинки":    10,
-				"Топ-10":     10,
+				"Популярные": 5,
+				"Новинки":    5,
+				"Топ-10":     5,
 			},
 		},
 		{
@@ -157,9 +156,9 @@ func TestMovieRepo_GetAllSelections(t *testing.T) {
 			},
 			wantCount: 3,
 			wantMap: map[string]int{
-				"Популярные": 10,
-				"Новинки":    10,
-				"Топ-10":     10,
+				"Популярные": 5,
+				"Новинки":    5,
+				"Топ-10":     5,
 			},
 		},
 		{
@@ -171,7 +170,7 @@ func TestMovieRepo_GetAllSelections(t *testing.T) {
 					Title: "Классика",
 					Movies: []domain.MoviePreview{
 						{
-							ID:             uuid.New(),
+							ID:             999,
 							Title:          "The Godfather",
 							ImgUrl: "img/godfather.jpg",
 						},
@@ -190,9 +189,9 @@ func TestMovieRepo_GetAllSelections(t *testing.T) {
 			},
 			wantCount: 4,
 			wantMap: map[string]int{
-				"Популярные": 10,
-				"Новинки":    10,
-				"Топ-10":     10,
+				"Популярные": 5,
+				"Новинки":    5,
+				"Топ-10":     5,
 				"Классика":   1,
 			},
 		},

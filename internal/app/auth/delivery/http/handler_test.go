@@ -148,7 +148,7 @@ func TestHandler_SignUp(t *testing.T) {
 
 			if tt.wantUsecaseCalled {
 				mu.EXPECT().
-					SignUp("user@example.com", "qwerty").
+					SignUp(gomock.Any(), "user@example.com", "qwerty").
 					Return(tt.signUpResp, tt.signUpErr)
 			}
 
@@ -257,7 +257,7 @@ func TestHandler_SignIn(t *testing.T) {
 
 			if tt.wantUsecaseCalled {
 				mu.EXPECT().
-					SignIn(tt.wantEmail, tt.wantPassword).
+					SignIn(gomock.Any(), tt.wantEmail, tt.wantPassword).
 					Return(tt.signInResp, tt.signInErr)
 			}
 
@@ -380,13 +380,13 @@ func TestHandler_Refresh(t *testing.T) {
 
 			if tt.wantValidateCalled {
 				mu.EXPECT().
-					ValidateRefreshToken(tt.refreshCookieValue).
+					ValidateRefreshToken(gomock.Any(), tt.refreshCookieValue).
 					Return(tt.validateEmail, tt.validateErr)
 			}
 
 			if tt.wantRefreshCalled {
 				mu.EXPECT().
-					Refresh(tt.validateEmail).
+					Refresh(gomock.Any(), tt.validateEmail).
 					Return(tt.refreshResp, tt.refreshErr)
 			}
 
@@ -461,7 +461,7 @@ func TestHandler_Me(t *testing.T) {
 
 			req := httptest.NewRequest(stdhttp.MethodGet, "/me", nil)
 			if tt.ctxEmail != "" {
-				ctx := context.WithValue(req.Context(), middleware.UserEmailKey, tt.ctxEmail)
+				ctx := context.WithValue(req.Context(), middleware.AuthCtxKey, usecase.AuthContext{Email: tt.ctxEmail, UserId: 1})
 				req = req.WithContext(ctx)
 			}
 
@@ -529,7 +529,7 @@ func TestHandler_Logout(t *testing.T) {
 
 			if tt.wantUsecaseCalled {
 				mu.EXPECT().
-					LogOut(tt.ctxEmail).
+					LogOut(gomock.Any(), tt.ctxEmail).
 					Return(tt.logOutErr)
 			}
 
@@ -537,7 +537,7 @@ func TestHandler_Logout(t *testing.T) {
 
 			req := httptest.NewRequest(stdhttp.MethodPost, "/logout", nil)
 			if tt.ctxEmail != "" {
-				ctx := context.WithValue(req.Context(), middleware.UserEmailKey, tt.ctxEmail)
+				ctx := context.WithValue(req.Context(), middleware.AuthCtxKey, usecase.AuthContext{Email: tt.ctxEmail, UserId: 1})
 				req = req.WithContext(ctx)
 			}
 

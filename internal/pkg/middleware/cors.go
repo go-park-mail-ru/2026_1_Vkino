@@ -1,33 +1,59 @@
 package middleware
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+	"strings"
+)
 
-var allowedOrigins = map[string]bool{
-	"http://localhost:3000": true,
-	"http://127.0.0.1:3000": true,
-	"http://vkino.tech":     true,
+type CORSConfig struct {
+	AllowedOrigins   []string `mapstructure:"allowed_origins"`
+	AllowedMethods   []string `mapstructure:"allowed_methods"`
+	AllowedHeaders   []string `mapstructure:"allowed_headers"`
+	AllowCredentials bool     `mapstructure:"allow_credentials"`
+	MaxAge           int      `mapstructure:"max_age"`
 }
 
-func CorsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
+func CorsMiddleware(cfg CORSConfig) func(http.Handler) http.Handler {
+	allowedMethods := strings.Join(cfg.AllowedMethods, ", ")
+	allowedHeaders := strings.Join(cfg.AllowedHeaders, ", ")
+	maxAge := fmt.Sprintf("%d", cfg.MaxAge)
 
-		if allowedOrigins[origin] {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Vary", "Origin") // для того, чтобы явно указать, что зависит от origin (защита от кэша)
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			origin := r.Header.Get("Origin")
+
+			if origin != "" && isOriginAllowed(origin, cfg.AllowedOrigins) {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Vary", "Origin")
+			}
+
+			w.Header().Set("Access-Control-Allow-Methods", allowedMethods)
+			w.Header().Set("Access-Control-Allow-Headers", allowedHeaders)
+
+			if cfg.AllowCredentials {
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
+			}
+
+			if cfg.MaxAge > 0 {
+				w.Header().Set("Access-Control-Max-Age", maxAge)
+			}
+
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func isOriginAllowed(origin string, allowed []string) bool {
+	for _, o := range allowed {
+		if o == origin {
+			return true
 		}
-
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Max-Age", "3600")
-
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
+	}
+	return false
 }

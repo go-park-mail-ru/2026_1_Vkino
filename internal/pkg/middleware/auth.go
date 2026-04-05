@@ -11,7 +11,7 @@ import (
 
 type ctxKey string
 
-const UserEmailKey ctxKey = "user_email"
+const AuthCtxKey ctxKey = "auth"
 
 type AuthMiddleware struct {
 	usecase usecase.Usecase
@@ -21,7 +21,7 @@ func NewAuthMiddleware(u *usecase.AuthUsecase) *AuthMiddleware {
 	return &AuthMiddleware{usecase: u}
 }
 
-// Middleware валидирует access token и кладёт email пользователя в context.
+// Middleware валидирует access token и кладёт email и id пользователя в context.
 func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := strings.TrimSpace(r.Header.Get("Authorization"))
@@ -45,24 +45,24 @@ func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		email, err := m.usecase.ValidateAccessToken(accessToken)
+		auth, err := m.usecase.ValidateAccessToken(accessToken)
 		if err != nil {
 			authHttp.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
 
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UserEmailKey, email)
+		ctx := context.WithValue(r.Context(), AuthCtxKey, auth)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-// UserEmailFromContext читает email из context в хэндлерах.
-func UserEmailFromContext(ctx context.Context) (string, error) {
-	email, ok := ctx.Value(UserEmailKey).(string)
+// UserEmailFromContext читает AuthContext из context в хэндлерах.
+func AuthFromContext(ctx context.Context) (usecase.AuthContext, error) {
+	auth, ok := ctx.Value(AuthCtxKey).(usecase.AuthContext)
 	if !ok {
-		return "", ErrMidlware
+		return usecase.AuthContext{}, ErrMidlware
 	}
 
-	return email, nil
+	return auth, nil
 }

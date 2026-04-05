@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
@@ -56,69 +57,69 @@ func (mr *MockUsecaseMockRecorder) GetConfig() *gomock.Call {
 }
 
 // LogOut mocks base method.
-func (m *MockUsecase) LogOut(email string) error {
+func (m *MockUsecase) LogOut(ctx context.Context, email string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LogOut", email)
+	ret := m.ctrl.Call(m, "LogOut", ctx, email)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // LogOut indicates an expected call of LogOut.
-func (mr *MockUsecaseMockRecorder) LogOut(email any) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) LogOut(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LogOut", reflect.TypeOf((*MockUsecase)(nil).LogOut), email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LogOut", reflect.TypeOf((*MockUsecase)(nil).LogOut), ctx, email)
 }
 
 // Refresh mocks base method.
-func (m *MockUsecase) Refresh(email string) (domain.TokenPair, error) {
+func (m *MockUsecase) Refresh(ctx context.Context, email string) (domain.TokenPair, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Refresh", email)
+	ret := m.ctrl.Call(m, "Refresh", ctx, email)
 	ret0, _ := ret[0].(domain.TokenPair)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Refresh indicates an expected call of Refresh.
-func (mr *MockUsecaseMockRecorder) Refresh(email any) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) Refresh(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Refresh", reflect.TypeOf((*MockUsecase)(nil).Refresh), email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Refresh", reflect.TypeOf((*MockUsecase)(nil).Refresh), ctx, email)
 }
 
 // SignIn mocks base method.
-func (m *MockUsecase) SignIn(email, password string) (domain.TokenPair, error) {
+func (m *MockUsecase) SignIn(ctx context.Context, email, password string) (domain.TokenPair, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SignIn", email, password)
+	ret := m.ctrl.Call(m, "SignIn", ctx, email, password)
 	ret0, _ := ret[0].(domain.TokenPair)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SignIn indicates an expected call of SignIn.
-func (mr *MockUsecaseMockRecorder) SignIn(email, password any) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) SignIn(ctx, email, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignIn", reflect.TypeOf((*MockUsecase)(nil).SignIn), email, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignIn", reflect.TypeOf((*MockUsecase)(nil).SignIn), ctx, email, password)
 }
 
 // SignUp mocks base method.
-func (m *MockUsecase) SignUp(email, password string) (domain.TokenPair, error) {
+func (m *MockUsecase) SignUp(ctx context.Context, email, password string) (domain.TokenPair, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SignUp", email, password)
+	ret := m.ctrl.Call(m, "SignUp", ctx, email, password)
 	ret0, _ := ret[0].(domain.TokenPair)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SignUp indicates an expected call of SignUp.
-func (mr *MockUsecaseMockRecorder) SignUp(email, password any) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) SignUp(ctx, email, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignUp", reflect.TypeOf((*MockUsecase)(nil).SignUp), email, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignUp", reflect.TypeOf((*MockUsecase)(nil).SignUp), ctx, email, password)
 }
 
 // ValidateAccessToken mocks base method.
-func (m *MockUsecase) ValidateAccessToken(tokenString string) (string, error) {
+func (m *MockUsecase) ValidateAccessToken(tokenString string) (usecase.AuthContext, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateAccessToken", tokenString)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(usecase.AuthContext)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -130,16 +131,16 @@ func (mr *MockUsecaseMockRecorder) ValidateAccessToken(tokenString any) *gomock.
 }
 
 // ValidateRefreshToken mocks base method.
-func (m *MockUsecase) ValidateRefreshToken(tokenString string) (string, error) {
+func (m *MockUsecase) ValidateRefreshToken(ctx context.Context, tokenString string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateRefreshToken", tokenString)
+	ret := m.ctrl.Call(m, "ValidateRefreshToken", ctx, tokenString)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ValidateRefreshToken indicates an expected call of ValidateRefreshToken.
-func (mr *MockUsecaseMockRecorder) ValidateRefreshToken(tokenString any) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) ValidateRefreshToken(ctx, tokenString any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRefreshToken", reflect.TypeOf((*MockUsecase)(nil).ValidateRefreshToken), tokenString)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRefreshToken", reflect.TypeOf((*MockUsecase)(nil).ValidateRefreshToken), ctx, tokenString)
 }

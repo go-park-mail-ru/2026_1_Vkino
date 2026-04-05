@@ -5,12 +5,10 @@ import (
 	"strings"
 	"time"
 	"unicode"
-
-	"github.com/google/uuid"
 )
 
 type User struct {
-	ID               uuid.UUID
+	ID               int64
 	Email            string
 	Password         string
 	RegistrationDate time.Time

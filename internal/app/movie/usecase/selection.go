@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/repository"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
@@ -21,8 +23,8 @@ func NewMovieUsecase(
     }
 }
 
-func (m *MovieUsecase) GetAllSelections() ([]domain.SelectionResponse, error) {
-	selections, err := m.movieRepo.GetAllSelections()
+func (m *MovieUsecase) GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error) {
+	selections, err := m.movieRepo.GetAllSelections(ctx)
 
 	if err != nil {
 		return nil, err
@@ -31,8 +33,8 @@ func (m *MovieUsecase) GetAllSelections() ([]domain.SelectionResponse, error) {
 	return selections, nil
 }
 
-func (m *MovieUsecase) GetSelectionByTitle(title string) (domain.SelectionResponse, error) {
-	selection, err := m.movieRepo.GetSelectionByTitle(title)
+func (m *MovieUsecase) GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error) {
+	selection, err := m.movieRepo.GetSelectionByTitle(ctx, title)
 
 	if err != nil {
 		return domain.SelectionResponse{}, err

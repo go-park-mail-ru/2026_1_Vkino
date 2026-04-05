@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
 	usecasemocks "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase/mocks"
 	"go.uber.org/mock/gomock"
 )
@@ -34,17 +35,19 @@ func assertJSONContainsStringValue(t *testing.T, rr *httptest.ResponseRecorder, 
 func TestAuthMiddleware_Middleware(t *testing.T) {
 	t.Parallel()
 
+	testUserID := int64(1)
+
 	tests := []struct {
 		name               string
 		authHeader         string
-		validateEmail      string
+		validateAuth       usecase.AuthContext
 		validateErr        error
 		wantStatus         int
 		wantBodyValue      string
 		wantNextCalled     bool
 		wantValidateCalled bool
 		wantToken          string
-		wantContextEmail   string
+		wantContextAuth    *usecase.AuthContext
 	}{
 		{
 			name:               "missing authorization header",
@@ -82,22 +85,22 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 		{
 			name:               "success",
 			authHeader:         "Bearer good-token",
-			validateEmail:      "user@example.com",
+			validateAuth:       usecase.AuthContext{UserId: testUserID, Email: "user@example.com"},
 			wantStatus:         http.StatusOK,
 			wantNextCalled:     true,
 			wantValidateCalled: true,
 			wantToken:          "good-token",
-			wantContextEmail:   "user@example.com",
+			wantContextAuth:    &usecase.AuthContext{UserId: testUserID, Email: "user@example.com"},
 		},
 		{
 			name:               "success with trimmed header",
 			authHeader:         "   Bearer good-token   ",
-			validateEmail:      "user@example.com",
+			validateAuth:       usecase.AuthContext{UserId: testUserID, Email: "user@example.com"},
 			wantStatus:         http.StatusOK,
 			wantNextCalled:     true,
 			wantValidateCalled: true,
 			wantToken:          "good-token",
-			wantContextEmail:   "user@example.com",
+			wantContextAuth:    &usecase.AuthContext{UserId: testUserID, Email: "user@example.com"},
 		},
 	}
 
@@ -110,24 +113,23 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 			if tt.wantValidateCalled {
 				mu.EXPECT().
 					ValidateAccessToken(tt.wantToken).
-					Return(tt.validateEmail, tt.validateErr)
+					Return(tt.validateAuth, tt.validateErr)
 			}
 
 			var nextCalled bool
-
-			var nextEmail string
+			var nextAuth usecase.AuthContext
 
 			m := &AuthMiddleware{usecase: mu}
 
 			next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				nextCalled = true
 
-				email, err := UserEmailFromContext(r.Context())
+				auth, err := AuthFromContext(r.Context())
 				if err != nil {
-					t.Fatalf("expected email in context, got error: %v", err)
+					t.Fatalf("expected auth in context, got error: %v", err)
 				}
 
-				nextEmail = email
+				nextAuth = auth
 
 				w.WriteHeader(http.StatusOK)
 				_, _ = w.Write([]byte(`{"status":"ok"}`))
@@ -155,8 +157,13 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 				return
 			}
 
-			if nextEmail != tt.wantContextEmail {
-				t.Fatalf("expected context email %q, got %q", tt.wantContextEmail, nextEmail)
+			if tt.wantContextAuth != nil {
+				if nextAuth.UserId != tt.wantContextAuth.UserId {
+					t.Fatalf("expected context user_id %v, got %v", tt.wantContextAuth.UserId, nextAuth.UserId)
+				}
+				if nextAuth.Email != tt.wantContextAuth.Email {
+					t.Fatalf("expected context email %q, got %q", tt.wantContextAuth.Email, nextAuth.Email)
+				}
 			}
 
 			if !strings.Contains(rr.Body.String(), `"status":"ok"`) {
@@ -166,29 +173,31 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 	}
 }
 
-func TestUserEmailFromContext(t *testing.T) {
+func TestAuthFromContext(t *testing.T) {
 	t.Parallel()
 
+	testUserID := int64(1)
+
 	tests := []struct {
-		name      string
-		ctx       context.Context
-		wantEmail string
-		wantErr   bool
+		name     string
+		ctx      context.Context
+		wantAuth usecase.AuthContext
+		wantErr  bool
 	}{
 		{
-			name:      "email exists",
-			ctx:       context.WithValue(context.Background(), UserEmailKey, "user@example.com"),
-			wantEmail: "user@example.com",
-			wantErr:   false,
+			name:     "auth exists",
+			ctx:      context.WithValue(context.Background(), AuthCtxKey, usecase.AuthContext{UserId: testUserID, Email: "user@example.com"}),
+			wantAuth: usecase.AuthContext{UserId: testUserID, Email: "user@example.com"},
+			wantErr:  false,
 		},
 		{
-			name:    "email missing",
+			name:    "auth missing",
 			ctx:     context.Background(),
 			wantErr: true,
 		},
 		{
 			name:    "wrong type in context",
-			ctx:     context.WithValue(context.Background(), UserEmailKey, 123),
+			ctx:     context.WithValue(context.Background(), AuthCtxKey, 123),
 			wantErr: true,
 		},
 	}
@@ -197,7 +206,7 @@ func TestUserEmailFromContext(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			email, err := UserEmailFromContext(tt.ctx)
+			auth, err := AuthFromContext(tt.ctx)
 
 			if tt.wantErr {
 				if !errors.Is(err, ErrMidlware) {
@@ -211,8 +220,11 @@ func TestUserEmailFromContext(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if email != tt.wantEmail {
-				t.Fatalf("expected email %q, got %q", tt.wantEmail, email)
+			if auth.UserId != tt.wantAuth.UserId {
+				t.Fatalf("expected user_id %v, got %v", tt.wantAuth.UserId, auth.UserId)
+			}
+			if auth.Email != tt.wantAuth.Email {
+				t.Fatalf("expected email %q, got %q", tt.wantAuth.Email, auth.Email)
 			}
 		})
 	}

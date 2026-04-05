@@ -10,10 +10,11 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
+	time "time"
 
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,92 +43,77 @@ func (m *MockUserRepo) EXPECT() *MockUserRepoMockRecorder {
 }
 
 // CreateUser mocks base method.
-func (m *MockUserRepo) CreateUser(login, password string) (*domain.User, error) {
+func (m *MockUserRepo) CreateUser(ctx context.Context, login, password string) (*domain.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUser", login, password)
+	ret := m.ctrl.Call(m, "CreateUser", ctx, login, password)
 	ret0, _ := ret[0].(*domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateUser indicates an expected call of CreateUser.
-func (mr *MockUserRepoMockRecorder) CreateUser(login, password any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) CreateUser(ctx, login, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepo)(nil).CreateUser), login, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepo)(nil).CreateUser), ctx, login, password)
 }
 
 // DeleteUser mocks base method.
-func (m *MockUserRepo) DeleteUser(login string) error {
+func (m *MockUserRepo) DeleteUser(ctx context.Context, login string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteUser", login)
+	ret := m.ctrl.Call(m, "DeleteUser", ctx, login)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteUser indicates an expected call of DeleteUser.
-func (mr *MockUserRepoMockRecorder) DeleteUser(login any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) DeleteUser(ctx, login any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockUserRepo)(nil).DeleteUser), login)
-}
-
-// GetAllUsers mocks base method.
-func (m *MockUserRepo) GetAllUsers() ([]*domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllUsers")
-	ret0, _ := ret[0].([]*domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAllUsers indicates an expected call of GetAllUsers.
-func (mr *MockUserRepoMockRecorder) GetAllUsers() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUsers", reflect.TypeOf((*MockUserRepo)(nil).GetAllUsers))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockUserRepo)(nil).DeleteUser), ctx, login)
 }
 
 // GetUserByEmail mocks base method.
-func (m *MockUserRepo) GetUserByEmail(email string) (*domain.User, error) {
+func (m *MockUserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserByEmail", email)
+	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, email)
 	ret0, _ := ret[0].(*domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUserByEmail indicates an expected call of GetUserByEmail.
-func (mr *MockUserRepoMockRecorder) GetUserByEmail(email any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserRepo)(nil).GetUserByEmail), email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserRepo)(nil).GetUserByEmail), ctx, email)
 }
 
 // GetUserByID mocks base method.
-func (m *MockUserRepo) GetUserByID(id uuid.UUID) (*domain.User, error) {
+func (m *MockUserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserByID", id)
+	ret := m.ctrl.Call(m, "GetUserByID", ctx, id)
 	ret0, _ := ret[0].(*domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUserByID indicates an expected call of GetUserByID.
-func (mr *MockUserRepoMockRecorder) GetUserByID(id any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) GetUserByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserRepo)(nil).GetUserByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserRepo)(nil).GetUserByID), ctx, id)
 }
 
 // UpdateUser mocks base method.
-func (m *MockUserRepo) UpdateUser(login, password string) (*domain.User, error) {
+func (m *MockUserRepo) UpdateUser(ctx context.Context, login, password string) (*domain.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUser", login, password)
+	ret := m.ctrl.Call(m, "UpdateUser", ctx, login, password)
 	ret0, _ := ret[0].(*domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateUser indicates an expected call of UpdateUser.
-func (mr *MockUserRepoMockRecorder) UpdateUser(login, password any) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) UpdateUser(ctx, login, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserRepo)(nil).UpdateUser), login, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserRepo)(nil).UpdateUser), ctx, login, password)
 }
 
 // MockSessionRepo is a mock of SessionRepo interface.
@@ -155,44 +141,44 @@ func (m *MockSessionRepo) EXPECT() *MockSessionRepoMockRecorder {
 }
 
 // DeleteSession mocks base method.
-func (m *MockSessionRepo) DeleteSession(email string) error {
+func (m *MockSessionRepo) DeleteSession(ctx context.Context, userID int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSession", email)
+	ret := m.ctrl.Call(m, "DeleteSession", ctx, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteSession indicates an expected call of DeleteSession.
-func (mr *MockSessionRepoMockRecorder) DeleteSession(email any) *gomock.Call {
+func (mr *MockSessionRepoMockRecorder) DeleteSession(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSession", reflect.TypeOf((*MockSessionRepo)(nil).DeleteSession), email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSession", reflect.TypeOf((*MockSessionRepo)(nil).DeleteSession), ctx, userID)
 }
 
 // GetSession mocks base method.
-func (m *MockSessionRepo) GetSession(email string) (*domain.TokenPair, error) {
+func (m *MockSessionRepo) GetSession(ctx context.Context, userID int64) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSession", email)
-	ret0, _ := ret[0].(*domain.TokenPair)
+	ret := m.ctrl.Call(m, "GetSession", ctx, userID)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSession indicates an expected call of GetSession.
-func (mr *MockSessionRepoMockRecorder) GetSession(email any) *gomock.Call {
+func (mr *MockSessionRepoMockRecorder) GetSession(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSession", reflect.TypeOf((*MockSessionRepo)(nil).GetSession), email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSession", reflect.TypeOf((*MockSessionRepo)(nil).GetSession), ctx, userID)
 }
 
 // SaveSession mocks base method.
-func (m *MockSessionRepo) SaveSession(email string, tokens domain.TokenPair) error {
+func (m *MockSessionRepo) SaveSession(ctx context.Context, userID int64, refreshToken string, expiresAt time.Time) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveSession", email, tokens)
+	ret := m.ctrl.Call(m, "SaveSession", ctx, userID, refreshToken, expiresAt)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SaveSession indicates an expected call of SaveSession.
-func (mr *MockSessionRepoMockRecorder) SaveSession(email, tokens any) *gomock.Call {
+func (mr *MockSessionRepoMockRecorder) SaveSession(ctx, userID, refreshToken, expiresAt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveSession", reflect.TypeOf((*MockSessionRepo)(nil).SaveSession), email, tokens)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveSession", reflect.TypeOf((*MockSessionRepo)(nil).SaveSession), ctx, userID, refreshToken, expiresAt)
 }
