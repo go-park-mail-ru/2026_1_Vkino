@@ -2,13 +2,13 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	"strings"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/errors"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
-	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -20,7 +20,7 @@ func NewHandler(u usecase.Usecase) *Handler {
 }
 
 func (h *Handler) GetAllSelections(w http.ResponseWriter, r *http.Request) {
-	selections, err := h.usecase.GetAllSelections()
+	selections, err := h.usecase.GetAllSelections(r.Context())
 
 	if err != nil {
 		status, message := errors.MapError(err)
@@ -41,7 +41,7 @@ func (h *Handler) GetSelectionByTitle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	selection, err := h.usecase.GetSelectionByTitle(title)
+	selection, err := h.usecase.GetSelectionByTitle(r.Context(), title)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -59,13 +59,13 @@ func (h *Handler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := uuid.Parse(idParam)
+	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid movie id")
 		return
 	}
 
-	movie, err := h.usecase.GetMovieByID(id)
+	movie, err := h.usecase.GetMovieByID(r.Context(), id)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -82,13 +82,13 @@ func (h *Handler) GetActorByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := uuid.Parse(idParam)
+	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid actor id")
 		return
 	}
 
-	actor, err := h.usecase.GetActorByID(id)
+	actor, err := h.usecase.GetActorByID(r.Context(), id)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)

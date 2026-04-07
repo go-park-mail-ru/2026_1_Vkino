@@ -2,12 +2,10 @@ package domain
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Selection struct {
-	ID        uuid.UUID
+	ID        int64
 	Title     string
 	CreatedAt time.Time
 	UpdatedAt time.Time

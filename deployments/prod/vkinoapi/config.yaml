@@ -25,3 +25,31 @@ s3:
   use_ssl: false
   use_path_style: true
   presign_ttl: "15m"
+
+postgres:
+  host: "db"                    
+  port: 5432
+  user: "vkino_user"            
+  password: "vkino"            
+  dbname: "vkino"              
+  sslmode: "disable"
+  max_pool_size: 25
+  conn_attempts: 10
+  conn_timeout: "5s"
+  
+cors:
+  allowed_origins:
+    - "http://vkino.tech"
+    - "http://www.vkino.tech"
+  allowed_methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - PATCH
+    - OPTIONS
+  allowed_headers:
+    - Content-Type
+    - Authorization
+  allow_credentials: true
+  max_age: 3600

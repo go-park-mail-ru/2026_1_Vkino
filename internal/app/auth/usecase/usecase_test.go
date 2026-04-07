@@ -1,6 +1,7 @@
 package usecase_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -40,14 +41,19 @@ func newTestUsecase(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSession
 	return usecase.NewAuthUsecase(userRepo, sessionRepo, testConfig())
 }
 
-func makeToken(t *testing.T, secret, subject string, ttl time.Duration, method jwt.SigningMethod) string {
+func makeToken(t *testing.T, secret, subject string, userID int64, ttl time.Duration, method jwt.SigningMethod) string {
 	t.Helper()
 
-	token := jwt.NewWithClaims(method, jwt.RegisteredClaims{
-		Subject:   subject,
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-	})
+	claims := usecase.CustomClaims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   subject,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	token := jwt.NewWithClaims(method, claims)
 
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
@@ -78,7 +84,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 			password: "qwerty",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
+					GetUserByEmail(gomock.Any(), "user@example.com").
 					Return(nil, fmt.Errorf("not found"))
 			},
 			wantErrIs: domain.ErrInvalidCredentials,
@@ -89,7 +95,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 			password: "wrong-password",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
+					GetUserByEmail(gomock.Any(), "user@example.com").
 					Return(&domain.User{
 						Email:    "user@example.com",
 						Password: hashPassword(t, "correct-password"),
@@ -103,13 +109,13 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 			password: "qwerty",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
+					GetUserByEmail(gomock.Any(), "user@example.com").
 					Return(&domain.User{
 						Email:    "user@example.com",
 						Password: hashPassword(t, "qwerty"),
 					}, nil)
 				sessionRepo.EXPECT().
-					SaveSession("user@example.com", gomock.Any()).
+					SaveSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(fmt.Errorf("session save failed"))
 			},
 			wantErrContains: "save session",
@@ -120,18 +126,15 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 			password: "qwerty",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
+					GetUserByEmail(gomock.Any(), "user@example.com").
 					Return(&domain.User{
 						Email:    "user@example.com",
 						Password: hashPassword(t, "qwerty"),
+						ID:       int64(1),
 					}, nil)
 				sessionRepo.EXPECT().
-					SaveSession("user@example.com", gomock.Any()).
-					DoAndReturn(func(email string, tokenPair domain.TokenPair) error {
-						if tokenPair.AccessToken == "" || tokenPair.RefreshToken == "" {
-							t.Error("expected non-empty tokens")
-						}
-
+					SaveSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, _ int64, _ string, _ time.Time) error {
 						return nil
 					})
 			},
@@ -150,13 +153,12 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 
 			u := newTestUsecase(userRepo, sessionRepo)
 
-			got, err := u.SignIn(tt.email, tt.password)
+			got, err := u.SignIn(context.Background(), tt.email, tt.password)
 
 			if tt.wantErrIs != nil {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
-
 				return
 			}
 
@@ -164,11 +166,9 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
-
 				if !strings.Contains(err.Error(), tt.wantErrContains) {
 					t.Fatalf("expected error to contain %q, got %q", tt.wantErrContains, err.Error())
 				}
-
 				return
 			}
 
@@ -181,13 +181,12 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 			}
 
 			if tt.wantValidateToken {
-				email, err := u.ValidateAccessToken(got.AccessToken)
+				auth, err := u.ValidateAccessToken(got.AccessToken)
 				if err != nil {
 					t.Fatalf("validate access token: %v", err)
 				}
-
-				if email != tt.email {
-					t.Fatalf("expected token subject %q, got %q", tt.email, email)
+				if auth.Email != tt.email {
+					t.Fatalf("expected token subject %q, got %q", tt.email, auth.Email)
 				}
 			}
 		})
@@ -214,7 +213,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 			password: "qwerty1",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
+					GetUserByEmail(gomock.Any(), "user@example.com").
 					Return(&domain.User{Email: "user@example.com"}, nil)
 			},
 			wantErrIs: domain.ErrUserAlreadyExists,
@@ -225,10 +224,10 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 			password: "qwerty1",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
+					GetUserByEmail(gomock.Any(), "user@example.com").
 					Return(nil, fmt.Errorf("not found"))
 				userRepo.EXPECT().
-					CreateUser("user@example.com", gomock.Any()).
+					CreateUser(gomock.Any(), "user@example.com", gomock.Any()).
 					Return(nil, fmt.Errorf("create failed"))
 			},
 			wantErrContains: "create failed",
@@ -239,19 +238,18 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 			password: "qwerty1",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
+					GetUserByEmail(gomock.Any(), "user@example.com").
 					Return(nil, fmt.Errorf("not found"))
 				userRepo.EXPECT().
-					CreateUser("user@example.com", gomock.Any()).
-					DoAndReturn(func(email, password string) (*domain.User, error) {
+					CreateUser(gomock.Any(), "user@example.com", gomock.Any()).
+					DoAndReturn(func(_ context.Context, email, password string) (*domain.User, error) {
 						if err := bcrypt.CompareHashAndPassword([]byte(password), []byte("qwerty1")); err != nil {
 							t.Errorf("password not properly hashed: %v", err)
 						}
-
-						return &domain.User{Email: email}, nil
+						return &domain.User{Email: email, ID: int64(1)}, nil
 					})
 				sessionRepo.EXPECT().
-					SaveSession("user@example.com", gomock.Any()).
+					SaveSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(fmt.Errorf("save session failed"))
 			},
 			wantErrContains: "save session",
@@ -262,24 +260,19 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 			password: "qwerty1",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
+					GetUserByEmail(gomock.Any(), "user@example.com").
 					Return(nil, fmt.Errorf("not found"))
 				userRepo.EXPECT().
-					CreateUser("user@example.com", gomock.Any()).
-					DoAndReturn(func(email, password string) (*domain.User, error) {
+					CreateUser(gomock.Any(), "user@example.com", gomock.Any()).
+					DoAndReturn(func(_ context.Context, email, password string) (*domain.User, error) {
 						if err := bcrypt.CompareHashAndPassword([]byte(password), []byte("qwerty1")); err != nil {
 							t.Errorf("password not properly hashed: %v", err)
 						}
-
-						return &domain.User{Email: email}, nil
+						return &domain.User{Email: email, ID: int64(1)}, nil
 					})
 				sessionRepo.EXPECT().
-					SaveSession("user@example.com", gomock.Any()).
-					DoAndReturn(func(email string, tokenPair domain.TokenPair) error {
-						if tokenPair.AccessToken == "" || tokenPair.RefreshToken == "" {
-							t.Error("expected non-empty tokens")
-						}
-
+					SaveSession(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, _ int64, _ string, _ time.Time) error {
 						return nil
 					})
 			},
@@ -297,13 +290,12 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 
 			u := newTestUsecase(userRepo, sessionRepo)
 
-			got, err := u.SignUp(tt.email, tt.password)
+			got, err := u.SignUp(context.Background(), tt.email, tt.password)
 
 			if tt.wantErrIs != nil {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
-
 				return
 			}
 
@@ -311,11 +303,9 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
-
 				if !strings.Contains(err.Error(), tt.wantErrContains) {
 					t.Fatalf("expected error to contain %q, got %q", tt.wantErrContains, err.Error())
 				}
-
 				return
 			}
 
@@ -347,9 +337,12 @@ func TestAuthUsecase_Refresh(t *testing.T) {
 			name:  "no session",
 			email: "user@example.com",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
+				userRepo.EXPECT().
+					GetUserByEmail(gomock.Any(), "user@example.com").
+					Return(&domain.User{Email: "user@example.com", ID: int64(1)}, nil)
 				sessionRepo.EXPECT().
-					GetSession("user@example.com").
-					Return(nil, fmt.Errorf("not found"))
+					GetSession(gomock.Any(), int64(1)).
+					Return("", fmt.Errorf("not found"))
 			},
 			wantErrIs: domain.ErrNoSession,
 		},
@@ -357,11 +350,8 @@ func TestAuthUsecase_Refresh(t *testing.T) {
 			name:  "user not found",
 			email: "user@example.com",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
-				sessionRepo.EXPECT().
-					GetSession("user@example.com").
-					Return(&domain.TokenPair{RefreshToken: "old-refresh"}, nil)
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
+					GetUserByEmail(gomock.Any(), "user@example.com").
 					Return(nil, fmt.Errorf("not found"))
 			},
 			wantErrIs: domain.ErrNoSession,
@@ -370,14 +360,14 @@ func TestAuthUsecase_Refresh(t *testing.T) {
 			name:  "save session error",
 			email: "user@example.com",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
-				sessionRepo.EXPECT().
-					GetSession("user@example.com").
-					Return(&domain.TokenPair{RefreshToken: "old-refresh"}, nil)
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
-					Return(&domain.User{Email: "user@example.com"}, nil)
+					GetUserByEmail(gomock.Any(), "user@example.com").
+					Return(&domain.User{Email: "user@example.com", ID: int64(1)}, nil)
 				sessionRepo.EXPECT().
-					SaveSession("user@example.com", gomock.Any()).
+					GetSession(gomock.Any(), int64(1)).
+					Return("old-refresh", nil)
+				sessionRepo.EXPECT().
+					SaveSession(gomock.Any(), int64(1), gomock.Any(), gomock.Any()).
 					Return(fmt.Errorf("save session failed"))
 			},
 			wantErrContains: "save session",
@@ -386,19 +376,15 @@ func TestAuthUsecase_Refresh(t *testing.T) {
 			name:  "success",
 			email: "user@example.com",
 			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
-				sessionRepo.EXPECT().
-					GetSession("user@example.com").
-					Return(&domain.TokenPair{RefreshToken: "old-refresh"}, nil)
 				userRepo.EXPECT().
-					GetUserByEmail("user@example.com").
-					Return(&domain.User{Email: "user@example.com"}, nil)
+					GetUserByEmail(gomock.Any(), "user@example.com").
+					Return(&domain.User{Email: "user@example.com", ID: int64(1)}, nil)
 				sessionRepo.EXPECT().
-					SaveSession("user@example.com", gomock.Any()).
-					DoAndReturn(func(email string, tokenPair domain.TokenPair) error {
-						if tokenPair.AccessToken == "" || tokenPair.RefreshToken == "" {
-							t.Error("expected non-empty tokens")
-						}
-
+					GetSession(gomock.Any(), int64(1)).
+					Return("old-refresh", nil)
+				sessionRepo.EXPECT().
+					SaveSession(gomock.Any(), int64(1), gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, _ int64, _ string, _ time.Time) error {
 						return nil
 					})
 			},
@@ -407,7 +393,6 @@ func TestAuthUsecase_Refresh(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Подготовка (Setup)
 			userRepo := mocks.NewMockUserRepo(ctrl)
 			sessionRepo := mocks.NewMockSessionRepo(ctrl)
 
@@ -417,15 +402,12 @@ func TestAuthUsecase_Refresh(t *testing.T) {
 
 			u := newTestUsecase(userRepo, sessionRepo)
 
-			// Действие (Action)
-			got, err := u.Refresh(tt.email)
+			got, err := u.Refresh(context.Background(), tt.email)
 
-			// Проверка (Assert)
 			if tt.wantErrIs != nil {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
-
 				return
 			}
 
@@ -433,11 +415,9 @@ func TestAuthUsecase_Refresh(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
-
 				if !strings.Contains(err.Error(), tt.wantErrContains) {
 					t.Fatalf("expected error to contain %q, got %q", tt.wantErrContains, err.Error())
 				}
-
 				return
 			}
 
@@ -456,15 +436,16 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
-
 	t.Cleanup(func() {
 		ctrl.Finish()
 	})
 
+	testUserID := int64(1)
+
 	tests := []struct {
 		name       string
 		makeToken  func(t *testing.T, u *usecase.AuthUsecase) string
-		setupMocks func(sessionRepo *mocks.MockSessionRepo, token string)
+		setupMocks func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo, token string)
 		wantEmail  string
 		wantErrIs  error
 	}{
@@ -472,7 +453,6 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 			name: "invalid token string",
 			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
 				t.Helper()
-
 				return "not-a-jwt"
 			},
 			wantErrIs: domain.ErrInvalidToken,
@@ -481,8 +461,7 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 			name: "empty subject",
 			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
 				t.Helper()
-
-				return makeToken(t, u.GetConfig().JWTSecret, "", time.Hour, jwt.SigningMethodHS256)
+				return makeToken(t, u.GetConfig().JWTSecret, "", testUserID, time.Hour, jwt.SigningMethodHS256)
 			},
 			wantErrIs: domain.ErrInvalidToken,
 		},
@@ -490,13 +469,15 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 			name: "no session",
 			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
 				t.Helper()
-
-				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS256)
+				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, time.Hour, jwt.SigningMethodHS256)
 			},
-			setupMocks: func(sessionRepo *mocks.MockSessionRepo, token string) {
+			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo, token string) {
+				userRepo.EXPECT().
+					GetUserByEmail(gomock.Any(), "user@example.com").
+					Return(&domain.User{Email: "user@example.com", ID: testUserID}, nil)
 				sessionRepo.EXPECT().
-					GetSession("user@example.com").
-					Return(nil, fmt.Errorf("not found"))
+					GetSession(gomock.Any(), testUserID).
+					Return("", fmt.Errorf("not found"))
 			},
 			wantErrIs: domain.ErrNoSession,
 		},
@@ -504,13 +485,15 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 			name: "refresh token mismatch",
 			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
 				t.Helper()
-
-				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS256)
+				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, time.Hour, jwt.SigningMethodHS256)
 			},
-			setupMocks: func(sessionRepo *mocks.MockSessionRepo, token string) {
+			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo, token string) {
+				userRepo.EXPECT().
+					GetUserByEmail(gomock.Any(), "user@example.com").
+					Return(&domain.User{Email: "user@example.com", ID: testUserID}, nil)
 				sessionRepo.EXPECT().
-					GetSession("user@example.com").
-					Return(&domain.TokenPair{RefreshToken: "another-token"}, nil)
+					GetSession(gomock.Any(), testUserID).
+					Return("another-token", nil)
 			},
 			wantErrIs: domain.ErrInvalidToken,
 		},
@@ -518,13 +501,15 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 			name: "success",
 			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
 				t.Helper()
-
-				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS256)
+				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, time.Hour, jwt.SigningMethodHS256)
 			},
-			setupMocks: func(sessionRepo *mocks.MockSessionRepo, token string) {
+			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo, token string) {
+				userRepo.EXPECT().
+					GetUserByEmail(gomock.Any(), "user@example.com").
+					Return(&domain.User{Email: "user@example.com", ID: testUserID}, nil)
 				sessionRepo.EXPECT().
-					GetSession("user@example.com").
-					Return(&domain.TokenPair{RefreshToken: token}, nil)
+					GetSession(gomock.Any(), testUserID).
+					Return(token, nil)
 			},
 			wantEmail: "user@example.com",
 		},
@@ -533,7 +518,6 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			// Подготовка (Setup)
 			userRepo := mocks.NewMockUserRepo(ctrl)
 			sessionRepo := mocks.NewMockSessionRepo(ctrl)
 			u := newTestUsecase(userRepo, sessionRepo)
@@ -541,18 +525,15 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 			token := tt.makeToken(t, u)
 
 			if tt.setupMocks != nil {
-				tt.setupMocks(sessionRepo, token)
+				tt.setupMocks(userRepo, sessionRepo, token)
 			}
 
-			// Действие (Action)
-			email, err := u.ValidateRefreshToken(token)
+			email, err := u.ValidateRefreshToken(context.Background(), token)
 
-			// Проверка (Assert)
 			if tt.wantErrIs != nil {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
-
 				return
 			}
 
@@ -571,22 +552,22 @@ func TestAuthUsecase_ValidateAccessToken(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
-
 	t.Cleanup(func() {
 		ctrl.Finish()
 	})
 
+	testUserID := int64(1)
+
 	tests := []struct {
 		name      string
 		makeToken func(t *testing.T, u *usecase.AuthUsecase) string
-		wantEmail string
+		wantAuth  usecase.AuthContext
 		wantErrIs error
 	}{
 		{
 			name: "invalid token string",
 			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
 				t.Helper()
-
 				return "bad-token"
 			},
 			wantErrIs: domain.ErrInvalidToken,
@@ -595,8 +576,7 @@ func TestAuthUsecase_ValidateAccessToken(t *testing.T) {
 			name: "empty subject",
 			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
 				t.Helper()
-
-				return makeToken(t, u.GetConfig().JWTSecret, "", time.Hour, jwt.SigningMethodHS256)
+				return makeToken(t, u.GetConfig().JWTSecret, "", testUserID, time.Hour, jwt.SigningMethodHS256)
 			},
 			wantErrIs: domain.ErrInvalidToken,
 		},
@@ -604,30 +584,28 @@ func TestAuthUsecase_ValidateAccessToken(t *testing.T) {
 			name: "success",
 			makeToken: func(t *testing.T, u *usecase.AuthUsecase) string {
 				t.Helper()
-
-				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS256)
+				return makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, time.Hour, jwt.SigningMethodHS256)
 			},
-			wantEmail: "user@example.com",
+			wantAuth: usecase.AuthContext{
+				UserId: testUserID,
+				Email:  "user@example.com",
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			// Подготовка (Setup)
 			u := newTestUsecase(mocks.NewMockUserRepo(ctrl), mocks.NewMockSessionRepo(ctrl))
 
 			token := tt.makeToken(t, u)
 
-			// Действие (Action)
-			email, err := u.ValidateAccessToken(token)
+			auth, err := u.ValidateAccessToken(token)
 
-			// Проверка (Assert)
 			if tt.wantErrIs != nil {
 				if !errors.Is(err, tt.wantErrIs) {
 					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
 				}
-
 				return
 			}
 
@@ -635,8 +613,11 @@ func TestAuthUsecase_ValidateAccessToken(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if email != tt.wantEmail {
-				t.Fatalf("expected email %q, got %q", tt.wantEmail, email)
+			if auth.Email != tt.wantAuth.Email {
+				t.Fatalf("expected email %q, got %q", tt.wantAuth.Email, auth.Email)
+			}
+			if auth.UserId != tt.wantAuth.UserId {
+				t.Fatalf("expected user_id %v, got %v", tt.wantAuth.UserId, auth.UserId)
 			}
 		})
 	}
@@ -646,15 +627,15 @@ func TestAuthUsecase_ValidateAccessToken_ParseScenarios(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
-
 	t.Cleanup(func() {
 		ctrl.Finish()
 	})
 
 	u := newTestUsecase(mocks.NewMockUserRepo(ctrl), mocks.NewMockSessionRepo(ctrl))
+	testUserID := int64(1)
 
 	t.Run("wrong signing method", func(t *testing.T) {
-		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS512)
+		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, time.Hour, jwt.SigningMethodHS512)
 
 		_, err := u.ValidateAccessToken(tokenString)
 		if !errors.Is(err, domain.ErrInvalidToken) {
@@ -664,8 +645,7 @@ func TestAuthUsecase_ValidateAccessToken_ParseScenarios(t *testing.T) {
 
 	t.Run("expired token", func(t *testing.T) {
 		t.Parallel()
-
-		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", -time.Hour, jwt.SigningMethodHS256)
+		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, -time.Hour, jwt.SigningMethodHS256)
 
 		_, err := u.ValidateAccessToken(tokenString)
 		if !errors.Is(err, domain.ErrInvalidToken) {
@@ -674,15 +654,18 @@ func TestAuthUsecase_ValidateAccessToken_ParseScenarios(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
-		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", time.Hour, jwt.SigningMethodHS256)
+		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, time.Hour, jwt.SigningMethodHS256)
 
-		email, err := u.ValidateAccessToken(tokenString)
+		auth, err := u.ValidateAccessToken(tokenString)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		if email != "user@example.com" {
-			t.Fatalf("expected email %q, got %q", "user@example.com", email)
+		if auth.Email != "user@example.com" {
+			t.Fatalf("expected email %q, got %q", "user@example.com", auth.Email)
+		}
+		if auth.UserId != testUserID {
+			t.Fatalf("expected user_id %v, got %v", testUserID, auth.UserId)
 		}
 	})
 }
@@ -693,14 +676,11 @@ func TestAuthUsecase_GetConfig(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	// Подготовка (Setup)
 	cfg := testConfig()
 	u := usecase.NewAuthUsecase(mocks.NewMockUserRepo(ctrl), mocks.NewMockSessionRepo(ctrl), cfg)
 
-	// Действие (Action)
 	got := u.GetConfig()
 
-	// Проверка (Assert)
 	if got != cfg {
 		t.Fatalf("expected config %+v, got %+v", cfg, got)
 	}

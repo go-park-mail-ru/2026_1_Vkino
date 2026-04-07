@@ -1,22 +1,24 @@
 package repository
 
 import (
+	"context"
+	"time"
+
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/google/uuid"
 )
 
 //go:generate mockgen -source=./repository.go -destination=../usecase/mocks/repository_mock.go -package=mocks
 type UserRepo interface {
-	GetUserByEmail(email string) (*domain.User, error)
-	GetUserByID(id uuid.UUID) (*domain.User, error)
-	CreateUser(login string, password string) (*domain.User, error)
-	UpdateUser(login string, password string) (*domain.User, error)
-	GetAllUsers() ([]*domain.User, error)
-	DeleteUser(login string) error
+	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
+	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
+	CreateUser(ctx context.Context, login string, password string) (*domain.User, error)
+	UpdateUser(ctx context.Context, login string, password string) (*domain.User, error)
+	DeleteUser(ctx context.Context, login string) error
+	// GetAllUsers(ctx context.Context) ([]*domain.User, error)
 }
 
 type SessionRepo interface {
-	SaveSession(email string, tokens domain.TokenPair) error
-	GetSession(email string) (*domain.TokenPair, error)
-	DeleteSession(email string) error
+	SaveSession(ctx context.Context, userID int64, refreshToken string, expiresAt time.Time) error
+	GetSession(ctx context.Context, userID int64) (string, error)
+	DeleteSession(ctx context.Context, userID int64) error
 }

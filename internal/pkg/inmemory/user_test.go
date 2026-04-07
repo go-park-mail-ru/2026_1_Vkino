@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serializer"
-	"github.com/google/uuid"
 )
 
 type userRepoTestModel string
@@ -137,7 +136,7 @@ func TestUserRepo_GetUserByID(t *testing.T) {
 	tests := []struct {
 		name       string
 		withTable  bool
-		prepare    func(t *testing.T, repo *UserRepo) uuid.UUID
+		prepare    func(t *testing.T, repo *UserRepo) int64
 		wantErrIs  error
 		wantAnyErr bool
 		wantEmail  string
@@ -145,7 +144,7 @@ func TestUserRepo_GetUserByID(t *testing.T) {
 		{
 			name:      "success",
 			withTable: true,
-			prepare: func(t *testing.T, repo *UserRepo) uuid.UUID {
+			prepare: func(t *testing.T, repo *UserRepo) int64 {
 				t.Helper()
 
 				user, err := repo.CreateUser("user@example.com", "hash-password")
@@ -160,27 +159,27 @@ func TestUserRepo_GetUserByID(t *testing.T) {
 		{
 			name:      "user not found",
 			withTable: true,
-			prepare: func(t *testing.T, repo *UserRepo) uuid.UUID {
+			prepare: func(t *testing.T, repo *UserRepo) int64 {
 				t.Helper()
 
-				return uuid.New()
+				return 99999
 			},
 			wantErrIs: ErrUserNotFound,
 		},
 		{
 			name:      "table not found maps to user not found",
 			withTable: false,
-			prepare: func(t *testing.T, repo *UserRepo) uuid.UUID {
+			prepare: func(t *testing.T, repo *UserRepo) int64 {
 				t.Helper()
 
-				return uuid.New()
+				return 99999
 			},
 			wantErrIs: ErrUserNotFound,
 		},
 		{
 			name:      "deserialize error",
 			withTable: true,
-			prepare: func(t *testing.T, repo *UserRepo) uuid.UUID {
+			prepare: func(t *testing.T, repo *UserRepo) int64 {
 				t.Helper()
 
 				err := repo.db.Save("users", "broken@example.com", []byte("not valid json"))
@@ -188,7 +187,7 @@ func TestUserRepo_GetUserByID(t *testing.T) {
 					t.Fatalf("save broken user: %v", err)
 				}
 
-				return uuid.New()
+				return 99999
 			},
 			wantAnyErr: true,
 		},
@@ -318,8 +317,8 @@ func TestUserRepo_CreateUser(t *testing.T) {
 				t.Fatal("expected non-nil user")
 			}
 
-			if got.ID == uuid.Nil {
-				t.Fatal("expected non-zero uuid")
+			if got.ID == 0 {
+				t.Fatal("expected non-zero id")
 			}
 
 			if got.Email != tt.wantEmail {

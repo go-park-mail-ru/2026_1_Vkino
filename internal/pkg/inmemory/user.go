@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serializer"
-	"github.com/google/uuid"
 )
 
 type UserRepo struct {
@@ -40,7 +39,7 @@ func (r *UserRepo) GetUserByEmail(email string) (*domain.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepo) GetUserByID(id uuid.UUID) (*domain.User, error) {
+func (r *UserRepo) GetUserByID(id int64) (*domain.User, error) {
 	allData, err := r.db.GetAll("users")
 	if err != nil {
 		if errors.Is(err, ErrTableNotFound) {
@@ -68,7 +67,7 @@ func (r *UserRepo) CreateUser(login string, password string) (*domain.User, erro
 	now := time.Now()
 
 	user := domain.User{
-		ID:               uuid.New(),
+		ID:               now.UnixNano(),
 		Email:            login,
 		Password:         password,
 		RegistrationDate: now,
