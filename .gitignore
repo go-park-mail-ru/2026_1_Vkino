@@ -7,3 +7,4 @@ logs/
 .gocache/
 .gomodcache/
 coverage*.out
+.env
