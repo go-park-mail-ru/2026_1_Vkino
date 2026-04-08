@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+	profiledomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/profile/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -64,6 +65,21 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 	}
 
 	return &user, nil
+}
+
+func (r *UserRepo) GetProfileByID(ctx context.Context, id int64) (profiledomain.ProfileResponse, error) {
+	user, err := r.GetUserByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, ErrUserNotFound) {
+			return profiledomain.ProfileResponse{}, profiledomain.ErrUserNotFound
+		}
+
+		return profiledomain.ProfileResponse{}, err
+	}
+
+	return profiledomain.ProfileResponse{
+		Email: user.Email,
+	}, nil
 }
 
 func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (*domain.User, error) {

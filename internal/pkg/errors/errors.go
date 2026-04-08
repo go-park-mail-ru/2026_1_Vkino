@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	authdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+	profiledomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/profile/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 
@@ -23,6 +24,7 @@ var errToHTTP = map[error]HttpErr{
 	authdomain.ErrNoSession:          {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInvalidToken:       {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInternal:           {status: http.StatusInternalServerError, message: "internal server error"},
+	profiledomain.ErrUserNotFound:    {status: http.StatusNotFound, message: "user not found"},
 
 	repo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
 	repo.ErrMovieNotFound:     {status: http.StatusNotFound, message: "movie not found"},
