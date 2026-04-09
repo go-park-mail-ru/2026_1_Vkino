@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
 	authHttp "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 )
 

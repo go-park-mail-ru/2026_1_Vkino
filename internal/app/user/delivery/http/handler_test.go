@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
-	usecasemocks "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase/mocks"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
+	usecasemocks "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase/mocks"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	"go.uber.org/mock/gomock"
 )
@@ -457,7 +457,14 @@ func TestHandler_Me(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			h := NewHandler(usecasemocks.NewMockUsecase(ctrl))
+			mu := usecasemocks.NewMockUsecase(ctrl)
+			if tt.ctxEmail != "" {
+				mu.EXPECT().
+					GetProfile(gomock.Any(), int64(1)).
+					Return(domain.ProfileResponse{Email: tt.ctxEmail}, nil)
+			}
+
+			h := NewHandler(mu)
 
 			req := httptest.NewRequest(stdhttp.MethodGet, "/me", nil)
 			if tt.ctxEmail != "" {

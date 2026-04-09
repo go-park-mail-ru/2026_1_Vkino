@@ -14,7 +14,7 @@ import (
 	reflect "reflect"
 	time "time"
 
-	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -114,6 +114,50 @@ func (m *MockUserRepo) UpdateUser(ctx context.Context, login, password string) (
 func (mr *MockUserRepoMockRecorder) UpdateUser(ctx, login, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserRepo)(nil).UpdateUser), ctx, login, password)
+}
+
+// UpdateBirthdate mocks base method.
+func (m *MockUserRepo) UpdateBirthdate(ctx context.Context, userID int64, birthdate *time.Time) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateBirthdate", ctx, userID, birthdate)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateBirthdate indicates an expected call of UpdateBirthdate.
+func (mr *MockUserRepoMockRecorder) UpdateBirthdate(ctx, userID, birthdate any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBirthdate", reflect.TypeOf((*MockUserRepo)(nil).UpdateBirthdate), ctx, userID, birthdate)
+}
+
+// UpdateAvatarFileKey mocks base method.
+func (m *MockUserRepo) UpdateAvatarFileKey(ctx context.Context, userID int64, avatarFileKey *string) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAvatarFileKey", ctx, userID, avatarFileKey)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateAvatarFileKey indicates an expected call of UpdateAvatarFileKey.
+func (mr *MockUserRepoMockRecorder) UpdateAvatarFileKey(ctx, userID, avatarFileKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAvatarFileKey", reflect.TypeOf((*MockUserRepo)(nil).UpdateAvatarFileKey), ctx, userID, avatarFileKey)
+}
+
+// UpdatePasswordByID mocks base method.
+func (m *MockUserRepo) UpdatePasswordByID(ctx context.Context, userID int64, passwordHash string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePasswordByID", ctx, userID, passwordHash)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePasswordByID indicates an expected call of UpdatePasswordByID.
+func (mr *MockUserRepoMockRecorder) UpdatePasswordByID(ctx, userID, passwordHash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePasswordByID", reflect.TypeOf((*MockUserRepo)(nil).UpdatePasswordByID), ctx, userID, passwordHash)
 }
 
 // MockSessionRepo is a mock of SessionRepo interface.

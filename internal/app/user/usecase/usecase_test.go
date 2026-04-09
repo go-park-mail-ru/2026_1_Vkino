@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase/mocks"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase/mocks"
+	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
@@ -40,6 +42,43 @@ func hashPassword(t *testing.T, password string) string {
 func newTestUsecase(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) *usecase.AuthUsecase {
 	return usecase.NewAuthUsecase(userRepo, sessionRepo, testConfig())
 }
+
+type fakeFileStorage struct {
+	putCalled    bool
+	deleteCalled bool
+	lastPutKey   string
+}
+
+func (f *fakeFileStorage) PutObject(
+	_ context.Context,
+	key string,
+	_ io.Reader,
+	_ int64,
+	_ string,
+) error {
+	f.putCalled = true
+	f.lastPutKey = key
+	return nil
+}
+
+func (f *fakeFileStorage) DeleteObject(_ context.Context, _ string) error {
+	f.deleteCalled = true
+	return nil
+}
+
+func (f *fakeFileStorage) PresignGetObject(
+	_ context.Context,
+	key string,
+	_ time.Duration,
+) (string, error) {
+	return "https://example.com/" + key, nil
+}
+
+func (f *fakeFileStorage) GetObject(_ context.Context, _ string) (io.ReadCloser, error) {
+	return io.NopCloser(strings.NewReader("")), nil
+}
+
+var _ storagepkg.FileStorage = (*fakeFileStorage)(nil)
 
 func makeToken(t *testing.T, secret, subject string, userID int64, ttl time.Duration, method jwt.SigningMethod) string {
 	t.Helper()
@@ -545,6 +584,91 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 				t.Fatalf("expected email %q, got %q", tt.wantEmail, email)
 			}
 		})
+	}
+}
+
+func TestAuthUsecase_UpdateProfile_BirthdateOnly(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userRepo := mocks.NewMockUserRepo(ctrl)
+	sessionRepo := mocks.NewMockSessionRepo(ctrl)
+	u := newTestUsecase(userRepo, sessionRepo)
+
+	birthdate, _ := time.Parse("2006-01-02", "2001-09-12")
+	userRepo.EXPECT().
+		GetUserByID(gomock.Any(), int64(7)).
+		Return(&domain.User{ID: 7, Email: "user@example.com"}, nil)
+	userRepo.EXPECT().
+		UpdateBirthdate(gomock.Any(), int64(7), gomock.Any()).
+		Return(&domain.User{ID: 7, Email: "user@example.com", Birthdate: &birthdate}, nil)
+
+	resp, err := u.UpdateProfile(context.Background(), 7, "2001-09-12", nil, 0, "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if resp.Email != "user@example.com" {
+		t.Fatalf("expected email user@example.com, got %q", resp.Email)
+	}
+
+	if resp.Birthdate == nil || *resp.Birthdate != "2001-09-12" {
+		t.Fatalf("expected birthdate 2001-09-12, got %v", resp.Birthdate)
+	}
+}
+
+func TestAuthUsecase_UpdateProfile_BirthdateAndAvatar(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userRepo := mocks.NewMockUserRepo(ctrl)
+	sessionRepo := mocks.NewMockSessionRepo(ctrl)
+	store := &fakeFileStorage{}
+	u := usecase.NewAuthUsecaseWithStorage(userRepo, sessionRepo, store, testConfig())
+
+	birthdate, _ := time.Parse("2006-01-02", "2002-10-13")
+	oldAvatar := "users/7/avatar/old.jpg"
+
+	userRepo.EXPECT().
+		GetUserByID(gomock.Any(), int64(7)).
+		Return(&domain.User{ID: 7, Email: "user@example.com", AvatarFileKey: &oldAvatar}, nil)
+
+	userRepo.EXPECT().
+		UpdateBirthdate(gomock.Any(), int64(7), gomock.Any()).
+		Return(&domain.User{ID: 7, Email: "user@example.com", Birthdate: &birthdate, AvatarFileKey: &oldAvatar}, nil)
+
+	userRepo.EXPECT().
+		UpdateAvatarFileKey(gomock.Any(), int64(7), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ int64, avatarFileKey *string) (*domain.User, error) {
+			return &domain.User{ID: 7, Email: "user@example.com", Birthdate: &birthdate, AvatarFileKey: avatarFileKey}, nil
+		})
+
+	resp, err := u.UpdateProfile(
+		context.Background(),
+		7,
+		"2002-10-13",
+		strings.NewReader("img"),
+		3,
+		"image/png",
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !store.putCalled {
+		t.Fatal("expected avatar to be uploaded")
+	}
+
+	if !store.deleteCalled {
+		t.Fatal("expected old avatar to be deleted")
+	}
+
+	if resp.AvatarURL == "" {
+		t.Fatal("expected non-empty avatar url")
 	}
 }
 

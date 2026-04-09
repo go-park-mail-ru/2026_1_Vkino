@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
 )
 
 //go:generate mockgen -source=./repository.go -destination=../usecase/mocks/repository_mock.go -package=mocks
@@ -13,6 +13,9 @@ type UserRepo interface {
 	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
 	CreateUser(ctx context.Context, login string, password string) (*domain.User, error)
 	UpdateUser(ctx context.Context, login string, password string) (*domain.User, error)
+	UpdateBirthdate(ctx context.Context, userID int64, birthdate *time.Time) (*domain.User, error)
+	UpdateAvatarFileKey(ctx context.Context, userID int64, avatarFileKey *string) (*domain.User, error)
+	UpdatePasswordByID(ctx context.Context, userID int64, passwordHash string) error
 	DeleteUser(ctx context.Context, login string) error
 	// GetAllUsers(ctx context.Context) ([]*domain.User, error)
 }

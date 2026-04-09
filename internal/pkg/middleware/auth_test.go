@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
-	usecasemocks "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase/mocks"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
+	usecasemocks "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase/mocks"
 	"go.uber.org/mock/gomock"
 )
 

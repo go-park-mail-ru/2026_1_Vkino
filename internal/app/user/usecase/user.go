@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/repository"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/repository"
+	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -28,6 +29,7 @@ type Config struct {
 type AuthUsecase struct {
 	userRepo    repository.UserRepo
 	sessionRepo repository.SessionRepo
+	avatarStore storagepkg.FileStorage
 	cfg         Config
 }
 
@@ -40,6 +42,21 @@ func NewAuthUsecase(userRepo repository.UserRepo, sessionRepo repository.Session
 	return &AuthUsecase{
 		userRepo:    userRepo,
 		sessionRepo: sessionRepo,
+		avatarStore: nil,
+		cfg:         cfg,
+	}
+}
+
+func NewAuthUsecaseWithStorage(
+	userRepo repository.UserRepo,
+	sessionRepo repository.SessionRepo,
+	avatarStore storagepkg.FileStorage,
+	cfg Config,
+) *AuthUsecase {
+	return &AuthUsecase{
+		userRepo:    userRepo,
+		sessionRepo: sessionRepo,
+		avatarStore: avatarStore,
 		cfg:         cfg,
 	}
 }
@@ -155,6 +172,34 @@ func (u *AuthUsecase) ValidateAccessToken(tokenString string) (AuthContext, erro
 
 func (u *AuthUsecase) GetConfig() Config {
 	return u.cfg
+}
+
+func (u *AuthUsecase) ChangePassword(ctx context.Context, userID int64, oldPassword, newPassword string) error {
+	if !domain.ValidatePassword(newPassword) {
+		return domain.ErrInvalidCredentials
+	}
+
+	user, err := u.userRepo.GetUserByID(ctx, userID)
+	if err != nil {
+		return domain.ErrInvalidToken
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword))
+	if err != nil {
+		return domain.ErrPasswordMismatch
+	}
+
+	newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return domain.ErrInternal
+	}
+
+	err = u.userRepo.UpdatePasswordByID(ctx, userID, string(newPasswordHash))
+	if err != nil {
+		return domain.ErrInternal
+	}
+
+	return nil
 }
 
 func (u *AuthUsecase) tokenGenerate(userEmail string, userID int64, tokenTTL time.Duration) (string, error) {

@@ -9,8 +9,8 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
 
-	authHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/delivery/http"
-	authUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+	userHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/delivery/http"
+	userUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
 
 	movieHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/delivery/http"
 	movieUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/usecase"
@@ -42,27 +42,27 @@ func Run(configPath *string) error {
 	movieRepo := postgres.NewMovieRepo(pgDB)
 
 	s3Storage, err := storagepkg.NewS3Storage(context.Background(), storagepkg.Config{
-        InternalEndpoint: cfg.S3.InternalEndpoint,
-        PublicEndpoint:   cfg.S3.PublicEndpoint,
-        Region:           cfg.S3.Region,
-        AccessKeyID:      cfg.S3.AccessKeyID,
-        SecretAccessKey:  cfg.S3.SecretAccessKey,
-        Bucket:           cfg.S3.BucketImages,
-        UseSSL:           cfg.S3.UseSSL,
-        UsePathStyle:     cfg.S3.UsePathStyle,
-        PresignTTL:       cfg.S3.PresignTTL,
-    })
-    if err != nil {
-        return fmt.Errorf("init image storage: %w", err)
-    }
+		InternalEndpoint: cfg.S3.InternalEndpoint,
+		PublicEndpoint:   cfg.S3.PublicEndpoint,
+		Region:           cfg.S3.Region,
+		AccessKeyID:      cfg.S3.AccessKeyID,
+		SecretAccessKey:  cfg.S3.SecretAccessKey,
+		Bucket:           cfg.S3.BucketImages,
+		UseSSL:           cfg.S3.UseSSL,
+		UsePathStyle:     cfg.S3.UsePathStyle,
+		PresignTTL:       cfg.S3.PresignTTL,
+	})
+	if err != nil {
+		return fmt.Errorf("init image storage: %w", err)
+	}
 
-	authUsecase := authUsecase.NewAuthUsecase(userRepo, sessionRepo, cfg.Auth)
+	userUsecase := userUsecase.NewAuthUsecaseWithStorage(userRepo, sessionRepo, s3Storage, cfg.User)
 	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo, s3Storage)
 
-	authHandler := authHttp.NewHandler(authUsecase)
+	userHandler := userHttp.NewHandler(userUsecase)
 	movieHandler := movieHttp.NewHandler(movieUsecase)
 
-	authMiddleware := middleware.NewAuthMiddleware(authUsecase)
+	authMiddleware := middleware.NewAuthMiddleware(userUsecase)
 
 	corsMiddleware := middleware.CorsMiddleware(cfg.CORS)
 
@@ -73,16 +73,18 @@ func Run(configPath *string) error {
 		httpserver.WithMiddleware(corsMiddleware),
 		httpserver.WithMiddleware(middleware.RecoveryMiddleware),
 
-		httpserver.WithRoute("POST /auth/sign-up", authHandler.SignUp),
-		httpserver.WithRoute("POST /auth/sign-in", authHandler.SignIn),
-		httpserver.WithRoute("POST /auth/refresh", authHandler.Refresh),
+		httpserver.WithRoute("POST /user/sign-up", userHandler.SignUp),
+		httpserver.WithRoute("POST /user/sign-in", userHandler.SignIn),
+		httpserver.WithRoute("POST /user/refresh", userHandler.Refresh),
 		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
 		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
 		httpserver.WithRoute("GET /movie/{id}", movieHandler.GetMovieByID),
 		httpserver.WithRoute("GET /movie/actor/{id}", movieHandler.GetActorByID),
 
-		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware),
-		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.LogOut, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("GET /user/me", userHandler.Me, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("PUT /user/profile", userHandler.UpdateProfile, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("POST /user/change-password", userHandler.ChangePassword, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("POST /user/logout", userHandler.LogOut, authMiddleware.Middleware),
 
 		// httpserver.WithRoute("GET /movie/{moviename}", movieHandler.GetMovieById) -- страница для проверки зарега
 	)

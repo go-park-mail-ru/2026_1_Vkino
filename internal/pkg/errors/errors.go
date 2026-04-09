@@ -4,7 +4,7 @@ import (
 	stderrors "errors"
 	"net/http"
 
-	authdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+	authdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 
@@ -22,6 +22,9 @@ var errToHTTP = map[error]HttpErr{
 	authdomain.ErrInvalidCredentials: {status: http.StatusUnauthorized, message: "invalid credentials"},
 	authdomain.ErrNoSession:          {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInvalidToken:       {status: http.StatusUnauthorized, message: "unauthorized"},
+	authdomain.ErrPasswordMismatch:   {status: http.StatusUnauthorized, message: "invalid credentials"},
+	authdomain.ErrInvalidBirthdate:   {status: http.StatusBadRequest, message: "invalid birthdate"},
+	authdomain.ErrInvalidAvatar:      {status: http.StatusBadRequest, message: "invalid avatar"},
 	authdomain.ErrInternal:           {status: http.StatusInternalServerError, message: "internal server error"},
 
 	repo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
