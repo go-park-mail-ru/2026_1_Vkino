@@ -34,7 +34,7 @@ const (
 			coalesce(title, ''),
 			coalesce(description, ''),
 			duration_seconds,
-			picture_file_key,
+			picture_file_key
 		from episode
 		where movie_id = $1
 		order by season_number, episode_number
