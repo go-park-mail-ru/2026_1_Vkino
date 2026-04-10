@@ -21,6 +21,7 @@ var (
 	ErrSelectionNotFound = errors.New("selection not found")
 	ErrMovieNotFound     = errors.New("movie not found")
 	ErrActorNotFound     = errors.New("actor not found")
+	ErrEpisodeNotFound   = errors.New("episode not found")
 )
 
 func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error) {
@@ -122,4 +123,88 @@ func (r *MovieRepo) GetActorByID(ctx context.Context, id int64) (domain.ActorRes
 	}
 
 	return actor, nil
+}
+
+// GetEpisodesByMovieID Получаем все эпизоды связанные с фильмом
+func (r *MovieRepo) GetEpisodesByMovieID(ctx context.Context, movieID int64) (domain.MovieEpisodesResponse, error) {
+	var episodes domain.MovieEpisodesResponse
+
+	rows, err := r.db.Pool.Query(ctx, sqlGetEpisodesByMovieID, movieID)
+	if err != nil {
+		return episodes, fmt.Errorf("unable to query episodes by movie id: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var episode domain.EpisodeItemResponse
+		err = rows.Scan(
+			&episode.ID,
+			&episode.MovieID,
+			&episode.SeasonNumber,
+			&episode.EpisodeNumber,
+			&episode.Title,
+			&episode.Description,
+			&episode.DurationSeconds,
+			&episode.ImgURL,
+		)
+		if err != nil {
+			return episodes, fmt.Errorf("unable to scan episode item: %w", err)
+		}
+
+		episodes.Episodes = append(episodes.Episodes, episode)
+	}
+
+	if err = rows.Err(); err != nil {
+		return episodes, fmt.Errorf("error iterating episodes: %w", err)
+	}
+
+	return episodes, nil
+}
+
+// GetEpisodePlayback Получаем данные о запускаемом эпизоде
+func (r *MovieRepo) GetEpisodePlayback(ctx context.Context, episodeID int64) (domain.EpisodePlaybackResponse, error) {
+	var playback domain.EpisodePlaybackResponse
+
+	err := r.db.Pool.QueryRow(ctx, sqlGetEpisodePlayback, episodeID).Scan(
+		&playback.EpisodeID,
+		&playback.MovieID,
+		&playback.SeasonNumber,
+		&playback.EpisodeNumber,
+		&playback.Title,
+		&playback.DurationSeconds,
+		&playback.PlaybackURL,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.EpisodePlaybackResponse{}, ErrEpisodeNotFound
+		}
+
+		return domain.EpisodePlaybackResponse{}, fmt.Errorf("unable to scan episode playback: %w", err)
+	}
+
+	return playback, nil
+}
+
+func (r *MovieRepo) GetWatchProgress(ctx context.Context, userID, episodeID int64) (int, error) {
+	var positionSeconds int
+
+	err := r.db.Pool.QueryRow(ctx, sqlGetWatchProgress, userID, episodeID).Scan(&positionSeconds)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, nil
+		}
+
+		return 0, fmt.Errorf("unable to get watch progress: %w", err)
+	}
+
+	return positionSeconds, nil
+}
+
+func (r *MovieRepo) UpsertWatchProgress(ctx context.Context, userID, episodeID int64, positionSeconds int) error {
+	_, err := r.db.Pool.Exec(ctx, sqlUpsertWatchProgress, userID, episodeID, positionSeconds)
+	if err != nil {
+		return fmt.Errorf("unable to upsert watch progress: %w", err)
+	}
+
+	return nil
 }

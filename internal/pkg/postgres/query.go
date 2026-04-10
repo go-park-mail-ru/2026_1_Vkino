@@ -24,6 +24,49 @@ const (
 		from actor 
 		where id = $1
 	`
+
+	sqlGetEpisodesByMovieID = `
+		select
+			id,
+			movie_id,
+			season_number,
+			episode_number,
+			coalesce(title, ''),
+			coalesce(description, ''),
+			duration_seconds,
+			picture_file_key,
+		from episode
+		where movie_id = $1
+		order by season_number, episode_number
+	`
+
+	sqlGetEpisodePlayback = `
+		select
+			id,
+			movie_id,
+			season_number,
+			episode_number,
+			coalesce(title, ''),
+			duration_seconds,
+			video_file_key
+		from episode
+		where id = $1
+	`
+
+	sqlGetWatchProgress = `
+		select position_seconds
+		from watch_progress_episode
+		where user_id = $1 and episode_id = $2
+	`
+
+	sqlUpsertWatchProgress = `
+		insert into watch_progress_episode (user_id, episode_id, position_seconds)
+		values ($1, $2, $3)
+		on conflict (user_id, episode_id)
+		do update set
+			position_seconds = excluded.position_seconds,
+			updated_at = now()
+	`
 )
 
 // Session queries
