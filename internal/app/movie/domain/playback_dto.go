@@ -12,13 +12,6 @@ type EpisodeItemResponse struct {
 	ImgURL          string `json:"img_url"`
 }
 
-// MovieEpisodesResponse Хранит все видео, связанные с movie_id
-type MovieEpisodesResponse struct {
-	MovieID     int64                 `json:"movie_id"`
-	ContentType string                `json:"content_type"`
-	Episodes    []EpisodeItemResponse `json:"episodes"`
-}
-
 // EpisodePlaybackResponse Хранит данные о видео которое запускаем
 type EpisodePlaybackResponse struct {
 	EpisodeID       int64  `json:"episode_id"`

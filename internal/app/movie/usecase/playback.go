@@ -6,22 +6,9 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
 )
 
-// GetEpisodesByMovieID Получает все эпизоды по movie_id
-func (m *MovieUsecase) GetEpisodesByMovieID(ctx context.Context, movieID int64) (domain.MovieEpisodesResponse, error) {
-	if movieID <= 0 {
-		return domain.MovieEpisodesResponse{}, domain.ErrInvalidMovieID
-	}
-
-	episodes, err := m.movieRepo.GetEpisodesByMovieID(ctx, movieID)
-	if err != nil {
-		return domain.MovieEpisodesResponse{}, err
-	}
-
-	return episodes, nil
-}
-
-// GetEpisodePlayback Заполняет ссылку на видео в S3 и выставляет позицию просмотра
-func (m *MovieUsecase) GetEpisodePlayback(ctx context.Context, episodeID, userID int64) (domain.EpisodePlaybackResponse, error) {
+// GetEpisodePlayback Заполняет ссылку на видео в S3 и выставляет позицию просмотра.
+func (m *MovieUsecase) GetEpisodePlayback(ctx context.Context, episodeID,
+	userID int64) (domain.EpisodePlaybackResponse, error) {
 	if episodeID <= 0 {
 		return domain.EpisodePlaybackResponse{}, domain.ErrInvalidEpisodeID
 	}
@@ -35,6 +22,7 @@ func (m *MovieUsecase) GetEpisodePlayback(ctx context.Context, episodeID, userID
 	if err != nil {
 		return domain.EpisodePlaybackResponse{}, err
 	}
+
 	playback.PlaybackURL = playbackURL
 
 	if userID > 0 {
@@ -49,8 +37,9 @@ func (m *MovieUsecase) GetEpisodePlayback(ctx context.Context, episodeID, userID
 	return playback, nil
 }
 
-// GetEpisodeProgress Получает позицию просмотра на которой остановились
-func (m *MovieUsecase) GetEpisodeProgress(ctx context.Context, userID, episodeID int64) (domain.WatchProgressResponse, error) {
+// GetEpisodeProgress Получает позицию просмотра на которой остановились.
+func (m *MovieUsecase) GetEpisodeProgress(ctx context.Context, userID,
+	episodeID int64) (domain.WatchProgressResponse, error) {
 	if episodeID <= 0 {
 		return domain.WatchProgressResponse{}, domain.ErrInvalidEpisodeID
 	}

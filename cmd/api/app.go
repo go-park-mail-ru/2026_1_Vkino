@@ -33,6 +33,7 @@ func Run(configPath *string) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to postgres: %w", err)
 	}
+
 	log.Println("successfully connected to postgres")
 
 	defer pgDB.Close()
@@ -94,16 +95,15 @@ func Run(configPath *string) error {
 		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
 		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
 		httpserver.WithRoute("GET /movie/{id}", movieHandler.GetMovieByID),
-		httpserver.WithRoute("GET /movie/{id}/episodes", movieHandler.GetEpisodesByMovieID),
 		httpserver.WithRoute("GET /movie/actor/{id}", movieHandler.GetActorByID),
 		httpserver.WithRoute("GET /episode/{id}/playback", movieHandler.GetEpisodePlayback),
 
 		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.LogOut, authMiddleware.Middleware),
-		httpserver.WithMiddlewareRoute("GET /episode/{id}/progress", movieHandler.GetEpisodeProgress, authMiddleware.Middleware),
-		httpserver.WithMiddlewareRoute("PUT /episode/{id}/progress", movieHandler.SaveEpisodeProgress, authMiddleware.Middleware),
-
-		// httpserver.WithRoute("GET /movie/{moviename}", movieHandler.GetMovieById) -- страница для проверки зарега
+		httpserver.WithMiddlewareRoute("GET /episode/{id}/progress", movieHandler.GetEpisodeProgress,
+			authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("PUT /episode/{id}/progress", movieHandler.SaveEpisodeProgress,
+			authMiddleware.Middleware),
 	)
 
 	return server.Run()

@@ -117,6 +117,7 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 			}
 
 			var nextCalled bool
+
 			var nextAuth usecase.AuthContext
 
 			m := &AuthMiddleware{usecase: mu}
@@ -161,6 +162,7 @@ func TestAuthMiddleware_Middleware(t *testing.T) {
 				if nextAuth.UserId != tt.wantContextAuth.UserId {
 					t.Fatalf("expected context user_id %v, got %v", tt.wantContextAuth.UserId, nextAuth.UserId)
 				}
+
 				if nextAuth.Email != tt.wantContextAuth.Email {
 					t.Fatalf("expected context email %q, got %q", tt.wantContextAuth.Email, nextAuth.Email)
 				}
@@ -185,8 +187,9 @@ func TestAuthFromContext(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name:     "auth exists",
-			ctx:      context.WithValue(context.Background(), AuthCtxKey, usecase.AuthContext{UserId: testUserID, Email: "user@example.com"}),
+			name: "auth exists",
+			ctx: context.WithValue(context.Background(), AuthCtxKey,
+				usecase.AuthContext{UserId: testUserID, Email: "user@example.com"}),
 			wantAuth: usecase.AuthContext{UserId: testUserID, Email: "user@example.com"},
 			wantErr:  false,
 		},
@@ -223,6 +226,7 @@ func TestAuthFromContext(t *testing.T) {
 			if auth.UserId != tt.wantAuth.UserId {
 				t.Fatalf("expected user_id %v, got %v", tt.wantAuth.UserId, auth.UserId)
 			}
+
 			if auth.Email != tt.wantAuth.Email {
 				t.Fatalf("expected email %q, got %q", tt.wantAuth.Email, auth.Email)
 			}

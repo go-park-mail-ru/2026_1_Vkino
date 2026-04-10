@@ -35,10 +35,12 @@ func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (doma
 
 	for rows.Next() {
 		var moviePreview domain.MoviePreview
+
 		err := rows.Scan(&moviePreview.ID, &moviePreview.Title, &moviePreview.ImgUrl)
 		if err != nil {
 			return domain.SelectionResponse{}, fmt.Errorf("unable to read moviePreview: %w", err)
 		}
+
 		moviePreviews = append(moviePreviews, moviePreview)
 	}
 
@@ -59,10 +61,12 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.SelectionRes
 
 	for rows.Next() {
 		var selectionTitle string
+
 		err := rows.Scan(&selectionTitle)
 		if err != nil {
 			return nil, fmt.Errorf("unable to read selection title: %w", err)
 		}
+
 		selectionTitles = append(selectionTitles, selectionTitle)
 	}
 
@@ -77,6 +81,7 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.SelectionRes
 		if err != nil {
 			return nil, fmt.Errorf("unable to get selection by title %s: %w", title, err)
 		}
+
 		selections = append(selections, selection)
 	}
 
@@ -85,6 +90,7 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.SelectionRes
 
 func (r *MovieRepo) GetMovieByID(ctx context.Context, id int64) (domain.MovieResponse, error) {
 	var movieResponse domain.MovieResponse
+
 	err := r.db.Pool.QueryRow(ctx, sqlGetMovieByID, id).Scan(
 		&movieResponse.ID,
 		&movieResponse.Title,
@@ -107,6 +113,7 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, id int64) (domain.MovieRes
 
 func (r *MovieRepo) GetActorByID(ctx context.Context, id int64) (domain.ActorResponse, error) {
 	var actor domain.ActorResponse
+
 	err := r.db.Pool.QueryRow(ctx, sqlGetActorByID, id).Scan(
 		&actor.ID,
 		&actor.FullName,
@@ -119,6 +126,7 @@ func (r *MovieRepo) GetActorByID(ctx context.Context, id int64) (domain.ActorRes
 		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.ActorResponse{}, ErrActorNotFound
 		}
+
 		return domain.ActorResponse{}, fmt.Errorf("unable to scan actor: %w", err)
 	}
 
@@ -126,17 +134,18 @@ func (r *MovieRepo) GetActorByID(ctx context.Context, id int64) (domain.ActorRes
 }
 
 // GetEpisodesByMovieID Получаем все эпизоды связанные с фильмом
-func (r *MovieRepo) GetEpisodesByMovieID(ctx context.Context, movieID int64) (domain.MovieEpisodesResponse, error) {
-	var episodes domain.MovieEpisodesResponse
-
+func (r *MovieRepo) GetEpisodesByMovieID(ctx context.Context, movieID int64) ([]domain.EpisodeItemResponse, error) {
 	rows, err := r.db.Pool.Query(ctx, sqlGetEpisodesByMovieID, movieID)
 	if err != nil {
-		return episodes, fmt.Errorf("unable to query episodes by movie id: %w", err)
+		return nil, fmt.Errorf("unable to query episodes by movie id: %w", err)
 	}
 	defer rows.Close()
 
+	var episodes []domain.EpisodeItemResponse
+
 	for rows.Next() {
 		var episode domain.EpisodeItemResponse
+
 		err = rows.Scan(
 			&episode.ID,
 			&episode.MovieID,
@@ -148,14 +157,14 @@ func (r *MovieRepo) GetEpisodesByMovieID(ctx context.Context, movieID int64) (do
 			&episode.ImgURL,
 		)
 		if err != nil {
-			return episodes, fmt.Errorf("unable to scan episode item: %w", err)
+			return nil, fmt.Errorf("unable to scan episode item: %w", err)
 		}
 
-		episodes.Episodes = append(episodes.Episodes, episode)
+		episodes = append(episodes, episode)
 	}
 
 	if err = rows.Err(); err != nil {
-		return episodes, fmt.Errorf("error iterating episodes: %w", err)
+		return nil, fmt.Errorf("error iterating episodes: %w", err)
 	}
 
 	return episodes, nil

@@ -100,29 +100,6 @@ func (h *Handler) GetActorByID(w http.ResponseWriter, r *http.Request) {
 	httppkg.Response(w, http.StatusOK, actor)
 }
 
-func (h *Handler) GetEpisodesByMovieID(w http.ResponseWriter, r *http.Request) {
-	idParam := r.PathValue("id")
-	if len(idParam) == 0 {
-		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid movie id")
-		return
-	}
-
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
-		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid movie id")
-		return
-	}
-
-	episodes, err := h.usecase.GetEpisodesByMovieID(r.Context(), id)
-	if err != nil {
-		status, message := errors.MapError(err)
-		httppkg.ErrResponse(w, status, message)
-		return
-	}
-
-	httppkg.Response(w, http.StatusOK, episodes)
-}
-
 func (h *Handler) GetEpisodePlayback(w http.ResponseWriter, r *http.Request) {
 	idParam := r.PathValue("id")
 	if len(idParam) == 0 {
