@@ -314,6 +314,14 @@ create table if not exists users (
         constraint user_password_hash_length
             check (char_length(password_hash) >= 20 and char_length(password_hash) <= 255),
 
+    birthdate date
+        constraint birthdate_check
+            check (birthdate is null or birthdate <= current_date),
+
+    avatar_file_key text
+        constraint avatar_file_key_length
+            check (avatar_file_key is null or (char_length(avatar_file_key) > 0 and char_length(avatar_file_key) <= 1024)),
+
     registration_date timestamptz not null default now(),
     is_active boolean not null default true,
 
@@ -326,7 +334,6 @@ create table if not exists users (
 create trigger user_set_updated_at
 before update on users
 for each row execute function set_updated_at();
-
 
 -- Отзывы пользователя
 create table if not exists user_interaction (

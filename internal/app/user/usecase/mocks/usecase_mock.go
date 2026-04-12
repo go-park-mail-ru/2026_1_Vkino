@@ -11,10 +11,11 @@ package mocks
 
 import (
 	context "context"
+	io "io"
 	reflect "reflect"
 
-	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	usecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
+	usecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -70,6 +71,21 @@ func (mr *MockUsecaseMockRecorder) LogOut(ctx, email any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LogOut", reflect.TypeOf((*MockUsecase)(nil).LogOut), ctx, email)
 }
 
+// GetProfile mocks base method.
+func (m *MockUsecase) GetProfile(ctx context.Context, userID int64) (domain.ProfileResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetProfile", ctx, userID)
+	ret0, _ := ret[0].(domain.ProfileResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProfile indicates an expected call of GetProfile.
+func (mr *MockUsecaseMockRecorder) GetProfile(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockUsecase)(nil).GetProfile), ctx, userID)
+}
+
 // Refresh mocks base method.
 func (m *MockUsecase) Refresh(ctx context.Context, email string) (domain.TokenPair, error) {
 	m.ctrl.T.Helper()
@@ -113,6 +129,35 @@ func (m *MockUsecase) SignUp(ctx context.Context, email, password string) (domai
 func (mr *MockUsecaseMockRecorder) SignUp(ctx, email, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignUp", reflect.TypeOf((*MockUsecase)(nil).SignUp), ctx, email, password)
+}
+
+// UpdateProfile mocks base method.
+func (m *MockUsecase) UpdateProfile(ctx context.Context, userID int64, birthdate string, body io.Reader, size int64, contentType string) (domain.ProfileResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfile", ctx, userID, birthdate, body, size, contentType)
+	ret0, _ := ret[0].(domain.ProfileResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateProfile indicates an expected call of UpdateProfile.
+func (mr *MockUsecaseMockRecorder) UpdateProfile(ctx, userID, birthdate, body, size, contentType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUsecase)(nil).UpdateProfile), ctx, userID, birthdate, body, size, contentType)
+}
+
+// ChangePassword mocks base method.
+func (m *MockUsecase) ChangePassword(ctx context.Context, userID int64, oldPassword, newPassword string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangePassword", ctx, userID, oldPassword, newPassword)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangePassword indicates an expected call of ChangePassword.
+func (mr *MockUsecaseMockRecorder) ChangePassword(ctx, userID, oldPassword, newPassword any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePassword", reflect.TypeOf((*MockUsecase)(nil).ChangePassword), ctx, userID, oldPassword, newPassword)
 }
 
 // ValidateAccessToken mocks base method.

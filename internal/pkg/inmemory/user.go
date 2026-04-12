@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serializer"
 )
 

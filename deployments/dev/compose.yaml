@@ -88,8 +88,10 @@ services:
         sleep 2;
       done;
       /usr/bin/mc mb -p local/vkino-images || true;
+      /usr/bin/mc mb -p local/vkino-avatars || true;
       /usr/bin/mc mb -p local/vkino-videos || true;
       /usr/bin/mc anonymous set none local/vkino-images || true;
+      /usr/bin/mc anonymous set none local/vkino-avatars || true;
       /usr/bin/mc anonymous set none local/vkino-videos || true;
       exit 0;
       "

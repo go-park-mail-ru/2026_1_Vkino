@@ -24,6 +24,21 @@ type AccessTokenResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
+type UpdateProfileRequest struct {
+	Birthdate *string `json:"birthdate"`
+}
+
+type ChangePasswordRequest struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
+
+type ProfileResponse struct {
+	Email     string  `json:"email"`
+	Birthdate *string `json:"birthdate,omitempty"`
+	AvatarURL string  `json:"avatar_url,omitempty"`
+}
+
 func (u *TokenPair) Name() string {
 	return "sessions"
 }

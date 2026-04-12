@@ -9,8 +9,8 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
 
-	authHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/delivery/http"
-	authUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
+	userHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/delivery/http"
+	userUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
 
 	movieHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/delivery/http"
 	movieUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/usecase"
@@ -54,13 +54,18 @@ func Run(configPath *string) error {
 		return fmt.Errorf("init video storage: %w", err)
 	}
 
-	authUsecase := authUsecase.NewAuthUsecase(userRepo, sessionRepo, cfg.Auth)
+	avatarStorage, err := storagepkg.NewS3Storage(context.Background(), s3CommonConfig.WithBucket(cfg.S3.BucketAvatars))
+	if err != nil {
+		return fmt.Errorf("init avatar storage: %w", err)
+	}
+
+	userUsecase := userUsecase.NewAuthUsecaseWithStorage(userRepo, sessionRepo, avatarStorage, cfg.User)
 	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo, imageStorage, videoStorage)
 
-	authHandler := authHttp.NewHandler(authUsecase)
+	userHandler := userHttp.NewHandler(userUsecase)
 	movieHandler := movieHttp.NewHandler(movieUsecase)
 
-	authMiddleware := middleware.NewAuthMiddleware(authUsecase)
+	authMiddleware := middleware.NewAuthMiddleware(userUsecase)
 
 	corsMiddleware := middleware.CorsMiddleware(cfg.CORS)
 
@@ -71,17 +76,19 @@ func Run(configPath *string) error {
 		httpserver.WithMiddleware(corsMiddleware),
 		httpserver.WithMiddleware(middleware.RecoveryMiddleware),
 
-		httpserver.WithRoute("POST /auth/sign-up", authHandler.SignUp),
-		httpserver.WithRoute("POST /auth/sign-in", authHandler.SignIn),
-		httpserver.WithRoute("POST /auth/refresh", authHandler.Refresh),
+		httpserver.WithRoute("POST /user/sign-up", userHandler.SignUp),
+		httpserver.WithRoute("POST /user/sign-in", userHandler.SignIn),
+		httpserver.WithRoute("POST /user/refresh", userHandler.Refresh),
 		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
 		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
 		httpserver.WithRoute("GET /movie/{id}", movieHandler.GetMovieByID),
 		httpserver.WithRoute("GET /movie/actor/{id}", movieHandler.GetActorByID),
 		httpserver.WithRoute("GET /episode/{id}/playback", movieHandler.GetEpisodePlayback),
 
-		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware),
-		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.LogOut, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("GET /user/me", userHandler.Me, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("PUT /user/profile", userHandler.UpdateProfile, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("POST /user/change-password", userHandler.ChangePassword, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("POST /user/logout", userHandler.LogOut, authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("GET /episode/{id}/progress", movieHandler.GetEpisodeProgress,
 			authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("PUT /episode/{id}/progress", movieHandler.SaveEpisodeProgress,

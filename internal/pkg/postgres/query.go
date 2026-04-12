@@ -108,25 +108,45 @@ const (
 // User queries
 const (
 	sqlGetUserByEmail = `
-		select id, email, password_hash, registration_date, is_active, created_at, updated_at 
+		select id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at 
 		from users where email = $1
 	`
 
 	sqlGetUserByID = `
-		select id, email, password_hash, registration_date, is_active, created_at, updated_at 
+		select id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at 
 		from users where id = $1
 	`
 
 	sqlCreateUser = `insert into users (email, password_hash) 
 		values ($1, $2)
-		returning id, email, password_hash, registration_date, is_active, created_at, updated_at
+		returning id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
 	`
 
 	sqlUpdateUser = `
 		update users 
 		set password_hash = $1, updated_at = $2 
 		where email = $3 
-		returning id, email, password_hash, registration_date, is_active, created_at, updated_at
+		returning id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+	`
+
+	sqlUpdateUserBirthdate = `
+		update users
+		set birthdate = $1, updated_at = now()
+		where id = $2
+		returning id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+	`
+
+	sqlUpdateUserAvatarFileKey = `
+		update users
+		set avatar_file_key = $1, updated_at = now()
+		where id = $2
+		returning id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+	`
+
+	sqlUpdateUserPasswordByID = `
+		update users
+		set password_hash = $1, updated_at = now()
+		where id = $2
 	`
 
 	sqlDeleteUser = `

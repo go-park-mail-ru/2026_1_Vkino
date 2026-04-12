@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/usecase/mocks"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase/mocks"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
@@ -551,6 +551,104 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 				t.Fatalf("expected email %q, got %q", tt.wantEmail, email)
 			}
 		})
+	}
+}
+
+func TestAuthUsecase_UpdateProfile_BirthdateOnly(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userRepo := mocks.NewMockUserRepo(ctrl)
+	sessionRepo := mocks.NewMockSessionRepo(ctrl)
+	u := newTestUsecase(userRepo, sessionRepo)
+
+	birthdate, _ := time.Parse("2006-01-02", "2001-09-12")
+	userRepo.EXPECT().
+		GetUserByID(gomock.Any(), int64(7)).
+		Return(&domain.User{ID: 7, Email: "user@example.com"}, nil)
+	userRepo.EXPECT().
+		UpdateBirthdate(gomock.Any(), int64(7), gomock.Any()).
+		Return(&domain.User{ID: 7, Email: "user@example.com", Birthdate: &birthdate}, nil)
+
+	resp, err := u.UpdateProfile(context.Background(), 7, "2001-09-12", nil, 0, "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if resp.Email != "user@example.com" {
+		t.Fatalf("expected email user@example.com, got %q", resp.Email)
+	}
+
+	if resp.Birthdate == nil || *resp.Birthdate != "2001-09-12" {
+		t.Fatalf("expected birthdate 2001-09-12, got %v", resp.Birthdate)
+	}
+}
+
+func TestAuthUsecase_UpdateProfile_BirthdateAndAvatar(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userRepo := mocks.NewMockUserRepo(ctrl)
+	sessionRepo := mocks.NewMockSessionRepo(ctrl)
+	store := mocks.NewMockFileStorage(ctrl)
+	u := usecase.NewAuthUsecaseWithStorage(userRepo, sessionRepo, store, testConfig())
+
+	birthdate, _ := time.Parse("2006-01-02", "2002-10-13")
+	oldAvatar := "users/7/avatar/old.jpg"
+	newAvatar := ""
+
+	userRepo.EXPECT().
+		GetUserByID(gomock.Any(), int64(7)).
+		Return(&domain.User{ID: 7, Email: "user@example.com", AvatarFileKey: &oldAvatar}, nil)
+
+	userRepo.EXPECT().
+		UpdateBirthdate(gomock.Any(), int64(7), gomock.Any()).
+		Return(&domain.User{ID: 7, Email: "user@example.com", Birthdate: &birthdate, AvatarFileKey: &oldAvatar}, nil)
+
+	putCall := store.EXPECT().
+		PutObject(gomock.Any(), gomock.Any(), gomock.Any(), int64(3), "image/png").
+		Return(nil)
+
+	updateCall := userRepo.EXPECT().
+		UpdateAvatarFileKey(gomock.Any(), int64(7), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ int64, avatarFileKey *string) (*domain.User, error) {
+			newAvatar = *avatarFileKey
+			return &domain.User{ID: 7, Email: "user@example.com", Birthdate: &birthdate, AvatarFileKey: avatarFileKey}, nil
+		})
+
+	deleteCall := store.EXPECT().
+		DeleteObject(gomock.Any(), oldAvatar).
+		Return(nil)
+
+	presignCall := store.EXPECT().
+		PresignGetObject(gomock.Any(), gomock.Any(), time.Duration(0)).
+		DoAndReturn(func(_ context.Context, key string, _ time.Duration) (string, error) {
+			if newAvatar == "" {
+				t.Fatalf("expected new avatar key to be set")
+			}
+			return "https://example.com/" + key, nil
+		})
+
+	gomock.InOrder(putCall, updateCall, deleteCall, presignCall)
+
+	resp, err := u.UpdateProfile(
+		context.Background(),
+		7,
+		"2002-10-13",
+		strings.NewReader("img"),
+		3,
+		"image/png",
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if resp.AvatarURL == "" {
+		t.Fatal("expected non-empty avatar url")
 	}
 }
 
