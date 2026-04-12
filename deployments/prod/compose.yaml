@@ -68,6 +68,8 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
+    networks:
+      - app-network
 
   minio-init:
     image: minio/mc:latest
@@ -87,6 +89,8 @@ services:
       /usr/bin/mc anonymous set none local/vkino-videos || true;
       exit 0;
       "
+    networks:
+      - app-network
 
 networks:
   app-network:  
