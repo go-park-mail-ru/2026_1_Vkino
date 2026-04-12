@@ -14,8 +14,6 @@ import (
 
 	movieHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/delivery/http"
 	movieUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/usecase"
-	profileHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/profile/delivery/http"
-	profileUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/profile/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
@@ -60,11 +58,9 @@ func Run(configPath *string) error {
 
 	authUsecase := authUsecase.NewAuthUsecase(userRepo, sessionRepo, cfg.Auth)
 	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo, s3Storage)
-	profileUsecase := profileUsecase.NewProfileUsecase(userRepo)
 
 	authHandler := authHttp.NewHandler(authUsecase)
 	movieHandler := movieHttp.NewHandler(movieUsecase)
-	profileHandler := profileHttp.NewHandler(profileUsecase)
 
 	authMiddleware := middleware.NewAuthMiddleware(authUsecase)
 
@@ -85,8 +81,7 @@ func Run(configPath *string) error {
 		httpserver.WithRoute("GET /movie/{id}", movieHandler.GetMovieByID),
 		httpserver.WithRoute("GET /movie/actor/{id}", movieHandler.GetActorByID),
 
-		httpserver.WithMiddlewareRoute("GET /auth/me", profileHandler.GetProfile, authMiddleware.Middleware),
-		httpserver.WithMiddlewareRoute("GET /profile/me", profileHandler.GetProfile, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.LogOut, authMiddleware.Middleware),
 
 		// httpserver.WithRoute("GET /movie/{moviename}", movieHandler.GetMovieById) -- страница для проверки зарега

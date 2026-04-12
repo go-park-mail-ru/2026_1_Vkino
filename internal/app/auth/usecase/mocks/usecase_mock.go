@@ -56,6 +56,21 @@ func (mr *MockUsecaseMockRecorder) GetConfig() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfig", reflect.TypeOf((*MockUsecase)(nil).GetConfig))
 }
 
+// GetProfile mocks base method.
+func (m *MockUsecase) GetProfile(ctx context.Context, userID int64) (domain.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetProfile", ctx, userID)
+	ret0, _ := ret[0].(domain.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProfile indicates an expected call of GetProfile.
+func (mr *MockUsecaseMockRecorder) GetProfile(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockUsecase)(nil).GetProfile), ctx, userID)
+}
+
 // LogOut mocks base method.
 func (m *MockUsecase) LogOut(ctx context.Context, email string) error {
 	m.ctrl.T.Helper()

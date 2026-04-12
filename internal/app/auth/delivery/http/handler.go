@@ -107,9 +107,15 @@ func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httppkg.Response(w, http.StatusOK, domain.Response{
-		Email: auth.Email,
-	})
+	profile, err := h.usecase.GetProfile(r.Context(), auth.UserId)
+	if err != nil {
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
+
+		return
+	}
+
+	httppkg.Response(w, http.StatusOK, profile)
 }
 
 func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {

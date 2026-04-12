@@ -434,8 +434,12 @@ func TestHandler_Me(t *testing.T) {
 	tests := []struct {
 		name           string
 		ctxEmail       string
+		ctxUserID      int64
+		usecaseResp    domain.Response
+		usecaseErr     error
 		wantStatus     int
 		wantStringBody string
+		wantCalled     bool
 	}{
 		{
 			name:           "unauthorized",
@@ -443,10 +447,22 @@ func TestHandler_Me(t *testing.T) {
 			wantStringBody: "unauthorized",
 		},
 		{
+			name:           "user not found",
+			ctxEmail:       "user@example.com",
+			ctxUserID:      1,
+			usecaseErr:     domain.ErrUserNotFound,
+			wantStatus:     stdhttp.StatusNotFound,
+			wantStringBody: "user not found",
+			wantCalled:     true,
+		},
+		{
 			name:           "success",
 			ctxEmail:       "user@example.com",
+			ctxUserID:      1,
+			usecaseResp:    domain.Response{Email: "user@example.com"},
 			wantStatus:     stdhttp.StatusOK,
 			wantStringBody: "user@example.com",
+			wantCalled:     true,
 		},
 	}
 
@@ -457,11 +473,21 @@ func TestHandler_Me(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			h := NewHandler(usecasemocks.NewMockUsecase(ctrl))
+			mu := usecasemocks.NewMockUsecase(ctrl)
+			if tt.wantCalled {
+				mu.EXPECT().
+					GetProfile(gomock.Any(), tt.ctxUserID).
+					Return(tt.usecaseResp, tt.usecaseErr)
+			}
+
+			h := NewHandler(mu)
 
 			req := httptest.NewRequest(stdhttp.MethodGet, "/me", nil)
-			if tt.ctxEmail != "" {
-				ctx := context.WithValue(req.Context(), middleware.AuthCtxKey, usecase.AuthContext{Email: tt.ctxEmail, UserId: 1})
+			if tt.ctxEmail != "" || tt.ctxUserID != 0 {
+				ctx := context.WithValue(req.Context(), middleware.AuthCtxKey, usecase.AuthContext{
+					Email:  tt.ctxEmail,
+					UserId: tt.ctxUserID,
+				})
 				req = req.WithContext(ctx)
 			}
 

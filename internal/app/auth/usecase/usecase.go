@@ -8,6 +8,7 @@ import (
 
 //go:generate mockgen -source=./usecase.go -destination=./mocks/usecase_mock.go -package=mocks
 type Usecase interface {
+	GetProfile(ctx context.Context, userID int64) (domain.Response, error)
 	SignIn(ctx context.Context, email, password string) (domain.TokenPair, error)
 	SignUp(ctx context.Context, email, password string) (domain.TokenPair, error)
 	Refresh(ctx context.Context, email string) (domain.TokenPair, error)

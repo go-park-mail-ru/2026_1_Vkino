@@ -320,6 +320,69 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 	}
 }
 
+func TestAuthUsecase_GetProfile(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name       string
+		userID     int64
+		setupMocks func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo)
+		wantResp   domain.Response
+		wantErrIs  error
+	}{
+		{
+			name:   "success",
+			userID: 42,
+			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
+				userRepo.EXPECT().
+					GetUserByID(gomock.Any(), int64(42)).
+					Return(&domain.User{
+						ID:    42,
+						Email: "user@example.com",
+					}, nil)
+			},
+			wantResp: domain.Response{
+				Email: "user@example.com",
+			},
+		},
+		{
+			name:   "user not found",
+			userID: 42,
+			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
+				userRepo.EXPECT().
+					GetUserByID(gomock.Any(), int64(42)).
+					Return(nil, domain.ErrUserNotFound)
+			},
+			wantErrIs: domain.ErrUserNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			userRepo := mocks.NewMockUserRepo(ctrl)
+			sessionRepo := mocks.NewMockSessionRepo(ctrl)
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(userRepo, sessionRepo)
+			}
+
+			u := newTestUsecase(userRepo, sessionRepo)
+
+			got, err := u.GetProfile(context.Background(), tt.userID)
+			if !errors.Is(err, tt.wantErrIs) {
+				t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
+			}
+
+			if got != tt.wantResp {
+				t.Fatalf("expected response %+v, got %+v", tt.wantResp, got)
+			}
+		})
+	}
+}
+
 func TestAuthUsecase_Refresh(t *testing.T) {
 	t.Parallel()
 

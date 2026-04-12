@@ -1,12 +1,10 @@
 package inmemory
 
 import (
-	"context"
 	"errors"
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	profiledomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/profile/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serializer"
 )
 
@@ -63,21 +61,6 @@ func (r *UserRepo) GetUserByID(id int64) (*domain.User, error) {
 	}
 
 	return nil, ErrUserNotFound
-}
-
-func (r *UserRepo) GetProfileByID(_ context.Context, id int64) (profiledomain.ProfileResponse, error) {
-	user, err := r.GetUserByID(id)
-	if err != nil {
-		if errors.Is(err, ErrUserNotFound) {
-			return profiledomain.ProfileResponse{}, profiledomain.ErrUserNotFound
-		}
-
-		return profiledomain.ProfileResponse{}, err
-	}
-
-	return profiledomain.ProfileResponse{
-		Email: user.Email,
-	}, nil
 }
 
 func (r *UserRepo) CreateUser(login string, password string) (*domain.User, error) {

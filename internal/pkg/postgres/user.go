@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
-	profiledomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/profile/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -19,11 +18,6 @@ type UserRepo struct {
 func NewUserRepo(db *Client) *UserRepo {
 	return &UserRepo{db: db}
 }
-
-var (
-	ErrUserNotFound      = errors.New("user not found")
-	ErrUserAlreadyExists = errors.New("user with this email already exists")
-)
 
 func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var user domain.User
@@ -38,7 +32,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrUserNotFound
+			return nil, domain.ErrUserNotFound
 		}
 		return nil, fmt.Errorf("get user by email: %w", err)
 	}
@@ -59,27 +53,12 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrUserNotFound
+			return nil, domain.ErrUserNotFound
 		}
 		return nil, fmt.Errorf("get user by id: %w", err)
 	}
 
 	return &user, nil
-}
-
-func (r *UserRepo) GetProfileByID(ctx context.Context, id int64) (profiledomain.ProfileResponse, error) {
-	user, err := r.GetUserByID(ctx, id)
-	if err != nil {
-		if errors.Is(err, ErrUserNotFound) {
-			return profiledomain.ProfileResponse{}, profiledomain.ErrUserNotFound
-		}
-
-		return profiledomain.ProfileResponse{}, err
-	}
-
-	return profiledomain.ProfileResponse{
-		Email: user.Email,
-	}, nil
 }
 
 func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (*domain.User, error) {
@@ -98,7 +77,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, ErrUserAlreadyExists
+			return nil, domain.ErrUserAlreadyExists
 		}
 		return nil, fmt.Errorf("create user: %w", err)
 	}
@@ -119,7 +98,7 @@ func (r *UserRepo) UpdateUser(ctx context.Context, email, passwordHash string) (
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrUserNotFound
+			return nil, domain.ErrUserNotFound
 		}
 		return nil, fmt.Errorf("update user: %w", err)
 	}
@@ -134,7 +113,7 @@ func (r *UserRepo) DeleteUser(ctx context.Context, email string) error {
 	}
 
 	if tag.RowsAffected() == 0 {
-		return ErrUserNotFound
+		return domain.ErrUserNotFound
 	}
 
 	return nil
