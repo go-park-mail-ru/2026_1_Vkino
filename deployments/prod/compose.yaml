@@ -14,7 +14,7 @@ services:
       - app-network 
 
   vkinoapi:
-    image: alethandrina/vkino-back:v0.1.7
+    image: alethandrina/vkino-back:v0.1.8
     platform: linux/amd64
     restart: always
     command: ./vkinoapi --config=/usr/local/etc/config.yaml
