@@ -5,10 +5,11 @@ import (
 	"net/http"
 
 	authdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth/domain"
+	moviedomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
+	inmemoryrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/inmemory"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
+	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
-
-	repo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/inmemory"
 )
 
 type HttpErr struct {
@@ -24,9 +25,19 @@ var errToHTTP = map[error]HttpErr{
 	authdomain.ErrInvalidToken:       {status: http.StatusUnauthorized, message: "unauthorized"},
 	authdomain.ErrInternal:           {status: http.StatusInternalServerError, message: "internal server error"},
 
-	repo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
-	repo.ErrMovieNotFound:     {status: http.StatusNotFound, message: "movie not found"},
-	repo.ErrActorNotFound:     {status: http.StatusNotFound, message: "actor not found"},
+	inmemoryrepo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
+	inmemoryrepo.ErrMovieNotFound:     {status: http.StatusNotFound, message: "movie not found"},
+	inmemoryrepo.ErrActorNotFound:     {status: http.StatusNotFound, message: "actor not found"},
+
+	postgresrepo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
+	postgresrepo.ErrMovieNotFound:     {status: http.StatusNotFound, message: "movie not found"},
+	postgresrepo.ErrActorNotFound:     {status: http.StatusNotFound, message: "actor not found"},
+	postgresrepo.ErrEpisodeNotFound:   {status: http.StatusNotFound, message: "episode not found"},
+
+	moviedomain.ErrInvalidMovieID:       {status: http.StatusBadRequest, message: "invalid movie id"},
+	moviedomain.ErrInvalidActorID:       {status: http.StatusBadRequest, message: "invalid actor id"},
+	moviedomain.ErrInvalidEpisodeID:     {status: http.StatusBadRequest, message: "invalid episode id"},
+	moviedomain.ErrInvalidWatchProgress: {status: http.StatusBadRequest, message: "invalid watch progress"},
 
 	http.ErrNoCookie:       {status: http.StatusUnauthorized, message: "unauthorized"},
 	middleware.ErrMidlware: {status: http.StatusUnauthorized, message: "unauthorized"},

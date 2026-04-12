@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
+	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -17,7 +18,7 @@ type CORSConfig struct {
 func CorsMiddleware(cfg CORSConfig) func(http.Handler) http.Handler {
 	allowedMethods := strings.Join(cfg.AllowedMethods, ", ")
 	allowedHeaders := strings.Join(cfg.AllowedHeaders, ", ")
-	maxAge := fmt.Sprintf("%d", cfg.MaxAge)
+	maxAge := strconv.Itoa(cfg.MaxAge)
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -50,10 +51,5 @@ func CorsMiddleware(cfg CORSConfig) func(http.Handler) http.Handler {
 }
 
 func isOriginAllowed(origin string, allowed []string) bool {
-	for _, o := range allowed {
-		if o == origin {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(allowed, origin)
 }

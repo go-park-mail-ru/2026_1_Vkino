@@ -27,9 +27,11 @@ func (c *Config) SetDefaults() {
 	if c.MaxPoolSize == 0 {
 		c.MaxPoolSize = DefaultMaxPoolSize
 	}
+
 	if c.ConnAttempts == 0 {
 		c.ConnAttempts = DefaultConnAttempts
 	}
+
 	if c.ConnTimeout == 0 {
 		c.ConnTimeout = DefaultConnTimeout
 	}

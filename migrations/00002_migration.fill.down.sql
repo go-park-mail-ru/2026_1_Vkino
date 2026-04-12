@@ -1,5 +1,7 @@
 BEGIN;
 
+DELETE FROM watch_progress_episode;
+DELETE FROM episode;
 DELETE FROM movie_to_selection;
 DELETE FROM selection;
 DELETE FROM actor_to_movie;

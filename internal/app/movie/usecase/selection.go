@@ -10,17 +10,20 @@ import (
 
 type MovieUsecase struct {
 	movieRepo    repository.MovieRepo
-	fileStorage  storage.FileStorage
+	imageStorage storage.FileStorage
+	videoStorage storage.FileStorage
 }
 
 func NewMovieUsecase(
-    movieRepo repository.MovieRepo,
-    fileStorage storage.FileStorage,
+	movieRepo repository.MovieRepo,
+	imageStorage storage.FileStorage,
+	videoStorage storage.FileStorage,
 ) *MovieUsecase {
-    return &MovieUsecase{
-        movieRepo: movieRepo,
-        fileStorage: fileStorage,
-    }
+	return &MovieUsecase{
+		movieRepo:    movieRepo,
+		imageStorage: imageStorage,
+		videoStorage: videoStorage,
+	}
 }
 
 func (m *MovieUsecase) GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error) {

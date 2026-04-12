@@ -33,6 +33,7 @@ func Run(configPath *string) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to postgres: %w", err)
 	}
+
 	log.Println("successfully connected to postgres")
 
 	defer pgDB.Close()
@@ -41,23 +42,20 @@ func Run(configPath *string) error {
 	sessionRepo := postgres.NewSessionRepo(pgDB)
 	movieRepo := postgres.NewMovieRepo(pgDB)
 
-	s3Storage, err := storagepkg.NewS3Storage(context.Background(), storagepkg.Config{
-        InternalEndpoint: cfg.S3.InternalEndpoint,
-        PublicEndpoint:   cfg.S3.PublicEndpoint,
-        Region:           cfg.S3.Region,
-        AccessKeyID:      cfg.S3.AccessKeyID,
-        SecretAccessKey:  cfg.S3.SecretAccessKey,
-        Bucket:           cfg.S3.BucketImages,
-        UseSSL:           cfg.S3.UseSSL,
-        UsePathStyle:     cfg.S3.UsePathStyle,
-        PresignTTL:       cfg.S3.PresignTTL,
-    })
-    if err != nil {
-        return fmt.Errorf("init image storage: %w", err)
-    }
+	s3CommonConfig := cfg.S3.Config()
+
+	imageStorage, err := storagepkg.NewS3Storage(context.Background(), s3CommonConfig.WithBucket(cfg.S3.BucketImages))
+	if err != nil {
+		return fmt.Errorf("init image storage: %w", err)
+	}
+
+	videoStorage, err := storagepkg.NewS3Storage(context.Background(), s3CommonConfig.WithBucket(cfg.S3.BucketVideos))
+	if err != nil {
+		return fmt.Errorf("init video storage: %w", err)
+	}
 
 	authUsecase := authUsecase.NewAuthUsecase(userRepo, sessionRepo, cfg.Auth)
-	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo, s3Storage)
+	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo, imageStorage, videoStorage)
 
 	authHandler := authHttp.NewHandler(authUsecase)
 	movieHandler := movieHttp.NewHandler(movieUsecase)
@@ -80,11 +78,14 @@ func Run(configPath *string) error {
 		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
 		httpserver.WithRoute("GET /movie/{id}", movieHandler.GetMovieByID),
 		httpserver.WithRoute("GET /movie/actor/{id}", movieHandler.GetActorByID),
+		httpserver.WithRoute("GET /episode/{id}/playback", movieHandler.GetEpisodePlayback),
 
 		httpserver.WithMiddlewareRoute("GET /auth/me", authHandler.Me, authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("POST /auth/logout", authHandler.LogOut, authMiddleware.Middleware),
-
-		// httpserver.WithRoute("GET /movie/{moviename}", movieHandler.GetMovieById) -- страница для проверки зарега
+		httpserver.WithMiddlewareRoute("GET /episode/{id}/progress", movieHandler.GetEpisodeProgress,
+			authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("PUT /episode/{id}/progress", movieHandler.SaveEpisodeProgress,
+			authMiddleware.Middleware),
 	)
 
 	return server.Run()

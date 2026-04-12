@@ -57,7 +57,7 @@ func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 	})
 }
 
-// UserEmailFromContext читает AuthContext из context в хэндлерах.
+// AuthFromContext читает AuthContext из context в хэндлерах.
 func AuthFromContext(ctx context.Context) (usecase.AuthContext, error) {
 	auth, ok := ctx.Value(AuthCtxKey).(usecase.AuthContext)
 	if !ok {
