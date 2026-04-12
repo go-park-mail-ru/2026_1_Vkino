@@ -6,8 +6,10 @@ import (
 
 	"strings"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/errors"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 )
 
@@ -59,13 +61,13 @@ func (h *Handler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid movie id")
 		return
 	}
 
-	movie, err := h.usecase.GetMovieByID(r.Context(), id)
+	movie, err := h.usecase.GetMovieByID(r.Context(), int64(id))
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -82,13 +84,13 @@ func (h *Handler) GetActorByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid actor id")
 		return
 	}
 
-	actor, err := h.usecase.GetActorByID(r.Context(), id)
+	actor, err := h.usecase.GetActorByID(r.Context(), int64(id))
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -96,4 +98,97 @@ func (h *Handler) GetActorByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httppkg.Response(w, http.StatusOK, actor)
+}
+
+func (h *Handler) GetEpisodePlayback(w http.ResponseWriter, r *http.Request) {
+	idParam := r.PathValue("id")
+	if len(idParam) == 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid episode id")
+		return
+	}
+
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid episode id")
+		return
+	}
+
+	playback, err := h.usecase.GetEpisodePlayback(r.Context(), int64(id), 0)
+	if err != nil {
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
+		return
+	}
+
+	httppkg.Response(w, http.StatusOK, playback)
+}
+
+func (h *Handler) GetEpisodeProgress(w http.ResponseWriter, r *http.Request) {
+	auth, err := middleware.AuthFromContext(r.Context())
+	if err != nil {
+		status, message := errors.MapError(middleware.ErrMidlware)
+		httppkg.ErrResponse(w, status, message)
+		return
+	}
+
+	idParam := r.PathValue("id")
+	if len(idParam) == 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid episode id")
+		return
+	}
+
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid episode id")
+		return
+	}
+
+	progress, err := h.usecase.GetEpisodeProgress(r.Context(), auth.UserId, int64(id))
+	if err != nil {
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
+		return
+	}
+
+	httppkg.Response(w, http.StatusOK, progress)
+}
+
+func (h *Handler) SaveEpisodeProgress(w http.ResponseWriter, r *http.Request) {
+	auth, err := middleware.AuthFromContext(r.Context())
+	if err != nil {
+		status, message := errors.MapError(middleware.ErrMidlware)
+		httppkg.ErrResponse(w, status, message)
+		return
+	}
+
+	idParam := r.PathValue("id")
+	if len(idParam) == 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid episode id")
+		return
+	}
+
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid episode id")
+		return
+	}
+
+	var req domain.WatchProgressRequest
+	if err = httppkg.Read(r, &req); err != nil {
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
+		return
+	}
+
+	err = h.usecase.SaveEpisodeProgress(r.Context(), auth.UserId, int64(id), req.PositionSeconds)
+	if err != nil {
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
+		return
+	}
+
+	httppkg.Response(w, http.StatusOK, domain.WatchProgressResponse{
+		EpisodeID:       int64(id),
+		PositionSeconds: req.PositionSeconds,
+	})
 }

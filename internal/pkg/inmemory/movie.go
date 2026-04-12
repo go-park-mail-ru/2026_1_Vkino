@@ -126,9 +126,10 @@ func (r *MovieRepo) initMockData() {
 
 	movies := []domain.MovieResponse{
 		{
-			ID:                 duneID,
-			Title:              "Дюна: Часть Вторая",
-			Description:        "Пол Атрейдес, объединившись с фрименами, продолжает путь мести и принимает судьбоносные решения на Арракисе.",
+			ID:    duneID,
+			Title: "Дюна: Часть Вторая",
+			Description: "Пол Атрейдес, объединившись с фрименами, продолжает путь мести и " +
+				"принимает судьбоносные решения на Арракисе.",
 			Director:           "Дени Вильнёв",
 			ContentType:        contentTypeFilm,
 			ReleaseYear:        2024,
@@ -278,6 +279,7 @@ func (r *MovieRepo) initMockData() {
 		movieData, err := serializer.Serialize(movie)
 		if err != nil {
 			log.Println(err)
+
 			continue
 		}
 
@@ -290,6 +292,7 @@ func (r *MovieRepo) initMockData() {
 		actorData, err := serializer.Serialize(actor)
 		if err != nil {
 			log.Println(err)
+
 			continue
 		}
 
@@ -335,6 +338,7 @@ func (r *MovieRepo) initMockData() {
 		selectionData, err := serializer.Serialize(selection)
 		if err != nil {
 			log.Println(err)
+
 			continue
 		}
 

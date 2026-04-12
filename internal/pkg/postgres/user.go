@@ -26,6 +26,7 @@ var (
 
 func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var user domain.User
+
 	err := r.db.Pool.QueryRow(ctx, sqlGetUserByEmail, email).Scan(
 		&user.ID,
 		&user.Email,
@@ -49,6 +50,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 
 func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
 	var user domain.User
+
 	err := r.db.Pool.QueryRow(ctx, sqlGetUserByID, id).Scan(
 		&user.ID,
 		&user.Email,
@@ -98,6 +100,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (
 
 func (r *UserRepo) UpdateUser(ctx context.Context, email, passwordHash string) (*domain.User, error) {
 	var user domain.User
+
 	err := r.db.Pool.QueryRow(ctx, sqlUpdateUser, passwordHash, time.Now(), email).Scan(
 		&user.ID,
 		&user.Email,

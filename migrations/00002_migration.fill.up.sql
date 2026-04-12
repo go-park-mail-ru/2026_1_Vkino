@@ -116,6 +116,7 @@ WHERE (m.title = 'Дюна: Часть Вторая' AND a.full_name IN ('Тим
    OR (m.title = 'Ford против Ferrari' AND a.full_name = 'Кристиан Бейл')
 ON CONFLICT DO NOTHING;
 
+
 INSERT INTO selection (title) VALUES
     ('Популярные'),
     ('Новинки'),

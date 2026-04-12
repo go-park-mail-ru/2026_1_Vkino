@@ -4,12 +4,13 @@ import (
 	stderrors "errors"
 	"net/http"
 
+	moviedomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
 	userdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
+	inmemoryrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/inmemory"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
+	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
-
-	repo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/inmemory"
 )
 
 type HttpErr struct {
@@ -30,9 +31,19 @@ var errToHTTP = map[error]HttpErr{
 	storagepkg.ErrInvalidFileType:    {status: http.StatusBadRequest, message: "unsupported file extension"},
 	storagepkg.ErrFileTooLarge:       {status: http.StatusBadRequest, message: "file size exceeds the limit"},
 
-	repo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
-	repo.ErrMovieNotFound:     {status: http.StatusNotFound, message: "movie not found"},
-	repo.ErrActorNotFound:     {status: http.StatusNotFound, message: "actor not found"},
+	inmemoryrepo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
+	inmemoryrepo.ErrMovieNotFound:     {status: http.StatusNotFound, message: "movie not found"},
+	inmemoryrepo.ErrActorNotFound:     {status: http.StatusNotFound, message: "actor not found"},
+
+	postgresrepo.ErrSelectionNotFound: {status: http.StatusNotFound, message: "selection not found"},
+	postgresrepo.ErrMovieNotFound:     {status: http.StatusNotFound, message: "movie not found"},
+	postgresrepo.ErrActorNotFound:     {status: http.StatusNotFound, message: "actor not found"},
+	postgresrepo.ErrEpisodeNotFound:   {status: http.StatusNotFound, message: "episode not found"},
+
+	moviedomain.ErrInvalidMovieID:       {status: http.StatusBadRequest, message: "invalid movie id"},
+	moviedomain.ErrInvalidActorID:       {status: http.StatusBadRequest, message: "invalid actor id"},
+	moviedomain.ErrInvalidEpisodeID:     {status: http.StatusBadRequest, message: "invalid episode id"},
+	moviedomain.ErrInvalidWatchProgress: {status: http.StatusBadRequest, message: "invalid watch progress"},
 
 	http.ErrNoCookie:       {status: http.StatusUnauthorized, message: "unauthorized"},
 	middleware.ErrMidlware: {status: http.StatusUnauthorized, message: "unauthorized"},

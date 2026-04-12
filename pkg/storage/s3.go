@@ -22,6 +22,20 @@ type Config struct {
 	PresignTTL       time.Duration
 }
 
+func (c Config) WithBucket(bucket string) Config {
+	return Config{
+		InternalEndpoint: c.InternalEndpoint,
+		PublicEndpoint:   c.PublicEndpoint,
+		Region:           c.Region,
+		AccessKeyID:      c.AccessKeyID,
+		SecretAccessKey:  c.SecretAccessKey,
+		Bucket:           bucket,
+		UseSSL:           c.UseSSL,
+		UsePathStyle:     c.UsePathStyle,
+		PresignTTL:       c.PresignTTL,
+	}
+}
+
 type S3Storage struct {
 	bucket        string
 	presignTTL    time.Duration
@@ -164,10 +178,10 @@ func (s *S3Storage) PresignGetObject(
 }
 
 func (s *S3Storage) GetObject(ctx context.Context, key string) (io.ReadCloser, error) {
-    obj, err := s.client.GetObject(ctx, s.bucket, key, minio.GetObjectOptions{})
-    if err != nil {
-        return nil, fmt.Errorf("storage: get object %q: %w", key, err)
-    }
-    
-    return obj, nil
+	obj, err := s.client.GetObject(ctx, s.bucket, key, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("storage: get object %q: %w", key, err)
+	}
+
+	return obj, nil
 }

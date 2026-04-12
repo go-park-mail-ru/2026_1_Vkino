@@ -141,7 +141,7 @@ func (u *AuthUsecase) ValidateRefreshToken(ctx context.Context, tokenString stri
 func (u *AuthUsecase) LogOut(ctx context.Context, email string) error {
 	user, err := u.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return nil
+		return fmt.Errorf("logOut failed: %w", err)
 	}
 
 	err = u.sessionRepo.DeleteSession(ctx, user.ID)
@@ -149,8 +149,10 @@ func (u *AuthUsecase) LogOut(ctx context.Context, email string) error {
 		if errors.Is(err, domain.ErrNoSession) {
 			return nil
 		}
+
 		return err
 	}
+
 	return nil
 }
 
@@ -253,6 +255,7 @@ func (u *AuthUsecase) parseToken(tokenString string) (*CustomClaims, error) {
 		if token.Method == nil || token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
 			return nil, domain.ErrInvalidToken
 		}
+
 		return []byte(u.cfg.JWTSecret), nil
 	})
 	if err != nil {

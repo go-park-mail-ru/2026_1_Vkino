@@ -42,7 +42,7 @@ services:
       retries: 5
       start_period: 30s
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - db-data:/var/lib/postgresql
 
@@ -88,8 +88,10 @@ services:
         sleep 2;
       done;
       /usr/bin/mc mb -p local/vkino-images || true;
+      /usr/bin/mc mb -p local/vkino-avatars || true;
       /usr/bin/mc mb -p local/vkino-videos || true;
       /usr/bin/mc anonymous set none local/vkino-images || true;
+      /usr/bin/mc anonymous set none local/vkino-avatars || true;
       /usr/bin/mc anonymous set none local/vkino-videos || true;
       exit 0;
       "

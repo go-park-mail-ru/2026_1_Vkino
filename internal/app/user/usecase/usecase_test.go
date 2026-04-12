@@ -166,6 +166,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
+
 				if !strings.Contains(err.Error(), tt.wantErrContains) {
 					t.Fatalf("expected error to contain %q, got %q", tt.wantErrContains, err.Error())
 				}
@@ -185,6 +186,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 				if err != nil {
 					t.Fatalf("validate access token: %v", err)
 				}
+
 				if auth.Email != tt.email {
 					t.Fatalf("expected token subject %q, got %q", tt.email, auth.Email)
 				}
@@ -303,9 +305,11 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
+
 				if !strings.Contains(err.Error(), tt.wantErrContains) {
 					t.Fatalf("expected error to contain %q, got %q", tt.wantErrContains, err.Error())
 				}
+
 				return
 			}
 
@@ -415,6 +419,7 @@ func TestAuthUsecase_Refresh(t *testing.T) {
 				if err == nil {
 					t.Fatal("expected non-nil error, got nil")
 				}
+
 				if !strings.Contains(err.Error(), tt.wantErrContains) {
 					t.Fatalf("expected error to contain %q, got %q", tt.wantErrContains, err.Error())
 				}
@@ -518,6 +523,7 @@ func TestAuthUsecase_ValidateRefreshToken(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			userRepo := mocks.NewMockUserRepo(ctrl)
 			sessionRepo := mocks.NewMockSessionRepo(ctrl)
 			u := newTestUsecase(userRepo, sessionRepo)
@@ -694,6 +700,7 @@ func TestAuthUsecase_ValidateAccessToken(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			u := newTestUsecase(mocks.NewMockUserRepo(ctrl), mocks.NewMockSessionRepo(ctrl))
 
 			token := tt.makeToken(t, u)
@@ -714,6 +721,7 @@ func TestAuthUsecase_ValidateAccessToken(t *testing.T) {
 			if auth.Email != tt.wantAuth.Email {
 				t.Fatalf("expected email %q, got %q", tt.wantAuth.Email, auth.Email)
 			}
+
 			if auth.UserId != tt.wantAuth.UserId {
 				t.Fatalf("expected user_id %v, got %v", tt.wantAuth.UserId, auth.UserId)
 			}
@@ -733,7 +741,8 @@ func TestAuthUsecase_ValidateAccessToken_ParseScenarios(t *testing.T) {
 	testUserID := int64(1)
 
 	t.Run("wrong signing method", func(t *testing.T) {
-		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, time.Hour, jwt.SigningMethodHS512)
+		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, time.Hour,
+			jwt.SigningMethodHS512)
 
 		_, err := u.ValidateAccessToken(tokenString)
 		if !errors.Is(err, domain.ErrInvalidToken) {
@@ -743,7 +752,8 @@ func TestAuthUsecase_ValidateAccessToken_ParseScenarios(t *testing.T) {
 
 	t.Run("expired token", func(t *testing.T) {
 		t.Parallel()
-		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, -time.Hour, jwt.SigningMethodHS256)
+		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, -time.Hour,
+			jwt.SigningMethodHS256)
 
 		_, err := u.ValidateAccessToken(tokenString)
 		if !errors.Is(err, domain.ErrInvalidToken) {
@@ -752,7 +762,8 @@ func TestAuthUsecase_ValidateAccessToken_ParseScenarios(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
-		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, time.Hour, jwt.SigningMethodHS256)
+		tokenString := makeToken(t, u.GetConfig().JWTSecret, "user@example.com", testUserID, time.Hour,
+			jwt.SigningMethodHS256)
 
 		auth, err := u.ValidateAccessToken(tokenString)
 		if err != nil {
@@ -762,6 +773,7 @@ func TestAuthUsecase_ValidateAccessToken_ParseScenarios(t *testing.T) {
 		if auth.Email != "user@example.com" {
 			t.Fatalf("expected email %q, got %q", "user@example.com", auth.Email)
 		}
+
 		if auth.UserId != testUserID {
 			t.Fatalf("expected user_id %v, got %v", testUserID, auth.UserId)
 		}

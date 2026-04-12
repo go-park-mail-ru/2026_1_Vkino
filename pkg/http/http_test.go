@@ -44,6 +44,7 @@ func TestResponse(t *testing.T) {
 			Response(w, tc.StatusCode, tc.Data)
 
 			resp := w.Result()
+
 			defer func() {
 				err := resp.Body.Close()
 				if err != nil {
