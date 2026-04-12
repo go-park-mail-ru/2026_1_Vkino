@@ -3,6 +3,3 @@
 **/*.go       @dmironenko
 /build/       @dmironenko
 /deployments/ @dmironenko
-
-**/*.sql      @3kybika
-/migrations/  @3kybika
