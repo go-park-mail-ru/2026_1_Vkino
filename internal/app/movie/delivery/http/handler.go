@@ -61,13 +61,13 @@ func (h *Handler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid movie id")
 		return
 	}
 
-	movie, err := h.usecase.GetMovieByID(r.Context(), id)
+	movie, err := h.usecase.GetMovieByID(r.Context(), int64(id))
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -84,13 +84,13 @@ func (h *Handler) GetActorByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid actor id")
 		return
 	}
 
-	actor, err := h.usecase.GetActorByID(r.Context(), id)
+	actor, err := h.usecase.GetActorByID(r.Context(), int64(id))
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -107,13 +107,13 @@ func (h *Handler) GetEpisodePlayback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid episode id")
 		return
 	}
 
-	playback, err := h.usecase.GetEpisodePlayback(r.Context(), id, 0)
+	playback, err := h.usecase.GetEpisodePlayback(r.Context(), int64(id), 0)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -137,13 +137,13 @@ func (h *Handler) GetEpisodeProgress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid episode id")
 		return
 	}
 
-	progress, err := h.usecase.GetEpisodeProgress(r.Context(), auth.UserId, id)
+	progress, err := h.usecase.GetEpisodeProgress(r.Context(), auth.UserId, int64(id))
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -167,8 +167,8 @@ func (h *Handler) SaveEpisodeProgress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid episode id")
 		return
 	}
@@ -180,7 +180,7 @@ func (h *Handler) SaveEpisodeProgress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.usecase.SaveEpisodeProgress(r.Context(), auth.UserId, id, req.PositionSeconds)
+	err = h.usecase.SaveEpisodeProgress(r.Context(), auth.UserId, int64(id), req.PositionSeconds)
 	if err != nil {
 		status, message := errors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
@@ -188,7 +188,7 @@ func (h *Handler) SaveEpisodeProgress(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httppkg.Response(w, http.StatusOK, domain.WatchProgressResponse{
-		EpisodeID:       id,
+		EpisodeID:       int64(id),
 		PositionSeconds: req.PositionSeconds,
 	})
 }

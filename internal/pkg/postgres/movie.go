@@ -108,7 +108,70 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, id int64) (domain.MovieRes
 		return domain.MovieResponse{}, err
 	}
 
+	genres, err := r.getGenresByMovieID(ctx, id)
+	if err != nil {
+		return domain.MovieResponse{}, err
+	}
+
+	actors, err := r.getActorsByMovieID(ctx, id)
+	if err != nil {
+		return domain.MovieResponse{}, err
+	}
+
+	movieResponse.Genres = genres
+	movieResponse.Actors = actors
+
 	return movieResponse, nil
+}
+
+func (r *MovieRepo) getGenresByMovieID(ctx context.Context, movieID int64) ([]string, error) {
+	rows, err := r.db.Pool.Query(ctx, sqlGetGenresByMovieID, movieID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to query genres by movie id: %w", err)
+	}
+	defer rows.Close()
+
+	genres := make([]string, 0)
+	for rows.Next() {
+		var genre string
+
+		if err = rows.Scan(&genre); err != nil {
+			return nil, fmt.Errorf("unable to scan genre: %w", err)
+		}
+
+		genres = append(genres, genre)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating genres: %w", err)
+	}
+
+	return genres, nil
+}
+
+func (r *MovieRepo) getActorsByMovieID(ctx context.Context, movieID int64) ([]domain.ActorPreview, error) {
+	rows, err := r.db.Pool.Query(ctx, sqlGetActorsByMovieID, movieID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to query actors by movie id: %w", err)
+	}
+	defer rows.Close()
+
+	actors := make([]domain.ActorPreview, 0)
+	for rows.Next() {
+		var actor domain.ActorPreview
+
+		if err = rows.Scan(&actor.ID, &actor.FullName, &actor.PictureFileKey); err != nil {
+			return nil, fmt.Errorf("unable to scan actor preview: %w", err)
+		}
+
+		actors = append(actors, actor)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating actors: %w", err)
+	}
+
+	return actors, nil
 }
 
 func (r *MovieRepo) GetActorByID(ctx context.Context, id int64) (domain.ActorResponse, error) {

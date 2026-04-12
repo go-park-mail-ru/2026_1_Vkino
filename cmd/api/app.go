@@ -42,32 +42,14 @@ func Run(configPath *string) error {
 	sessionRepo := postgres.NewSessionRepo(pgDB)
 	movieRepo := postgres.NewMovieRepo(pgDB)
 
-	imageStorage, err := storagepkg.NewS3Storage(context.Background(), storagepkg.Config{
-		InternalEndpoint: cfg.S3.InternalEndpoint,
-		PublicEndpoint:   cfg.S3.PublicEndpoint,
-		Region:           cfg.S3.Region,
-		AccessKeyID:      cfg.S3.AccessKeyID,
-		SecretAccessKey:  cfg.S3.SecretAccessKey,
-		Bucket:           cfg.S3.BucketImages,
-		UseSSL:           cfg.S3.UseSSL,
-		UsePathStyle:     cfg.S3.UsePathStyle,
-		PresignTTL:       cfg.S3.PresignTTL,
-	})
+	s3CommonConfig := cfg.S3.Config()
+
+	imageStorage, err := storagepkg.NewS3Storage(context.Background(), s3CommonConfig.WithBucket(cfg.S3.BucketImages))
 	if err != nil {
 		return fmt.Errorf("init image storage: %w", err)
 	}
 
-	videoStorage, err := storagepkg.NewS3Storage(context.Background(), storagepkg.Config{
-		InternalEndpoint: cfg.S3.InternalEndpoint,
-		PublicEndpoint:   cfg.S3.PublicEndpoint,
-		Region:           cfg.S3.Region,
-		AccessKeyID:      cfg.S3.AccessKeyID,
-		SecretAccessKey:  cfg.S3.SecretAccessKey,
-		Bucket:           cfg.S3.BucketVideos,
-		UseSSL:           cfg.S3.UseSSL,
-		UsePathStyle:     cfg.S3.UsePathStyle,
-		PresignTTL:       cfg.S3.PresignTTL,
-	})
+	videoStorage, err := storagepkg.NewS3Storage(context.Background(), s3CommonConfig.WithBucket(cfg.S3.BucketVideos))
 	if err != nil {
 		return fmt.Errorf("init video storage: %w", err)
 	}

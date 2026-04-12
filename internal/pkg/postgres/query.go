@@ -19,6 +19,22 @@ const (
 		from movie where id=$1
 	`
 
+	sqlGetGenresByMovieID = `
+		select g.title
+		from genre_to_movie gtm
+		join genre g on g.id = gtm.genre_id
+		where gtm.movie_id = $1
+		order by g.title
+	`
+
+	sqlGetActorsByMovieID = `
+		select a.id, a.full_name, a.picture_file_key
+		from actor_to_movie atm
+		join actor a on a.id = atm.actor_id
+		where atm.movie_id = $1
+		order by a.full_name
+	`
+
 	sqlGetActorByID = `
 		select id, full_name, birthdate, biography, country_id, picture_file_key 
 		from actor 

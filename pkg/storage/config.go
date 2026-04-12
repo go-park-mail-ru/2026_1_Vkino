@@ -14,3 +14,16 @@ type S3Config struct {
 	UsePathStyle     bool          `mapstructure:"use_path_style"`
 	PresignTTL       time.Duration `mapstructure:"presign_ttl"`
 }
+
+func (c S3Config) Config() Config {
+	return Config{
+		InternalEndpoint: c.InternalEndpoint,
+		PublicEndpoint:   c.PublicEndpoint,
+		Region:           c.Region,
+		AccessKeyID:      c.AccessKeyID,
+		SecretAccessKey:  c.SecretAccessKey,
+		UseSSL:           c.UseSSL,
+		UsePathStyle:     c.UsePathStyle,
+		PresignTTL:       c.PresignTTL,
+	}
+}

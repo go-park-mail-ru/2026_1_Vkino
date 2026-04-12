@@ -116,34 +116,6 @@ WHERE (m.title = 'Дюна: Часть Вторая' AND a.full_name IN ('Тим
    OR (m.title = 'Ford против Ferrari' AND a.full_name = 'Кристиан Бейл')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO episode (
-    movie_id, description, season_number, episode_number, title,
-    duration_seconds, picture_file_key, video_file_key
-)
-SELECT
-    m.id,
-    m.description,
-    0,
-    1,
-    m.title,
-    m.duration_seconds,
-    m.picture_file_key,
-    CASE m.title
-        WHEN 'Дюна: Часть Вторая' THEN 'video/1.mp4'
-        WHEN 'Джокер' THEN 'video/2.mp4'
-        WHEN 'Тёмный рыцарь' THEN 'video/3.mp4'
-        WHEN 'Престиж' THEN 'video/4.mp4'
-        WHEN 'Ford против Ferrari' THEN 'video/5.mp4'
-    END
-FROM movie m
-WHERE m.title IN (
-    'Дюна: Часть Вторая',
-    'Джокер',
-    'Тёмный рыцарь',
-    'Престиж',
-    'Ford против Ferrari'
-)
-ON CONFLICT (movie_id, season_number, episode_number) DO NOTHING;
 
 INSERT INTO selection (title) VALUES
     ('Популярные'),
