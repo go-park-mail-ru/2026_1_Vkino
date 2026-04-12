@@ -15,6 +15,7 @@ import (
 	pkgerrors "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/errors"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
+	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
 type Handler struct {
@@ -155,8 +156,15 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		size = header.Size
-		if size <= 0 || size > maxAvatarSize {
+		if size <= 0 {
 			status, message := pkgerrors.MapError(domain.ErrInvalidAvatar)
+			httppkg.ErrResponse(w, status, message)
+
+			return
+		}
+
+		if size > maxAvatarSize {
+			status, message := pkgerrors.MapError(storagepkg.ErrFileTooLarge)
 			httppkg.ErrResponse(w, status, message)
 
 			return

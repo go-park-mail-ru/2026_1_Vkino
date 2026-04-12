@@ -15,7 +15,7 @@ type UserRepo interface {
 	UpdateUser(ctx context.Context, login string, password string) (*domain.User, error)
 	UpdateBirthdate(ctx context.Context, userID int64, birthdate *time.Time) (*domain.User, error)
 	UpdateAvatarFileKey(ctx context.Context, userID int64, avatarFileKey *string) (*domain.User, error)
-	UpdatePasswordByID(ctx context.Context, userID int64, passwordHash string) error
+	UpdatePassword(ctx context.Context, userID int64, passwordHash string) error
 	DeleteUser(ctx context.Context, login string) error
 	// GetAllUsers(ctx context.Context) ([]*domain.User, error)
 }

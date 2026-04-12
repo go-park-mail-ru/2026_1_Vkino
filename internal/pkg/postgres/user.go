@@ -178,7 +178,7 @@ func (r *UserRepo) UpdateAvatarFileKey(ctx context.Context, userID int64, avatar
 	return &user, nil
 }
 
-func (r *UserRepo) UpdatePasswordByID(ctx context.Context, userID int64, passwordHash string) error {
+func (r *UserRepo) UpdatePassword(ctx context.Context, userID int64, passwordHash string) error {
 	tag, err := r.db.Pool.Exec(ctx, sqlUpdateUserPasswordByID, passwordHash, userID)
 	if err != nil {
 		return fmt.Errorf("update user password by id: %w", err)

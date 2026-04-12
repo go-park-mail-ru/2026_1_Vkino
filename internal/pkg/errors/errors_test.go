@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
+	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,6 +30,22 @@ func TestMapError(t *testing.T) {
 			httpErr: HttpErr{
 				status:  http.StatusInternalServerError,
 				message: "internal server error",
+			},
+		},
+		{
+			name: "unsupported_file_extension",
+			err:  storagepkg.ErrInvalidFileType,
+			httpErr: HttpErr{
+				status:  http.StatusBadRequest,
+				message: "unsupported file extension",
+			},
+		},
+		{
+			name: "file_too_large",
+			err:  storagepkg.ErrFileTooLarge,
+			httpErr: HttpErr{
+				status:  http.StatusBadRequest,
+				message: "file size exceeds the limit",
 			},
 		},
 	}

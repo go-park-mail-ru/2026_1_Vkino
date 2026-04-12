@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
+	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
 func (u *AuthUsecase) GetProfile(ctx context.Context, userID int64) (domain.ProfileResponse, error) {
@@ -74,7 +75,7 @@ func (u *AuthUsecase) updateBirthdateIfProvided(
 }
 
 func parseBirthdate(rawBirthdate string) (*time.Time, error) {
-	parsed, err := time.Parse("2006-01-01", rawBirthdate)
+	parsed, err := time.Parse("2006-01-02", rawBirthdate)
 	if err != nil || parsed.After(time.Now()) {
 		return nil, domain.ErrInvalidBirthdate
 	}
@@ -118,7 +119,7 @@ func (u *AuthUsecase) updateAvatarIfProvided(
 	ext, ok := avatarExtensionByContentType(normalizedContentType)
 	if !ok {
 		log.Printf("user.update_profile: unsupported avatar content type user_id=%d original=%q normalized=%q", userID, contentType, normalizedContentType)
-		return nil, domain.ErrInvalidAvatar
+		return nil, storagepkg.ErrInvalidFileType
 	}
 
 	avatarKey := fmt.Sprintf("users/%d/avatar/%d%s", userID, time.Now().UnixNano(), ext)
@@ -132,13 +133,14 @@ func (u *AuthUsecase) updateAvatarIfProvided(
 		return nil, fmt.Errorf("%w: upload avatar object key=%q: %v", domain.ErrInternal, avatarKey, err)
 	}
 
-	if user.AvatarFileKey != nil && *user.AvatarFileKey != "" {
-		_ = u.avatarStore.DeleteObject(ctx, *user.AvatarFileKey)
-	}
-
 	updatedUser, err := u.userRepo.UpdateAvatarFileKey(ctx, userID, &avatarKey)
 	if err != nil {
 		return nil, fmt.Errorf("%w: update avatar key in repository key=%q: %v", domain.ErrInternal, avatarKey, err)
+	}
+
+	oldAvatarKey := stringValue(user.AvatarFileKey)
+	if oldAvatarKey != "" {
+		_ = u.avatarStore.DeleteObject(ctx, oldAvatarKey)
 	}
 
 	return updatedUser, nil
@@ -187,13 +189,22 @@ func (u *AuthUsecase) profileResponse(ctx context.Context, user *domain.User) (d
 		resp.Birthdate = &formatted
 	}
 
-	if u.avatarStore != nil && user.AvatarFileKey != nil && *user.AvatarFileKey != "" {
-		url, err := u.avatarStore.PresignGetObject(ctx, *user.AvatarFileKey, 0)
+	avatarKey := stringValue(user.AvatarFileKey)
+	if u.avatarStore != nil && avatarKey != "" {
+		url, err := u.avatarStore.PresignGetObject(ctx, avatarKey, 0)
 		if err != nil {
-			return domain.ProfileResponse{}, fmt.Errorf("%w: presign avatar key=%q: %v", domain.ErrInternal, *user.AvatarFileKey, err)
+			return domain.ProfileResponse{}, fmt.Errorf("%w: presign avatar key=%q: %v", domain.ErrInternal, avatarKey, err)
 		}
 		resp.AvatarURL = url
 	}
 
 	return resp, nil
+}
+
+func stringValue(v *string) string {
+	if v == nil {
+		return ""
+	}
+
+	return *v
 }

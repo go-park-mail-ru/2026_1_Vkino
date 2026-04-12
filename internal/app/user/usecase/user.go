@@ -194,7 +194,7 @@ func (u *AuthUsecase) ChangePassword(ctx context.Context, userID int64, oldPassw
 		return domain.ErrInternal
 	}
 
-	err = u.userRepo.UpdatePasswordByID(ctx, userID, string(newPasswordHash))
+	err = u.userRepo.UpdatePassword(ctx, userID, string(newPasswordHash))
 	if err != nil {
 		return domain.ErrInternal
 	}

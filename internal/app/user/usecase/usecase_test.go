@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 	"testing"
 	"time"
@@ -12,7 +11,6 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase/mocks"
-	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
@@ -42,43 +40,6 @@ func hashPassword(t *testing.T, password string) string {
 func newTestUsecase(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) *usecase.AuthUsecase {
 	return usecase.NewAuthUsecase(userRepo, sessionRepo, testConfig())
 }
-
-type fakeFileStorage struct {
-	putCalled    bool
-	deleteCalled bool
-	lastPutKey   string
-}
-
-func (f *fakeFileStorage) PutObject(
-	_ context.Context,
-	key string,
-	_ io.Reader,
-	_ int64,
-	_ string,
-) error {
-	f.putCalled = true
-	f.lastPutKey = key
-	return nil
-}
-
-func (f *fakeFileStorage) DeleteObject(_ context.Context, _ string) error {
-	f.deleteCalled = true
-	return nil
-}
-
-func (f *fakeFileStorage) PresignGetObject(
-	_ context.Context,
-	key string,
-	_ time.Duration,
-) (string, error) {
-	return "https://example.com/" + key, nil
-}
-
-func (f *fakeFileStorage) GetObject(_ context.Context, _ string) (io.ReadCloser, error) {
-	return io.NopCloser(strings.NewReader("")), nil
-}
-
-var _ storagepkg.FileStorage = (*fakeFileStorage)(nil)
 
 func makeToken(t *testing.T, secret, subject string, userID int64, ttl time.Duration, method jwt.SigningMethod) string {
 	t.Helper()
@@ -627,11 +588,12 @@ func TestAuthUsecase_UpdateProfile_BirthdateAndAvatar(t *testing.T) {
 
 	userRepo := mocks.NewMockUserRepo(ctrl)
 	sessionRepo := mocks.NewMockSessionRepo(ctrl)
-	store := &fakeFileStorage{}
+	store := mocks.NewMockFileStorage(ctrl)
 	u := usecase.NewAuthUsecaseWithStorage(userRepo, sessionRepo, store, testConfig())
 
 	birthdate, _ := time.Parse("2006-01-02", "2002-10-13")
 	oldAvatar := "users/7/avatar/old.jpg"
+	newAvatar := ""
 
 	userRepo.EXPECT().
 		GetUserByID(gomock.Any(), int64(7)).
@@ -641,11 +603,31 @@ func TestAuthUsecase_UpdateProfile_BirthdateAndAvatar(t *testing.T) {
 		UpdateBirthdate(gomock.Any(), int64(7), gomock.Any()).
 		Return(&domain.User{ID: 7, Email: "user@example.com", Birthdate: &birthdate, AvatarFileKey: &oldAvatar}, nil)
 
-	userRepo.EXPECT().
+	putCall := store.EXPECT().
+		PutObject(gomock.Any(), gomock.Any(), gomock.Any(), int64(3), "image/png").
+		Return(nil)
+
+	updateCall := userRepo.EXPECT().
 		UpdateAvatarFileKey(gomock.Any(), int64(7), gomock.Any()).
 		DoAndReturn(func(_ context.Context, _ int64, avatarFileKey *string) (*domain.User, error) {
+			newAvatar = *avatarFileKey
 			return &domain.User{ID: 7, Email: "user@example.com", Birthdate: &birthdate, AvatarFileKey: avatarFileKey}, nil
 		})
+
+	deleteCall := store.EXPECT().
+		DeleteObject(gomock.Any(), oldAvatar).
+		Return(nil)
+
+	presignCall := store.EXPECT().
+		PresignGetObject(gomock.Any(), gomock.Any(), time.Duration(0)).
+		DoAndReturn(func(_ context.Context, key string, _ time.Duration) (string, error) {
+			if newAvatar == "" {
+				t.Fatalf("expected new avatar key to be set")
+			}
+			return "https://example.com/" + key, nil
+		})
+
+	gomock.InOrder(putCall, updateCall, deleteCall, presignCall)
 
 	resp, err := u.UpdateProfile(
 		context.Background(),
@@ -657,14 +639,6 @@ func TestAuthUsecase_UpdateProfile_BirthdateAndAvatar(t *testing.T) {
 	)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	}
-
-	if !store.putCalled {
-		t.Fatal("expected avatar to be uploaded")
-	}
-
-	if !store.deleteCalled {
-		t.Fatal("expected old avatar to be deleted")
 	}
 
 	if resp.AvatarURL == "" {
