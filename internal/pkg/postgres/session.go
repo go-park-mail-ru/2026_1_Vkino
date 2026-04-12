@@ -29,6 +29,7 @@ func (s *SessionRepo) SaveSession(ctx context.Context, userId int64, refreshToke
 
 func (s *SessionRepo) GetSession(ctx context.Context, userId int64) (string, error) {
 	var refreshToken string
+
 	var expiresAt time.Time
 
 	err := s.db.Pool.QueryRow(ctx, sqlGetSession, userId).Scan(&refreshToken, &expiresAt)
@@ -37,11 +38,13 @@ func (s *SessionRepo) GetSession(ctx context.Context, userId int64) (string, err
 		if errors.Is(err, pgx.ErrNoRows) {
 			return "", domain.ErrNoSession
 		}
+
 		return "", fmt.Errorf("session query failed: %w", err)
 	}
 
 	if time.Now().After(expiresAt) {
 		_ = s.DeleteSession(ctx, userId)
+
 		return "", domain.ErrNoSession
 	}
 
