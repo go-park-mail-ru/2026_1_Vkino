@@ -16,7 +16,7 @@ auth:
 
 s3:
   internal_endpoint: "minio:9000"
-  public_endpoint: "vkino.tech:9000"
+  public_endpoint: "media.vkino.tech"
   region: "us-east-1"
   access_key_id: "minioadmin"
   secret_access_key: "minioadmin"
