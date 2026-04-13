@@ -47,6 +47,14 @@ const (
 		where id = $1
 	`
 
+	sqlGetMoviesByActorID = `
+		select m.id, m.title, m.picture_file_key
+		from actor_to_movie atm
+		join movie m on m.id = atm.movie_id
+		where atm.actor_id = $1
+		order by m.title
+	`
+
 	sqlGetEpisodesByMovieID = `
 		select
 			id,
