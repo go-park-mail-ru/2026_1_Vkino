@@ -193,7 +193,39 @@ func (r *MovieRepo) GetActorByID(ctx context.Context, id int64) (domain.ActorRes
 		return domain.ActorResponse{}, fmt.Errorf("unable to scan actor: %w", err)
 	}
 
+	movies, err := r.getMoviesByActorID(ctx, id)
+	if err != nil {
+		return domain.ActorResponse{}, err
+	}
+
+	actor.Movies = movies
+
 	return actor, nil
+}
+
+func (r *MovieRepo) getMoviesByActorID(ctx context.Context, actorID int64) ([]domain.MoviePreview, error) {
+	rows, err := r.db.Pool.Query(ctx, sqlGetMoviesByActorID, actorID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to query movies by actor id: %w", err)
+	}
+	defer rows.Close()
+
+	movies := make([]domain.MoviePreview, 0)
+	for rows.Next() {
+		var movie domain.MoviePreview
+
+		if err = rows.Scan(&movie.ID, &movie.Title, &movie.ImgUrl); err != nil {
+			return nil, fmt.Errorf("unable to scan movie preview: %w", err)
+		}
+
+		movies = append(movies, movie)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating movies: %w", err)
+	}
+
+	return movies, nil
 }
 
 // GetEpisodesByMovieID Получаем все эпизоды связанные с фильмом

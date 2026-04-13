@@ -14,7 +14,7 @@ services:
       - app-network 
 
   vkinoapi:
-    image: saucesamba/vkino-back:v0.1.9
+    image: saucesamba/vkino-back:v0.1.10
     platform: linux/amd64
     restart: always
     command: ./vkinoapi --config=/usr/local/etc/config.yaml
