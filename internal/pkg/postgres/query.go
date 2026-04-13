@@ -36,7 +36,13 @@ const (
 	`
 
 	sqlGetActorByID = `
-		select id, full_name, birthdate, biography, country_id, picture_file_key 
+		select
+			id,
+			full_name,
+			coalesce(to_char(birthdate, 'YYYY-MM-DD'), ''),
+			coalesce(biography, ''),
+			country_id,
+			picture_file_key
 		from actor 
 		where id = $1
 	`
