@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/cmd/api/app"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/logger"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
 
@@ -25,7 +25,12 @@ func Run(configPath *string) error {
 		return fmt.Errorf("unable to load config %w", err)
 	}
 
-	log.Printf("Server started on %d", cfg.Server.Port)
+	baseLogger, err := logger.New(cfg.Logger)
+	if err != nil {
+		return fmt.Errorf("init logger: %w", err)
+	}
+
+	appLogger := baseLogger.WithField("component", "api")
 
 	options := postgres.BuildPostgresOptions(&cfg.Postgres)
 	pgDB, err := postgres.New(cfg.Postgres, options...)
@@ -34,7 +39,7 @@ func Run(configPath *string) error {
 		return fmt.Errorf("failed to connect to postgres: %w", err)
 	}
 
-	log.Println("successfully connected to postgres")
+	appLogger.Info("successfully connected to postgres")
 
 	defer pgDB.Close()
 
@@ -74,6 +79,7 @@ func Run(configPath *string) error {
 		httpserver.Timeout(cfg.Server.Timeouts),
 
 		httpserver.WithMiddleware(corsMiddleware),
+		httpserver.WithMiddleware(middleware.LoggerMiddleware(appLogger)),
 		httpserver.WithMiddleware(middleware.RecoveryMiddleware),
 
 		httpserver.WithRoute("POST /user/sign-up", userHandler.SignUp),
@@ -94,6 +100,8 @@ func Run(configPath *string) error {
 		httpserver.WithMiddlewareRoute("PUT /episode/{id}/progress", movieHandler.SaveEpisodeProgress,
 			authMiddleware.Middleware),
 	)
+
+	appLogger.WithField("port", cfg.Server.Port).Info("starting http server")
 
 	return server.Run()
 }

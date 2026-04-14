@@ -6,6 +6,11 @@ server:
     write: "15s"
     idle: "60s"
 
+logger:
+  level: "debug"
+  format: "text"
+  output_path: "logs/vkinoapi.log"
+
 postgres:
   host: "db"                    
   port: 5432

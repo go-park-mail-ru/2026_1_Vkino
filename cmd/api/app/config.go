@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/logger"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
@@ -18,6 +19,7 @@ type Config struct {
 	Postgres postgres.Config       `mapstructure:"postgres"`
 	CORS     middleware.CORSConfig `mapstructure:"cors"`
 	S3       storage.S3Config      `mapstructure:"s3"`
+	Logger   logger.Config         `mapstructure:"logger"`
 }
 
 func LoadConfig(path string, cfg any) error {
