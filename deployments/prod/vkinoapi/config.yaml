@@ -23,7 +23,7 @@ s3:
   bucket_images: "vkino-images"
   bucket_avatars: "vkino-avatars"
   bucket_videos: "vkino-videos"
-  use_ssl: false
+  use_ssl: true
   use_path_style: true
   presign_ttl: "15m"
 
@@ -42,6 +42,8 @@ cors:
   allowed_origins:
     - "http://vkino.tech"
     - "http://www.vkino.tech"
+    - "https://vkino.tech"
+    - "https://www.vkino.tech"
   allowed_methods:
     - GET
     - POST
