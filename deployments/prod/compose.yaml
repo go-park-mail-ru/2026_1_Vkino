@@ -80,10 +80,14 @@ services:
         echo 'waiting for minio...';
         sleep 2;
       done;
-      /usr/bin/mc mb -p local/vkino-images || true;
+      /usr/bin/mc mb -p local/vkino-actors || true;
+      /usr/bin/mc mb -p local/vkino-posters || true;
+      /usr/bin/mc mb -p local/vkino-cards || true;
       /usr/bin/mc mb -p local/vkino-avatars || true;
       /usr/bin/mc mb -p local/vkino-videos || true;
-      /usr/bin/mc anonymous set none local/vkino-images || true;
+      /usr/bin/mc anonymous set none local/vkino-actors || true;
+      /usr/bin/mc anonymous set none local/vkino-posters || true;
+      /usr/bin/mc anonymous set none local/vkino-cards || true;
       /usr/bin/mc anonymous set none local/vkino-avatars || true;
       /usr/bin/mc anonymous set none local/vkino-videos || true;
       exit 0;

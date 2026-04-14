@@ -103,6 +103,7 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, id int64) (domain.MovieRes
 		&movieResponse.OriginalLanguageID,
 		&movieResponse.CountryID,
 		&movieResponse.PictureFileKey,
+		&movieResponse.PosterFileKey,
 	)
 	if err != nil {
 		return domain.MovieResponse{}, err

@@ -44,9 +44,19 @@ func Run(configPath *string) error {
 
 	s3CommonConfig := cfg.S3.Config()
 
-	imageStorage, err := storagepkg.NewS3Storage(context.Background(), s3CommonConfig.WithBucket(cfg.S3.BucketImages))
+	actorStorage, err := storagepkg.NewS3Storage(context.Background(), s3CommonConfig.WithBucket(cfg.S3.BucketActors))
 	if err != nil {
-		return fmt.Errorf("init image storage: %w", err)
+		return fmt.Errorf("init actor storage: %w", err)
+	}
+
+	posterStorage, err := storagepkg.NewS3Storage(context.Background(), s3CommonConfig.WithBucket(cfg.S3.BucketPosters))
+	if err != nil {
+		return fmt.Errorf("init poster storage: %w", err)
+	}
+
+	cardStorage, err := storagepkg.NewS3Storage(context.Background(), s3CommonConfig.WithBucket(cfg.S3.BucketCards))
+	if err != nil {
+		return fmt.Errorf("init card storage: %w", err)
 	}
 
 	videoStorage, err := storagepkg.NewS3Storage(context.Background(), s3CommonConfig.WithBucket(cfg.S3.BucketVideos))
@@ -60,7 +70,7 @@ func Run(configPath *string) error {
 	}
 
 	userUsecase := userUsecase.NewAuthUsecaseWithStorage(userRepo, sessionRepo, avatarStorage, cfg.User)
-	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo, imageStorage, videoStorage)
+	movieUsecase := movieUsecase.NewMovieUsecase(movieRepo, actorStorage, posterStorage, cardStorage, videoStorage)
 
 	userHandler := userHttp.NewHandler(userUsecase)
 	movieHandler := movieHttp.NewHandler(movieUsecase)
