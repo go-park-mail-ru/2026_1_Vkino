@@ -17,12 +17,6 @@ const (
 	defaultFormat = "text"
 )
 
-type Config struct {
-	Level      string `mapstructure:"level"`
-	Format     string `mapstructure:"format"`
-	OutputPath string `mapstructure:"output_path"`
-}
-
 type Logger struct {
 	entry *logrus.Entry
 }
@@ -108,6 +102,10 @@ func (l *Logger) Error(args ...any) {
 	l.entryOrDefault().Error(args...)
 }
 
+func (l *Logger) Fatal(args ...any) {
+	l.entryOrDefault().Fatal(args...)
+}
+
 func (l *Logger) SetOutput(output io.Writer) {
 	if output == nil {
 		return
@@ -126,11 +124,22 @@ func (l *Logger) entryOrDefault() *logrus.Entry {
 
 func defaultLogger() *Logger {
 	log, err := New(Config{})
-	if err != nil {
-		panic(fmt.Sprintf("init default logger: %v", err))
+	if err == nil {
+		return log
 	}
 
-	return log
+	_, _ = fmt.Fprintf(os.Stderr, "logger is not initialized: %v\n", err)
+
+	base := logrus.New()
+	base.SetOutput(os.Stderr)
+	base.SetLevel(logrus.InfoLevel)
+	base.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: time.RFC3339Nano,
+		ForceColors:     false,
+	})
+
+	return &Logger{entry: logrus.NewEntry(base)}
 }
 
 func (c Config) withDefaults() Config {

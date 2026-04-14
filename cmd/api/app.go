@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/cmd/api/app"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/logger"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
 
@@ -15,6 +14,7 @@ import (
 	movieHttp "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/delivery/http"
 	movieUsecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
@@ -92,8 +92,7 @@ func (u *AuthUsecase) updateAvatarIfProvided(
 	contentType string,
 ) (*domain.User, error) {
 	requestLogger := logger.FromContext(ctx).
-		WithField("usecase", "AuthUsecase.UpdateProfile").
-		WithField("user_id", userID)
+		WithField("usecase", "AuthUsecase.UpdateProfile")
 
 	if body == nil {
 		return user, nil
@@ -110,7 +109,10 @@ func (u *AuthUsecase) updateAvatarIfProvided(
 	avatarBytes, err := io.ReadAll(body)
 	if err != nil || len(avatarBytes) == 0 {
 		if err != nil {
-			requestLogger.WithField("error", err).Error("failed to read avatar body")
+			requestLogger.
+				WithField("user_id", userID).
+				WithField("error", err).
+				Error("failed to read avatar body")
 		}
 		return nil, domain.ErrInvalidAvatar
 	}
@@ -123,6 +125,7 @@ func (u *AuthUsecase) updateAvatarIfProvided(
 	ext, ok := avatarExtensionByContentType(normalizedContentType)
 	if !ok {
 		requestLogger.
+			WithField("user_id", userID).
 			WithField("original_content_type", contentType).
 			WithField("normalized_content_type", normalizedContentType).
 			Error("unsupported avatar content type")

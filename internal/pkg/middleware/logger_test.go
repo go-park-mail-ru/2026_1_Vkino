@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 )
 
 func TestLoggerMiddleware_UsesIncomingRequestID(t *testing.T) {

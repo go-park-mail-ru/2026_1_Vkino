@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 )
 
 const requestIDHeader = "X-Request-ID"

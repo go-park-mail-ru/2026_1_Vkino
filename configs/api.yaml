@@ -9,7 +9,7 @@ server:
 logger:
   level: "debug"
   format: "text"
-  output_path: "logs/vkinoapi.log"
+  output_path: "logs/app/vkinoapi.log"
 
 postgres:
   host: "db"                    

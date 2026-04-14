@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 )
 
 func RecoveryMiddleware(next http.Handler) http.Handler {

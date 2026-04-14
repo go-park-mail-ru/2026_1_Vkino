@@ -137,3 +137,39 @@ func TestWithFieldWritesField(t *testing.T) {
 		t.Fatalf("expected message hello, got %v", payload["msg"])
 	}
 }
+
+func TestFatal(t *testing.T) {
+	t.Parallel()
+
+	log, err := New(Config{Format: "json"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var output bytes.Buffer
+	log.SetOutput(&output)
+
+	var exitCode int
+	log.entry.Logger.ExitFunc = func(code int) {
+		exitCode = code
+	}
+
+	log.Fatal("fatal message")
+
+	if exitCode != 1 {
+		t.Fatalf("expected exit code 1, got %d", exitCode)
+	}
+
+	var payload map[string]any
+	if err := json.Unmarshal(bytes.TrimSpace(output.Bytes()), &payload); err != nil {
+		t.Fatalf("unmarshal log payload: %v", err)
+	}
+
+	if payload["msg"] != "fatal message" {
+		t.Fatalf("expected message fatal message, got %v", payload["msg"])
+	}
+
+	if payload["level"] != "fatal" {
+		t.Fatalf("expected level fatal, got %v", payload["level"])
+	}
+}
