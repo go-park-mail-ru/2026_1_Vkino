@@ -104,10 +104,15 @@ create table if not exists movie (
         constraint movie_picture_file_key_length
             check (char_length(picture_file_key) > 0 and char_length(picture_file_key) <= 1024),
 
+    poster_file_key text null
+        constraint movie_poster_file_key_length
+            check (poster_file_key is null or (char_length(poster_file_key) > 0 and char_length(poster_file_key) <= 1024)),
+
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
 
-    constraint movie_picture_file_key_unique unique (picture_file_key)
+    constraint movie_picture_file_key_unique unique (picture_file_key),
+    constraint movie_poster_file_key_unique unique (poster_file_key)
 );
 
 create trigger movie_set_updated_at
