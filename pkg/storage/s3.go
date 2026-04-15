@@ -41,8 +41,8 @@ func (c Config) WithBucket(bucket string) Config {
 type S3Storage struct {
 	bucket        string
 	presignTTL    time.Duration
-	client        *minio.Client
-	presignClient *minio.Client
+	client        MinioClient
+	presignClient MinioClient
 }
 
 func NewS3Storage(_ context.Context, cfg Config) (*S3Storage, error) {
@@ -110,8 +110,8 @@ func NewS3Storage(_ context.Context, cfg Config) (*S3Storage, error) {
 	return &S3Storage{
 		bucket:        cfg.Bucket,
 		presignTTL:    cfg.PresignTTL,
-		client:        internalClient,
-		presignClient: presignClient,
+		client:        &minioClient{client: internalClient},
+		presignClient: &minioClient{client: presignClient},
 	}, nil
 }
 

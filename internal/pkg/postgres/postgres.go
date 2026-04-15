@@ -14,7 +14,7 @@ import (
 )
 
 type Client struct {
-	Pool *pgxpool.Pool
+	Pool Pool
 
 	maxPoolSize  int
 	connAttempts int
@@ -42,10 +42,12 @@ func New(cfg Config, opts ...Option) (*Client, error) {
 
 	poolCfg.MaxConns = int32(client.maxPoolSize)
 
-	client.Pool, err = pgxpool.NewWithConfig(context.Background(), poolCfg)
+	rawPool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 	if err != nil {
 		return nil, fmt.Errorf("pgxpool.NewWithConfig failed: %w", err)
 	}
+
+	client.Pool = &pgxPool{pool: rawPool}
 
 	for client.connAttempts > 0 {
 		err = client.Ping(context.Background())

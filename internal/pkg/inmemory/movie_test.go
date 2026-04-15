@@ -170,8 +170,8 @@ func TestMovieRepo_GetAllSelections(t *testing.T) {
 					Title: "Классика",
 					Movies: []domain.MoviePreview{
 						{
-							ID:             999,
-							Title:          "The Godfather",
+							ID:     999,
+							Title:  "The Godfather",
 							ImgUrl: "img/godfather.jpg",
 						},
 					},
