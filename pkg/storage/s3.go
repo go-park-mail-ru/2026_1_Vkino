@@ -17,7 +17,8 @@ type Config struct {
 	AccessKeyID      string
 	SecretAccessKey  string
 	Bucket           string
-	UseSSL           bool
+	InternalUseSSL   bool
+	PublicUseSSL     bool
 	UsePathStyle     bool
 	PresignTTL       time.Duration
 }
@@ -30,7 +31,8 @@ func (c Config) WithBucket(bucket string) Config {
 		AccessKeyID:      c.AccessKeyID,
 		SecretAccessKey:  c.SecretAccessKey,
 		Bucket:           bucket,
-		UseSSL:           c.UseSSL,
+		InternalUseSSL:   c.InternalUseSSL,
+		PublicUseSSL:     c.PublicUseSSL,
 		UsePathStyle:     c.UsePathStyle,
 		PresignTTL:       c.PresignTTL,
 	}
@@ -83,7 +85,7 @@ func NewS3Storage(_ context.Context, cfg Config) (*S3Storage, error) {
 			cfg.SecretAccessKey,
 			"",
 		),
-		Secure:       cfg.UseSSL,
+		Secure:       cfg.InternalUseSSL,
 		Region:       cfg.Region,
 		BucketLookup: bucketLookup,
 	})
@@ -97,7 +99,7 @@ func NewS3Storage(_ context.Context, cfg Config) (*S3Storage, error) {
 			cfg.SecretAccessKey,
 			"",
 		),
-		Secure:       cfg.UseSSL,
+		Secure:       cfg.PublicUseSSL,
 		Region:       cfg.Region,
 		BucketLookup: bucketLookup,
 	})

@@ -57,6 +57,7 @@ s3:
   bucket_images: "vkino-images"
   bucket_avatars: "vkino-avatars"
   bucket_videos: "vkino-videos"
-  use_ssl: true
+  internal_use_ssl: false
+  public_use_ssl: false
   use_path_style: true
   presign_ttl: "15m"
