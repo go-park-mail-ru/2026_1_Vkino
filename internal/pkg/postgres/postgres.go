@@ -84,7 +84,7 @@ func (p *Client) Ping(ctx context.Context) error {
 	return err
 }
 
-func (p *Client) Query(ctx context.Context, query string, args ...any) (pgx.Rows, error) {
+func (p *Client) Query(ctx context.Context, query string, args ...any) (Rows, error) {
 	startedAt := time.Now()
 	rows, err := p.Pool.Query(ctx, query, args...)
 	p.logCall(ctx, "query", query, len(args), time.Since(startedAt), err, nil)
@@ -92,7 +92,7 @@ func (p *Client) Query(ctx context.Context, query string, args ...any) (pgx.Rows
 	return rows, err
 }
 
-func (p *Client) QueryRow(ctx context.Context, query string, args ...any) pgx.Row {
+func (p *Client) QueryRow(ctx context.Context, query string, args ...any) Row {
 	return &loggingRow{
 		row:       p.Pool.QueryRow(ctx, query, args...),
 		client:    p,

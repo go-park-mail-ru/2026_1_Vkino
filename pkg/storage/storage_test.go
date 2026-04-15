@@ -21,7 +21,8 @@ func testS3Config() Config {
 		AccessKeyID:      "access",
 		SecretAccessKey:  "secret",
 		Bucket:           "avatars",
-		UseSSL:           false,
+		InternalUseSSL:   false,
+		PublicUseSSL:     false,
 		UsePathStyle:     true,
 		PresignTTL:       10 * time.Minute,
 	}
@@ -44,13 +45,14 @@ func TestS3Config_Config(t *testing.T) {
 		PresignTTL:       time.Minute,
 	}
 
-	got := cfg.Config()
-	if got.InternalEndpoint != cfg.InternalEndpoint || got.PublicEndpoint != cfg.PublicEndpoint ||
-		got.AccessKeyID != cfg.AccessKeyID || got.SecretAccessKey != cfg.SecretAccessKey ||
-		got.UseSSL != cfg.UseSSL || got.UsePathStyle != cfg.UsePathStyle || got.PresignTTL != cfg.PresignTTL {
-		t.Fatalf("unexpected config conversion: %#v", got)
+		got := cfg.Config()
+		if got.InternalEndpoint != cfg.InternalEndpoint || got.PublicEndpoint != cfg.PublicEndpoint ||
+			got.AccessKeyID != cfg.AccessKeyID || got.SecretAccessKey != cfg.SecretAccessKey ||
+			got.InternalUseSSL != cfg.UseSSL || got.PublicUseSSL != cfg.UseSSL ||
+			got.UsePathStyle != cfg.UsePathStyle || got.PresignTTL != cfg.PresignTTL {
+			t.Fatalf("unexpected config conversion: %#v", got)
+		}
 	}
-}
 
 func TestConfig_WithBucket(t *testing.T) {
 	t.Parallel()
