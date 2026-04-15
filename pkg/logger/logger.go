@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -18,10 +19,16 @@ const (
 )
 
 type Logger struct {
-	entry *logrus.Entry
+	entry        *logrus.Entry
+	sharedFields *fieldsStore
 }
 
 type contextKey struct{}
+
+type fieldsStore struct {
+	mu     sync.RWMutex
+	fields logrus.Fields
+}
 
 func New(cfg Config) (*Logger, error) {
 	cfg = cfg.withDefaults()
@@ -56,7 +63,10 @@ func New(cfg Config) (*Logger, error) {
 		return nil, fmt.Errorf("unsupported log format %q", cfg.Format)
 	}
 
-	return &Logger{entry: logrus.NewEntry(base)}, nil
+	return &Logger{
+		entry:        logrus.NewEntry(base),
+		sharedFields: newFieldsStore(),
+	}, nil
 }
 
 func ContextWithLogger(ctx context.Context, log *Logger) context.Context {
@@ -83,7 +93,16 @@ func FromContext(ctx context.Context) *Logger {
 }
 
 func (l *Logger) WithField(key string, value any) *Logger {
-	return &Logger{entry: l.entryOrDefault().WithField(key, value)}
+	return &Logger{
+		entry:        l.entryOrDefault().WithField(key, value),
+		sharedFields: l.fieldsOrDefault(),
+	}
+}
+
+func (l *Logger) AddField(key string, value any) *Logger {
+	l.fieldsOrDefault().set(key, value)
+
+	return l
 }
 
 func (l *Logger) Debug(args ...any) {
@@ -115,11 +134,17 @@ func (l *Logger) SetOutput(output io.Writer) {
 }
 
 func (l *Logger) entryOrDefault() *logrus.Entry {
+	entry := defaultLogger().entry
 	if l != nil && l.entry != nil {
-		return l.entry
+		entry = l.entry
 	}
 
-	return defaultLogger().entry
+	fields := l.fieldsOrDefault().snapshot()
+	if len(fields) == 0 {
+		return entry
+	}
+
+	return entry.WithFields(fields)
 }
 
 func defaultLogger() *Logger {
@@ -139,7 +164,10 @@ func defaultLogger() *Logger {
 		ForceColors:     false,
 	})
 
-	return &Logger{entry: logrus.NewEntry(base)}
+	return &Logger{
+		entry:        logrus.NewEntry(base),
+		sharedFields: newFieldsStore(),
+	}
 }
 
 func (c Config) withDefaults() Config {
@@ -178,4 +206,49 @@ func buildOutput(outputPath string) (io.Writer, error) {
 	}
 
 	return file, nil
+}
+
+func (l *Logger) fieldsOrDefault() *fieldsStore {
+	if l != nil && l.sharedFields != nil {
+		return l.sharedFields
+	}
+
+	return newFieldsStore()
+}
+
+func newFieldsStore() *fieldsStore {
+	return &fieldsStore{
+		fields: make(logrus.Fields),
+	}
+}
+
+func (f *fieldsStore) set(key string, value any) {
+	if f == nil {
+		return
+	}
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	f.fields[key] = value
+}
+
+func (f *fieldsStore) snapshot() logrus.Fields {
+	if f == nil {
+		return nil
+	}
+
+	f.mu.RLock()
+	defer f.mu.RUnlock()
+
+	if len(f.fields) == 0 {
+		return nil
+	}
+
+	cloned := make(logrus.Fields, len(f.fields))
+	for key, value := range f.fields {
+		cloned[key] = value
+	}
+
+	return cloned
 }

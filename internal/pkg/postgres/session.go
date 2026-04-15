@@ -19,7 +19,7 @@ func NewSessionRepo(db *Client) *SessionRepo {
 }
 
 func (s *SessionRepo) SaveSession(ctx context.Context, userId int64, refreshToken string, expiresAt time.Time) error {
-	_, err := s.db.Pool.Exec(ctx, sqlSaveSession, userId, refreshToken, expiresAt)
+	_, err := s.db.Exec(ctx, sqlSaveSession, userId, refreshToken, expiresAt)
 	if err != nil {
 		return fmt.Errorf("fail to save session: %w", err)
 	}
@@ -32,7 +32,7 @@ func (s *SessionRepo) GetSession(ctx context.Context, userId int64) (string, err
 
 	var expiresAt time.Time
 
-	err := s.db.Pool.QueryRow(ctx, sqlGetSession, userId).Scan(&refreshToken, &expiresAt)
+	err := s.db.QueryRow(ctx, sqlGetSession, userId).Scan(&refreshToken, &expiresAt)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -52,7 +52,7 @@ func (s *SessionRepo) GetSession(ctx context.Context, userId int64) (string, err
 }
 
 func (s *SessionRepo) DeleteSession(ctx context.Context, userId int64) error {
-	_, err := s.db.Pool.Exec(ctx, sqlDeleteSession, userId)
+	_, err := s.db.Exec(ctx, sqlDeleteSession, userId)
 	if err != nil {
 		return fmt.Errorf("delete session: %w", err)
 	}

@@ -110,7 +110,6 @@ func (u *AuthUsecase) updateAvatarIfProvided(
 	if err != nil || len(avatarBytes) == 0 {
 		if err != nil {
 			requestLogger.
-				WithField("user_id", userID).
 				WithField("error", err).
 				Error("failed to read avatar body")
 		}
@@ -125,7 +124,6 @@ func (u *AuthUsecase) updateAvatarIfProvided(
 	ext, ok := avatarExtensionByContentType(normalizedContentType)
 	if !ok {
 		requestLogger.
-			WithField("user_id", userID).
 			WithField("original_content_type", contentType).
 			WithField("normalized_content_type", normalizedContentType).
 			Error("unsupported avatar content type")

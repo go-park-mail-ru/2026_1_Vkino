@@ -138,6 +138,47 @@ func TestWithFieldWritesField(t *testing.T) {
 	}
 }
 
+func TestAddFieldPropagatesToExistingChildLogger(t *testing.T) {
+	t.Parallel()
+
+	log, err := New(Config{Format: "json"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var output bytes.Buffer
+	log.SetOutput(&output)
+
+	requestLogger := log.WithField("request_id", "req-1")
+	childLogger := requestLogger.WithField("scope", "handler")
+
+	requestLogger.AddField("user_id", int64(42))
+	requestLogger.AddField("email", "user@example.com")
+
+	childLogger.Info("handled")
+
+	var payload map[string]any
+	if err := json.Unmarshal(bytes.TrimSpace(output.Bytes()), &payload); err != nil {
+		t.Fatalf("unmarshal log payload: %v", err)
+	}
+
+	if payload["request_id"] != "req-1" {
+		t.Fatalf("expected request_id req-1, got %v", payload["request_id"])
+	}
+
+	if payload["scope"] != "handler" {
+		t.Fatalf("expected scope handler, got %v", payload["scope"])
+	}
+
+	if payload["user_id"] != float64(42) {
+		t.Fatalf("expected user_id 42, got %v", payload["user_id"])
+	}
+
+	if payload["email"] != "user@example.com" {
+		t.Fatalf("expected email user@example.com, got %v", payload["email"])
+	}
+}
+
 func TestFatal(t *testing.T) {
 	t.Parallel()
 
