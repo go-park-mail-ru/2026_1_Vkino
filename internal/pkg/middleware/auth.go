@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
 	authHttp "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 )
 
 type ctxKey string
@@ -53,6 +54,11 @@ func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), AuthCtxKey, auth)
+		requestLogger := logger.FromContext(ctx).
+			AddField("user_id", auth.UserId).
+			AddField("email", auth.Email)
+		ctx = logger.ContextWithLogger(ctx, requestLogger)
+
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

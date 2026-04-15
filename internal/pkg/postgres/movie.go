@@ -25,7 +25,7 @@ var (
 )
 
 func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error) {
-	rows, err := r.db.Pool.Query(ctx, sqlGetSelectionByTitle, title)
+	rows, err := r.db.Query(ctx, sqlGetSelectionByTitle, title)
 	if err != nil {
 		return domain.SelectionResponse{}, fmt.Errorf("unable to query selections: %w", err)
 	}
@@ -51,7 +51,7 @@ func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (doma
 }
 
 func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error) {
-	rows, err := r.db.Pool.Query(ctx, sqlGetAllSelectionTitles)
+	rows, err := r.db.Query(ctx, sqlGetAllSelectionTitles)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query selection titles: %w", err)
 	}
@@ -91,7 +91,7 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.SelectionRes
 func (r *MovieRepo) GetMovieByID(ctx context.Context, id int64) (domain.MovieResponse, error) {
 	var movieResponse domain.MovieResponse
 
-	err := r.db.Pool.QueryRow(ctx, sqlGetMovieByID, id).Scan(
+	err := r.db.QueryRow(ctx, sqlGetMovieByID, id).Scan(
 		&movieResponse.ID,
 		&movieResponse.Title,
 		&movieResponse.Description,
@@ -125,7 +125,7 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, id int64) (domain.MovieRes
 }
 
 func (r *MovieRepo) getGenresByMovieID(ctx context.Context, movieID int64) ([]string, error) {
-	rows, err := r.db.Pool.Query(ctx, sqlGetGenresByMovieID, movieID)
+	rows, err := r.db.Query(ctx, sqlGetGenresByMovieID, movieID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query genres by movie id: %w", err)
 	}
@@ -150,7 +150,7 @@ func (r *MovieRepo) getGenresByMovieID(ctx context.Context, movieID int64) ([]st
 }
 
 func (r *MovieRepo) getActorsByMovieID(ctx context.Context, movieID int64) ([]domain.ActorPreview, error) {
-	rows, err := r.db.Pool.Query(ctx, sqlGetActorsByMovieID, movieID)
+	rows, err := r.db.Query(ctx, sqlGetActorsByMovieID, movieID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query actors by movie id: %w", err)
 	}
@@ -177,7 +177,7 @@ func (r *MovieRepo) getActorsByMovieID(ctx context.Context, movieID int64) ([]do
 func (r *MovieRepo) GetActorByID(ctx context.Context, id int64) (domain.ActorResponse, error) {
 	var actor domain.ActorResponse
 
-	err := r.db.Pool.QueryRow(ctx, sqlGetActorByID, id).Scan(
+	err := r.db.QueryRow(ctx, sqlGetActorByID, id).Scan(
 		&actor.ID,
 		&actor.FullName,
 		&actor.BirthDate,
@@ -204,7 +204,7 @@ func (r *MovieRepo) GetActorByID(ctx context.Context, id int64) (domain.ActorRes
 }
 
 func (r *MovieRepo) getMoviesByActorID(ctx context.Context, actorID int64) ([]domain.MoviePreview, error) {
-	rows, err := r.db.Pool.Query(ctx, sqlGetMoviesByActorID, actorID)
+	rows, err := r.db.Query(ctx, sqlGetMoviesByActorID, actorID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query movies by actor id: %w", err)
 	}
@@ -230,7 +230,7 @@ func (r *MovieRepo) getMoviesByActorID(ctx context.Context, actorID int64) ([]do
 
 // GetEpisodesByMovieID Получаем все эпизоды связанные с фильмом
 func (r *MovieRepo) GetEpisodesByMovieID(ctx context.Context, movieID int64) ([]domain.EpisodeItemResponse, error) {
-	rows, err := r.db.Pool.Query(ctx, sqlGetEpisodesByMovieID, movieID)
+	rows, err := r.db.Query(ctx, sqlGetEpisodesByMovieID, movieID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query episodes by movie id: %w", err)
 	}
@@ -269,7 +269,7 @@ func (r *MovieRepo) GetEpisodesByMovieID(ctx context.Context, movieID int64) ([]
 func (r *MovieRepo) GetEpisodePlayback(ctx context.Context, episodeID int64) (domain.EpisodePlaybackResponse, error) {
 	var playback domain.EpisodePlaybackResponse
 
-	err := r.db.Pool.QueryRow(ctx, sqlGetEpisodePlayback, episodeID).Scan(
+	err := r.db.QueryRow(ctx, sqlGetEpisodePlayback, episodeID).Scan(
 		&playback.EpisodeID,
 		&playback.MovieID,
 		&playback.SeasonNumber,
@@ -292,7 +292,7 @@ func (r *MovieRepo) GetEpisodePlayback(ctx context.Context, episodeID int64) (do
 func (r *MovieRepo) GetWatchProgress(ctx context.Context, userID, episodeID int64) (int, error) {
 	var positionSeconds int
 
-	err := r.db.Pool.QueryRow(ctx, sqlGetWatchProgress, userID, episodeID).Scan(&positionSeconds)
+	err := r.db.QueryRow(ctx, sqlGetWatchProgress, userID, episodeID).Scan(&positionSeconds)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, nil
@@ -305,7 +305,7 @@ func (r *MovieRepo) GetWatchProgress(ctx context.Context, userID, episodeID int6
 }
 
 func (r *MovieRepo) UpsertWatchProgress(ctx context.Context, userID, episodeID int64, positionSeconds int) error {
-	_, err := r.db.Pool.Exec(ctx, sqlUpsertWatchProgress, userID, episodeID, positionSeconds)
+	_, err := r.db.Exec(ctx, sqlUpsertWatchProgress, userID, episodeID, positionSeconds)
 	if err != nil {
 		return fmt.Errorf("unable to upsert watch progress: %w", err)
 	}

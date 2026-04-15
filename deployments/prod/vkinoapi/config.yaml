@@ -6,6 +6,11 @@ server:
     write: "15s"
     idle: "60s"
   cors:
+
+logger:
+  level: "info"
+  format: "json"
+  output_path: "logs/app/vkinoapi.log"
     
 auth:
   jwt_secret: "dev-secret"

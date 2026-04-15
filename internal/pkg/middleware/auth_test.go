@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
 	usecasemocks "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase/mocks"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	"go.uber.org/mock/gomock"
 )
 
@@ -231,5 +233,62 @@ func TestAuthFromContext(t *testing.T) {
 				t.Fatalf("expected email %q, got %q", tt.wantAuth.Email, auth.Email)
 			}
 		})
+	}
+}
+
+func TestAuthMiddleware_EnrichesRequestLogger(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	baseLogger, err := logger.New(logger.Config{Format: "json"})
+	if err != nil {
+		t.Fatalf("new logger: %v", err)
+	}
+
+	var output bytes.Buffer
+	baseLogger.SetOutput(&output)
+
+	mu := usecasemocks.NewMockUsecase(ctrl)
+	mu.EXPECT().
+		ValidateAccessToken("good-token").
+		Return(usecase.AuthContext{
+			UserId: 7,
+			Email:  "user@example.com",
+		}, nil)
+
+	authMiddleware := &AuthMiddleware{usecase: mu}
+	handler := LoggerMiddleware(baseLogger)(authMiddleware.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.FromContext(r.Context()).Info("inside handler")
+		w.WriteHeader(http.StatusOK)
+	})))
+
+	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
+	req.Header.Set("Authorization", "Bearer good-token")
+	req.Header.Set(requestIDHeader, "req-7")
+
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	lines := strings.Split(strings.TrimSpace(output.String()), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("expected 2 log lines, got %d", len(lines))
+	}
+
+	for _, line := range lines {
+		payload := decodeLogLine(t, line)
+
+		if payload["request_id"] != "req-7" {
+			t.Fatalf("expected request_id req-7, got %v", payload["request_id"])
+		}
+
+		if payload["user_id"] != float64(7) {
+			t.Fatalf("expected user_id 7, got %v", payload["user_id"])
+		}
+
+		if payload["email"] != "user@example.com" {
+			t.Fatalf("expected email user@example.com, got %v", payload["email"])
+		}
 	}
 }
