@@ -8,7 +8,9 @@ type S3Config struct {
 	Region           string        `mapstructure:"region"`
 	AccessKeyID      string        `mapstructure:"access_key_id"`
 	SecretAccessKey  string        `mapstructure:"secret_access_key"`
-	BucketImages     string        `mapstructure:"bucket_images"`
+	BucketActors     string        `mapstructure:"bucket_actors"`
+	BucketPosters    string        `mapstructure:"bucket_posters"`
+	BucketCards      string        `mapstructure:"bucket_cards"`
 	BucketAvatars    string        `mapstructure:"bucket_avatars"`
 	BucketVideos     string        `mapstructure:"bucket_videos"`
 	UseSSL           bool          `mapstructure:"use_ssl"`

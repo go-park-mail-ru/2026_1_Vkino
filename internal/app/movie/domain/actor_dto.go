@@ -2,8 +2,8 @@ package domain
 
 type ActorPreview struct {
 	ID             int64  `json:"id"`
-	FullName       string    `json:"full_name"`
-	PictureFileKey string    `json:"img_url"`
+	FullName       string `json:"full_name"`
+	PictureFileKey string `json:"img_url"`
 }
 
 type ActorResponse struct {

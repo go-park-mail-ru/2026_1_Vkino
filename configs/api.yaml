@@ -54,7 +54,9 @@ s3:
   region: "us-east-1"
   access_key_id: "minioadmin"
   secret_access_key: "minioadmin"
-  bucket_images: "vkino-images"
+  bucket_actors: "vkino-actors"
+  bucket_posters: "vkino-posters"
+  bucket_cards: "vkino-cards"
   bucket_avatars: "vkino-avatars"
   bucket_videos: "vkino-videos"
   internal_use_ssl: false

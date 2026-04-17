@@ -23,3 +23,10 @@ cover-total:
 	@echo "=== Total project coverage ==="
 	@go test $(PACKAGES_NO_MOCKS) -coverprofile=coverage.out > /dev/null 2>&1 || true
 	@go tool cover -func=coverage.out | grep total | awk '{print $$3}'
+
+run dev:
+	docker compose -f deployments/dev/compose.yaml up --build
+
+stop dev:
+	docker compose -f deployments/dev/compose.yaml down -v
+
