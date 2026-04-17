@@ -38,6 +38,13 @@ func (m *MovieUsecase) GetMovieByID(ctx context.Context, id int64) (domain.Movie
 		return domain.MovieResponse{}, err
 	}
 
+	for i := range episodes {
+		episodes[i].VideoURL, err = m.presignVideoURL(ctx, episodes[i].VideoURL)
+		if err != nil {
+			return domain.MovieResponse{}, err
+		}
+	}
+
 	movie.Episodes = episodes
 
 	return movie, nil

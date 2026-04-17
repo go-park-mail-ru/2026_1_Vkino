@@ -25,3 +25,11 @@ func (m *MovieUsecase) presignActorURL(ctx context.Context, key string) (string,
 
 	return m.actorStorage.PresignGetObject(ctx, key, 0)
 }
+
+func (m *MovieUsecase) presignVideoURL(ctx context.Context, key string) (string, error) {
+	if key == "" {
+		return "", nil
+	}
+
+	return m.videoStorage.PresignGetObject(ctx, key, 0)
+}
