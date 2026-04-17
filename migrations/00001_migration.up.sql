@@ -72,6 +72,10 @@ create table if not exists movie (
     director text null
         constraint movie_director_length
             check (director is null or char_length(director) <= 4096),
+
+    trailer_url text null
+        constraint movie_trailer_url_length
+            check (trailer_url is null or (char_length(trailer_url) > 0 and char_length(trailer_url) <= 2048)),
 	
 	content_type text not null default 'film'
         constraint movie_content_type_check
