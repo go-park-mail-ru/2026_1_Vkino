@@ -6,6 +6,11 @@ server:
     write: "15s"
     idle: "60s"
 
+logger:
+  level: "debug"
+  format: "text"
+  output_path: "logs/app/vkinoapi.log"
+
 postgres:
   host: "db"                    
   port: 5432
@@ -49,9 +54,12 @@ s3:
   region: "us-east-1"
   access_key_id: "minioadmin"
   secret_access_key: "minioadmin"
-  bucket_images: "vkino-images"
+  bucket_actors: "vkino-actors"
+  bucket_posters: "vkino-posters"
+  bucket_cards: "vkino-cards"
   bucket_avatars: "vkino-avatars"
   bucket_videos: "vkino-videos"
-  use_ssl: false
+  internal_use_ssl: false
+  public_use_ssl: false
   use_path_style: true
   presign_ttl: "15m"

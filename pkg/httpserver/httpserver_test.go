@@ -47,3 +47,65 @@ func TestWithRoute(t *testing.T) {
 	assert.True(t, handlerCalled)
 	assert.Equal(t, http.StatusOK, w.Code)
 }
+
+func TestWithMiddlewareRoute(t *testing.T) {
+	middlewareCalled := false
+	handlerCalled := false
+
+	mw := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			middlewareCalled = true
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handlerCalled = true
+		w.WriteHeader(http.StatusAccepted)
+	})
+
+	s := New(WithMiddlewareRoute("/test", handler, mw))
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	w := httptest.NewRecorder()
+	s.mux.ServeHTTP(w, req)
+
+	assert.True(t, middlewareCalled)
+	assert.True(t, handlerCalled)
+	assert.Equal(t, http.StatusAccepted, w.Code)
+}
+
+func TestWithMiddleware(t *testing.T) {
+	var order []string
+
+	mw := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			order = append(order, "mw")
+			next.ServeHTTP(w, r)
+		})
+	}
+
+	s := New(
+		WithMiddleware(mw),
+		WithRoute("/test", func(w http.ResponseWriter, r *http.Request) {
+			order = append(order, "handler")
+			w.WriteHeader(http.StatusNoContent)
+		}),
+	)
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	w := httptest.NewRecorder()
+	s.server.Handler.ServeHTTP(w, req)
+
+	assert.Equal(t, []string{"mw", "handler"}, order)
+	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestRun(t *testing.T) {
+	s := New()
+	s.server.Addr = "127.0.0.1"
+
+	err := s.Run()
+
+	assert.Error(t, err)
+}

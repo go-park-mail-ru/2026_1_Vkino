@@ -2,7 +2,6 @@ package http
 
 import (
 	"errors"
-	"log"
 	"mime"
 	"mime/multipart"
 	"net/http"
@@ -15,6 +14,7 @@ import (
 	pkgerrors "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/errors"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
@@ -134,6 +134,9 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	requestLogger := logger.FromContext(r.Context()).
+		WithField("handler", "user.UpdateProfile")
+
 	const maxAvatarSize = 5 * 1024 * 1024 // 5 МБ
 	if err := r.ParseMultipartForm(maxAvatarSize); err != nil {
 		status, message := pkgerrors.MapError(domain.ErrInvalidAvatar)
@@ -175,13 +178,11 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 			contentType = mime.TypeByExtension(filepath.Ext(header.Filename))
 		}
 
-		log.Printf(
-			"user.update_profile: avatar received user_id=%d filename=%q size=%d content_type=%q",
-			auth.UserId,
-			header.Filename,
-			size,
-			contentType,
-		)
+		requestLogger.
+			WithField("filename", header.Filename).
+			WithField("size", size).
+			WithField("content_type", contentType).
+			Info("avatar received")
 	} else if !errors.Is(err, http.ErrMissingFile) {
 		status, message := pkgerrors.MapError(domain.ErrInvalidAvatar)
 		httppkg.ErrResponse(w, status, message)
@@ -191,13 +192,11 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	profile, err := h.usecase.UpdateProfile(r.Context(), auth.UserId, birthdate, file, size, contentType)
 	if err != nil {
-		log.Printf(
-			"user.update_profile: failed user_id=%d birthdate=%q has_avatar=%t err=%v",
-			auth.UserId,
-			birthdate,
-			file != nil,
-			err,
-		)
+		requestLogger.
+			WithField("birthdate", birthdate).
+			WithField("has_avatar", file != nil).
+			WithField("error", err).
+			Error("update profile failed")
 		status, message := pkgerrors.MapError(err)
 		httppkg.ErrResponse(w, status, message)
 

@@ -18,6 +18,7 @@ type MovieResponse struct {
 	OriginalLanguageID int64                 `json:"original_language_id"`
 	CountryID          int64                 `json:"country_id"`
 	PictureFileKey     string                `json:"img_url"`
+	PosterFileKey      string                `json:"poster_url"`
 	Genres             []string              `json:"genres"`
 	Actors             []ActorPreview        `json:"actors"`
 	Episodes           []EpisodeItemResponse `json:"episodes"`

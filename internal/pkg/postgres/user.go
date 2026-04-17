@@ -27,7 +27,7 @@ var (
 func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var user domain.User
 
-	err := r.db.Pool.QueryRow(ctx, sqlGetUserByEmail, email).Scan(
+	err := r.db.QueryRow(ctx, sqlGetUserByEmail, email).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Password,
@@ -51,7 +51,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
 	var user domain.User
 
-	err := r.db.Pool.QueryRow(ctx, sqlGetUserByID, id).Scan(
+	err := r.db.QueryRow(ctx, sqlGetUserByID, id).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Password,
@@ -75,7 +75,7 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (*domain.User, error) {
 	var user domain.User
 
-	err := r.db.Pool.QueryRow(ctx, sqlCreateUser, email, passwordHash).Scan(
+	err := r.db.QueryRow(ctx, sqlCreateUser, email, passwordHash).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Password,
@@ -101,7 +101,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (
 func (r *UserRepo) UpdateUser(ctx context.Context, email, passwordHash string) (*domain.User, error) {
 	var user domain.User
 
-	err := r.db.Pool.QueryRow(ctx, sqlUpdateUser, passwordHash, time.Now(), email).Scan(
+	err := r.db.QueryRow(ctx, sqlUpdateUser, passwordHash, time.Now(), email).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Password,
@@ -123,7 +123,7 @@ func (r *UserRepo) UpdateUser(ctx context.Context, email, passwordHash string) (
 }
 
 func (r *UserRepo) DeleteUser(ctx context.Context, email string) error {
-	tag, err := r.db.Pool.Exec(ctx, sqlDeleteUser, email)
+	tag, err := r.db.Exec(ctx, sqlDeleteUser, email)
 	if err != nil {
 		return fmt.Errorf("delete user: %w", err)
 	}
@@ -137,7 +137,7 @@ func (r *UserRepo) DeleteUser(ctx context.Context, email string) error {
 
 func (r *UserRepo) UpdateBirthdate(ctx context.Context, userID int64, birthdate *time.Time) (*domain.User, error) {
 	var user domain.User
-	err := r.db.Pool.QueryRow(ctx, sqlUpdateUserBirthdate, birthdate, userID).Scan(
+	err := r.db.QueryRow(ctx, sqlUpdateUserBirthdate, birthdate, userID).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Password,
@@ -160,7 +160,7 @@ func (r *UserRepo) UpdateBirthdate(ctx context.Context, userID int64, birthdate 
 
 func (r *UserRepo) UpdateAvatarFileKey(ctx context.Context, userID int64, avatarFileKey *string) (*domain.User, error) {
 	var user domain.User
-	err := r.db.Pool.QueryRow(ctx, sqlUpdateUserAvatarFileKey, avatarFileKey, userID).Scan(
+	err := r.db.QueryRow(ctx, sqlUpdateUserAvatarFileKey, avatarFileKey, userID).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Password,
@@ -182,7 +182,7 @@ func (r *UserRepo) UpdateAvatarFileKey(ctx context.Context, userID int64, avatar
 }
 
 func (r *UserRepo) UpdatePassword(ctx context.Context, userID int64, passwordHash string) error {
-	tag, err := r.db.Pool.Exec(ctx, sqlUpdateUserPasswordByID, passwordHash, userID)
+	tag, err := r.db.Exec(ctx, sqlUpdateUserPasswordByID, passwordHash, userID)
 	if err != nil {
 		return fmt.Errorf("update user password by id: %w", err)
 	}

@@ -23,8 +23,6 @@ cover-total:
 	@echo "=== Total project coverage ==="
 	@go test $(PACKAGES_NO_MOCKS) -coverprofile=coverage.out > /dev/null 2>&1 || true
 	@go tool cover -func=coverage.out | grep total | awk '{print $$3}'
-<<<<<<< Updated upstream
-=======
 
 run-build:
 	docker compose -f deployments/dev/compose.yaml up --build
@@ -39,4 +37,4 @@ down:
 	docker compose -f deployments/dev/compose.yaml down
 
 
->>>>>>> Stashed changes
+

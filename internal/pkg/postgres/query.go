@@ -15,7 +15,7 @@ const (
 
 	sqlGetMovieByID = `
 		select id, title, description, director, content_type, release_year, 
-		duration_seconds, age_limit, original_language_id, country_id, picture_file_key 
+		duration_seconds, age_limit, original_language_id, country_id, picture_file_key, coalesce(poster_file_key, '')
 		from movie where id=$1
 	`
 

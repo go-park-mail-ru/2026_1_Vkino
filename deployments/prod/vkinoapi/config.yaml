@@ -6,6 +6,11 @@ server:
     write: "15s"
     idle: "60s"
   cors:
+
+logger:
+  level: "info"
+  format: "json"
+  output_path: "logs/app/vkinoapi.log"
     
 auth:
   jwt_secret: "dev-secret"
@@ -20,10 +25,13 @@ s3:
   region: "us-east-1"
   access_key_id: "minioadmin"
   secret_access_key: "minioadmin"
-  bucket_images: "vkino-images"
+  bucket_actors: "vkino-actors"
+  bucket_posters: "vkino-posters"
+  bucket_cards: "vkino-cards"
   bucket_avatars: "vkino-avatars"
   bucket_videos: "vkino-videos"
-  use_ssl: false
+  internal_use_ssl: false
+  public_use_ssl: true
   use_path_style: true
   presign_ttl: "15m"
 
@@ -42,6 +50,8 @@ cors:
   allowed_origins:
     - "http://vkino.tech"
     - "http://www.vkino.tech"
+    - "https://vkino.tech"
+    - "https://www.vkino.tech"
   allowed_methods:
     - GET
     - POST
