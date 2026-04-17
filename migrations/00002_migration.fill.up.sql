@@ -1589,6 +1589,8 @@ SELECT
     1,
     1,
     CASE m.title
+        WHEN 'Интерстеллар' THEN 'Интерстеллар'
+        WHEN 'Матрица' THEN 'Матрица'
         WHEN 'Во все тяжкие' THEN 'Пилот'
         WHEN 'Очень странные дела' THEN 'Исчезновение Уилла Байерса'
         WHEN 'Черное зеркало' THEN 'Национальный гимн'
@@ -1603,6 +1605,8 @@ SELECT
     m.duration_seconds,
     '' ||
         CASE m.title
+            WHEN 'Интерстеллар' THEN 'interstellar_episode.webp'
+            WHEN 'Матрица' THEN 'matrix_episode.webp'
             WHEN 'Во все тяжкие' THEN 'breaking_bad_s01e01.webp'
             WHEN 'Очень странные дела' THEN 'stranger_things_s01e01.webp'
             WHEN 'Черное зеркало' THEN 'black_mirror_s01e01.webp'
@@ -1616,6 +1620,8 @@ SELECT
         END,
     '' ||
         CASE m.title
+            WHEN 'Интерстеллар' THEN '2.mp4'
+            WHEN 'Матрица' THEN '3.mp4'
             WHEN 'Начало' THEN '1.mp4'
             WHEN 'Во все тяжкие' THEN 'breaking_bad_s01e01.mp4'
             WHEN 'Очень странные дела' THEN 'stranger_things_s01e01.mp4'
