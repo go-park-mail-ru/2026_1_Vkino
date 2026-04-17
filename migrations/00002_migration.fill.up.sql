@@ -1590,6 +1590,7 @@ SELECT
     1,
     CASE m.title
         WHEN 'Интерстеллар' THEN 'Интерстеллар'
+        WHEN 'Начало' THEN 'Начало'
         WHEN 'Матрица' THEN 'Матрица'
         WHEN 'Во все тяжкие' THEN 'Пилот'
         WHEN 'Очень странные дела' THEN 'Исчезновение Уилла Байерса'
@@ -1606,6 +1607,7 @@ SELECT
     '' ||
         CASE m.title
             WHEN 'Интерстеллар' THEN 'interstellar_episode.webp'
+            WHEN 'Начало' THEN 'inception_episode.webp'
             WHEN 'Матрица' THEN 'matrix_episode.webp'
             WHEN 'Во все тяжкие' THEN 'breaking_bad_s01e01.webp'
             WHEN 'Очень странные дела' THEN 'stranger_things_s01e01.webp'
@@ -1636,6 +1638,7 @@ SELECT
         END
 FROM movie m
 WHERE m.content_type = 'series'
+   OR m.title IN ('Интерстеллар', 'Начало', 'Матрица')
 ON CONFLICT (movie_id, season_number, episode_number) DO NOTHING;
 
 WITH selection_map(selection_title, movie_title) AS (

@@ -237,7 +237,7 @@ func (r *MovieRepo) GetEpisodesByMovieID(ctx context.Context, movieID int64) ([]
 	}
 	defer rows.Close()
 
-	var episodes []domain.EpisodeItemResponse
+	episodes := make([]domain.EpisodeItemResponse, 0)
 
 	for rows.Next() {
 		var episode domain.EpisodeItemResponse
@@ -251,6 +251,7 @@ func (r *MovieRepo) GetEpisodesByMovieID(ctx context.Context, movieID int64) ([]
 			&episode.Description,
 			&episode.DurationSeconds,
 			&episode.ImgURL,
+			&episode.VideoURL,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("unable to scan episode item: %w", err)

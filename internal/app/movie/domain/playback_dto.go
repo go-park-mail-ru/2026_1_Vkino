@@ -10,6 +10,7 @@ type EpisodeItemResponse struct {
 	Description     string `json:"description"`
 	DurationSeconds int    `json:"duration_seconds"`
 	ImgURL          string `json:"img_url"`
+	VideoURL        string `json:"video_url"`
 }
 
 // EpisodePlaybackResponse Хранит данные о видео которое запускаем
