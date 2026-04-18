@@ -46,19 +46,23 @@ func expectUserRowScan(row *MockRow, user userdomain.User) {
 
 func expectMovieRowScan(row *MockRow, movie moviedomain.MovieResponse) {
 	row.EXPECT().
-		Scan(anyArgs(11)...).
+		Scan(anyArgs(15)...).
 		DoAndReturn(func(dest ...any) error {
 			*dest[0].(*int64) = movie.ID
 			*dest[1].(*string) = movie.Title
 			*dest[2].(*string) = movie.Description
 			*dest[3].(*string) = movie.Director
-			*dest[4].(*string) = movie.ContentType
-			*dest[5].(*int) = movie.ReleaseYear
-			*dest[6].(*int) = movie.DurationSeconds
-			*dest[7].(*int) = movie.AgeLimit
-			*dest[8].(*int64) = movie.OriginalLanguageID
-			*dest[9].(*int64) = movie.CountryID
-			*dest[10].(*string) = movie.PictureFileKey
+			*dest[4].(*string) = movie.TrailerURL
+			*dest[5].(*string) = movie.ContentType
+			*dest[6].(*int) = movie.ReleaseYear
+			*dest[7].(*int) = movie.DurationSeconds
+			*dest[8].(*int) = movie.AgeLimit
+			*dest[9].(*int64) = movie.OriginalLanguageID
+			*dest[10].(*string) = movie.OriginalLanguage
+			*dest[11].(*int64) = movie.CountryID
+			*dest[12].(*string) = movie.Country
+			*dest[13].(*string) = movie.PictureFileKey
+			*dest[14].(*string) = movie.PosterFileKey
 
 			return nil
 		})
@@ -186,7 +190,7 @@ func expectEpisodeRows(rows *MockRows, episodes []moviedomain.EpisodeItemRespons
 	for _, episode := range episodes {
 		episode := episode
 		calls = append(calls, rows.EXPECT().Next().Return(true))
-		calls = append(calls, rows.EXPECT().Scan(anyArgs(8)...).DoAndReturn(func(dest ...any) error {
+		calls = append(calls, rows.EXPECT().Scan(anyArgs(9)...).DoAndReturn(func(dest ...any) error {
 			*dest[0].(*int64) = episode.ID
 			*dest[1].(*int64) = episode.MovieID
 			*dest[2].(*int) = episode.SeasonNumber
@@ -195,6 +199,7 @@ func expectEpisodeRows(rows *MockRows, episodes []moviedomain.EpisodeItemRespons
 			*dest[5].(*string) = episode.Description
 			*dest[6].(*int) = episode.DurationSeconds
 			*dest[7].(*string) = episode.ImgURL
+			*dest[8].(*string) = episode.VideoURL
 
 			return nil
 		}))

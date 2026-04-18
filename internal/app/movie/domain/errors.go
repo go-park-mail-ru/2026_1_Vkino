@@ -10,5 +10,6 @@ var (
 	ErrInvalidMovieID       = errors.New("invalid movie id")
 	ErrInvalidActorID       = errors.New("invalid actor id")
 	ErrInvalidEpisodeID     = errors.New("invalid episode id")
+	ErrInvalidSearchQuery   = errors.New("invalid search query")
 	ErrInvalidWatchProgress = errors.New("invalid watch progress")
 )

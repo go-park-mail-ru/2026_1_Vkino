@@ -275,6 +275,81 @@ func TestHandler_GetMovieByID(t *testing.T) {
 	}
 }
 
+func TestHandler_Search(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		query      string
+		setupMocks func(mu *usecasemocks.MockUsecase)
+		wantStatus int
+		wantMovies int
+		wantActors int
+		wantError  string
+	}{
+		{
+			name:  "invalid query",
+			query: "",
+			setupMocks: func(mu *usecasemocks.MockUsecase) {
+				mu.EXPECT().
+					Search(gomock.Any(), "").
+					Return(moviedomain.SearchResponse{}, moviedomain.ErrInvalidSearchQuery)
+			},
+			wantStatus: http.StatusBadRequest,
+			wantError:  "invalid search query",
+		},
+		{
+			name:  "success",
+			query: "dune",
+			setupMocks: func(mu *usecasemocks.MockUsecase) {
+				mu.EXPECT().
+					Search(gomock.Any(), "dune").
+					Return(moviedomain.SearchResponse{
+						Query:  "dune",
+						Movies: []moviedomain.MoviePreview{{ID: 1, Title: "Dune"}},
+						Actors: []moviedomain.ActorPreview{{ID: 2, FullName: "Zendaya"}},
+					}, nil)
+			},
+			wantStatus: http.StatusOK,
+			wantMovies: 1,
+			wantActors: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mu := usecasemocks.NewMockUsecase(ctrl)
+			if tt.setupMocks != nil {
+				tt.setupMocks(mu)
+			}
+
+			h := NewHandler(mu)
+			req := httptest.NewRequest(http.MethodGet, "/movie/search?query="+tt.query, nil)
+			rr := httptest.NewRecorder()
+
+			h.Search(rr, req)
+
+			if rr.Code != tt.wantStatus {
+				t.Fatalf("expected status %d, got %d", tt.wantStatus, rr.Code)
+			}
+
+			if tt.wantError != "" {
+				assertJSONContainsStringValue(t, rr, tt.wantError)
+
+				return
+			}
+
+			got := decodeBody[moviedomain.SearchResponse](t, rr)
+			if len(got.Movies) != tt.wantMovies || len(got.Actors) != tt.wantActors {
+				t.Fatalf("unexpected search result: %#v", got)
+			}
+		})
+	}
+}
+
 func TestHandler_GetActorByID(t *testing.T) {
 	t.Parallel()
 

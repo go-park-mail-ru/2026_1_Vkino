@@ -14,14 +14,18 @@ import (
 
 func newMovieUsecase(
 	repo *mocks.MockMovieRepo,
-	imageStorage *mocks.MockFileStorage,
+	actorStorage *mocks.MockFileStorage,
+	posterStorage *mocks.MockFileStorage,
+	cardStorage *mocks.MockFileStorage,
 	videoStorage *mocks.MockFileStorage,
 ) *usecase.MovieUsecase {
-	return usecase.NewMovieUsecase(repo, imageStorage, videoStorage)
+	return usecase.NewMovieUsecase(repo, actorStorage, posterStorage, cardStorage, videoStorage)
 }
 
-func newMovieStorages(ctrl *gomock.Controller) (*mocks.MockFileStorage, *mocks.MockFileStorage) {
-	return mocks.NewMockFileStorage(ctrl), mocks.NewMockFileStorage(ctrl)
+func newMovieStorages(
+	ctrl *gomock.Controller,
+) (*mocks.MockFileStorage, *mocks.MockFileStorage, *mocks.MockFileStorage, *mocks.MockFileStorage) {
+	return mocks.NewMockFileStorage(ctrl), mocks.NewMockFileStorage(ctrl), mocks.NewMockFileStorage(ctrl), mocks.NewMockFileStorage(ctrl)
 }
 
 func TestNewMovieUsecase(t *testing.T) {
@@ -31,9 +35,9 @@ func TestNewMovieUsecase(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockMovieRepo(ctrl)
-	imageStorage, videoStorage := newMovieStorages(ctrl)
+	actorStorage, posterStorage, cardStorage, videoStorage := newMovieStorages(ctrl)
 
-	if got := newMovieUsecase(repo, imageStorage, videoStorage); got == nil {
+	if got := newMovieUsecase(repo, actorStorage, posterStorage, cardStorage, videoStorage); got == nil {
 		t.Fatal("expected non-nil usecase")
 	}
 }
@@ -73,10 +77,10 @@ func TestMovieUsecase_GetAllSelections(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo := mocks.NewMockMovieRepo(ctrl)
-			imageStorage, videoStorage := newMovieStorages(ctrl)
+			actorStorage, posterStorage, cardStorage, videoStorage := newMovieStorages(ctrl)
 			tt.setupMock(repo)
 
-			u := newMovieUsecase(repo, imageStorage, videoStorage)
+			u := newMovieUsecase(repo, actorStorage, posterStorage, cardStorage, videoStorage)
 			got, err := u.GetAllSelections(context.Background())
 
 			if tt.wantErr != nil {
@@ -105,14 +109,14 @@ func TestMovieUsecase_GetSelectionByTitle(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockMovieRepo(ctrl)
-	imageStorage, videoStorage := newMovieStorages(ctrl)
+	actorStorage, posterStorage, cardStorage, videoStorage := newMovieStorages(ctrl)
 	want := domain.SelectionResponse{Title: "popular"}
 
 	repo.EXPECT().
 		GetSelectionByTitle(gomock.Any(), "popular").
 		Return(want, nil)
 
-	u := newMovieUsecase(repo, imageStorage, videoStorage)
+	u := newMovieUsecase(repo, actorStorage, posterStorage, cardStorage, videoStorage)
 
 	got, err := u.GetSelectionByTitle(context.Background(), "popular")
 	if err != nil {
@@ -187,12 +191,12 @@ func TestMovieUsecase_GetMovieByID(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo := mocks.NewMockMovieRepo(ctrl)
-			imageStorage, videoStorage := newMovieStorages(ctrl)
+			actorStorage, posterStorage, cardStorage, videoStorage := newMovieStorages(ctrl)
 			if tt.setupMock != nil {
 				tt.setupMock(repo)
 			}
 
-			u := newMovieUsecase(repo, imageStorage, videoStorage)
+			u := newMovieUsecase(repo, actorStorage, posterStorage, cardStorage, videoStorage)
 			got, err := u.GetMovieByID(context.Background(), tt.id)
 
 			if tt.wantErr != nil {
@@ -221,14 +225,14 @@ func TestMovieUsecase_GetActorByID(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockMovieRepo(ctrl)
-	imageStorage, videoStorage := newMovieStorages(ctrl)
+	actorStorage, posterStorage, cardStorage, videoStorage := newMovieStorages(ctrl)
 	want := domain.ActorResponse{ID: 9, FullName: "Actor"}
 
 	repo.EXPECT().
 		GetActorByID(gomock.Any(), int64(9)).
 		Return(want, nil)
 
-	u := newMovieUsecase(repo, imageStorage, videoStorage)
+	u := newMovieUsecase(repo, actorStorage, posterStorage, cardStorage, videoStorage)
 
 	got, err := u.GetActorByID(context.Background(), 9)
 	if err != nil {
@@ -338,12 +342,12 @@ func TestMovieUsecase_GetEpisodePlayback(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo := mocks.NewMockMovieRepo(ctrl)
-			imageStorage, videoStorage := newMovieStorages(ctrl)
+			actorStorage, posterStorage, cardStorage, videoStorage := newMovieStorages(ctrl)
 			if tt.setupMock != nil {
 				tt.setupMock(repo, videoStorage)
 			}
 
-			u := newMovieUsecase(repo, imageStorage, videoStorage)
+			u := newMovieUsecase(repo, actorStorage, posterStorage, cardStorage, videoStorage)
 			got, err := u.GetEpisodePlayback(context.Background(), tt.episodeID, tt.userID)
 
 			if tt.wantErr != nil {
@@ -409,12 +413,12 @@ func TestMovieUsecase_GetEpisodeProgress(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo := mocks.NewMockMovieRepo(ctrl)
-			imageStorage, videoStorage := newMovieStorages(ctrl)
+			actorStorage, posterStorage, cardStorage, videoStorage := newMovieStorages(ctrl)
 			if tt.setupMock != nil {
 				tt.setupMock(repo)
 			}
 
-			u := newMovieUsecase(repo, imageStorage, videoStorage)
+			u := newMovieUsecase(repo, actorStorage, posterStorage, cardStorage, videoStorage)
 			got, err := u.GetEpisodeProgress(context.Background(), 11, tt.episodeID)
 
 			if tt.wantErr != nil {
@@ -486,12 +490,12 @@ func TestMovieUsecase_SaveEpisodeProgress(t *testing.T) {
 			defer ctrl.Finish()
 
 			repo := mocks.NewMockMovieRepo(ctrl)
-			imageStorage, videoStorage := newMovieStorages(ctrl)
+			actorStorage, posterStorage, cardStorage, videoStorage := newMovieStorages(ctrl)
 			if tt.setupMock != nil {
 				tt.setupMock(repo)
 			}
 
-			u := newMovieUsecase(repo, imageStorage, videoStorage)
+			u := newMovieUsecase(repo, actorStorage, posterStorage, cardStorage, videoStorage)
 			err := u.SaveEpisodeProgress(context.Background(), 13, tt.episodeID, tt.positionSeconds)
 
 			if tt.wantErr != nil {
@@ -504,6 +508,91 @@ func TestMovieUsecase_SaveEpisodeProgress(t *testing.T) {
 
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func TestMovieUsecase_Search(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		query     string
+		setupMock func(repo *mocks.MockMovieRepo, actorStorage, cardStorage *mocks.MockFileStorage)
+		wantErr   error
+		want      domain.SearchResponse
+	}{
+		{
+			name:    "invalid query",
+			query:   "   ",
+			wantErr: domain.ErrInvalidSearchQuery,
+		},
+		{
+			name:  "repo error",
+			query: "dune",
+			setupMock: func(repo *mocks.MockMovieRepo, actorStorage, cardStorage *mocks.MockFileStorage) {
+				repo.EXPECT().
+					Search(gomock.Any(), "dune").
+					Return(domain.SearchResponse{}, errors.New("search failed"))
+			},
+			wantErr: errors.New("search failed"),
+		},
+		{
+			name:  "success",
+			query: "dune",
+			setupMock: func(repo *mocks.MockMovieRepo, actorStorage, cardStorage *mocks.MockFileStorage) {
+				repo.EXPECT().
+					Search(gomock.Any(), "dune").
+					Return(domain.SearchResponse{
+						Query:  "dune",
+						Movies: []domain.MoviePreview{{ID: 1, Title: "Dune", ImgUrl: "cards/dune.jpg"}},
+						Actors: []domain.ActorPreview{{ID: 2, FullName: "Zendaya", PictureFileKey: "actors/zendaya.jpg"}},
+					}, nil)
+				cardStorage.EXPECT().
+					PresignGetObject(gomock.Any(), "cards/dune.jpg", time.Duration(0)).
+					Return("https://cdn.example/cards/dune.jpg", nil)
+				actorStorage.EXPECT().
+					PresignGetObject(gomock.Any(), "actors/zendaya.jpg", time.Duration(0)).
+					Return("https://cdn.example/actors/zendaya.jpg", nil)
+			},
+			want: domain.SearchResponse{
+				Query:  "dune",
+				Movies: []domain.MoviePreview{{ID: 1, Title: "Dune", ImgUrl: "https://cdn.example/cards/dune.jpg"}},
+				Actors: []domain.ActorPreview{{ID: 2, FullName: "Zendaya", PictureFileKey: "https://cdn.example/actors/zendaya.jpg"}},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			repo := mocks.NewMockMovieRepo(ctrl)
+			actorStorage, posterStorage, cardStorage, videoStorage := newMovieStorages(ctrl)
+			if tt.setupMock != nil {
+				tt.setupMock(repo, actorStorage, cardStorage)
+			}
+
+			u := newMovieUsecase(repo, actorStorage, posterStorage, cardStorage, videoStorage)
+			got, err := u.Search(context.Background(), tt.query)
+
+			if tt.wantErr != nil {
+				if !errors.Is(err, tt.wantErr) && (err == nil || err.Error() != tt.wantErr.Error()) {
+					t.Fatalf("expected error %v, got %v", tt.wantErr, err)
+				}
+
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if got.Query != tt.want.Query || got.Movies[0].ImgUrl != tt.want.Movies[0].ImgUrl ||
+				got.Actors[0].PictureFileKey != tt.want.Actors[0].PictureFileKey {
+				t.Fatalf("expected search result %#v, got %#v", tt.want, got)
 			}
 		})
 	}

@@ -27,6 +27,11 @@ func TestDTOName(t *testing.T) {
 			named: &ActorResponse{},
 			want:  "actors",
 		},
+		{
+			name:  "search response",
+			named: &SearchResponse{},
+			want:  "search",
+		},
 	}
 
 	for _, tt := range tests {

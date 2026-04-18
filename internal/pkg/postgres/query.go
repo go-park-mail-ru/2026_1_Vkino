@@ -14,9 +14,57 @@ const (
 	`
 
 	sqlGetMovieByID = `
-		select id, title, description, director, content_type, release_year, 
-		duration_seconds, age_limit, original_language_id, country_id, picture_file_key, coalesce(poster_file_key, '')
-		from movie where id=$1
+		select
+			m.id,
+			m.title,
+			coalesce(m.description, ''),
+			coalesce(m.director, ''),
+			coalesce(m.trailer_url, ''),
+			m.content_type,
+			m.release_year,
+			m.duration_seconds,
+			m.age_limit,
+			m.original_language_id,
+			l.title,
+			m.country_id,
+			c.title,
+			m.picture_file_key,
+			coalesce(m.poster_file_key, '')
+		from movie m
+		join language l on l.id = m.original_language_id
+		join country c on c.id = m.country_id
+		where m.id = $1
+	`
+
+	sqlSearchMovies = `
+		with params as (
+			select trim($1) as query, websearch_to_tsquery('simple', trim($1)) as ts_query
+		)
+		select
+			m.id,
+			m.title,
+			m.picture_file_key
+		from movie m
+		cross join params p
+		where (
+			setweight(to_tsvector('simple', coalesce(m.title, '')), 'A') ||
+			setweight(to_tsvector('simple', coalesce(m.description, '')), 'B') ||
+			setweight(to_tsvector('simple', coalesce(m.director, '')), 'C')
+		) @@ p.ts_query
+		order by
+			case
+				when lower(m.title) = lower(p.query) then 0
+				when lower(m.title) like lower(p.query) || '%' then 1
+				else 2
+			end,
+			ts_rank_cd(
+				setweight(to_tsvector('simple', coalesce(m.title, '')), 'A') ||
+				setweight(to_tsvector('simple', coalesce(m.description, '')), 'B') ||
+				setweight(to_tsvector('simple', coalesce(m.director, '')), 'C'),
+				p.ts_query
+			) desc,
+			m.title
+		limit 10
 	`
 
 	sqlGetGenresByMovieID = `
@@ -45,6 +93,35 @@ const (
 			picture_file_key
 		from actor 
 		where id = $1
+	`
+
+	sqlSearchActors = `
+		with params as (
+			select trim($1) as query, websearch_to_tsquery('simple', trim($1)) as ts_query
+		)
+		select
+			a.id,
+			a.full_name,
+			a.picture_file_key
+		from actor a
+		cross join params p
+		where (
+			setweight(to_tsvector('simple', coalesce(a.full_name, '')), 'A') ||
+			setweight(to_tsvector('simple', coalesce(a.biography, '')), 'B')
+		) @@ p.ts_query
+		order by
+			case
+				when lower(a.full_name) = lower(p.query) then 0
+				when lower(a.full_name) like lower(p.query) || '%' then 1
+				else 2
+			end,
+			ts_rank_cd(
+				setweight(to_tsvector('simple', coalesce(a.full_name, '')), 'A') ||
+				setweight(to_tsvector('simple', coalesce(a.biography, '')), 'B'),
+				p.ts_query
+			) desc,
+			a.full_name
+		limit 10
 	`
 
 	sqlGetMoviesByActorID = `
