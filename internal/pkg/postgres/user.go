@@ -193,3 +193,16 @@ func (r *UserRepo) UpdatePassword(ctx context.Context, userID int64, passwordHas
 
 	return nil
 }
+
+func (r *UserRepo) AddMovieToFavorites(ctx context.Context, userID, movieID int64) error {
+	tag, err := r.db.Exec(ctx, sqlUpsertUserFavoriteMovie, userID, movieID)
+	if err != nil {
+		return fmt.Errorf("upsert user favorite movie: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return ErrMovieNotFound
+	}
+
+	return nil
+}

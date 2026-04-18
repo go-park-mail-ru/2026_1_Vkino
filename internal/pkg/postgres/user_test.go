@@ -277,3 +277,38 @@ func TestUserRepo_UpdatePassword(t *testing.T) {
 		}
 	})
 }
+
+func TestUserRepo_AddMovieToFavorites(t *testing.T) {
+	t.Parallel()
+
+	t.Run("movie not found", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		pool := NewMockPool(ctrl)
+		pool.EXPECT().
+			Exec(gomock.Any(), sqlUpsertUserFavoriteMovie, int64(5), int64(9)).
+			Return(pgconn.NewCommandTag("INSERT 0 0"), nil)
+
+		repo := NewUserRepo(&Client{Pool: pool})
+		err := repo.AddMovieToFavorites(context.Background(), 5, 9)
+		if !errors.Is(err, ErrMovieNotFound) {
+			t.Fatalf("expected ErrMovieNotFound, got %v", err)
+		}
+	})
+
+	t.Run("success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		pool := NewMockPool(ctrl)
+		pool.EXPECT().
+			Exec(gomock.Any(), sqlUpsertUserFavoriteMovie, int64(5), int64(9)).
+			Return(pgconn.NewCommandTag("INSERT 0 1"), nil)
+
+		repo := NewUserRepo(&Client{Pool: pool})
+		if err := repo.AddMovieToFavorites(context.Background(), 5, 9); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+}

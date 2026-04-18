@@ -57,6 +57,28 @@ func (mr *MockUsecaseMockRecorder) GetConfig() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfig", reflect.TypeOf((*MockUsecase)(nil).GetConfig))
 }
 
+// AddMovieToFavorites mocks base method.
+func (m *MockUsecase) AddMovieToFavorites(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddMovieToFavorites", ctx, userID, movieID)
+	ret0, _ := ret[0].(domain.FavoriteMovieResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddMovieToFavorites indicates an expected call of AddMovieToFavorites.
+func (mr *MockUsecaseMockRecorder) AddMovieToFavorites(ctx, userID, movieID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"AddMovieToFavorites",
+		reflect.TypeOf((*MockUsecase)(nil).AddMovieToFavorites),
+		ctx,
+		userID,
+		movieID,
+	)
+}
+
 // LogOut mocks base method.
 func (m *MockUsecase) LogOut(ctx context.Context, email string) error {
 	m.ctrl.T.Helper()

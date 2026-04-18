@@ -33,6 +33,11 @@ type ChangePasswordRequest struct {
 	NewPassword string `json:"new_password"`
 }
 
+type FavoriteMovieResponse struct {
+	MovieID    int64 `json:"movie_id"`
+	IsFavorite bool  `json:"is_favorite"`
+}
+
 type ProfileResponse struct {
 	Email     string  `json:"email"`
 	Birthdate *string `json:"birthdate,omitempty"`

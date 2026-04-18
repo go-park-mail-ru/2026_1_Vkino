@@ -164,6 +164,17 @@ const (
 		where id = $2
 	`
 
+	sqlUpsertUserFavoriteMovie = `
+		insert into user_interaction (user_id, movie_id, is_favorite)
+		select $1, m.id, true
+		from movie m
+		where m.id = $2
+		on conflict (movie_id, user_id)
+		do update set
+			is_favorite = excluded.is_favorite,
+			updated_at = now()
+	`
+
 	sqlDeleteUser = `
 		delete from users where email = $1
 	`

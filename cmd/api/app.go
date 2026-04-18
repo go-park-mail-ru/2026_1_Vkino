@@ -104,6 +104,8 @@ func Run(configPath *string) error {
 		httpserver.WithMiddlewareRoute("GET /user/me", userHandler.Me, authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("PUT /user/profile", userHandler.UpdateProfile, authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("POST /user/change-password", userHandler.ChangePassword, authMiddleware.Middleware),
+		httpserver.WithMiddlewareRoute("PUT /user/favorites/{id}", userHandler.AddMovieToFavorites,
+			authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("POST /user/logout", userHandler.LogOut, authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("GET /episode/{id}/progress", movieHandler.GetEpisodeProgress,
 			authMiddleware.Middleware),

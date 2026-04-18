@@ -24,6 +24,7 @@ var errToHTTP = map[error]HttpErr{
 	userdomain.ErrInvalidCredentials: {status: http.StatusUnauthorized, message: "invalid credentials"},
 	userdomain.ErrNoSession:          {status: http.StatusUnauthorized, message: "unauthorized"},
 	userdomain.ErrInvalidToken:       {status: http.StatusUnauthorized, message: "unauthorized"},
+	userdomain.ErrInvalidMovieID:     {status: http.StatusBadRequest, message: "invalid movie id"},
 	userdomain.ErrPasswordMismatch:   {status: http.StatusUnauthorized, message: "invalid credentials"},
 	userdomain.ErrInvalidBirthdate:   {status: http.StatusBadRequest, message: "invalid birthdate"},
 	userdomain.ErrInvalidAvatar:      {status: http.StatusBadRequest, message: "invalid avatar"},
