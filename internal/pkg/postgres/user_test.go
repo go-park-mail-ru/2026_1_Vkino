@@ -97,6 +97,38 @@ func TestUserRepo_GetUserByID(t *testing.T) {
 	}
 }
 
+func TestUserRepo_SearchUsersByEmail(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	rows := NewMockRows(ctrl)
+	expectUserSearchRows(rows, []userdomain.UserSearchResult{
+		{ID: 2, Email: "friend@example.com", IsFriend: true},
+		{ID: 3, Email: "new@example.com", IsFriend: false},
+	})
+
+	pool := NewMockPool(ctrl)
+	pool.EXPECT().
+		Query(gomock.Any(), sqlSearchUsersByEmail, int64(7), "example").
+		Return(rows, nil)
+
+	repo := NewUserRepo(&Client{Pool: pool})
+	got, err := repo.SearchUsersByEmail(context.Background(), 7, "example")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(got) != 2 {
+		t.Fatalf("expected 2 results, got %d", len(got))
+	}
+
+	if got[0].Email != "friend@example.com" || !got[0].IsFriend {
+		t.Fatalf("unexpected first result: %#v", got[0])
+	}
+}
+
 func TestUserRepo_CreateUser(t *testing.T) {
 	t.Parallel()
 
@@ -273,6 +305,76 @@ func TestUserRepo_UpdatePassword(t *testing.T) {
 
 		repo := NewUserRepo(&Client{Pool: pool})
 		if err := repo.UpdatePassword(context.Background(), 5, "hash"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+}
+
+func TestUserRepo_AddFriend(t *testing.T) {
+	t.Parallel()
+
+	t.Run("already friends", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		pool := NewMockPool(ctrl)
+		pool.EXPECT().
+			Exec(gomock.Any(), sqlAddFriend, int64(7), int64(2)).
+			Return(pgconn.NewCommandTag("INSERT 0 0"), &pgconn.PgError{Code: "23505"})
+
+		repo := NewUserRepo(&Client{Pool: pool})
+		err := repo.AddFriend(context.Background(), 7, 2)
+		if !errors.Is(err, userdomain.ErrAlreadyFriends) {
+			t.Fatalf("expected ErrAlreadyFriends, got %v", err)
+		}
+	})
+
+	t.Run("success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		pool := NewMockPool(ctrl)
+		pool.EXPECT().
+			Exec(gomock.Any(), sqlAddFriend, int64(7), int64(2)).
+			Return(pgconn.NewCommandTag("INSERT 0 1"), nil)
+
+		repo := NewUserRepo(&Client{Pool: pool})
+		if err := repo.AddFriend(context.Background(), 7, 2); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+}
+
+func TestUserRepo_DeleteFriend(t *testing.T) {
+	t.Parallel()
+
+	t.Run("not found", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		pool := NewMockPool(ctrl)
+		pool.EXPECT().
+			Exec(gomock.Any(), sqlDeleteFriend, int64(7), int64(2)).
+			Return(pgconn.NewCommandTag("DELETE 0"), nil)
+
+		repo := NewUserRepo(&Client{Pool: pool})
+		err := repo.DeleteFriend(context.Background(), 7, 2)
+		if !errors.Is(err, userdomain.ErrFriendNotFound) {
+			t.Fatalf("expected ErrFriendNotFound, got %v", err)
+		}
+	})
+
+	t.Run("success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		pool := NewMockPool(ctrl)
+		pool.EXPECT().
+			Exec(gomock.Any(), sqlDeleteFriend, int64(7), int64(2)).
+			Return(pgconn.NewCommandTag("DELETE 1"), nil)
+
+		repo := NewUserRepo(&Client{Pool: pool})
+		if err := repo.DeleteFriend(context.Background(), 7, 2); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 	})

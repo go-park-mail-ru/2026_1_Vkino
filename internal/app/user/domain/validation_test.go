@@ -67,3 +67,30 @@ func TestValidatePassword(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateEmailQuery(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		query string
+		want  bool
+	}{
+		{name: "valid full email", query: "user@example.com", want: true},
+		{name: "valid partial query", query: "example", want: true},
+		{name: "trimmed query", query: "  user@  ", want: true},
+		{name: "empty", query: "", want: false},
+		{name: "only spaces", query: "   ", want: false},
+		{name: "contains internal spaces", query: "user example", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := ValidateEmailQuery(tt.query); got != tt.want {
+				t.Fatalf("expected %v, got %v", tt.want, got)
+			}
+		})
+	}
+}
