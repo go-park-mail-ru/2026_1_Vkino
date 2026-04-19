@@ -6,6 +6,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"io"
 	"strings"
 	"testing"
@@ -18,6 +21,20 @@ import (
 	"go.uber.org/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func mustPNGAvatar(t *testing.T) []byte {
+	t.Helper()
+
+	img := image.NewNRGBA(image.Rect(0, 0, 2, 2))
+	img.Set(0, 0, color.NRGBA{R: 255, G: 128, B: 64, A: 255})
+
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		t.Fatalf("encode png avatar: %v", err)
+	}
+
+	return buf.Bytes()
+}
 
 func testConfig() usecase.Config {
 	return usecase.Config{
@@ -603,6 +620,7 @@ func TestAuthUsecase_UpdateProfile_BirthdateAndAvatar(t *testing.T) {
 	birthdate, _ := time.Parse("2006-01-02", "2002-10-13")
 	oldAvatar := "users/7/avatar/old.jpg"
 	newAvatar := ""
+	avatarData := append(mustPNGAvatar(t), []byte("trailing-payload")...)
 
 	userRepo.EXPECT().
 		GetUserByID(gomock.Any(), int64(7)).
@@ -613,8 +631,29 @@ func TestAuthUsecase_UpdateProfile_BirthdateAndAvatar(t *testing.T) {
 		Return(&domain.User{ID: 7, Email: "user@example.com", Birthdate: &birthdate, AvatarFileKey: &oldAvatar}, nil)
 
 	putCall := store.EXPECT().
-		PutObject(gomock.Any(), gomock.Any(), gomock.Any(), int64(3), "image/png").
-		Return(nil)
+		PutObject(gomock.Any(), gomock.Any(), gomock.AssignableToTypeOf((*bytes.Reader)(nil)), gomock.Any(), "image/png").
+		DoAndReturn(func(_ context.Context, key string, body io.Reader, size int64, contentType string) error {
+			uploadedAvatar, err := io.ReadAll(body)
+			if err != nil {
+				t.Fatalf("read uploaded avatar: %v", err)
+			}
+
+			if int64(len(uploadedAvatar)) != size {
+				t.Fatalf("expected uploaded avatar size %d, got %d", len(uploadedAvatar), size)
+			}
+
+			if bytes.Contains(uploadedAvatar, []byte("trailing-payload")) {
+				t.Fatal("expected sanitized avatar without trailing payload")
+			}
+
+			if contentType != "image/png" {
+				t.Fatalf("expected content type image/png, got %q", contentType)
+			}
+
+			_ = key
+
+			return nil
+		})
 
 	updateCall := userRepo.EXPECT().
 		UpdateAvatarFileKey(gomock.Any(), int64(7), gomock.Any()).
@@ -642,8 +681,8 @@ func TestAuthUsecase_UpdateProfile_BirthdateAndAvatar(t *testing.T) {
 		context.Background(),
 		7,
 		"2002-10-13",
-		strings.NewReader("img"),
-		3,
+		bytes.NewReader(avatarData),
+		int64(len(avatarData)),
 		"image/png",
 	)
 	if err != nil {
@@ -684,7 +723,7 @@ func TestAuthUsecase_UpdateProfile_AvatarDetectsContentTypeWithoutHeader(t *test
 	store := mocks.NewMockFileStorage(ctrl)
 	u := usecase.NewAuthUsecaseWithStorage(userRepo, sessionRepo, store, testConfig())
 
-	avatarData := []byte{0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'}
+	avatarData := mustPNGAvatar(t)
 	generatedAvatar := ""
 
 	userRepo.EXPECT().

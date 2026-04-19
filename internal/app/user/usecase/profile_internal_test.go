@@ -3,6 +3,9 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"image"
+	"image/color"
+	"image/png"
 	"strings"
 	"testing"
 	"time"
@@ -10,6 +13,34 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
 	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
+
+func mustPNGAvatar(t *testing.T) []byte {
+	t.Helper()
+
+	img := image.NewNRGBA(image.Rect(0, 0, 2, 2))
+	img.Set(0, 0, color.NRGBA{R: 255, G: 128, B: 64, A: 255})
+
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		t.Fatalf("encode png avatar: %v", err)
+	}
+
+	return buf.Bytes()
+}
+
+func mustWebPAvatar() []byte {
+	payload := []byte{0x2f, 0x00, 0x00, 0x00, 0x00}
+	data := make([]byte, 0, 26)
+	data = append(data, 'R', 'I', 'F', 'F')
+	data = append(data, 18, 0, 0, 0)
+	data = append(data, 'W', 'E', 'B', 'P')
+	data = append(data, 'V', 'P', '8', 'L')
+	data = append(data, 5, 0, 0, 0)
+	data = append(data, payload...)
+	data = append(data, 0)
+
+	return data
+}
 
 func TestParseBirthdate(t *testing.T) {
 	t.Parallel()
@@ -137,6 +168,64 @@ func TestAuthUsecase_updateAvatarIfProvidedValidation(t *testing.T) {
 		_, err := u.updateAvatarIfProvided(context.Background(), 7, user, bytes.NewReader(nil), 1, "image/png")
 		if err != domain.ErrInvalidAvatar {
 			t.Fatalf("expected ErrInvalidAvatar, got %v", err)
+		}
+	})
+}
+
+func TestSanitizeAvatarUpload(t *testing.T) {
+	t.Parallel()
+
+	t.Run("png strips trailing data", func(t *testing.T) {
+		rawAvatar := append(mustPNGAvatar(t), []byte("malware-payload")...)
+
+		sanitizedAvatar, contentType, ext, err := sanitizeAvatarUpload(rawAvatar, "image/png")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if contentType != "image/png" {
+			t.Fatalf("expected image/png, got %q", contentType)
+		}
+
+		if ext != ".png" {
+			t.Fatalf("expected .png, got %q", ext)
+		}
+
+		if bytes.Contains(sanitizedAvatar, []byte("malware-payload")) {
+			t.Fatal("expected sanitized avatar without trailing payload")
+		}
+	})
+
+	t.Run("content type mismatch", func(t *testing.T) {
+		_, _, _, err := sanitizeAvatarUpload(mustPNGAvatar(t), "image/jpeg")
+		if err != storagepkg.ErrInvalidFileType {
+			t.Fatalf("expected ErrInvalidFileType, got %v", err)
+		}
+	})
+
+	t.Run("invalid image data", func(t *testing.T) {
+		_, _, _, err := sanitizeAvatarUpload([]byte("not-an-image"), "image/png")
+		if err != storagepkg.ErrInvalidFileType {
+			t.Fatalf("expected ErrInvalidFileType, got %v", err)
+		}
+	})
+
+	t.Run("valid webp container", func(t *testing.T) {
+		sanitizedAvatar, contentType, ext, err := sanitizeAvatarUpload(mustWebPAvatar(), "")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if contentType != "image/webp" {
+			t.Fatalf("expected image/webp, got %q", contentType)
+		}
+
+		if ext != ".webp" {
+			t.Fatalf("expected .webp, got %q", ext)
+		}
+
+		if len(sanitizedAvatar) == 0 {
+			t.Fatal("expected non-empty sanitized webp avatar")
 		}
 	})
 }
