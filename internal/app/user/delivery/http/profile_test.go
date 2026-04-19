@@ -3,10 +3,12 @@ package http
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"mime/multipart"
 	stdhttp "net/http"
 	"net/http/httptest"
+	"net/textproto"
 	"testing"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
@@ -47,6 +49,45 @@ func multipartRequest(t *testing.T, birthdate string, filename string, data []by
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	return req, writer.FormDataContentType()
+}
+
+func multipartRequestWithoutAvatarContentType(
+	t *testing.T,
+	birthdate string,
+	filename string,
+	data []byte,
+) *stdhttp.Request {
+	t.Helper()
+
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+
+	if birthdate != "" {
+		if err := writer.WriteField("birthdate", birthdate); err != nil {
+			t.Fatalf("write birthdate: %v", err)
+		}
+	}
+
+	header := make(textproto.MIMEHeader)
+	header.Set("Content-Disposition", fmt.Sprintf(`form-data; name="avatar"; filename="%s"`, filename))
+
+	part, err := writer.CreatePart(header)
+	if err != nil {
+		t.Fatalf("create file part: %v", err)
+	}
+
+	if _, err = part.Write(data); err != nil {
+		t.Fatalf("write file part: %v", err)
+	}
+
+	if err = writer.Close(); err != nil {
+		t.Fatalf("close multipart writer: %v", err)
+	}
+
+	req := httptest.NewRequest(stdhttp.MethodPut, "/user/profile", &body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	return req
 }
 
 func TestHandler_UpdateProfile(t *testing.T) {
@@ -158,6 +199,29 @@ func TestHandler_UpdateProfile(t *testing.T) {
 
 		h := NewHandler(mu)
 		req, _ := multipartRequest(t, "2001-09-12", "avatar.png", []byte("img"))
+		req = req.WithContext(context.WithValue(req.Context(), middleware.AuthCtxKey, usecase.AuthContext{UserId: 1}))
+
+		rr := httptest.NewRecorder()
+		h.UpdateProfile(rr, req)
+
+		if rr.Code != stdhttp.StatusOK {
+			t.Fatalf("expected status %d, got %d", stdhttp.StatusOK, rr.Code)
+		}
+
+		assertJSONContainsStringValue(t, rr, "user@example.com")
+	})
+
+	t.Run("missing avatar content type does not fallback to filename", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mu := usecasemocks.NewMockUsecase(ctrl)
+		mu.EXPECT().
+			UpdateProfile(gomock.Any(), int64(1), "2001-09-12", gomock.Any(), int64(3), "").
+			Return(domain.ProfileResponse{Email: "user@example.com"}, nil)
+
+		h := NewHandler(mu)
+		req := multipartRequestWithoutAvatarContentType(t, "2001-09-12", "avatar.png", []byte("img"))
 		req = req.WithContext(context.WithValue(req.Context(), middleware.AuthCtxKey, usecase.AuthContext{UserId: 1}))
 
 		rr := httptest.NewRecorder()

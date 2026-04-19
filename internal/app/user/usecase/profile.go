@@ -3,6 +3,8 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"mime"
@@ -130,7 +132,11 @@ func (u *AuthUsecase) updateAvatarIfProvided(
 		return nil, storagepkg.ErrInvalidFileType
 	}
 
-	avatarKey := fmt.Sprintf("users/%d/avatar/%d%s", userID, time.Now().UnixNano(), ext)
+	avatarKey, err := newAvatarObjectKey(userID, ext)
+	if err != nil {
+		return nil, fmt.Errorf("%w: generate avatar object key: %v", domain.ErrInternal, err)
+	}
+
 	if err := u.avatarStore.PutObject(
 		ctx,
 		avatarKey,
@@ -185,6 +191,19 @@ func normalizeAvatarContentType(contentType string) string {
 	}
 
 	return mediaType
+}
+
+func newAvatarObjectKey(userID int64, ext string) (string, error) {
+	if ext == "" {
+		return "", fmt.Errorf("empty avatar extension")
+	}
+
+	var suffix [16]byte
+	if _, err := rand.Read(suffix[:]); err != nil {
+		return "", fmt.Errorf("read avatar suffix: %w", err)
+	}
+
+	return fmt.Sprintf("users/%d/avatar/%s%s", userID, hex.EncodeToString(suffix[:]), ext), nil
 }
 
 func (u *AuthUsecase) profileResponse(ctx context.Context, user *domain.User) (domain.ProfileResponse, error) {

@@ -2,10 +2,8 @@ package http
 
 import (
 	"errors"
-	"mime"
 	"mime/multipart"
 	"net/http"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -174,12 +172,8 @@ func (h *Handler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		}
 
 		contentType = header.Header.Get("Content-Type")
-		if contentType == "" {
-			contentType = mime.TypeByExtension(filepath.Ext(header.Filename))
-		}
 
 		requestLogger.
-			WithField("filename", header.Filename).
 			WithField("size", size).
 			WithField("content_type", contentType).
 			Info("avatar received")

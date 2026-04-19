@@ -1,9 +1,12 @@
 package usecase_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 	"time"
@@ -649,6 +652,96 @@ func TestAuthUsecase_UpdateProfile_BirthdateAndAvatar(t *testing.T) {
 
 	if resp.AvatarURL == "" {
 		t.Fatal("expected non-empty avatar url")
+	}
+
+	const avatarKeyPrefix = "users/7/avatar/"
+	if !strings.HasPrefix(newAvatar, avatarKeyPrefix) {
+		t.Fatalf("expected avatar key prefix %q, got %q", avatarKeyPrefix, newAvatar)
+	}
+
+	if !strings.HasSuffix(newAvatar, ".png") {
+		t.Fatalf("expected avatar key to end with .png, got %q", newAvatar)
+	}
+
+	avatarName := strings.TrimSuffix(strings.TrimPrefix(newAvatar, avatarKeyPrefix), ".png")
+	if len(avatarName) != 32 {
+		t.Fatalf("expected generated avatar name length 32, got %d", len(avatarName))
+	}
+
+	if _, err := hex.DecodeString(avatarName); err != nil {
+		t.Fatalf("expected hex avatar name, got %q: %v", avatarName, err)
+	}
+}
+
+func TestAuthUsecase_UpdateProfile_AvatarDetectsContentTypeWithoutHeader(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userRepo := mocks.NewMockUserRepo(ctrl)
+	sessionRepo := mocks.NewMockSessionRepo(ctrl)
+	store := mocks.NewMockFileStorage(ctrl)
+	u := usecase.NewAuthUsecaseWithStorage(userRepo, sessionRepo, store, testConfig())
+
+	avatarData := []byte{0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'}
+	generatedAvatar := ""
+
+	userRepo.EXPECT().
+		GetUserByID(gomock.Any(), int64(7)).
+		Return(&domain.User{ID: 7, Email: "user@example.com"}, nil)
+
+	store.EXPECT().
+		PutObject(gomock.Any(), gomock.Any(), gomock.AssignableToTypeOf((*bytes.Reader)(nil)), int64(len(avatarData)), "image/png").
+		DoAndReturn(func(_ context.Context, key string, _ io.Reader, _ int64, contentType string) error {
+			generatedAvatar = key
+
+			const avatarKeyPrefix = "users/7/avatar/"
+			if !strings.HasPrefix(key, avatarKeyPrefix) {
+				t.Fatalf("expected avatar key prefix %q, got %q", avatarKeyPrefix, key)
+			}
+
+			if !strings.HasSuffix(key, ".png") {
+				t.Fatalf("expected avatar key to end with .png, got %q", key)
+			}
+
+			if contentType != "image/png" {
+				t.Fatalf("expected content type image/png, got %q", contentType)
+			}
+
+			return nil
+		})
+
+	userRepo.EXPECT().
+		UpdateAvatarFileKey(gomock.Any(), int64(7), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ int64, avatarFileKey *string) (*domain.User, error) {
+			return &domain.User{ID: 7, Email: "user@example.com", AvatarFileKey: avatarFileKey}, nil
+		})
+
+	store.EXPECT().
+		PresignGetObject(gomock.Any(), gomock.Any(), time.Duration(0)).
+		DoAndReturn(func(_ context.Context, key string, _ time.Duration) (string, error) {
+			if key != generatedAvatar {
+				t.Fatalf("expected presign key %q, got %q", generatedAvatar, key)
+			}
+
+			return "https://example.com/" + key, nil
+		})
+
+	resp, err := u.UpdateProfile(
+		context.Background(),
+		7,
+		"",
+		bytes.NewReader(avatarData),
+		int64(len(avatarData)),
+		"",
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if resp.AvatarURL != "https://example.com/"+generatedAvatar {
+		t.Fatalf("unexpected avatar url: %q", resp.AvatarURL)
 	}
 }
 
