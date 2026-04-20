@@ -5,25 +5,35 @@ ENV GOOS=linux
 
 RUN apk update --no-cache && apk add --no-cache tzdata
 
-COPY go.mod go.sum /vkinoapi/
-
 WORKDIR /vkinoapi
 
+COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . /vkinoapi
+COPY . .
 
-RUN go build -ldflags="-w -s" -o /vkinoapi/bin/vkinoapi ./cmd/api/
+ARG SERVICE_PATH
+ARG BINARY_NAME
 
-FROM golang:1.26.0-alpine3.23
+RUN test -n "$SERVICE_PATH"
+RUN test -n "$BINARY_NAME"
+
+RUN go build -ldflags="-w -s" -o /vkinoapi/bin/${BINARY_NAME} ./${SERVICE_PATH}
+
+FROM alpine:3.23
 
 ENV TZ=Europe/Moscow
 
-EXPOSE 8080
+RUN apk update --no-cache && apk add --no-cache ca-certificates tzdata
 
 WORKDIR /vkinoapi
 
 COPY --from=builder /usr/share/zoneinfo/${TZ} /etc/localtime
 RUN echo $TZ > /etc/timezone
 
-COPY --from=builder /vkinoapi/bin/vkinoapi .
+ARG BINARY_NAME
+RUN test -n "$BINARY_NAME"
+
+COPY --from=builder /vkinoapi/bin/${BINARY_NAME} ./${BINARY_NAME}
+
+CMD ["sh", "-c", "./${BINARY_NAME}"]

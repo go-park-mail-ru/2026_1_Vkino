@@ -3,26 +3,17 @@ package gateway
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	rootmw "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
-
-	authgrpc "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/client/authgrpc"
-	moviegrpc "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/client/moviegrpc"
-	usergrpc "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/client/usergrpc"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
-	deliveryhttp "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/delivery/http"
 	authmw "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/delivery/http/middleware"
-	authusecase "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/usecase/auth"
-	movieusecase "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/usecase/movie"
-	userusecase "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/usecase/user"
 )
-
-type AuthMiddleware interface {
-	Middleware(next http.Handler) http.Handler
-}
 
 func Run(configPath string) error {
 	cfg := &config.Config{}
@@ -37,43 +28,41 @@ func Run(configPath string) error {
 
 	appLogger := baseLogger.WithField("component", "api-gateway")
 
-	authClient, err := authgrpc.New(context.Background(), authgrpc.Config{
+	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
 		Address:        cfg.AuthGRPC.Address,
 		RequestTimeout: cfg.AuthGRPC.RequestTimeout,
 	})
 	if err != nil {
 		return fmt.Errorf("init auth grpc client: %w", err)
 	}
-	defer authClient.Close()
+	defer authConn.Close()
 
-	userClient, err := usergrpc.New(context.Background(), usergrpc.Config{
+	userConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
 		Address:        cfg.UserGRPC.Address,
 		RequestTimeout: cfg.UserGRPC.RequestTimeout,
 	})
 	if err != nil {
 		return fmt.Errorf("init user grpc client: %w", err)
 	}
-	defer userClient.Close()
+	defer userConn.Close()
 
-	movieClient, err := moviegrpc.New(context.Background(), moviegrpc.Config{
+	movieConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
 		Address:        cfg.MovieGRPC.Address,
 		RequestTimeout: cfg.MovieGRPC.RequestTimeout,
 	})
 	if err != nil {
 		return fmt.Errorf("init movie grpc client: %w", err)
 	}
-	defer movieClient.Close()
+	defer movieConn.Close()
 
-	authFacade := authusecase.NewFacade(authClient, cfg.UserAuth)
-	userFacade := userusecase.NewFacade(userClient)
-	movieFacade := movieusecase.NewFacade(movieClient)
+	authClient := authv1.NewAuthServiceClient(authConn)
+	userClient := userv1.NewUserServiceClient(userConn)
+	movieClient := moviev1.NewMovieServiceClient(movieConn)
 
-	authHandler := deliveryhttp.NewAuthHandler(authFacade)
-	userHandler := deliveryhttp.NewUserHandler(userFacade)
-	movieHandler := deliveryhttp.NewMovieHandler(movieFacade)
-	healthHandler := deliveryhttp.NewHealthHandler()
-
-	authMiddleware := authmw.NewAuthMiddleware(authClient)
+	authMiddleware := authmw.NewAuthMiddleware(authClient, grpcx.ClientConfig{
+		Address:        cfg.AuthGRPC.Address,
+		RequestTimeout: cfg.AuthGRPC.RequestTimeout,
+	})
 
 	opts := []httpserver.Option{
 		httpserver.Port(cfg.Server.Port),
@@ -81,18 +70,20 @@ func Run(configPath string) error {
 
 		httpserver.WithMiddleware(rootmw.CorsMiddleware(rootmw.CORSConfig{
 			AllowedOrigins:   cfg.Server.CORS.AllowedOrigins,
+			AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Content-Type", "Authorization", "X-Request-ID"},
 			AllowCredentials: cfg.Server.CORS.AllowCredentials,
-			//MaxAge:           cfg.Server.CORS.MaxAge,
+			MaxAge:           3600,
 		})),
 		httpserver.WithMiddleware(rootmw.LoggerMiddleware(appLogger)),
 		httpserver.WithMiddleware(rootmw.RecoveryMiddleware),
 	}
 
-	opts = append(opts, registerRoutes(
-		healthHandler,
-		authHandler,
-		userHandler,
-		movieHandler,
+	opts = append(opts, RegisterRoutes(
+		cfg,
+		authClient,
+		userClient,
+		movieClient,
 		authMiddleware,
 	)...)
 

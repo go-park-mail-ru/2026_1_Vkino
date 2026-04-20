@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	authgrpc "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/client/authgrpc"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/dto"
-
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 )
 
 type ctxKey string
@@ -18,12 +17,21 @@ const AuthCtxKey ctxKey = "gateway_auth"
 
 var ErrAuthContextMissing = errors.New("gateway auth context missing")
 
-type AuthMiddleware struct {
-	authClient authgrpc.Client
+type AuthContext struct {
+	UserID int64
+	Email  string
 }
 
-func NewAuthMiddleware(authClient authgrpc.Client) *AuthMiddleware {
-	return &AuthMiddleware{authClient: authClient}
+type AuthMiddleware struct {
+	authClient authv1.AuthServiceClient
+	timeout    grpcx.ClientConfig
+}
+
+func NewAuthMiddleware(authClient authv1.AuthServiceClient, cfg grpcx.ClientConfig) *AuthMiddleware {
+	return &AuthMiddleware{
+		authClient: authClient,
+		timeout:    cfg,
+	}
 }
 
 func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
@@ -46,21 +54,31 @@ func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		authCtx, err := m.authClient.Validate(r.Context(), accessToken)
+		ctx, cancel := grpcx.WithTimeout(r.Context(), m.timeout.RequestTimeout)
+		defer cancel()
+
+		resp, err := m.authClient.Validate(ctx, &authv1.ValidateRequest{
+			AccessToken: accessToken,
+		})
 		if err != nil {
-			httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
+			grpcx.WriteError(w, err)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), AuthCtxKey, authCtx)
+		authCtx := AuthContext{
+			UserID: resp.GetUserId(),
+			Email:  resp.GetEmail(),
+		}
+
+		ctx = context.WithValue(r.Context(), AuthCtxKey, authCtx)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-func AuthFromContext(ctx context.Context) (dto.AuthContext, error) {
-	authCtx, ok := ctx.Value(AuthCtxKey).(dto.AuthContext)
+func AuthFromContext(ctx context.Context) (AuthContext, error) {
+	authCtx, ok := ctx.Value(AuthCtxKey).(AuthContext)
 	if !ok {
-		return dto.AuthContext{}, ErrAuthContextMissing
+		return AuthContext{}, ErrAuthContextMissing
 	}
 
 	return authCtx, nil
