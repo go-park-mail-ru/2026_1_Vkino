@@ -11,10 +11,12 @@ import (
 
 	authgrpc "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/client/authgrpc"
 	legacyhttp "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/client/legacyhttp"
+	usergrpc "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/client/usergrpc"
 	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
 	deliveryhttp "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/delivery/http"
 	authmw "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/delivery/http/middleware"
 	authusecase "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/usecase/auth"
+	userusecase "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/usecase/user"
 )
 
 type AuthMiddleware interface {
@@ -43,14 +45,25 @@ func Run(configPath string) error {
 	}
 	defer authClient.Close()
 
+	userClient, err := usergrpc.New(context.Background(), usergrpc.Config{
+		Address:        cfg.UserGRPC.Address,
+		RequestTimeout: cfg.UserGRPC.RequestTimeout,
+	})
+	if err != nil {
+		return fmt.Errorf("init user grpc client: %w", err)
+	}
+	defer userClient.Close()
+
 	legacyProxy, err := legacyhttp.NewProxy(cfg.LegacyAPI.BaseURL)
 	if err != nil {
 		return fmt.Errorf("init legacy proxy: %w", err)
 	}
 
 	authFacade := authusecase.NewFacade(authClient, cfg.UserAuth)
+	userFacade := userusecase.NewFacade(userClient)
 
 	authHandler := deliveryhttp.NewAuthHandler(authFacade)
+	userHandler := deliveryhttp.NewUserHandler(userFacade)
 	healthHandler := deliveryhttp.NewHealthHandler()
 	legacyHandler := deliveryhttp.NewLegacyProxyHandler(legacyProxy)
 
@@ -72,6 +85,7 @@ func Run(configPath string) error {
 	opts = append(opts, registerRoutes(
 		healthHandler,
 		authHandler,
+		userHandler,
 		legacyHandler,
 		authMiddleware,
 	)...)

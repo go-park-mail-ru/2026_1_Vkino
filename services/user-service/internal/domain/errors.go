@@ -1,0 +1,16 @@
+package domain
+
+import "errors"
+
+var (
+	ErrUserNotFound       = errors.New("user not found")
+	ErrInvalidSearchQuery = errors.New("invalid search query")
+	ErrInvalidToken       = errors.New("invalid token")
+	ErrInvalidMovieID     = errors.New("invalid movie id")
+	ErrInvalidBirthdate   = errors.New("invalid birthdate")
+	ErrInvalidAvatar      = errors.New("invalid avatar")
+	ErrAlreadyFriends     = errors.New("already friends")
+	ErrFriendNotFound     = errors.New("friend not found")
+	ErrSelfFriendship     = errors.New("self friendship is forbidden")
+	ErrInternal           = errors.New("internal server error")
+)

@@ -31,6 +31,7 @@ func (s *SessionRepo) SaveSession(ctx context.Context, userID int64, refreshToke
 
 func (s *SessionRepo) GetSession(ctx context.Context, userID int64) (string, error) {
 	var refreshToken string
+	
 	var expiresAt time.Time
 
 	err := s.db.QueryRow(ctx, sqlGetSession, userID).Scan(&refreshToken, &expiresAt)

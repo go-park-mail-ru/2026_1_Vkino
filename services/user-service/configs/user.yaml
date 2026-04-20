@@ -1,0 +1,29 @@
+grpc:
+  port: 9091
+
+logger:
+  level: "info"
+  format: "json"
+  output_path: "logs/app/user-service.log"
+
+postgres:
+  host: "db"
+  port: 5432
+  user: "vkino_user"
+  password: "vkino"
+  dbname: "vkino"
+  sslmode: "disable"
+  max_pool_size: 10
+  conn_attempts: 10
+  conn_timeout: "5s"
+
+s3:
+  internal_endpoint: "minio:9000"
+  public_endpoint: "localhost:9000"
+  region: "ru-msk"
+  access_key_id: "minioadmin"
+  secret_access_key: "minioadmin"
+  bucket_avatars: "vkino-avatars"
+  use_ssl: false
+  use_path_style: true
+  presign_ttl: "15m"

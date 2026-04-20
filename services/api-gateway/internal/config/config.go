@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-type AuthGRPCConfig struct {
+type ServiceGRPCConfig struct {
 	Address        string        `mapstructure:"address"`
 	RequestTimeout time.Duration `mapstructure:"request_timeout"`
 }
@@ -28,7 +28,8 @@ type UserAuthConfig struct {
 type Config struct {
 	Server    httpserver.Config `mapstructure:"server"`
 	Logger    logger.Config     `mapstructure:"logger"`
-	AuthGRPC  AuthGRPCConfig    `mapstructure:"auth_grpc"`
+	AuthGRPC  ServiceGRPCConfig `mapstructure:"auth_grpc"`
+	UserGRPC  ServiceGRPCConfig `mapstructure:"user_grpc"`
 	LegacyAPI LegacyAPIConfig   `mapstructure:"legacy_api"`
 	UserAuth  UserAuthConfig    `mapstructure:"user_auth"`
 }

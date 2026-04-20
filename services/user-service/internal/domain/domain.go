@@ -4,7 +4,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-	"unicode"
 )
 
 type User struct {
@@ -19,15 +18,20 @@ type User struct {
 	UpdatedAt        time.Time
 }
 
-func Validate(email, password string) bool {
-	return validateEmail(email) && validatePassword(password)
+func ValidateEmailQuery(query string) bool {
+	return validateEmailQuery(query)
 }
 
-func ValidatePassword(password string) bool {
-	return validatePassword(password)
+func validateEmailQuery(query string) bool {
+	trimmedQuery := strings.TrimSpace(query)
+	if trimmedQuery == "" || len(trimmedQuery) > 64 {
+		return false
+	}
+
+	return !strings.ContainsAny(trimmedQuery, " \t\n\r")
 }
 
-func validateEmail(email string) bool {
+func ValidateEmail(email string) bool {
 	if len(email) == 0 || len(email) > 64 {
 		return false
 	}
@@ -56,29 +60,4 @@ func validateEmail(email string) bool {
 	}
 
 	return true
-}
-
-func validatePassword(password string) bool {
-	if len(password) < 6 || len(password) >= 255 {
-		return false
-	}
-
-	if strings.Contains(password, " ") {
-		return false
-	}
-
-	var hasLetter bool
-	
-	var hasDigit bool
-
-	for _, char := range password {
-		switch {
-		case unicode.IsLetter(char):
-			hasLetter = true
-		case unicode.IsDigit(char):
-			hasDigit = true
-		}
-	}
-
-	return hasLetter && hasDigit
 }

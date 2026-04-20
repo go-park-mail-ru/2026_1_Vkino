@@ -42,6 +42,20 @@ services:
       db:
         condition: service_healthy
 
+  user-service:
+    build:
+      context: ../..
+      dockerfile: services/user-service/build/image/Dockerfile
+    container_name: user-service
+    restart: always
+    volumes:
+      - ../../services/user-service/configs/user.yaml:/etc/vkino/user.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    command: ./user-service -config /etc/vkino/user.yaml
+    depends_on:
+      db:
+        condition: service_healthy
+
   vkinoapi:
     build:
       context: ../..
