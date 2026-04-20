@@ -57,6 +57,11 @@ func (mr *MockUsecaseMockRecorder) GetConfig() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfig", reflect.TypeOf((*MockUsecase)(nil).GetConfig))
 }
 
+// AddMovieToFavorites mocks base method.
+func (m *MockUsecase) AddMovieToFavorites(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddMovieToFavorites", ctx, userID, movieID)
+	ret0, _ := ret[0].(domain.FavoriteMovieResponse)
 // AddFriend mocks base method.
 func (m *MockUsecase) AddFriend(ctx context.Context, userID, friendID int64) (domain.FriendResponse, error) {
 	m.ctrl.T.Helper()
@@ -66,6 +71,17 @@ func (m *MockUsecase) AddFriend(ctx context.Context, userID, friendID int64) (do
 	return ret0, ret1
 }
 
+// AddMovieToFavorites indicates an expected call of AddMovieToFavorites.
+func (mr *MockUsecaseMockRecorder) AddMovieToFavorites(ctx, userID, movieID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"AddMovieToFavorites",
+		reflect.TypeOf((*MockUsecase)(nil).AddMovieToFavorites),
+		ctx,
+		userID,
+		movieID,
+	)
 // AddFriend indicates an expected call of AddFriend.
 func (mr *MockUsecaseMockRecorder) AddFriend(ctx, userID, friendID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()

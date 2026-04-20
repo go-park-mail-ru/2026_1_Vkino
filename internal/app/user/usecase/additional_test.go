@@ -10,6 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase/mocks"
+	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -251,6 +252,80 @@ func TestAuthUsecase_ChangePassword(t *testing.T) {
 
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func TestAuthUsecase_AddMovieToFavorites(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		movieID    int64
+		setupMocks func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo)
+		wantErrIs  error
+	}{
+		{
+			name:      "invalid movie id",
+			movieID:   0,
+			wantErrIs: domain.ErrInvalidMovieID,
+		},
+		{
+			name:    "invalid token",
+			movieID: 7,
+			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
+				userRepo.EXPECT().GetUserByID(gomock.Any(), int64(5)).Return(nil, errors.New("not found"))
+			},
+			wantErrIs: domain.ErrInvalidToken,
+		},
+		{
+			name:    "movie not found",
+			movieID: 7,
+			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
+				userRepo.EXPECT().GetUserByID(gomock.Any(), int64(5)).Return(&domain.User{ID: 5}, nil)
+				userRepo.EXPECT().AddMovieToFavorites(gomock.Any(), int64(5), int64(7)).Return(postgresrepo.ErrMovieNotFound)
+			},
+			wantErrIs: postgresrepo.ErrMovieNotFound,
+		},
+		{
+			name:    "success",
+			movieID: 7,
+			setupMocks: func(userRepo *mocks.MockUserRepo, sessionRepo *mocks.MockSessionRepo) {
+				userRepo.EXPECT().GetUserByID(gomock.Any(), int64(5)).Return(&domain.User{ID: 5}, nil)
+				userRepo.EXPECT().AddMovieToFavorites(gomock.Any(), int64(5), int64(7)).Return(nil)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			userRepo := mocks.NewMockUserRepo(ctrl)
+			sessionRepo := mocks.NewMockSessionRepo(ctrl)
+			if tt.setupMocks != nil {
+				tt.setupMocks(userRepo, sessionRepo)
+			}
+
+			u := newTestUsecase(userRepo, sessionRepo)
+			got, err := u.AddMovieToFavorites(context.Background(), 5, tt.movieID)
+
+			if tt.wantErrIs != nil {
+				if !errors.Is(err, tt.wantErrIs) {
+					t.Fatalf("expected error %v, got %v", tt.wantErrIs, err)
+				}
+
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if got.MovieID != tt.movieID || !got.IsFavorite {
+				t.Fatalf("unexpected response: %#v", got)
 			}
 		})
 	}

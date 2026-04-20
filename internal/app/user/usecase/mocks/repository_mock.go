@@ -57,6 +57,10 @@ func (mr *MockUserRepoMockRecorder) CreateUser(ctx, login, password any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepo)(nil).CreateUser), ctx, login, password)
 }
 
+// AddMovieToFavorites mocks base method.
+func (m *MockUserRepo) AddMovieToFavorites(ctx context.Context, userID, movieID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddMovieToFavorites", ctx, userID, movieID)
 // AddFriend mocks base method.
 func (m *MockUserRepo) AddFriend(ctx context.Context, userID, friendID int64) error {
 	m.ctrl.T.Helper()
@@ -65,6 +69,17 @@ func (m *MockUserRepo) AddFriend(ctx context.Context, userID, friendID int64) er
 	return ret0
 }
 
+// AddMovieToFavorites indicates an expected call of AddMovieToFavorites.
+func (mr *MockUserRepoMockRecorder) AddMovieToFavorites(ctx, userID, movieID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"AddMovieToFavorites",
+		reflect.TypeOf((*MockUserRepo)(nil).AddMovieToFavorites),
+		ctx,
+		userID,
+		movieID,
+	)
 // AddFriend indicates an expected call of AddFriend.
 func (mr *MockUserRepoMockRecorder) AddFriend(ctx, userID, friendID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
