@@ -38,7 +38,3 @@ type ProfileResponse struct {
 	Birthdate *string `json:"birthdate,omitempty"`
 	AvatarURL string  `json:"avatar_url,omitempty"`
 }
-
-func (u *TokenPair) Name() string {
-	return "sessions"
-}

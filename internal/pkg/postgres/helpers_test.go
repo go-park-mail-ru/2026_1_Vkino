@@ -1,7 +1,8 @@
 package postgres
 
 import (
-	"time"
+	"fmt"
+	"reflect"
 
 	moviedomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie/domain"
 	userdomain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/domain"
@@ -26,21 +27,55 @@ func inOrderCalls(calls []*gomock.Call) {
 	gomock.InOrder(args...)
 }
 
+func assignScanDest(dest []any, values ...any) error {
+	if len(dest) != len(values) {
+		return fmt.Errorf("scan dest/value length mismatch: got %d dest, want %d values", len(dest), len(values))
+	}
+
+	for i, value := range values {
+		target := reflect.ValueOf(dest[i])
+		if target.Kind() != reflect.Ptr || target.IsNil() {
+			return fmt.Errorf("scan dest at index %d is not a non-nil pointer", i)
+		}
+
+		valueRef := reflect.ValueOf(value)
+		targetElem := target.Elem()
+
+		if !valueRef.IsValid() {
+			targetElem.SetZero()
+			continue
+		}
+
+		if !valueRef.Type().AssignableTo(targetElem.Type()) {
+			return fmt.Errorf(
+				"scan dest at index %d has incompatible type: got %s, want %s",
+				i,
+				targetElem.Type(),
+				valueRef.Type(),
+			)
+		}
+
+		targetElem.Set(valueRef)
+	}
+
+	return nil
+}
+
 func expectUserRowScan(row *MockRow, user userdomain.User) {
 	row.EXPECT().
 		Scan(anyArgs(9)...).
 		DoAndReturn(func(dest ...any) error {
-			*dest[0].(*int64) = user.ID
-			*dest[1].(*string) = user.Email
-			*dest[2].(*string) = user.Password
-			*dest[3].(**time.Time) = user.Birthdate
-			*dest[4].(**string) = user.AvatarFileKey
-			*dest[5].(*time.Time) = user.RegistrationDate
-			*dest[6].(*bool) = user.IsActive
-			*dest[7].(*time.Time) = user.CreatedAt
-			*dest[8].(*time.Time) = user.UpdatedAt
-
-			return nil
+			return assignScanDest(dest,
+				user.ID,
+				user.Email,
+				user.Password,
+				user.Birthdate,
+				user.AvatarFileKey,
+				user.RegistrationDate,
+				user.IsActive,
+				user.CreatedAt,
+				user.UpdatedAt,
+			)
 		})
 }
 
@@ -48,23 +83,23 @@ func expectMovieRowScan(row *MockRow, movie moviedomain.MovieResponse) {
 	row.EXPECT().
 		Scan(anyArgs(15)...).
 		DoAndReturn(func(dest ...any) error {
-			*dest[0].(*int64) = movie.ID
-			*dest[1].(*string) = movie.Title
-			*dest[2].(*string) = movie.Description
-			*dest[3].(*string) = movie.Director
-			*dest[4].(*string) = movie.TrailerURL
-			*dest[5].(*string) = movie.ContentType
-			*dest[6].(*int) = movie.ReleaseYear
-			*dest[7].(*int) = movie.DurationSeconds
-			*dest[8].(*int) = movie.AgeLimit
-			*dest[9].(*int64) = movie.OriginalLanguageID
-			*dest[10].(*string) = movie.OriginalLanguage
-			*dest[11].(*int64) = movie.CountryID
-			*dest[12].(*string) = movie.Country
-			*dest[13].(*string) = movie.PictureFileKey
-			*dest[14].(*string) = movie.PosterFileKey
-
-			return nil
+			return assignScanDest(dest,
+				movie.ID,
+				movie.Title,
+				movie.Description,
+				movie.Director,
+				movie.TrailerURL,
+				movie.ContentType,
+				movie.ReleaseYear,
+				movie.DurationSeconds,
+				movie.AgeLimit,
+				movie.OriginalLanguageID,
+				movie.OriginalLanguage,
+				movie.CountryID,
+				movie.Country,
+				movie.PictureFileKey,
+				movie.PosterFileKey,
+			)
 		})
 }
 
@@ -72,14 +107,14 @@ func expectActorRowScan(row *MockRow, actor moviedomain.ActorResponse) {
 	row.EXPECT().
 		Scan(anyArgs(6)...).
 		DoAndReturn(func(dest ...any) error {
-			*dest[0].(*int64) = actor.ID
-			*dest[1].(*string) = actor.FullName
-			*dest[2].(*string) = actor.BirthDate
-			*dest[3].(*string) = actor.Biography
-			*dest[4].(*int64) = actor.CountryID
-			*dest[5].(*string) = actor.PictureFileKey
-
-			return nil
+			return assignScanDest(dest,
+				actor.ID,
+				actor.FullName,
+				actor.BirthDate,
+				actor.Biography,
+				actor.CountryID,
+				actor.PictureFileKey,
+			)
 		})
 }
 
@@ -87,30 +122,28 @@ func expectPlaybackRowScan(row *MockRow, playback moviedomain.EpisodePlaybackRes
 	row.EXPECT().
 		Scan(anyArgs(7)...).
 		DoAndReturn(func(dest ...any) error {
-			*dest[0].(*int64) = playback.EpisodeID
-			*dest[1].(*int64) = playback.MovieID
-			*dest[2].(*int) = playback.SeasonNumber
-			*dest[3].(*int) = playback.EpisodeNumber
-			*dest[4].(*string) = playback.Title
-			*dest[5].(*int) = playback.DurationSeconds
-			*dest[6].(*string) = playback.PlaybackURL
-
-			return nil
+			return assignScanDest(dest,
+				playback.EpisodeID,
+				playback.MovieID,
+				playback.SeasonNumber,
+				playback.EpisodeNumber,
+				playback.Title,
+				playback.DurationSeconds,
+				playback.PlaybackURL,
+			)
 		})
 }
 
 func expectStringRows(rows *MockRows, values []string) {
 	calls := make([]*gomock.Call, 0, len(values)*2+3)
 
-	for _, value := range values {
-		value := value
-		calls = append(calls, rows.EXPECT().Next().Return(true))
-		calls = append(calls, rows.EXPECT().Scan(anyArgs(1)...).DoAndReturn(func(dest ...any) error {
-			*dest[0].(*string) = value
-
-			return nil
-		}))
-	}
+		for _, value := range values {
+			value := value
+			calls = append(calls, rows.EXPECT().Next().Return(true))
+			calls = append(calls, rows.EXPECT().Scan(anyArgs(1)...).DoAndReturn(func(dest ...any) error {
+				return assignScanDest(dest, value)
+			}))
+		}
 
 	calls = append(calls, rows.EXPECT().Next().Return(false))
 	calls = append(calls, rows.EXPECT().Err().Return(nil))
@@ -122,17 +155,13 @@ func expectStringRows(rows *MockRows, values []string) {
 func expectSelectionMoviePreviewRows(rows *MockRows, previews []moviedomain.MoviePreview) {
 	calls := make([]*gomock.Call, 0, len(previews)*2+2)
 
-	for _, preview := range previews {
-		preview := preview
-		calls = append(calls, rows.EXPECT().Next().Return(true))
-		calls = append(calls, rows.EXPECT().Scan(anyArgs(3)...).DoAndReturn(func(dest ...any) error {
-			*dest[0].(*int64) = preview.ID
-			*dest[1].(*string) = preview.Title
-			*dest[2].(*string) = preview.ImgUrl
-
-			return nil
-		}))
-	}
+		for _, preview := range previews {
+			preview := preview
+			calls = append(calls, rows.EXPECT().Next().Return(true))
+			calls = append(calls, rows.EXPECT().Scan(anyArgs(3)...).DoAndReturn(func(dest ...any) error {
+				return assignScanDest(dest, preview.ID, preview.Title, preview.ImgUrl)
+			}))
+		}
 
 	calls = append(calls, rows.EXPECT().Next().Return(false))
 	calls = append(calls, rows.EXPECT().Close())
@@ -143,17 +172,13 @@ func expectSelectionMoviePreviewRows(rows *MockRows, previews []moviedomain.Movi
 func expectMoviePreviewRows(rows *MockRows, previews []moviedomain.MoviePreview) {
 	calls := make([]*gomock.Call, 0, len(previews)*2+3)
 
-	for _, preview := range previews {
-		preview := preview
-		calls = append(calls, rows.EXPECT().Next().Return(true))
-		calls = append(calls, rows.EXPECT().Scan(anyArgs(3)...).DoAndReturn(func(dest ...any) error {
-			*dest[0].(*int64) = preview.ID
-			*dest[1].(*string) = preview.Title
-			*dest[2].(*string) = preview.ImgUrl
-
-			return nil
-		}))
-	}
+		for _, preview := range previews {
+			preview := preview
+			calls = append(calls, rows.EXPECT().Next().Return(true))
+			calls = append(calls, rows.EXPECT().Scan(anyArgs(3)...).DoAndReturn(func(dest ...any) error {
+				return assignScanDest(dest, preview.ID, preview.Title, preview.ImgUrl)
+			}))
+		}
 
 	calls = append(calls, rows.EXPECT().Next().Return(false))
 	calls = append(calls, rows.EXPECT().Err().Return(nil))
@@ -165,17 +190,13 @@ func expectMoviePreviewRows(rows *MockRows, previews []moviedomain.MoviePreview)
 func expectActorPreviewRows(rows *MockRows, actors []moviedomain.ActorPreview) {
 	calls := make([]*gomock.Call, 0, len(actors)*2+3)
 
-	for _, actor := range actors {
-		actor := actor
-		calls = append(calls, rows.EXPECT().Next().Return(true))
-		calls = append(calls, rows.EXPECT().Scan(anyArgs(3)...).DoAndReturn(func(dest ...any) error {
-			*dest[0].(*int64) = actor.ID
-			*dest[1].(*string) = actor.FullName
-			*dest[2].(*string) = actor.PictureFileKey
-
-			return nil
-		}))
-	}
+		for _, actor := range actors {
+			actor := actor
+			calls = append(calls, rows.EXPECT().Next().Return(true))
+			calls = append(calls, rows.EXPECT().Scan(anyArgs(3)...).DoAndReturn(func(dest ...any) error {
+				return assignScanDest(dest, actor.ID, actor.FullName, actor.PictureFileKey)
+			}))
+		}
 
 	calls = append(calls, rows.EXPECT().Next().Return(false))
 	calls = append(calls, rows.EXPECT().Err().Return(nil))
@@ -187,23 +208,24 @@ func expectActorPreviewRows(rows *MockRows, actors []moviedomain.ActorPreview) {
 func expectEpisodeRows(rows *MockRows, episodes []moviedomain.EpisodeItemResponse) {
 	calls := make([]*gomock.Call, 0, len(episodes)*2+3)
 
-	for _, episode := range episodes {
-		episode := episode
-		calls = append(calls, rows.EXPECT().Next().Return(true))
-		calls = append(calls, rows.EXPECT().Scan(anyArgs(9)...).DoAndReturn(func(dest ...any) error {
-			*dest[0].(*int64) = episode.ID
-			*dest[1].(*int64) = episode.MovieID
-			*dest[2].(*int) = episode.SeasonNumber
-			*dest[3].(*int) = episode.EpisodeNumber
-			*dest[4].(*string) = episode.Title
-			*dest[5].(*string) = episode.Description
-			*dest[6].(*int) = episode.DurationSeconds
-			*dest[7].(*string) = episode.ImgURL
-			*dest[8].(*string) = episode.VideoURL
-
-			return nil
-		}))
-	}
+		for _, episode := range episodes {
+			episode := episode
+			calls = append(calls, rows.EXPECT().Next().Return(true))
+			calls = append(calls, rows.EXPECT().Scan(anyArgs(9)...).DoAndReturn(func(dest ...any) error {
+				return assignScanDest(
+					dest,
+					episode.ID,
+					episode.MovieID,
+					episode.SeasonNumber,
+					episode.EpisodeNumber,
+					episode.Title,
+					episode.Description,
+					episode.DurationSeconds,
+					episode.ImgURL,
+					episode.VideoURL,
+				)
+			}))
+		}
 
 	calls = append(calls, rows.EXPECT().Next().Return(false))
 	calls = append(calls, rows.EXPECT().Err().Return(nil))

@@ -5,7 +5,3 @@ type SearchResponse struct {
 	Movies []MoviePreview `json:"movies"`
 	Actors []ActorPreview `json:"actors"`
 }
-
-func (s *SearchResponse) Name() string {
-	return "search"
-}

@@ -19,10 +19,6 @@ type User struct {
 	UpdatedAt        time.Time
 }
 
-func (u *User) Name() string {
-	return "users"
-}
-
 func Validate(email, password string) bool {
 	return validateEmail(email) && validatePassword(password)
 }

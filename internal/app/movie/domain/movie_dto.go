@@ -26,7 +26,3 @@ type MovieResponse struct {
 	Actors             []ActorPreview        `json:"actors"`
 	Episodes           []EpisodeItemResponse `json:"episodes"`
 }
-
-func (m *MovieResponse) Name() string {
-	return "movies"
-}
