@@ -62,6 +62,11 @@ func (m *MockUsecase) AddMovieToFavorites(ctx context.Context, userID, movieID i
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddMovieToFavorites", ctx, userID, movieID)
 	ret0, _ := ret[0].(domain.FavoriteMovieResponse)
+// AddFriend mocks base method.
+func (m *MockUsecase) AddFriend(ctx context.Context, userID, friendID int64) (domain.FriendResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddFriend", ctx, userID, friendID)
+	ret0, _ := ret[0].(domain.FriendResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -77,6 +82,10 @@ func (mr *MockUsecaseMockRecorder) AddMovieToFavorites(ctx, userID, movieID any)
 		userID,
 		movieID,
 	)
+// AddFriend indicates an expected call of AddFriend.
+func (mr *MockUsecaseMockRecorder) AddFriend(ctx, userID, friendID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFriend", reflect.TypeOf((*MockUsecase)(nil).AddFriend), ctx, userID, friendID)
 }
 
 // LogOut mocks base method.
@@ -93,6 +102,20 @@ func (mr *MockUsecaseMockRecorder) LogOut(ctx, email any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LogOut", reflect.TypeOf((*MockUsecase)(nil).LogOut), ctx, email)
 }
 
+// DeleteFriend mocks base method.
+func (m *MockUsecase) DeleteFriend(ctx context.Context, userID, friendID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteFriend", ctx, userID, friendID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFriend indicates an expected call of DeleteFriend.
+func (mr *MockUsecaseMockRecorder) DeleteFriend(ctx, userID, friendID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFriend", reflect.TypeOf((*MockUsecase)(nil).DeleteFriend), ctx, userID, friendID)
+}
+
 // GetProfile mocks base method.
 func (m *MockUsecase) GetProfile(ctx context.Context, userID int64) (domain.ProfileResponse, error) {
 	m.ctrl.T.Helper()
@@ -106,6 +129,21 @@ func (m *MockUsecase) GetProfile(ctx context.Context, userID int64) (domain.Prof
 func (mr *MockUsecaseMockRecorder) GetProfile(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockUsecase)(nil).GetProfile), ctx, userID)
+}
+
+// SearchUsersByEmail mocks base method.
+func (m *MockUsecase) SearchUsersByEmail(ctx context.Context, userID int64, emailQuery string) ([]domain.UserSearchResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchUsersByEmail", ctx, userID, emailQuery)
+	ret0, _ := ret[0].([]domain.UserSearchResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchUsersByEmail indicates an expected call of SearchUsersByEmail.
+func (mr *MockUsecaseMockRecorder) SearchUsersByEmail(ctx, userID, emailQuery any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUsersByEmail", reflect.TypeOf((*MockUsecase)(nil).SearchUsersByEmail), ctx, userID, emailQuery)
 }
 
 // Refresh mocks base method.

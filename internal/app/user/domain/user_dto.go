@@ -44,6 +44,17 @@ type ProfileResponse struct {
 	AvatarURL string  `json:"avatar_url,omitempty"`
 }
 
+type FriendResponse struct {
+	ID    int64  `json:"id"`
+	Email string `json:"email"`
+}
+
+type UserSearchResult struct {
+	ID       int64  `json:"id"`
+	Email    string `json:"email"`
+	IsFriend bool   `json:"is_friend"`
+}
+
 func (u *TokenPair) Name() string {
 	return "sessions"
 }

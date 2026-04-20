@@ -21,13 +21,18 @@ type HttpErr struct {
 // мапа внутренняя ошибка -> внешний ответ.
 var errToHTTP = map[error]HttpErr{
 	userdomain.ErrUserAlreadyExists:  {status: http.StatusConflict, message: "user already exists"},
+	userdomain.ErrUserNotFound:       {status: http.StatusNotFound, message: "user not found"},
 	userdomain.ErrInvalidCredentials: {status: http.StatusUnauthorized, message: "invalid credentials"},
+	userdomain.ErrInvalidSearchQuery: {status: http.StatusBadRequest, message: "invalid email query"},
 	userdomain.ErrNoSession:          {status: http.StatusUnauthorized, message: "unauthorized"},
 	userdomain.ErrInvalidToken:       {status: http.StatusUnauthorized, message: "unauthorized"},
 	userdomain.ErrInvalidMovieID:     {status: http.StatusBadRequest, message: "invalid movie id"},
 	userdomain.ErrPasswordMismatch:   {status: http.StatusUnauthorized, message: "invalid credentials"},
 	userdomain.ErrInvalidBirthdate:   {status: http.StatusBadRequest, message: "invalid birthdate"},
 	userdomain.ErrInvalidAvatar:      {status: http.StatusBadRequest, message: "invalid avatar"},
+	userdomain.ErrAlreadyFriends:     {status: http.StatusConflict, message: "users are already friends"},
+	userdomain.ErrFriendNotFound:     {status: http.StatusNotFound, message: "friend not found"},
+	userdomain.ErrSelfFriendship:     {status: http.StatusBadRequest, message: "cannot use your own profile as friend"},
 	userdomain.ErrInternal:           {status: http.StatusInternalServerError, message: "internal server error"},
 	storagepkg.ErrInvalidFileType:    {status: http.StatusBadRequest, message: "unsupported file extension"},
 	storagepkg.ErrFileTooLarge:       {status: http.StatusBadRequest, message: "file size exceeds the limit"},
@@ -40,6 +45,7 @@ var errToHTTP = map[error]HttpErr{
 	postgresrepo.ErrMovieNotFound:     {status: http.StatusNotFound, message: "movie not found"},
 	postgresrepo.ErrActorNotFound:     {status: http.StatusNotFound, message: "actor not found"},
 	postgresrepo.ErrEpisodeNotFound:   {status: http.StatusNotFound, message: "episode not found"},
+	postgresrepo.ErrUserNotFound:      {status: http.StatusNotFound, message: "user not found"},
 
 	moviedomain.ErrInvalidMovieID:       {status: http.StatusBadRequest, message: "invalid movie id"},
 	moviedomain.ErrInvalidActorID:       {status: http.StatusBadRequest, message: "invalid actor id"},

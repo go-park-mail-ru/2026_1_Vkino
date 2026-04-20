@@ -27,6 +27,10 @@ func Validate(email, password string) bool {
 	return validateEmail(email) && validatePassword(password)
 }
 
+func ValidateEmailQuery(query string) bool {
+	return validateEmailQuery(query)
+}
+
 func ValidatePassword(password string) bool {
 	return validatePassword(password)
 }
@@ -96,4 +100,13 @@ func validatePassword(password string) bool {
 
 	// должна быть хотя бы одна буква и одна цифра
 	return hasLetter && hasDigit
+}
+
+func validateEmailQuery(query string) bool {
+	trimmedQuery := strings.TrimSpace(query)
+	if trimmedQuery == "" || len(trimmedQuery) > 64 {
+		return false
+	}
+
+	return !strings.ContainsAny(trimmedQuery, " \t\n\r")
 }
