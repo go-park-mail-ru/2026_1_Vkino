@@ -1,0 +1,67 @@
+# server:
+#   port: 8080
+#   timeouts:
+#     read_header: "5s"
+#     read: "15s"
+#     write: "30s"
+#     idle: "60s"
+
+# legacy:
+#   base_url: "http://legacy-api:8080"
+#   timeout: "15s"
+
+# grpc:
+#   auth:
+#     target: "auth-service:9090"
+#     dial_timeout: "5s"
+#     insecure: true
+
+# cors:
+#   allowed_origins:
+#     - "https://vkino.tech"
+#     - "https://www.vkino.tech"
+#   allowed_methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+#   allowed_headers: [Content-Type, Authorization, X-Request-Id]
+#   allow_credentials: true
+#   max_age: 3600
+
+# cookies:
+#   secure: true
+#   same_site: "Lax"
+#   domain: ".vkino.tech"
+
+# logger:
+#   level: "info"
+#   format: "json"
+#   output_path: "logs/app/gateway.log"
+
+server:
+  port: 8080
+  timeouts:
+    read_header: 5s
+    read: 10s
+    write: 15s
+    idle: 60s
+  cors:
+    allowed_origins:
+      - "http://localhost:3000"
+      - "http://localhost:5173"
+    allow_credentials: true
+    max_age: 12h
+
+logger:
+  level: "info"
+  format: "json"
+  output_path: "logs/app/gateway.log"
+
+auth_grpc:
+  address: "auth-service:9090"
+  request_timeout: 5s
+
+legacy_api:
+  base_url: "http://vkinoapi:8080"
+
+user_auth:
+  refresh_cookie_name: "refresh_token"
+  refresh_token_ttl: "336h"
+  cookie_secure: false

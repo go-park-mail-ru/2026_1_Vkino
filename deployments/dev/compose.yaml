@@ -12,19 +12,48 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     depends_on:
+      - api-gateway
+
+  api-gateway:
+    build:
+      context: ../..
+      dockerfile: services/api-gateway/build/image/Dockerfile
+    container_name: api-gateway
+    restart: always
+    volumes:
+      - ../../services/api-gateway/configs/gateway.yaml:/etc/vkino/gateway.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    command: ./gateway -config /etc/vkino/gateway.yaml
+    depends_on:
+      - auth-service
       - vkinoapi
+
+  auth-service:
+    build:
+      context: ../..
+      dockerfile: services/auth-service/build/image/Dockerfile
+    container_name: auth-service
+    restart: always
+    volumes:
+      - ../../services/auth-service/configs/auth.yaml:/etc/vkino/auth.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    command: ./auth-service -config /etc/vkino/auth.yaml
+    depends_on:
+      db:
+        condition: service_healthy
 
   vkinoapi:
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
+    container_name: vkinoapi
     restart: always
     ports:
       - "8080:8080"
     volumes:
-      - ../../configs/api.yaml:/etc/vkino/config.yaml
+      - ../../configs/api.yaml:/etc/vkino/config.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./vkinoapi --config=/etc/vkino/config.yaml
+    command: ./vkinoapi -config /etc/vkino/config.yaml
     depends_on:
       db:
         condition: service_healthy
