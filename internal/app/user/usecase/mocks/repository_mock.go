@@ -57,6 +57,35 @@ func (mr *MockUserRepoMockRecorder) CreateUser(ctx, login, password any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepo)(nil).CreateUser), ctx, login, password)
 }
 
+// AddMovieToFavorites mocks base method.
+func (m *MockUserRepo) AddMovieToFavorites(ctx context.Context, userID, movieID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddMovieToFavorites", ctx, userID, movieID)
+// AddFriend mocks base method.
+func (m *MockUserRepo) AddFriend(ctx context.Context, userID, friendID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddFriend", ctx, userID, friendID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddMovieToFavorites indicates an expected call of AddMovieToFavorites.
+func (mr *MockUserRepoMockRecorder) AddMovieToFavorites(ctx, userID, movieID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"AddMovieToFavorites",
+		reflect.TypeOf((*MockUserRepo)(nil).AddMovieToFavorites),
+		ctx,
+		userID,
+		movieID,
+	)
+// AddFriend indicates an expected call of AddFriend.
+func (mr *MockUserRepoMockRecorder) AddFriend(ctx, userID, friendID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFriend", reflect.TypeOf((*MockUserRepo)(nil).AddFriend), ctx, userID, friendID)
+}
+
 // DeleteUser mocks base method.
 func (m *MockUserRepo) DeleteUser(ctx context.Context, login string) error {
 	m.ctrl.T.Helper()
@@ -69,6 +98,20 @@ func (m *MockUserRepo) DeleteUser(ctx context.Context, login string) error {
 func (mr *MockUserRepoMockRecorder) DeleteUser(ctx, login any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockUserRepo)(nil).DeleteUser), ctx, login)
+}
+
+// DeleteFriend mocks base method.
+func (m *MockUserRepo) DeleteFriend(ctx context.Context, userID, friendID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteFriend", ctx, userID, friendID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFriend indicates an expected call of DeleteFriend.
+func (mr *MockUserRepoMockRecorder) DeleteFriend(ctx, userID, friendID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFriend", reflect.TypeOf((*MockUserRepo)(nil).DeleteFriend), ctx, userID, friendID)
 }
 
 // GetUserByEmail mocks base method.
@@ -99,6 +142,21 @@ func (m *MockUserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User,
 func (mr *MockUserRepoMockRecorder) GetUserByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserRepo)(nil).GetUserByID), ctx, id)
+}
+
+// SearchUsersByEmail mocks base method.
+func (m *MockUserRepo) SearchUsersByEmail(ctx context.Context, userID int64, query string) ([]domain.UserSearchResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchUsersByEmail", ctx, userID, query)
+	ret0, _ := ret[0].([]domain.UserSearchResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchUsersByEmail indicates an expected call of SearchUsersByEmail.
+func (mr *MockUserRepoMockRecorder) SearchUsersByEmail(ctx, userID, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUsersByEmail", reflect.TypeOf((*MockUserRepo)(nil).SearchUsersByEmail), ctx, userID, query)
 }
 
 // UpdateAvatarFileKey mocks base method.

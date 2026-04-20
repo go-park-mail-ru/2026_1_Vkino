@@ -13,6 +13,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase"
 	usecasemocks "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user/usecase/mocks"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
+	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
 	"go.uber.org/mock/gomock"
 )
 
@@ -246,6 +247,103 @@ func TestHandler_ChangePassword(t *testing.T) {
 			}
 
 			assertJSONContainsStringValue(t, rr, tt.wantString)
+		})
+	}
+}
+
+func TestHandler_AddMovieToFavorites(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		withAuth   bool
+		id         string
+		setupMocks func(mu *usecasemocks.MockUsecase)
+		wantStatus int
+		wantString string
+		wantBody   *domain.FavoriteMovieResponse
+	}{
+		{
+			name:       "unauthorized",
+			id:         "7",
+			wantStatus: stdhttp.StatusUnauthorized,
+			wantString: "unauthorized",
+		},
+		{
+			name:       "invalid movie id",
+			withAuth:   true,
+			id:         "abc",
+			wantStatus: stdhttp.StatusBadRequest,
+			wantString: "invalid movie id",
+		},
+		{
+			name:     "movie not found",
+			withAuth: true,
+			id:       "7",
+			setupMocks: func(mu *usecasemocks.MockUsecase) {
+				mu.EXPECT().
+					AddMovieToFavorites(gomock.Any(), int64(1), int64(7)).
+					Return(domain.FavoriteMovieResponse{}, postgresrepo.ErrMovieNotFound)
+			},
+			wantStatus: stdhttp.StatusNotFound,
+			wantString: "movie not found",
+		},
+		{
+			name:     "success",
+			withAuth: true,
+			id:       "7",
+			setupMocks: func(mu *usecasemocks.MockUsecase) {
+				mu.EXPECT().
+					AddMovieToFavorites(gomock.Any(), int64(1), int64(7)).
+					Return(domain.FavoriteMovieResponse{
+						MovieID:    7,
+						IsFavorite: true,
+					}, nil)
+			},
+			wantStatus: stdhttp.StatusOK,
+			wantBody: &domain.FavoriteMovieResponse{
+				MovieID:    7,
+				IsFavorite: true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mu := usecasemocks.NewMockUsecase(ctrl)
+			if tt.setupMocks != nil {
+				tt.setupMocks(mu)
+			}
+
+			h := NewHandler(mu)
+			req := httptest.NewRequest(stdhttp.MethodPut, "/user/favorites/"+tt.id, nil)
+			if tt.id != "" {
+				req.SetPathValue("id", tt.id)
+			}
+			if tt.withAuth {
+				req = req.WithContext(context.WithValue(req.Context(), middleware.AuthCtxKey, usecase.AuthContext{UserId: 1}))
+			}
+
+			rr := httptest.NewRecorder()
+			h.AddMovieToFavorites(rr, req)
+
+			if rr.Code != tt.wantStatus {
+				t.Fatalf("expected status %d, got %d", tt.wantStatus, rr.Code)
+			}
+
+			if tt.wantString != "" {
+				assertJSONContainsStringValue(t, rr, tt.wantString)
+
+				return
+			}
+
+			got := decodeBody[domain.FavoriteMovieResponse](t, rr)
+			if got != *tt.wantBody {
+				t.Fatalf("expected body %#v, got %#v", *tt.wantBody, got)
+			}
 		})
 	}
 }

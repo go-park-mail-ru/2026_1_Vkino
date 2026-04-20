@@ -233,3 +233,25 @@ func expectEpisodeRows(rows *MockRows, episodes []moviedomain.EpisodeItemRespons
 
 	inOrderCalls(calls)
 }
+
+func expectUserSearchRows(rows *MockRows, users []userdomain.UserSearchResult) {
+	calls := make([]*gomock.Call, 0, len(users)*2+3)
+
+	for _, user := range users {
+		user := user
+		calls = append(calls, rows.EXPECT().Next().Return(true))
+		calls = append(calls, rows.EXPECT().Scan(anyArgs(3)...).DoAndReturn(func(dest ...any) error {
+			*dest[0].(*int64) = user.ID
+			*dest[1].(*string) = user.Email
+			*dest[2].(*bool) = user.IsFriend
+
+			return nil
+		}))
+	}
+
+	calls = append(calls, rows.EXPECT().Next().Return(false))
+	calls = append(calls, rows.EXPECT().Err().Return(nil))
+	calls = append(calls, rows.EXPECT().Close())
+
+	inOrderCalls(calls)
+}

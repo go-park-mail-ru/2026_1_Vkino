@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -232,6 +233,40 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httppkg.Response(w, http.StatusOK, domain.Response{Message: "password updated"})
+}
+
+func (h *Handler) AddMovieToFavorites(w http.ResponseWriter, r *http.Request) {
+	auth, err := middleware.AuthFromContext(r.Context())
+	if err != nil {
+		status, message := pkgerrors.MapError(middleware.ErrMidlware)
+		httppkg.ErrResponse(w, status, message)
+
+		return
+	}
+
+	idParam := r.PathValue("id")
+	if len(idParam) == 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid movie id")
+
+		return
+	}
+
+	movieID, err := strconv.Atoi(idParam)
+	if err != nil || movieID <= 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid movie id")
+
+		return
+	}
+
+	response, err := h.usecase.AddMovieToFavorites(r.Context(), auth.UserId, int64(movieID))
+	if err != nil {
+		status, message := pkgerrors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
+
+		return
+	}
+
+	httppkg.Response(w, http.StatusOK, response)
 }
 
 func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {
