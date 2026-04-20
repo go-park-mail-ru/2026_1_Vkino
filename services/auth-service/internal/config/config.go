@@ -16,9 +16,9 @@ type GRPCConfig struct {
 }
 
 type Config struct {
-	GRPC     GRPCConfig         `mapstructure:"grpc"`
-	Logger   logger.Config      `mapstructure:"logger"`
-	Auth     authusecase.Config `mapstructure:"auth"`
+	GRPC     GRPCConfig          `mapstructure:"grpc"`
+	Logger   logger.Config       `mapstructure:"logger"`
+	Auth     authusecase.Config  `mapstructure:"auth"`
 	Postgres corepostgres.Config `mapstructure:"postgres"`
 }
 
