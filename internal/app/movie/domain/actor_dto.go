@@ -15,3 +15,7 @@ type ActorResponse struct {
 	PictureFileKey string         `json:"img_url"`
 	Movies         []MoviePreview `json:"movies"`
 }
+
+func (*ActorResponse) Name() string {
+	return "actors"
+}
