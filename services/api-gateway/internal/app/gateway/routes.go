@@ -9,7 +9,7 @@ func registerRoutes(
 	healthHandler *deliveryhttp.HealthHandler,
 	authHandler *deliveryhttp.AuthHandler,
 	userHandler *deliveryhttp.UserHandler,
-	legacyHandler *deliveryhttp.LegacyProxyHandler,
+	movieHandler *deliveryhttp.MovieHandler,
 	authMiddleware AuthMiddleware,
 ) []httpserver.Option {
 	return []httpserver.Option{
@@ -28,12 +28,9 @@ func registerRoutes(
 		httpserver.WithMiddlewareRoute("DELETE /user/friend", userHandler.DeleteFriend, authMiddleware.Middleware),
 		httpserver.WithMiddlewareRoute("POST /movie/{id}/favorite", userHandler.AddMovieToFavorites, authMiddleware.Middleware),
 
-		httpserver.WithRoute("GET /movie/selection/all", legacyHandler.Proxy),
-		httpserver.WithRoute("GET /movie/selection/{selection}", legacyHandler.Proxy),
-		httpserver.WithRoute("GET /movie/{id}", legacyHandler.Proxy),
-		httpserver.WithRoute("GET /movie/actor/{id}", legacyHandler.Proxy),
-		httpserver.WithRoute("GET /episode/{id}/playback", legacyHandler.Proxy),
-		httpserver.WithRoute("GET /episode/{id}/progress", legacyHandler.Proxy),
-		httpserver.WithRoute("PUT /episode/{id}/progress", legacyHandler.Proxy),
+		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
+		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
+		httpserver.WithRoute("GET /movie/{id}", movieHandler.GetMovieByID),
+		httpserver.WithRoute("GET /movie/actor/{id}", movieHandler.GetActorByID),
 	}
 }

@@ -26,6 +26,8 @@ services:
     command: ./gateway -config /etc/vkino/gateway.yaml
     depends_on:
       - auth-service
+      - user-service
+      - movie-service
       - vkinoapi
 
   auth-service:
@@ -52,6 +54,20 @@ services:
       - ../../services/user-service/configs/user.yaml:/etc/vkino/user.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./user-service -config /etc/vkino/user.yaml
+    depends_on:
+      db:
+        condition: service_healthy
+
+  movie-service:
+    build:
+      context: ../..
+      dockerfile: services/movie-service/build/image/Dockerfile
+    container_name: movie-service
+    restart: always
+    volumes:
+      - ../../services/movie-service/configs/movie.yaml:/etc/vkino/movie.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    command: ./movie-service -config /etc/vkino/movie.yaml
     depends_on:
       db:
         condition: service_healthy

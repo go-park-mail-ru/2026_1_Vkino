@@ -1,0 +1,303 @@
+package postgres
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
+	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/domain"
+
+	"github.com/jackc/pgx/v5"
+)
+
+type MovieRepo struct {
+	db *corepostgres.Client
+}
+
+func NewMovieRepo(db *corepostgres.Client) *MovieRepo {
+	return &MovieRepo{db: db}
+}
+
+var (
+	ErrMovieNotFound     = errors.New("movie not found")
+	ErrActorNotFound     = errors.New("actor not found")
+	ErrSelectionNotFound = errors.New("selection not found")
+)
+
+func (r *MovieRepo) GetMovieByID(ctx context.Context, movieID int64) (*domain.Movie, error) {
+	var movie domain.Movie
+
+	err := r.db.QueryRow(ctx, sqlGetMovieBaseByID, movieID).Scan(
+		&movie.ID,
+		&movie.Title,
+		&movie.Description,
+		&movie.Year,
+		&movie.AgeLimit,
+		&movie.DurationMin,
+		&movie.PosterFileKey,
+		&movie.CardFileKey,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrMovieNotFound
+		}
+
+		return nil, fmt.Errorf("get movie by id: %w", err)
+	}
+
+	movie.Countries, err = r.getMovieCountries(ctx, movieID)
+	if err != nil {
+		return nil, err
+	}
+
+	movie.Genres, err = r.getMovieGenres(ctx, movieID)
+	if err != nil {
+		return nil, err
+	}
+
+	movie.Actors, err = r.getMovieActors(ctx, movieID)
+	if err != nil {
+		return nil, err
+	}
+
+	movie.Episodes, err = r.getMovieEpisodes(ctx, movieID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &movie, nil
+}
+
+func (r *MovieRepo) GetActorByID(ctx context.Context, actorID int64) (*domain.Actor, error) {
+	var actor domain.Actor
+
+	err := r.db.QueryRow(ctx, sqlGetActorBaseByID, actorID).Scan(
+		&actor.ID,
+		&actor.Name,
+		&actor.Description,
+		&actor.AvatarFileKey,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrActorNotFound
+		}
+
+		return nil, fmt.Errorf("get actor by id: %w", err)
+	}
+
+	actor.Movies, err = r.getActorMovies(ctx, actorID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &actor, nil
+}
+
+func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (domain.Selection, error) {
+	rows, err := r.db.Query(ctx, sqlGetSelectionMoviesByTitle, title)
+	if err != nil {
+		return domain.Selection{}, fmt.Errorf("get selection by title: %w", err)
+	}
+	defer rows.Close()
+
+	selection := domain.Selection{
+		Movies: make([]domain.MovieCard, 0),
+	}
+
+	for rows.Next() {
+		var movie domain.MovieCard
+
+		err = rows.Scan(
+			&selection.Title,
+			&movie.ID,
+			&movie.Title,
+			&movie.Year,
+			&movie.PosterFileKey,
+			&movie.CardFileKey,
+		)
+		if err != nil {
+			return domain.Selection{}, fmt.Errorf("scan selection movie: %w", err)
+		}
+
+		selection.Movies = append(selection.Movies, movie)
+	}
+
+	if err = rows.Err(); err != nil {
+		return domain.Selection{}, fmt.Errorf("iterate selection rows: %w", err)
+	}
+
+	if selection.Title == "" {
+		return domain.Selection{}, ErrSelectionNotFound
+	}
+
+	return selection, nil
+}
+
+func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, error) {
+	rows, err := r.db.Query(ctx, sqlGetAllSelectionMovies)
+	if err != nil {
+		return nil, fmt.Errorf("get all selections: %w", err)
+	}
+	defer rows.Close()
+
+	selectionMap := make(map[string]*domain.Selection)
+	order := make([]string, 0)
+
+	for rows.Next() {
+		var (
+			title string
+			movie domain.MovieCard
+		)
+
+		err = rows.Scan(
+			&title,
+			&movie.ID,
+			&movie.Title,
+			&movie.Year,
+			&movie.PosterFileKey,
+			&movie.CardFileKey,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan all selections row: %w", err)
+		}
+
+		selection, ok := selectionMap[title]
+		if !ok {
+			selection = &domain.Selection{
+				Title:  title,
+				Movies: make([]domain.MovieCard, 0),
+			}
+			selectionMap[title] = selection
+			order = append(order, title)
+		}
+
+		selection.Movies = append(selection.Movies, movie)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate all selections rows: %w", err)
+	}
+
+	result := make([]domain.Selection, 0, len(order))
+	for _, title := range order {
+		result = append(result, *selectionMap[title])
+	}
+
+	return result, nil
+}
+
+func (r *MovieRepo) getMovieCountries(ctx context.Context, movieID int64) ([]string, error) {
+	rows, err := r.db.Query(ctx, sqlGetMovieCountriesByID, movieID)
+	if err != nil {
+		return nil, fmt.Errorf("get movie countries: %w", err)
+	}
+	defer rows.Close()
+
+	result := make([]string, 0)
+	for rows.Next() {
+		var item string
+		if err = rows.Scan(&item); err != nil {
+			return nil, fmt.Errorf("scan movie country: %w", err)
+		}
+		result = append(result, item)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate movie countries: %w", err)
+	}
+
+	return result, nil
+}
+
+func (r *MovieRepo) getMovieGenres(ctx context.Context, movieID int64) ([]string, error) {
+	rows, err := r.db.Query(ctx, sqlGetMovieGenresByID, movieID)
+	if err != nil {
+		return nil, fmt.Errorf("get movie genres: %w", err)
+	}
+	defer rows.Close()
+
+	result := make([]string, 0)
+	for rows.Next() {
+		var item string
+		if err = rows.Scan(&item); err != nil {
+			return nil, fmt.Errorf("scan movie genre: %w", err)
+		}
+		result = append(result, item)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate movie genres: %w", err)
+	}
+
+	return result, nil
+}
+
+func (r *MovieRepo) getMovieActors(ctx context.Context, movieID int64) ([]domain.ActorShort, error) {
+	rows, err := r.db.Query(ctx, sqlGetMovieActorsByID, movieID)
+	if err != nil {
+		return nil, fmt.Errorf("get movie actors: %w", err)
+	}
+	defer rows.Close()
+
+	result := make([]domain.ActorShort, 0)
+	for rows.Next() {
+		var actor domain.ActorShort
+		if err = rows.Scan(&actor.ID, &actor.Name, &actor.AvatarFileKey); err != nil {
+			return nil, fmt.Errorf("scan movie actor: %w", err)
+		}
+		result = append(result, actor)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate movie actors: %w", err)
+	}
+
+	return result, nil
+}
+
+func (r *MovieRepo) getMovieEpisodes(ctx context.Context, movieID int64) ([]domain.Episode, error) {
+	rows, err := r.db.Query(ctx, sqlGetMovieEpisodesByID, movieID)
+	if err != nil {
+		return nil, fmt.Errorf("get movie episodes: %w", err)
+	}
+	defer rows.Close()
+
+	result := make([]domain.Episode, 0)
+	for rows.Next() {
+		var episode domain.Episode
+		if err = rows.Scan(&episode.ID, &episode.Number, &episode.Title, &episode.DurationSec); err != nil {
+			return nil, fmt.Errorf("scan movie episode: %w", err)
+		}
+		result = append(result, episode)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate movie episodes: %w", err)
+	}
+
+	return result, nil
+}
+
+func (r *MovieRepo) getActorMovies(ctx context.Context, actorID int64) ([]domain.MovieCard, error) {
+	rows, err := r.db.Query(ctx, sqlGetActorMoviesByID, actorID)
+	if err != nil {
+		return nil, fmt.Errorf("get actor movies: %w", err)
+	}
+	defer rows.Close()
+
+	result := make([]domain.MovieCard, 0)
+	for rows.Next() {
+		var movie domain.MovieCard
+		if err = rows.Scan(&movie.ID, &movie.Title, &movie.Year, &movie.PosterFileKey, &movie.CardFileKey); err != nil {
+			return nil, fmt.Errorf("scan actor movie: %w", err)
+		}
+		result = append(result, movie)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate actor movies: %w", err)
+	}
+
+	return result, nil
+}

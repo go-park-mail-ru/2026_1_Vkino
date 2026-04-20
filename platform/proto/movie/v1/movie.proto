@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package movie.v1;
+
+option go_package = "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1;moviev1";
+
+service MovieService {
+  rpc GetMovieByID(GetMovieByIDRequest) returns (GetMovieByIDResponse);
+  rpc GetActorByID(GetActorByIDRequest) returns (GetActorByIDResponse);
+  rpc GetSelectionByTitle(GetSelectionByTitleRequest) returns (GetSelectionByTitleResponse);
+  rpc GetAllSelections(GetAllSelectionsRequest) returns (GetAllSelectionsResponse);
+}
+
+message GetMovieByIDRequest {
+  int64 movie_id = 1;
+}
+
+message ActorShort {
+  int64 id = 1;
+  string name = 2;
+  string avatar_url = 3;
+}
+
+message EpisodeShort {
+  int64 id = 1;
+  int32 number = 2;
+  string title = 3;
+  int32 duration_sec = 4;
+}
+
+message GetMovieByIDResponse {
+  int64 id = 1;
+  string title = 2;
+  string description = 3;
+  int32 year = 4;
+  repeated string countries = 5;
+  repeated string genres = 6;
+  int32 age_limit = 7;
+  int32 duration_min = 8;
+  string poster_url = 9;
+  string card_url = 10;
+  repeated ActorShort actors = 11;
+  repeated EpisodeShort episodes = 12;
+}
+
+message GetActorByIDRequest {
+  int64 actor_id = 1;
+}
+
+message MovieCard {
+  int64 id = 1;
+  string title = 2;
+  int32 year = 3;
+  string poster_url = 4;
+  string card_url = 5;
+}
+
+message GetActorByIDResponse {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  string avatar_url = 4;
+  repeated MovieCard movies = 5;
+}
+
+message GetSelectionByTitleRequest {
+  string title = 1;
+}
+
+message Selection {
+  string title = 1;
+  repeated MovieCard movies = 2;
+}
+
+message GetSelectionByTitleResponse {
+  string title = 1;
+  repeated MovieCard movies = 2;
+}
+
+message GetAllSelectionsRequest {}
+
+message GetAllSelectionsResponse {
+  repeated Selection selections = 1;
+}

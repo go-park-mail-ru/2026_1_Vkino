@@ -15,10 +15,6 @@ type ServiceGRPCConfig struct {
 	RequestTimeout time.Duration `mapstructure:"request_timeout"`
 }
 
-type LegacyAPIConfig struct {
-	BaseURL string `mapstructure:"base_url"`
-}
-
 type UserAuthConfig struct {
 	RefreshCookieName string        `mapstructure:"refresh_cookie_name"`
 	RefreshTokenTTL   time.Duration `mapstructure:"refresh_token_ttl"`
@@ -30,7 +26,7 @@ type Config struct {
 	Logger    logger.Config     `mapstructure:"logger"`
 	AuthGRPC  ServiceGRPCConfig `mapstructure:"auth_grpc"`
 	UserGRPC  ServiceGRPCConfig `mapstructure:"user_grpc"`
-	LegacyAPI LegacyAPIConfig   `mapstructure:"legacy_api"`
+	MovieGRPC ServiceGRPCConfig `mapstructure:"movie_grpc"`
 	UserAuth  UserAuthConfig    `mapstructure:"user_auth"`
 }
 

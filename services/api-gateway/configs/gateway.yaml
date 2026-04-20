@@ -62,8 +62,9 @@ user_grpc:
   address: "user-service:9091"
   request_timeout: 5s
 
-legacy_api:
-  base_url: "http://vkinoapi:8080"
+movie_grpc:
+  address: "movie-service:9092"
+  request_timeout: 5s
 
 user_auth:
   refresh_cookie_name: "refresh_token"
