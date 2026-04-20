@@ -26,3 +26,7 @@ type MovieResponse struct {
 	Actors             []ActorPreview        `json:"actors"`
 	Episodes           []EpisodeItemResponse `json:"episodes"`
 }
+
+func (*MovieResponse) Name() string {
+	return "movies"
+}
