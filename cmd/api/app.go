@@ -97,6 +97,7 @@ func Run(configPath *string) error {
 		httpserver.WithRoute("POST /user/refresh", userHandler.Refresh),
 		httpserver.WithRoute("GET /movie/selection/all", movieHandler.GetAllSelections),
 		httpserver.WithRoute("GET /movie/selection/{selection}", movieHandler.GetSelectionByTitle),
+		httpserver.WithRoute("GET /movie/search", movieHandler.Search),
 		httpserver.WithRoute("GET /movie/{id}", movieHandler.GetMovieByID),
 		httpserver.WithRoute("GET /movie/actor/{id}", movieHandler.GetActorByID),
 		httpserver.WithRoute("GET /episode/{id}/playback", movieHandler.GetEpisodePlayback),

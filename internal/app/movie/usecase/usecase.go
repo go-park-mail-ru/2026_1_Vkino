@@ -9,6 +9,7 @@ import (
 type Usecase interface {
 	GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error)
 	GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error)
+	Search(ctx context.Context, query string) (domain.SearchResponse, error)
 	GetMovieByID(ctx context.Context, id int64) (domain.MovieResponse, error)
 	GetActorByID(ctx context.Context, id int64) (domain.ActorResponse, error)
 

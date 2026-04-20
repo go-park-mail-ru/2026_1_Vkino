@@ -54,6 +54,18 @@ func (h *Handler) GetSelectionByTitle(w http.ResponseWriter, r *http.Request) {
 	httppkg.Response(w, http.StatusOK, selection)
 }
 
+func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
+	result, err := h.usecase.Search(r.Context(), r.URL.Query().Get("query"))
+	if err != nil {
+		status, message := errors.MapError(err)
+		httppkg.ErrResponse(w, status, message)
+
+		return
+	}
+
+	httppkg.Response(w, http.StatusOK, result)
+}
+
 func (h *Handler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
 	idParam := r.PathValue("id")
 	if len(idParam) == 0 {

@@ -88,6 +88,24 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.SelectionRes
 	return selections, nil
 }
 
+func (r *MovieRepo) Search(ctx context.Context, query string) (domain.SearchResponse, error) {
+	movies, err := r.searchMovies(ctx, query)
+	if err != nil {
+		return domain.SearchResponse{}, err
+	}
+
+	actors, err := r.searchActors(ctx, query)
+	if err != nil {
+		return domain.SearchResponse{}, err
+	}
+
+	return domain.SearchResponse{
+		Query:  query,
+		Movies: movies,
+		Actors: actors,
+	}, nil
+}
+
 func (r *MovieRepo) GetMovieByID(ctx context.Context, id int64) (domain.MovieResponse, error) {
 	var movieResponse domain.MovieResponse
 
@@ -96,16 +114,23 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, id int64) (domain.MovieRes
 		&movieResponse.Title,
 		&movieResponse.Description,
 		&movieResponse.Director,
+		&movieResponse.TrailerURL,
 		&movieResponse.ContentType,
 		&movieResponse.ReleaseYear,
 		&movieResponse.DurationSeconds,
 		&movieResponse.AgeLimit,
 		&movieResponse.OriginalLanguageID,
+		&movieResponse.OriginalLanguage,
 		&movieResponse.CountryID,
+		&movieResponse.Country,
 		&movieResponse.PictureFileKey,
 		&movieResponse.PosterFileKey,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.MovieResponse{}, ErrMovieNotFound
+		}
+
 		return domain.MovieResponse{}, err
 	}
 
@@ -123,6 +148,31 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, id int64) (domain.MovieRes
 	movieResponse.Actors = actors
 
 	return movieResponse, nil
+}
+
+func (r *MovieRepo) searchMovies(ctx context.Context, query string) ([]domain.MoviePreview, error) {
+	rows, err := r.db.Query(ctx, sqlSearchMovies, query)
+	if err != nil {
+		return nil, fmt.Errorf("unable to search movies: %w", err)
+	}
+	defer rows.Close()
+
+	movies := make([]domain.MoviePreview, 0)
+	for rows.Next() {
+		var movie domain.MoviePreview
+
+		if err = rows.Scan(&movie.ID, &movie.Title, &movie.ImgUrl); err != nil {
+			return nil, fmt.Errorf("unable to scan movie preview: %w", err)
+		}
+
+		movies = append(movies, movie)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating movie search results: %w", err)
+	}
+
+	return movies, nil
 }
 
 func (r *MovieRepo) getGenresByMovieID(ctx context.Context, movieID int64) ([]string, error) {
@@ -148,6 +198,31 @@ func (r *MovieRepo) getGenresByMovieID(ctx context.Context, movieID int64) ([]st
 	}
 
 	return genres, nil
+}
+
+func (r *MovieRepo) searchActors(ctx context.Context, query string) ([]domain.ActorPreview, error) {
+	rows, err := r.db.Query(ctx, sqlSearchActors, query)
+	if err != nil {
+		return nil, fmt.Errorf("unable to search actors: %w", err)
+	}
+	defer rows.Close()
+
+	actors := make([]domain.ActorPreview, 0)
+	for rows.Next() {
+		var actor domain.ActorPreview
+
+		if err = rows.Scan(&actor.ID, &actor.FullName, &actor.PictureFileKey); err != nil {
+			return nil, fmt.Errorf("unable to scan actor preview: %w", err)
+		}
+
+		actors = append(actors, actor)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating actor search results: %w", err)
+	}
+
+	return actors, nil
 }
 
 func (r *MovieRepo) getActorsByMovieID(ctx context.Context, movieID int64) ([]domain.ActorPreview, error) {

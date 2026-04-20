@@ -50,6 +50,7 @@ var errToHTTP = map[error]HttpErr{
 	moviedomain.ErrInvalidMovieID:       {status: http.StatusBadRequest, message: "invalid movie id"},
 	moviedomain.ErrInvalidActorID:       {status: http.StatusBadRequest, message: "invalid actor id"},
 	moviedomain.ErrInvalidEpisodeID:     {status: http.StatusBadRequest, message: "invalid episode id"},
+	moviedomain.ErrInvalidSearchQuery:   {status: http.StatusBadRequest, message: "invalid search query"},
 	moviedomain.ErrInvalidWatchProgress: {status: http.StatusBadRequest, message: "invalid watch progress"},
 
 	http.ErrNoCookie:       {status: http.StatusUnauthorized, message: "unauthorized"},

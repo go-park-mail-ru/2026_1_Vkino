@@ -103,13 +103,17 @@ func TestMovieRepo_GetMovieByID(t *testing.T) {
 		Title:              "Dune",
 		Description:        "desc",
 		Director:           "director",
+		TrailerURL:         "https://example.com/trailer",
 		ContentType:        "film",
 		ReleaseYear:        2024,
 		DurationSeconds:    120,
 		AgeLimit:           16,
 		OriginalLanguageID: 1,
+		OriginalLanguage:   "English",
 		CountryID:          1,
+		Country:            "USA",
 		PictureFileKey:     "img/1.jpg",
+		PosterFileKey:      "posters/1.jpg",
 	}
 
 	ctrl := gomock.NewController(t)
@@ -139,6 +143,35 @@ func TestMovieRepo_GetMovieByID(t *testing.T) {
 
 	if got.Title != movie.Title || len(got.Genres) != 2 || len(got.Actors) != 1 {
 		t.Fatalf("unexpected movie: %#v", got)
+	}
+}
+
+func TestMovieRepo_Search(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	movieRows := NewMockRows(ctrl)
+	expectMoviePreviewRows(movieRows, []moviedomain.MoviePreview{{ID: 1, Title: "Dune", ImgUrl: "img/1.jpg"}})
+
+	actorRows := NewMockRows(ctrl)
+	expectActorPreviewRows(actorRows, []moviedomain.ActorPreview{{ID: 2, FullName: "Zendaya", PictureFileKey: "actors/2.jpg"}})
+
+	pool := NewMockPool(ctrl)
+	gomock.InOrder(
+		pool.EXPECT().Query(gomock.Any(), sqlSearchMovies, "dune").Return(movieRows, nil),
+		pool.EXPECT().Query(gomock.Any(), sqlSearchActors, "dune").Return(actorRows, nil),
+	)
+
+	repo := NewMovieRepo(&Client{Pool: pool})
+	got, err := repo.Search(context.Background(), "dune")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if got.Query != "dune" || len(got.Movies) != 1 || len(got.Actors) != 1 {
+		t.Fatalf("unexpected search result: %#v", got)
 	}
 }
 
@@ -206,7 +239,7 @@ func TestMovieRepo_GetEpisodesByMovieID(t *testing.T) {
 	defer ctrl.Finish()
 
 	rows := NewMockRows(ctrl)
-	expectEpisodeRows(rows, []moviedomain.EpisodeItemResponse{{ID: 1, MovieID: 1, Title: "Episode 1"}})
+	expectEpisodeRows(rows, []moviedomain.EpisodeItemResponse{{ID: 1, MovieID: 1, Title: "Episode 1", VideoURL: "videos/1.mp4"}})
 
 	pool := NewMockPool(ctrl)
 	pool.EXPECT().Query(gomock.Any(), sqlGetEpisodesByMovieID, int64(1)).Return(rows, nil)

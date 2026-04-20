@@ -116,6 +116,21 @@ func (mr *MockMovieRepoMockRecorder) GetMovieByID(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieByID", reflect.TypeOf((*MockMovieRepo)(nil).GetMovieByID), ctx, id)
 }
 
+// Search mocks base method.
+func (m *MockMovieRepo) Search(ctx context.Context, query string) (domain.SearchResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Search", ctx, query)
+	ret0, _ := ret[0].(domain.SearchResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Search indicates an expected call of Search.
+func (mr *MockMovieRepoMockRecorder) Search(ctx, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockMovieRepo)(nil).Search), ctx, query)
+}
+
 // GetSelectionByTitle mocks base method.
 func (m *MockMovieRepo) GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error) {
 	m.ctrl.T.Helper()
