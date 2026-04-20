@@ -72,6 +72,31 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 	return &user, nil
 }
 
+func (r *UserRepo) SearchUsersByEmail(ctx context.Context, userID int64, query string) ([]domain.UserSearchResult, error) {
+	rows, err := r.db.Query(ctx, sqlSearchUsersByEmail, userID, query)
+	if err != nil {
+		return nil, fmt.Errorf("search users by email: %w", err)
+	}
+	defer rows.Close()
+
+	users := make([]domain.UserSearchResult, 0)
+	for rows.Next() {
+		var user domain.UserSearchResult
+
+		if err = rows.Scan(&user.ID, &user.Email, &user.IsFriend); err != nil {
+			return nil, fmt.Errorf("scan searched users: %w", err)
+		}
+
+		users = append(users, user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate searched users: %w", err)
+	}
+
+	return users, nil
+}
+
 func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (*domain.User, error) {
 	var user domain.User
 
@@ -189,6 +214,33 @@ func (r *UserRepo) UpdatePassword(ctx context.Context, userID int64, passwordHas
 
 	if tag.RowsAffected() == 0 {
 		return ErrUserNotFound
+	}
+
+	return nil
+}
+
+func (r *UserRepo) AddFriend(ctx context.Context, userID int64, friendID int64) error {
+	_, err := r.db.Exec(ctx, sqlAddFriend, userID, friendID)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return domain.ErrAlreadyFriends
+		}
+
+		return fmt.Errorf("add friend: %w", err)
+	}
+
+	return nil
+}
+
+func (r *UserRepo) DeleteFriend(ctx context.Context, userID int64, friendID int64) error {
+	tag, err := r.db.Exec(ctx, sqlDeleteFriend, userID, friendID)
+	if err != nil {
+		return fmt.Errorf("delete friend: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return domain.ErrFriendNotFound
 	}
 
 	return nil
