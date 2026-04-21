@@ -13,9 +13,9 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/config"
 	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/delivery/grpc"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/repository/postgres"
-	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/service/clock"
+	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
 	jwtsvc "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/service/jwt"
-	passwordsvc "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/service/password"
+	passwordsvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/password"
 	authusecase "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/usecase"
 
 	"google.golang.org/grpc"

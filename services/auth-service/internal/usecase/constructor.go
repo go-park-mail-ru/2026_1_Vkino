@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/repository"
-	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/service/clock"
+	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
 	jwtsvc "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/service/jwt"
-	passwordsvc "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/service/password"
+	passwordsvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/password"
 )
 
 func NewAuthUsecase(

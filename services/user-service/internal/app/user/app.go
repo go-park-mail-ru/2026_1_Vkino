@@ -15,7 +15,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/config"
 	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/delivery/grpc"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/repository/postgres"
-	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/service/clock"
+	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
 	userusecase "github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/usecase"
 
 	"google.golang.org/grpc"
