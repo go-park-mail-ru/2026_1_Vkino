@@ -1,4 +1,4 @@
-package user
+package main
 
 import (
 	"context"
@@ -23,7 +23,7 @@ import (
 
 func Run(configPath string) error {
 	cfg := &config.Config{}
-	if err := config.Load(configPath, cfg); err != nil {
+	if err := Load(configPath, cfg); err != nil {
 		return fmt.Errorf("unable to load config: %w", err)
 	}
 
