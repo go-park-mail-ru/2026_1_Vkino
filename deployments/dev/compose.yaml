@@ -28,8 +28,10 @@ services:
       - ./logs/app:/vkinoapi/logs/app
     command: ./gateway -config /etc/vkino/gateway.yaml
     depends_on:
-      - user-service
-      - movie-service
+      user-service:
+        condition: service_started
+      movie-service:
+        condition: service_started
 
   auth-service:
     build:
@@ -47,6 +49,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   user-service:
     build:
@@ -64,6 +68,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   movie-service:
     build:
@@ -81,6 +87,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   db:
     container_name: dev-postgres

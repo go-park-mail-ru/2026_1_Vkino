@@ -2,6 +2,9 @@ package routes
 
 import (
 	"net/http"
+	"strings"
+	"errors"
+	"io"
 
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
@@ -11,6 +14,69 @@ import (
 
 type updateProfileRequest struct {
 	Birthdate string `json:"birthdate"`
+}
+
+type updateProfileJSONRequest struct {
+	Birthdate string `json:"birthdate"`
+}
+
+type updateProfilePayload struct {
+	Birthdate         string
+	Avatar            []byte
+	AvatarContentType string
+}
+
+func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updateProfilePayload, bool) {
+	contentType := strings.ToLower(strings.TrimSpace(r.Header.Get("Content-Type")))
+
+	switch {
+	case strings.HasPrefix(contentType, "multipart/form-data"):
+		// лимит тела запроса, чтобы не тащить бесконечный файл в память
+		r.Body = http.MaxBytesReader(w, r.Body, 10<<20) // 10 MB
+
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
+			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid multipart form body")
+			return updateProfilePayload{}, false
+		}
+
+		payload := updateProfilePayload{
+			Birthdate: strings.TrimSpace(r.FormValue("birthdate")),
+		}
+
+		file, header, err := r.FormFile("avatar")
+		if err != nil {
+			if errors.Is(err, http.ErrMissingFile) {
+				return payload, true
+			}
+
+			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid avatar file")
+			return updateProfilePayload{}, false
+		}
+		defer file.Close()
+
+		avatarBytes, err := io.ReadAll(file)
+		if err != nil {
+			httppkg.ErrResponse(w, http.StatusBadRequest, "failed to read avatar file")
+			return updateProfilePayload{}, false
+		}
+
+		payload.Avatar = avatarBytes
+		if header != nil {
+			payload.AvatarContentType = header.Header.Get("Content-Type")
+		}
+
+		return payload, true
+
+	default:
+		var req updateProfileJSONRequest
+		if !readJSON(w, r, &req) {
+			return updateProfilePayload{}, false
+		}
+
+		return updateProfilePayload{
+			Birthdate: strings.TrimSpace(req.Birthdate),
+		}, true
+	}
 }
 
 func User(
@@ -66,8 +132,8 @@ func User(
 				return
 			}
 
-			var req updateProfileRequest
-			if !readJSON(w, r, &req) {
+			req, ok := readUpdateProfilePayload(w, r)
+			if !ok {
 				return
 			}
 
@@ -75,8 +141,10 @@ func User(
 			defer cancel()
 
 			resp, err := userClient.UpdateProfile(r.Context(), &userv1.UpdateProfileRequest{
-				UserId:    authCtx.UserID,
-				Birthdate: req.Birthdate,
+				UserId:            authCtx.UserID,
+				Birthdate:         req.Birthdate,
+				Avatar:            req.Avatar,
+				AvatarContentType: req.AvatarContentType,
 			})
 			if err != nil {
 				writeGRPCError(w, err)

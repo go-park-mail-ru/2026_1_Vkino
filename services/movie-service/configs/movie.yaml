@@ -26,6 +26,7 @@ s3:
   bucket_actors: "vkino-actors"
   bucket_posters: "vkino-posters"
   bucket_cards: "vkino-cards"
+  bucket_videos: "vkino-videos"
   use_ssl: false
   use_path_style: true
   presign_ttl: "15m"
