@@ -4,6 +4,7 @@ import (
 	"context"
 
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
+	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/domain"
 )
 
 func (s *Server) GetMovieByID(
@@ -15,16 +16,16 @@ func (s *Server) GetMovieByID(
 		return nil, mapError(err)
 	}
 
-	resp := &moviev1.GetMovieByIDResponse{
+	return &moviev1.GetMovieByIDResponse{
 		Id:                 movie.ID,
 		Title:              movie.Title,
 		Description:        movie.Description,
 		Director:           movie.Director,
 		TrailerUrl:         movie.TrailerURL,
 		ContentType:        movie.ContentType,
-		ReleaseYear:        int32(movie.ReleaseYear),
-		DurationSeconds:    int32(movie.DurationSeconds),
-		AgeLimit:           int32(movie.AgeLimit),
+		ReleaseYear:        i32(movie.ReleaseYear),
+		DurationSeconds:    i32(movie.DurationSeconds),
+		AgeLimit:           i32(movie.AgeLimit),
 		OriginalLanguageId: movie.OriginalLanguageID,
 		OriginalLanguage:   movie.OriginalLanguage,
 		CountryId:          movie.CountryID,
@@ -32,32 +33,9 @@ func (s *Server) GetMovieByID(
 		ImgUrl:             movie.PictureFileKey,
 		PosterUrl:          movie.PosterFileKey,
 		Genres:             movie.Genres,
-		Actors:             make([]*moviev1.ActorShort, 0, len(movie.Actors)),
-		Episodes:           make([]*moviev1.EpisodeShort, 0, len(movie.Episodes)),
-	}
-
-	for _, actor := range movie.Actors {
-		resp.Actors = append(resp.Actors, &moviev1.ActorShort{
-			Id:       actor.ID,
-			FullName: actor.FullName,
-			ImgUrl:   actor.PictureFileKey,
-		})
-	}
-
-	for _, episode := range movie.Episodes {
-		resp.Episodes = append(resp.Episodes, &moviev1.EpisodeShort{
-			Id:              episode.ID,
-			MovieId:         episode.MovieID,
-			SeasonNumber:    int32(episode.SeasonNumber),
-			EpisodeNumber:   int32(episode.EpisodeNumber),
-			Title:           episode.Title,
-			Description:     episode.Description,
-			DurationSeconds: int32(episode.DurationSeconds),
-			ImgUrl:          episode.PictureFileKey,
-		})
-	}
-
-	return resp, nil
+		Actors:             mapActorShorts(movie.Actors),
+		Episodes:           mapEpisodeShorts(movie.Episodes),
+	}, nil
 }
 
 func (s *Server) GetActorByID(
@@ -69,25 +47,15 @@ func (s *Server) GetActorByID(
 		return nil, mapError(err)
 	}
 
-	resp := &moviev1.GetActorByIDResponse{
+	return &moviev1.GetActorByIDResponse{
 		Id:        actor.ID,
 		FullName:  actor.FullName,
 		Biography: actor.Biography,
 		Birthdate: actor.BirthDate,
 		CountryId: actor.CountryID,
 		ImgUrl:    actor.PictureFileKey,
-		Movies:    make([]*moviev1.MovieCard, 0, len(actor.Movies)),
-	}
-
-	for _, movie := range actor.Movies {
-		resp.Movies = append(resp.Movies, &moviev1.MovieCard{
-			Id:     movie.ID,
-			Title:  movie.Title,
-			ImgUrl: movie.PictureFileKey,
-		})
-	}
-
-	return resp, nil
+		Movies:    mapMovieCards(actor.Movies),
+	}, nil
 }
 
 func (s *Server) GetSelectionByTitle(
@@ -99,20 +67,10 @@ func (s *Server) GetSelectionByTitle(
 		return nil, mapError(err)
 	}
 
-	resp := &moviev1.GetSelectionByTitleResponse{
+	return &moviev1.GetSelectionByTitleResponse{
 		Title:  selection.Title,
-		Movies: make([]*moviev1.MovieCard, 0, len(selection.Movies)),
-	}
-
-	for _, movie := range selection.Movies {
-		resp.Movies = append(resp.Movies, &moviev1.MovieCard{
-			Id:     movie.ID,
-			Title:  movie.Title,
-			ImgUrl: movie.PictureFileKey,
-		})
-	}
-
-	return resp, nil
+		Movies: mapMovieCards(selection.Movies),
+	}, nil
 }
 
 func (s *Server) GetAllSelections(
@@ -124,28 +82,9 @@ func (s *Server) GetAllSelections(
 		return nil, mapError(err)
 	}
 
-	resp := &moviev1.GetAllSelectionsResponse{
-		Selections: make([]*moviev1.Selection, 0, len(selections)),
-	}
-
-	for _, selection := range selections {
-		item := &moviev1.Selection{
-			Title:  selection.Title,
-			Movies: make([]*moviev1.MovieCard, 0, len(selection.Movies)),
-		}
-
-		for _, movie := range selection.Movies {
-			item.Movies = append(item.Movies, &moviev1.MovieCard{
-				Id:     movie.ID,
-				Title:  movie.Title,
-				ImgUrl: movie.PictureFileKey,
-			})
-		}
-
-		resp.Selections = append(resp.Selections, item)
-	}
-
-	return resp, nil
+	return &moviev1.GetAllSelectionsResponse{
+		Selections: mapSelections(selections),
+	}, nil
 }
 
 func (s *Server) SearchMovies(
@@ -157,19 +96,9 @@ func (s *Server) SearchMovies(
 		return nil, mapError(err)
 	}
 
-	resp := &moviev1.SearchMoviesResponse{
-		Movies: make([]*moviev1.MovieCard, 0, len(movies)),
-	}
-
-	for _, movie := range movies {
-		resp.Movies = append(resp.Movies, &moviev1.MovieCard{
-			Id:     movie.ID,
-			Title:  movie.Title,
-			ImgUrl: movie.PictureFileKey,
-		})
-	}
-
-	return resp, nil
+	return &moviev1.SearchMoviesResponse{
+		Movies: mapMovieCards(movies),
+	}, nil
 }
 
 func (s *Server) GetEpisodePlayback(
@@ -184,10 +113,10 @@ func (s *Server) GetEpisodePlayback(
 	return &moviev1.GetEpisodePlaybackResponse{
 		EpisodeId:       playback.EpisodeID,
 		MovieId:         playback.MovieID,
-		SeasonNumber:    int32(playback.SeasonNumber),
-		EpisodeNumber:   int32(playback.EpisodeNumber),
+		SeasonNumber:    i32(playback.SeasonNumber),
+		EpisodeNumber:   i32(playback.EpisodeNumber),
 		Title:           playback.Title,
-		DurationSeconds: int32(playback.DurationSeconds),
+		DurationSeconds: i32(playback.DurationSeconds),
 		PlaybackUrl:     playback.PlaybackURL,
 	}, nil
 }
@@ -211,7 +140,12 @@ func (s *Server) SaveEpisodeProgress(
 	ctx context.Context,
 	req *moviev1.SaveEpisodeProgressRequest,
 ) (*moviev1.SaveEpisodeProgressResponse, error) {
-	progress, err := s.usecase.SaveEpisodeProgress(ctx, req.GetUserId(), req.GetEpisodeId(), req.GetPositionSeconds())
+	progress, err := s.usecase.SaveEpisodeProgress(
+		ctx,
+		req.GetUserId(),
+		req.GetEpisodeId(),
+		req.GetPositionSeconds(),
+	)
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -220,4 +154,80 @@ func (s *Server) SaveEpisodeProgress(
 		EpisodeId:       progress.EpisodeID,
 		PositionSeconds: progress.PositionSeconds,
 	}, nil
+}
+
+func mapActorShorts(actors []domain.ActorShortResponse) []*moviev1.ActorShort {
+	if len(actors) == 0 {
+		return []*moviev1.ActorShort{}
+	}
+
+	result := make([]*moviev1.ActorShort, 0, len(actors))
+	for _, actor := range actors {
+		result = append(result, &moviev1.ActorShort{
+			Id:       actor.ID,
+			FullName: actor.FullName,
+			ImgUrl:   actor.PictureFileKey,
+		})
+	}
+
+	return result
+}
+
+func mapEpisodeShorts(episodes []domain.EpisodeResponse) []*moviev1.EpisodeShort {
+	if len(episodes) == 0 {
+		return []*moviev1.EpisodeShort{}
+	}
+
+	result := make([]*moviev1.EpisodeShort, 0, len(episodes))
+	for _, episode := range episodes {
+		result = append(result, &moviev1.EpisodeShort{
+			Id:              episode.ID,
+			MovieId:         episode.MovieID,
+			SeasonNumber:    i32(episode.SeasonNumber),
+			EpisodeNumber:   i32(episode.EpisodeNumber),
+			Title:           episode.Title,
+			Description:     episode.Description,
+			DurationSeconds: i32(episode.DurationSeconds),
+			ImgUrl:          episode.PictureFileKey,
+		})
+	}
+
+	return result
+}
+
+func mapMovieCards(movies []domain.MovieCardResponse) []*moviev1.MovieCard {
+	if len(movies) == 0 {
+		return []*moviev1.MovieCard{}
+	}
+
+	result := make([]*moviev1.MovieCard, 0, len(movies))
+	for _, movie := range movies {
+		result = append(result, &moviev1.MovieCard{
+			Id:     movie.ID,
+			Title:  movie.Title,
+			ImgUrl: movie.PictureFileKey,
+		})
+	}
+
+	return result
+}
+
+func mapSelections(selections []domain.SelectionResponse) []*moviev1.Selection {
+	if len(selections) == 0 {
+		return []*moviev1.Selection{}
+	}
+
+	result := make([]*moviev1.Selection, 0, len(selections))
+	for _, selection := range selections {
+		result = append(result, &moviev1.Selection{
+			Title:  selection.Title,
+			Movies: mapMovieCards(selection.Movies),
+		})
+	}
+
+	return result
+}
+
+func i32(v int) int32 {
+	return int32(v)
 }
