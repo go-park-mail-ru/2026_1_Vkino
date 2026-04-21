@@ -7,22 +7,9 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
+	dto "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/domain"
 )
 
-type signInRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type signUpRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type changePasswordRequest struct {
-	OldPassword string `json:"old_password"`
-	NewPassword string `json:"new_password"`
-}
 
 func Auth(
 	cfg *config.Config,
@@ -31,7 +18,7 @@ func Auth(
 ) []httpserver.Option {
 	return []httpserver.Option{
 		httpserver.WithRoute("POST /user/sign-up", func(w http.ResponseWriter, r *http.Request) {
-			var req signUpRequest
+			var req dto.SignUpRequest
 			if !readJSON(w, r, &req) {
 				return
 			}
@@ -63,7 +50,7 @@ func Auth(
 		}),
 
 		httpserver.WithRoute("POST /user/sign-in", func(w http.ResponseWriter, r *http.Request) {
-			var req signInRequest
+			var req dto.SignInRequest
 			if !readJSON(w, r, &req) {
 				return
 			}
@@ -164,7 +151,7 @@ func Auth(
 				return
 			}
 
-			var req changePasswordRequest
+			var req dto.ChangePasswordRequest
 			if !readJSON(w, r, &req) {
 				return
 			}
