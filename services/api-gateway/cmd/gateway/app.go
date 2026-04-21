@@ -1,4 +1,4 @@
-package gateway
+package main
 
 import (
 	"context"
@@ -11,14 +11,14 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
+	config "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
 	routes "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/app/gateway/routes"
 	authmw "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/delivery/http/middleware"
 )
 
 func Run(configPath string) error {
 	cfg := &config.Config{}
-	if err := config.Load(configPath, cfg); err != nil {
+	if err := Load(configPath, cfg); err != nil {
 		return fmt.Errorf("unable to load config: %w", err)
 	}
 
