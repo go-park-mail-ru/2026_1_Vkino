@@ -6,7 +6,7 @@ import (
 
 	authusecase "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/usecase"
 
-	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
+	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	"github.com/spf13/viper"
 )

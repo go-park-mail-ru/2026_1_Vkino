@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
+	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/domain"
 
 	"github.com/jackc/pgx/v5"
@@ -23,6 +23,7 @@ var (
 	ErrMovieNotFound     = errors.New("movie not found")
 	ErrActorNotFound     = errors.New("actor not found")
 	ErrSelectionNotFound = errors.New("selection not found")
+	ErrEpisodeNotFound   = errors.New("episode not found")
 )
 
 func (r *MovieRepo) GetMovieByID(ctx context.Context, movieID int64) (*domain.Movie, error) {
@@ -42,7 +43,6 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, movieID int64) (*domain.Mo
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrMovieNotFound
 		}
-
 		return nil, fmt.Errorf("get movie by id: %w", err)
 	}
 
@@ -82,7 +82,6 @@ func (r *MovieRepo) GetActorByID(ctx context.Context, actorID int64) (*domain.Ac
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrActorNotFound
 		}
-
 		return nil, fmt.Errorf("get actor by id: %w", err)
 	}
 
@@ -107,16 +106,14 @@ func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (doma
 
 	for rows.Next() {
 		var movie domain.MovieCard
-
-		err = rows.Scan(
+		if err = rows.Scan(
 			&selection.Title,
 			&movie.ID,
 			&movie.Title,
 			&movie.Year,
 			&movie.PosterFileKey,
 			&movie.CardFileKey,
-		)
-		if err != nil {
+		); err != nil {
 			return domain.Selection{}, fmt.Errorf("scan selection movie: %w", err)
 		}
 
@@ -150,15 +147,14 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, e
 			movie domain.MovieCard
 		)
 
-		err = rows.Scan(
+		if err = rows.Scan(
 			&title,
 			&movie.ID,
 			&movie.Title,
 			&movie.Year,
 			&movie.PosterFileKey,
 			&movie.CardFileKey,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, fmt.Errorf("scan all selections row: %w", err)
 		}
 
@@ -185,6 +181,84 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, e
 	}
 
 	return result, nil
+}
+
+func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]domain.MovieCard, error) {
+	rows, err := r.db.Query(ctx, sqlSearchMovies, query)
+	if err != nil {
+		return nil, fmt.Errorf("search movies: %w", err)
+	}
+	defer rows.Close()
+
+	result := make([]domain.MovieCard, 0)
+	for rows.Next() {
+		var movie domain.MovieCard
+		if err = rows.Scan(&movie.ID, &movie.Title, &movie.Year, &movie.PosterFileKey, &movie.CardFileKey); err != nil {
+			return nil, fmt.Errorf("scan searched movie: %w", err)
+		}
+		result = append(result, movie)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate searched movies: %w", err)
+	}
+
+	return result, nil
+}
+
+func (r *MovieRepo) GetEpisodePlayback(ctx context.Context, episodeID int64) (*domain.Episode, error) {
+	var episode domain.Episode
+
+	err := r.db.QueryRow(ctx, sqlGetEpisodePlayback, episodeID).Scan(
+		&episode.ID,
+		&episode.MovieID,
+		&episode.Number,
+		&episode.Title,
+		&episode.DurationSec,
+		&episode.VideoFileKey,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrEpisodeNotFound
+		}
+		return nil, fmt.Errorf("get episode playback: %w", err)
+	}
+
+	return &episode, nil
+}
+
+func (r *MovieRepo) GetEpisodeProgress(ctx context.Context, userID, episodeID int64) (domain.EpisodeProgress, error) {
+	var progress domain.EpisodeProgress
+
+	err := r.db.QueryRow(ctx, sqlGetEpisodeProgress, userID, episodeID).Scan(
+		&progress.EpisodeID,
+		&progress.PositionSec,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.EpisodeProgress{
+				EpisodeID:   episodeID,
+				PositionSec: 0,
+			}, nil
+		}
+		return domain.EpisodeProgress{}, fmt.Errorf("get episode progress: %w", err)
+	}
+
+	return progress, nil
+}
+
+func (r *MovieRepo) SaveEpisodeProgress(ctx context.Context, userID, episodeID, positionSec int64) (domain.EpisodeProgress, error) {
+	var progress domain.EpisodeProgress
+
+	err := r.db.QueryRow(ctx, sqlSaveEpisodeProgress, userID, episodeID, positionSec).Scan(
+		&progress.EpisodeID,
+		&progress.PositionSec,
+	)
+	if err != nil {
+		return domain.EpisodeProgress{}, fmt.Errorf("save episode progress: %w", err)
+	}
+
+	return progress, nil
 }
 
 func (r *MovieRepo) getMovieCountries(ctx context.Context, movieID int64) ([]string, error) {
@@ -266,7 +340,14 @@ func (r *MovieRepo) getMovieEpisodes(ctx context.Context, movieID int64) ([]doma
 	result := make([]domain.Episode, 0)
 	for rows.Next() {
 		var episode domain.Episode
-		if err = rows.Scan(&episode.ID, &episode.Number, &episode.Title, &episode.DurationSec); err != nil {
+		if err = rows.Scan(
+			&episode.ID,
+			&episode.MovieID,
+			&episode.Number,
+			&episode.Title,
+			&episode.DurationSec,
+			&episode.VideoFileKey,
+		); err != nil {
 			return nil, fmt.Errorf("scan movie episode: %w", err)
 		}
 		result = append(result, episode)

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
 )
 
 type Option func(*Server)

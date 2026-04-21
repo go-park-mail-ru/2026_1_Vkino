@@ -48,3 +48,14 @@ type SelectionResponse struct {
 	Title  string
 	Movies []MovieCardResponse
 }
+
+type EpisodePlaybackResponse struct {
+	EpisodeID   int64
+	PlaybackURL string
+	DurationSec int
+}
+
+type EpisodeProgressResponse struct {
+	EpisodeID   int64
+	PositionSec int64
+}

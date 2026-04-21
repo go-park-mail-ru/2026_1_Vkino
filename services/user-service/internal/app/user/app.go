@@ -7,7 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
+	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/config"
@@ -15,6 +17,8 @@ import (
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/repository/postgres"
 	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/service/clock"
 	userusecase "github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/usecase"
+
+	"google.golang.org/grpc"
 )
 
 func Run(configPath string) error {
@@ -49,17 +53,18 @@ func Run(configPath string) error {
 
 	userUC := userusecase.NewUserUsecase(userRepo, avatarStore, clockService)
 
-	lis, err := newListener(cfg.GRPC.Port)
+	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {
 		return err
 	}
 
-	grpcServer := newGRPCServer(userUC)
+	grpcServer := grpcx.NewServer(appLogger, func(server *grpc.Server) {
+		userv1.RegisterUserServiceServer(server, deliverygrpc.NewServer(userUC))
+	})
 
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")
 
 	errCh := make(chan error, 1)
-	
 	go func() {
 		errCh <- grpcServer.Serve(lis)
 	}()
@@ -78,8 +83,4 @@ func Run(configPath string) error {
 	}
 
 	return nil
-}
-
-func newUserServer(u userusecase.Usecase) *deliverygrpc.Server {
-	return deliverygrpc.NewServer(u)
 }

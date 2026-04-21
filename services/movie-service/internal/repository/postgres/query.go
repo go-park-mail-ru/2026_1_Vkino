@@ -45,9 +45,11 @@ const (
 	sqlGetMovieEpisodesByID = `
 		select
 			e.id,
+			e.movie_id,
 			coalesce(e.number_in_series, 0),
 			coalesce(e.title, ''),
-			coalesce(e.duration_sec, 0)
+			coalesce(e.duration_sec, 0),
+			e.video_file_key
 		from episode e
 		where e.movie_id = $1
 		order by e.number_in_series, e.id
@@ -103,5 +105,47 @@ const (
 		join selection_movie sm on sm.selection_id = s.id
 		join movie m on m.id = sm.movie_id
 		order by s.title, sm.position, m.id
+	`
+
+	sqlSearchMovies = `
+		select
+			m.id,
+			m.title,
+			coalesce(m.release_year, 0),
+			m.poster_file_key,
+			m.card_file_key
+		from movie m
+		where m.title ilike '%' || $1 || '%'
+		order by m.release_year desc, m.title
+		limit 50
+	`
+
+	sqlGetEpisodePlayback = `
+		select
+			e.id,
+			e.movie_id,
+			coalesce(e.number_in_series, 0),
+			coalesce(e.title, ''),
+			coalesce(e.duration_sec, 0),
+			e.video_file_key
+		from episode e
+		where e.id = $1
+	`
+
+	sqlGetEpisodeProgress = `
+		select
+			ep.episode_id,
+			coalesce(ep.position_sec, 0)
+		from episode_progress ep
+		where ep.user_id = $1 and ep.episode_id = $2
+	`
+
+	sqlSaveEpisodeProgress = `
+		insert into episode_progress (user_id, episode_id, position_sec)
+		values ($1, $2, $3)
+		on conflict (user_id, episode_id)
+		do update set
+			position_sec = excluded.position_sec
+		returning episode_id, position_sec
 	`
 )

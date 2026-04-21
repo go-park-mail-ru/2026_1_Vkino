@@ -32,10 +32,12 @@ type ActorShort struct {
 }
 
 type Episode struct {
-	ID          int64
-	Number      int
-	Title       string
-	DurationSec int
+	ID           int64
+	MovieID      int64
+	Number       int
+	Title        string
+	DurationSec  int
+	VideoFileKey *string
 }
 
 type MovieCard struct {
@@ -51,7 +53,23 @@ type Selection struct {
 	Movies []MovieCard
 }
 
+type EpisodePlayback struct {
+	EpisodeID   int64
+	PlaybackURL string
+	DurationSec int
+}
+
+type EpisodeProgress struct {
+	EpisodeID   int64
+	PositionSec int64
+}
+
 func ValidateSelectionTitle(title string) bool {
 	trimmed := strings.TrimSpace(title)
+	return trimmed != "" && len(trimmed) <= 255
+}
+
+func ValidateSearchQuery(query string) bool {
+	trimmed := strings.TrimSpace(query)
 	return trimmed != "" && len(trimmed) <= 255
 }

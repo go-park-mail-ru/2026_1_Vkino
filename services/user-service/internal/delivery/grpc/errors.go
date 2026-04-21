@@ -1,48 +1,57 @@
 package grpc
 
 import (
-	"errors"
-
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/errmap/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/domain"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/repository/postgres"
 
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+)
+
+var userGRPCErrorMapper = grpcx.New(
+	[]error{
+		domain.ErrInvalidToken,
+
+		domain.ErrUserNotFound,
+		postgresrepo.ErrUserNotFound,
+
+		domain.ErrInvalidSearchQuery,
+		domain.ErrInvalidMovieID,
+		domain.ErrInvalidBirthdate,
+		domain.ErrInvalidAvatar,
+		storage.ErrInvalidFileType,
+		storage.ErrFileTooLarge,
+
+		domain.ErrAlreadyFriends,
+		domain.ErrFriendNotFound,
+		domain.ErrSelfFriendship,
+
+		domain.ErrInternal,
+	},
+	map[error]grpcx.Rule{
+		domain.ErrInvalidToken: {Code: codes.Unauthenticated, Message: "unauthorized"},
+
+		domain.ErrUserNotFound:       {Code: codes.NotFound, Message: "user not found"},
+		postgresrepo.ErrUserNotFound: {Code: codes.NotFound, Message: "user not found"},
+
+		domain.ErrInvalidSearchQuery: {Code: codes.InvalidArgument, Message: "invalid search query"},
+		domain.ErrInvalidMovieID:     {Code: codes.InvalidArgument, Message: "invalid movie id"},
+		domain.ErrInvalidBirthdate:   {Code: codes.InvalidArgument, Message: "invalid birthdate"},
+		domain.ErrInvalidAvatar:      {Code: codes.InvalidArgument, Message: "invalid avatar"},
+		storage.ErrInvalidFileType:   {Code: codes.InvalidArgument, Message: "unsupported file extension"},
+		storage.ErrFileTooLarge:      {Code: codes.InvalidArgument, Message: "file size exceeds the limit"},
+
+		domain.ErrAlreadyFriends: {Code: codes.AlreadyExists, Message: "already friends"},
+		domain.ErrFriendNotFound: {Code: codes.NotFound, Message: "friend not found"},
+		domain.ErrSelfFriendship: {Code: codes.FailedPrecondition, Message: "self friendship is forbidden"},
+
+		domain.ErrInternal: {Code: codes.Internal, Message: "internal server error"},
+	},
+	codes.Internal,
+	"internal server error",
 )
 
 func mapError(err error) error {
-	switch {
-	case err == nil:
-		return nil
-
-	case errors.Is(err, domain.ErrInvalidToken):
-		return status.Error(codes.Unauthenticated, "unauthorized")
-
-	case errors.Is(err, domain.ErrUserNotFound),
-		errors.Is(err, postgresrepo.ErrUserNotFound):
-		return status.Error(codes.NotFound, "user not found")
-
-	case errors.Is(err, domain.ErrInvalidSearchQuery),
-		errors.Is(err, domain.ErrInvalidMovieID),
-		errors.Is(err, domain.ErrInvalidBirthdate),
-		errors.Is(err, domain.ErrInvalidAvatar),
-		errors.Is(err, storage.ErrInvalidFileType):
-		return status.Error(codes.InvalidArgument, err.Error())
-
-	case errors.Is(err, domain.ErrAlreadyFriends):
-		return status.Error(codes.AlreadyExists, "already friends")
-
-	case errors.Is(err, domain.ErrFriendNotFound):
-		return status.Error(codes.NotFound, "friend not found")
-
-	case errors.Is(err, domain.ErrSelfFriendship):
-		return status.Error(codes.FailedPrecondition, "self friendship is forbidden")
-
-	case errors.Is(err, domain.ErrInternal):
-		return status.Error(codes.Internal, "internal server error")
-
-	default:
-		return status.Error(codes.Internal, "internal server error")
-	}
+	return userGRPCErrorMapper.Map(err)
 }

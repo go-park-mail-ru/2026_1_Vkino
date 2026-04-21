@@ -82,25 +82,6 @@ services:
       db:
         condition: service_healthy
 
-  vkinoapi:
-    build:
-      context: ../..
-      dockerfile: build/image/Dockerfile
-      args:
-        SERVICE_PATH: cmd/api
-        BINARY_NAME: vkinoapi
-    container_name: vkinoapi
-    restart: always
-    ports:
-      - "8080:8080"
-    volumes:
-      - ../../configs/api.yaml:/etc/vkino/config.yaml:ro
-      - ./logs/app:/vkinoapi/logs/app
-    command: ./vkinoapi -config /etc/vkino/config.yaml
-    depends_on:
-      db:
-        condition: service_healthy
-
   db:
     container_name: dev-postgres
     image: postgres:18.3

@@ -9,6 +9,11 @@ service MovieService {
   rpc GetActorByID(GetActorByIDRequest) returns (GetActorByIDResponse);
   rpc GetSelectionByTitle(GetSelectionByTitleRequest) returns (GetSelectionByTitleResponse);
   rpc GetAllSelections(GetAllSelectionsRequest) returns (GetAllSelectionsResponse);
+
+  rpc SearchMovies(SearchMoviesRequest) returns (SearchMoviesResponse);
+  rpc GetEpisodePlayback(GetEpisodePlaybackRequest) returns (GetEpisodePlaybackResponse);
+  rpc GetEpisodeProgress(GetEpisodeProgressRequest) returns (GetEpisodeProgressResponse);
+  rpc SaveEpisodeProgress(SaveEpisodeProgressRequest) returns (SaveEpisodeProgressResponse);
 }
 
 message GetMovieByIDRequest {
@@ -81,4 +86,43 @@ message GetAllSelectionsRequest {}
 
 message GetAllSelectionsResponse {
   repeated Selection selections = 1;
+}
+
+message SearchMoviesRequest {
+  string query = 1;
+}
+
+message SearchMoviesResponse {
+  repeated MovieCard movies = 1;
+}
+
+message GetEpisodePlaybackRequest {
+  int64 episode_id = 1;
+}
+
+message GetEpisodePlaybackResponse {
+  int64 episode_id = 1;
+  string playback_url = 2;
+  int32 duration_sec = 3;
+}
+
+message GetEpisodeProgressRequest {
+  int64 user_id = 1;
+  int64 episode_id = 2;
+}
+
+message GetEpisodeProgressResponse {
+  int64 episode_id = 1;
+  int64 position_sec = 2;
+}
+
+message SaveEpisodeProgressRequest {
+  int64 user_id = 1;
+  int64 episode_id = 2;
+  int64 position_sec = 3;
+}
+
+message SaveEpisodeProgressResponse {
+  int64 episode_id = 1;
+  int64 position_sec = 2;
 }

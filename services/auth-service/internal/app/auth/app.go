@@ -6,7 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
+	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	"github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/config"
 	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/delivery/grpc"
@@ -15,6 +17,8 @@ import (
 	jwtsvc "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/service/jwt"
 	passwordsvc "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/service/password"
 	authusecase "github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/usecase"
+
+	"google.golang.org/grpc"
 )
 
 func Run(configPath string) error {
@@ -58,12 +62,14 @@ func Run(configPath string) error {
 		cfg.Auth,
 	)
 
-	lis, err := newListener(cfg.GRPC.Port)
+	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {
 		return err
 	}
 
-	grpcServer := newGRPCServer(authUC)
+	grpcServer := grpcx.NewServer(appLogger, func(server *grpc.Server) {
+		authv1.RegisterAuthServiceServer(server, deliverygrpc.NewServer(authUC))
+	})
 
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")
 
@@ -86,8 +92,4 @@ func Run(configPath string) error {
 	}
 
 	return nil
-}
-
-func newAuthServer(u authusecase.Usecase) *deliverygrpc.Server {
-	return deliverygrpc.NewServer(u)
 }

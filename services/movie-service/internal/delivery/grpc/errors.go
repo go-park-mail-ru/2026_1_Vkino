@@ -1,41 +1,62 @@
 package grpc
 
 import (
-	"errors"
-
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/errmap/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/domain"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/repository/postgres"
 
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+)
+
+var movieGRPCErrorMapper = grpcx.New(
+	[]error{
+		domain.ErrInvalidMovieID,
+		domain.ErrInvalidActorID,
+		domain.ErrInvalidEpisodeID,
+		domain.ErrInvalidSelectionTitle,
+		domain.ErrInvalidSearchQuery,
+		domain.ErrInvalidWatchProgress,
+
+		domain.ErrMovieNotFound,
+		postgresrepo.ErrMovieNotFound,
+
+		domain.ErrActorNotFound,
+		postgresrepo.ErrActorNotFound,
+
+		domain.ErrSelectionNotFound,
+		postgresrepo.ErrSelectionNotFound,
+
+		domain.ErrEpisodeNotFound,
+		postgresrepo.ErrEpisodeNotFound,
+
+		domain.ErrInternal,
+	},
+	map[error]grpcx.Rule{
+		domain.ErrInvalidMovieID:        {Code: codes.InvalidArgument, Message: "invalid movie id"},
+		domain.ErrInvalidActorID:        {Code: codes.InvalidArgument, Message: "invalid actor id"},
+		domain.ErrInvalidEpisodeID:      {Code: codes.InvalidArgument, Message: "invalid episode id"},
+		domain.ErrInvalidSelectionTitle: {Code: codes.InvalidArgument, Message: "invalid selection title"},
+		domain.ErrInvalidSearchQuery:    {Code: codes.InvalidArgument, Message: "invalid search query"},
+		domain.ErrInvalidWatchProgress:  {Code: codes.InvalidArgument, Message: "invalid watch progress"},
+
+		domain.ErrMovieNotFound:       {Code: codes.NotFound, Message: "movie not found"},
+		postgresrepo.ErrMovieNotFound: {Code: codes.NotFound, Message: "movie not found"},
+
+		domain.ErrActorNotFound:       {Code: codes.NotFound, Message: "actor not found"},
+		postgresrepo.ErrActorNotFound: {Code: codes.NotFound, Message: "actor not found"},
+
+		domain.ErrSelectionNotFound:       {Code: codes.NotFound, Message: "selection not found"},
+		postgresrepo.ErrSelectionNotFound: {Code: codes.NotFound, Message: "selection not found"},
+
+		domain.ErrEpisodeNotFound:       {Code: codes.NotFound, Message: "episode not found"},
+		postgresrepo.ErrEpisodeNotFound: {Code: codes.NotFound, Message: "episode not found"},
+
+		domain.ErrInternal: {Code: codes.Internal, Message: "internal server error"},
+	},
+	codes.Internal,
+	"internal server error",
 )
 
 func mapError(err error) error {
-	switch {
-	case err == nil:
-		return nil
-
-	case errors.Is(err, domain.ErrInvalidMovieID),
-		errors.Is(err, domain.ErrInvalidActorID),
-		errors.Is(err, domain.ErrInvalidSelectionTitle):
-		return status.Error(codes.InvalidArgument, err.Error())
-
-	case errors.Is(err, domain.ErrMovieNotFound),
-		errors.Is(err, postgresrepo.ErrMovieNotFound):
-		return status.Error(codes.NotFound, "movie not found")
-
-	case errors.Is(err, domain.ErrActorNotFound),
-		errors.Is(err, postgresrepo.ErrActorNotFound):
-		return status.Error(codes.NotFound, "actor not found")
-
-	case errors.Is(err, domain.ErrSelectionNotFound),
-		errors.Is(err, postgresrepo.ErrSelectionNotFound):
-		return status.Error(codes.NotFound, "selection not found")
-
-	case errors.Is(err, domain.ErrInternal):
-		return status.Error(codes.Internal, "internal server error")
-
-	default:
-		return status.Error(codes.Internal, "internal server error")
-	}
+	return movieGRPCErrorMapper.Map(err)
 }

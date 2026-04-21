@@ -138,6 +138,10 @@ func (u *MovieUsecase) presignActor(ctx context.Context, key *string) (string, e
 	return presignIfExists(ctx, u.actorStore, key)
 }
 
+func (u *MovieUsecase) presignVideo(ctx context.Context, key *string) (string, error) {
+	return presignIfExists(ctx, u.videoStore, key)
+}
+
 type presignStorage interface {
 	PresignGetObject(ctx context.Context, key string, expires time.Duration) (string, error)
 }

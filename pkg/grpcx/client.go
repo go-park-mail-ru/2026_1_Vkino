@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/requestid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 type ClientConfig struct {
@@ -36,5 +38,11 @@ func WithTimeout(ctx context.Context, timeout time.Duration) (context.Context, c
 		timeout = 5 * time.Second
 	}
 
-	return context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+
+	if id, ok := requestid.FromContext(ctx); ok {
+		ctx = metadata.AppendToOutgoingContext(ctx, requestid.MetadataKey, id)
+	}
+
+	return ctx, cancel
 }

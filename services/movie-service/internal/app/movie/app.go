@@ -7,13 +7,17 @@ import (
 	"os/signal"
 	"syscall"
 
-	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
+	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/config"
 	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/delivery/grpc"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/repository/postgres"
 	movieusecase "github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/usecase"
+
+	"google.golang.org/grpc"
 )
 
 func Run(configPath string) error {
@@ -53,6 +57,11 @@ func Run(configPath string) error {
 		return fmt.Errorf("init actor storage: %w", err)
 	}
 
+	videoStore, err := storage.NewS3Storage(context.Background(), cfg.S3.Config().WithBucket(cfg.S3.BucketVideos))
+	if err != nil {
+		return fmt.Errorf("init video storage: %w", err)
+	}
+
 	movieRepo := postgresrepo.NewMovieRepo(pgDB)
 
 	movieUC := movieusecase.NewMovieUsecase(
@@ -60,14 +69,17 @@ func Run(configPath string) error {
 		posterStore,
 		cardStore,
 		actorStore,
+		videoStore,
 	)
 
-	lis, err := newListener(cfg.GRPC.Port)
+	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {
 		return err
 	}
 
-	grpcServer := newGRPCServer(movieUC)
+	grpcServer := grpcx.NewServer(appLogger, func(server *grpc.Server) {
+		moviev1.RegisterMovieServiceServer(server, deliverygrpc.NewServer(movieUC))
+	})
 
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")
 
@@ -90,8 +102,4 @@ func Run(configPath string) error {
 	}
 
 	return nil
-}
-
-func newMovieServer(u movieusecase.Usecase) *deliverygrpc.Server {
-	return deliverygrpc.NewServer(u)
 }

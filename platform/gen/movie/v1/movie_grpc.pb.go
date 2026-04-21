@@ -23,6 +23,10 @@ const (
 	MovieService_GetActorByID_FullMethodName        = "/movie.v1.MovieService/GetActorByID"
 	MovieService_GetSelectionByTitle_FullMethodName = "/movie.v1.MovieService/GetSelectionByTitle"
 	MovieService_GetAllSelections_FullMethodName    = "/movie.v1.MovieService/GetAllSelections"
+	MovieService_SearchMovies_FullMethodName        = "/movie.v1.MovieService/SearchMovies"
+	MovieService_GetEpisodePlayback_FullMethodName  = "/movie.v1.MovieService/GetEpisodePlayback"
+	MovieService_GetEpisodeProgress_FullMethodName  = "/movie.v1.MovieService/GetEpisodeProgress"
+	MovieService_SaveEpisodeProgress_FullMethodName = "/movie.v1.MovieService/SaveEpisodeProgress"
 )
 
 // MovieServiceClient is the client API for MovieService service.
@@ -33,6 +37,10 @@ type MovieServiceClient interface {
 	GetActorByID(ctx context.Context, in *GetActorByIDRequest, opts ...grpc.CallOption) (*GetActorByIDResponse, error)
 	GetSelectionByTitle(ctx context.Context, in *GetSelectionByTitleRequest, opts ...grpc.CallOption) (*GetSelectionByTitleResponse, error)
 	GetAllSelections(ctx context.Context, in *GetAllSelectionsRequest, opts ...grpc.CallOption) (*GetAllSelectionsResponse, error)
+	SearchMovies(ctx context.Context, in *SearchMoviesRequest, opts ...grpc.CallOption) (*SearchMoviesResponse, error)
+	GetEpisodePlayback(ctx context.Context, in *GetEpisodePlaybackRequest, opts ...grpc.CallOption) (*GetEpisodePlaybackResponse, error)
+	GetEpisodeProgress(ctx context.Context, in *GetEpisodeProgressRequest, opts ...grpc.CallOption) (*GetEpisodeProgressResponse, error)
+	SaveEpisodeProgress(ctx context.Context, in *SaveEpisodeProgressRequest, opts ...grpc.CallOption) (*SaveEpisodeProgressResponse, error)
 }
 
 type movieServiceClient struct {
@@ -83,6 +91,46 @@ func (c *movieServiceClient) GetAllSelections(ctx context.Context, in *GetAllSel
 	return out, nil
 }
 
+func (c *movieServiceClient) SearchMovies(ctx context.Context, in *SearchMoviesRequest, opts ...grpc.CallOption) (*SearchMoviesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchMoviesResponse)
+	err := c.cc.Invoke(ctx, MovieService_SearchMovies_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) GetEpisodePlayback(ctx context.Context, in *GetEpisodePlaybackRequest, opts ...grpc.CallOption) (*GetEpisodePlaybackResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetEpisodePlaybackResponse)
+	err := c.cc.Invoke(ctx, MovieService_GetEpisodePlayback_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) GetEpisodeProgress(ctx context.Context, in *GetEpisodeProgressRequest, opts ...grpc.CallOption) (*GetEpisodeProgressResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetEpisodeProgressResponse)
+	err := c.cc.Invoke(ctx, MovieService_GetEpisodeProgress_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) SaveEpisodeProgress(ctx context.Context, in *SaveEpisodeProgressRequest, opts ...grpc.CallOption) (*SaveEpisodeProgressResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SaveEpisodeProgressResponse)
+	err := c.cc.Invoke(ctx, MovieService_SaveEpisodeProgress_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MovieServiceServer is the server API for MovieService service.
 // All implementations must embed UnimplementedMovieServiceServer
 // for forward compatibility.
@@ -91,6 +139,10 @@ type MovieServiceServer interface {
 	GetActorByID(context.Context, *GetActorByIDRequest) (*GetActorByIDResponse, error)
 	GetSelectionByTitle(context.Context, *GetSelectionByTitleRequest) (*GetSelectionByTitleResponse, error)
 	GetAllSelections(context.Context, *GetAllSelectionsRequest) (*GetAllSelectionsResponse, error)
+	SearchMovies(context.Context, *SearchMoviesRequest) (*SearchMoviesResponse, error)
+	GetEpisodePlayback(context.Context, *GetEpisodePlaybackRequest) (*GetEpisodePlaybackResponse, error)
+	GetEpisodeProgress(context.Context, *GetEpisodeProgressRequest) (*GetEpisodeProgressResponse, error)
+	SaveEpisodeProgress(context.Context, *SaveEpisodeProgressRequest) (*SaveEpisodeProgressResponse, error)
 	mustEmbedUnimplementedMovieServiceServer()
 }
 
@@ -112,6 +164,18 @@ func (UnimplementedMovieServiceServer) GetSelectionByTitle(context.Context, *Get
 }
 func (UnimplementedMovieServiceServer) GetAllSelections(context.Context, *GetAllSelectionsRequest) (*GetAllSelectionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAllSelections not implemented")
+}
+func (UnimplementedMovieServiceServer) SearchMovies(context.Context, *SearchMoviesRequest) (*SearchMoviesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SearchMovies not implemented")
+}
+func (UnimplementedMovieServiceServer) GetEpisodePlayback(context.Context, *GetEpisodePlaybackRequest) (*GetEpisodePlaybackResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetEpisodePlayback not implemented")
+}
+func (UnimplementedMovieServiceServer) GetEpisodeProgress(context.Context, *GetEpisodeProgressRequest) (*GetEpisodeProgressResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetEpisodeProgress not implemented")
+}
+func (UnimplementedMovieServiceServer) SaveEpisodeProgress(context.Context, *SaveEpisodeProgressRequest) (*SaveEpisodeProgressResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SaveEpisodeProgress not implemented")
 }
 func (UnimplementedMovieServiceServer) mustEmbedUnimplementedMovieServiceServer() {}
 func (UnimplementedMovieServiceServer) testEmbeddedByValue()                      {}
@@ -206,6 +270,78 @@ func _MovieService_GetAllSelections_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MovieService_SearchMovies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchMoviesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).SearchMovies(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_SearchMovies_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).SearchMovies(ctx, req.(*SearchMoviesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_GetEpisodePlayback_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEpisodePlaybackRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).GetEpisodePlayback(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_GetEpisodePlayback_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).GetEpisodePlayback(ctx, req.(*GetEpisodePlaybackRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_GetEpisodeProgress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEpisodeProgressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).GetEpisodeProgress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_GetEpisodeProgress_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).GetEpisodeProgress(ctx, req.(*GetEpisodeProgressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_SaveEpisodeProgress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveEpisodeProgressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).SaveEpisodeProgress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_SaveEpisodeProgress_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).SaveEpisodeProgress(ctx, req.(*SaveEpisodeProgressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MovieService_ServiceDesc is the grpc.ServiceDesc for MovieService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +364,22 @@ var MovieService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllSelections",
 			Handler:    _MovieService_GetAllSelections_Handler,
+		},
+		{
+			MethodName: "SearchMovies",
+			Handler:    _MovieService_SearchMovies_Handler,
+		},
+		{
+			MethodName: "GetEpisodePlayback",
+			Handler:    _MovieService_GetEpisodePlayback_Handler,
+		},
+		{
+			MethodName: "GetEpisodeProgress",
+			Handler:    _MovieService_GetEpisodeProgress_Handler,
+		},
+		{
+			MethodName: "SaveEpisodeProgress",
+			Handler:    _MovieService_SaveEpisodeProgress_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

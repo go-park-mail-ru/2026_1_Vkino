@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	rootmw "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
+	routes "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/app/gateway/routes"
 	authmw "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/delivery/http/middleware"
 )
 
@@ -68,6 +69,7 @@ func Run(configPath string) error {
 		httpserver.Port(cfg.Server.Port),
 		httpserver.Timeout(cfg.Server.Timeouts),
 
+		httpserver.WithMiddleware(rootmw.RequestIDMiddleware),
 		httpserver.WithMiddleware(rootmw.CorsMiddleware(rootmw.CORSConfig{
 			AllowedOrigins:   cfg.Server.CORS.AllowedOrigins,
 			AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -79,12 +81,12 @@ func Run(configPath string) error {
 		httpserver.WithMiddleware(rootmw.RecoveryMiddleware),
 	}
 
-	opts = append(opts, RegisterRoutes(
+	opts = append(opts, routes.Register(
 		cfg,
 		authClient,
 		userClient,
 		movieClient,
-		authMiddleware,
+		authMiddleware.Middleware,
 	)...)
 
 	server := httpserver.New(opts...)

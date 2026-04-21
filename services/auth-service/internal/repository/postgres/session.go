@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/services/auth-service/internal/domain"
 
-	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/postgres"
+	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/jackc/pgx/v5"
 )
 

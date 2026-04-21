@@ -9,5 +9,5 @@ var (
 	ErrNoSession          = errors.New("no session")
 	ErrInvalidToken       = errors.New("invalid token")
 	ErrPasswordMismatch   = errors.New("password mismatch")
-	ErrInternal           = errors.New("this error now not exists")
+	ErrInternal           = errors.New("internal error")
 )

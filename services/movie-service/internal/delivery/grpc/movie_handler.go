@@ -141,3 +141,75 @@ func (s *Server) GetAllSelections(
 
 	return resp, nil
 }
+
+func (s *Server) SearchMovies(
+	ctx context.Context,
+	req *moviev1.SearchMoviesRequest,
+) (*moviev1.SearchMoviesResponse, error) {
+	movies, err := s.usecase.SearchMovies(ctx, req.GetQuery())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	resp := &moviev1.SearchMoviesResponse{
+		Movies: make([]*moviev1.MovieCard, 0, len(movies)),
+	}
+
+	for _, movie := range movies {
+		resp.Movies = append(resp.Movies, &moviev1.MovieCard{
+			Id:        movie.ID,
+			Title:     movie.Title,
+			Year:      int32(movie.Year),
+			PosterUrl: movie.PosterURL,
+			CardUrl:   movie.CardURL,
+		})
+	}
+
+	return resp, nil
+}
+
+func (s *Server) GetEpisodePlayback(
+	ctx context.Context,
+	req *moviev1.GetEpisodePlaybackRequest,
+) (*moviev1.GetEpisodePlaybackResponse, error) {
+	playback, err := s.usecase.GetEpisodePlayback(ctx, req.GetEpisodeId())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &moviev1.GetEpisodePlaybackResponse{
+		EpisodeId:   playback.EpisodeID,
+		PlaybackUrl: playback.PlaybackURL,
+		DurationSec: int32(playback.DurationSec),
+	}, nil
+}
+
+func (s *Server) GetEpisodeProgress(
+	ctx context.Context,
+	req *moviev1.GetEpisodeProgressRequest,
+) (*moviev1.GetEpisodeProgressResponse, error) {
+	progress, err := s.usecase.GetEpisodeProgress(ctx, req.GetUserId(), req.GetEpisodeId())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &moviev1.GetEpisodeProgressResponse{
+		EpisodeId:   progress.EpisodeID,
+		PositionSec: progress.PositionSec,
+	}, nil
+}
+
+func (s *Server) SaveEpisodeProgress(
+	ctx context.Context,
+	req *moviev1.SaveEpisodeProgressRequest,
+) (*moviev1.SaveEpisodeProgressResponse, error) {
+	progress, err := s.usecase.SaveEpisodeProgress(ctx, req.GetUserId(), req.GetEpisodeId(), req.GetPositionSec())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &moviev1.SaveEpisodeProgressResponse{
+		EpisodeId:   progress.EpisodeID,
+		PositionSec: progress.PositionSec,
+	}, nil
+}

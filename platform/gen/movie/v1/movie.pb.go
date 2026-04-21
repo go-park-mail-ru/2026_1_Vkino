@@ -749,6 +749,414 @@ func (x *GetAllSelectionsResponse) GetSelections() []*Selection {
 	return nil
 }
 
+type SearchMoviesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Query         string                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchMoviesRequest) Reset() {
+	*x = SearchMoviesRequest{}
+	mi := &file_movie_v1_movie_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchMoviesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchMoviesRequest) ProtoMessage() {}
+
+func (x *SearchMoviesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchMoviesRequest.ProtoReflect.Descriptor instead.
+func (*SearchMoviesRequest) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SearchMoviesRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+type SearchMoviesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Movies        []*MovieCard           `protobuf:"bytes,1,rep,name=movies,proto3" json:"movies,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchMoviesResponse) Reset() {
+	*x = SearchMoviesResponse{}
+	mi := &file_movie_v1_movie_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchMoviesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchMoviesResponse) ProtoMessage() {}
+
+func (x *SearchMoviesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchMoviesResponse.ProtoReflect.Descriptor instead.
+func (*SearchMoviesResponse) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SearchMoviesResponse) GetMovies() []*MovieCard {
+	if x != nil {
+		return x.Movies
+	}
+	return nil
+}
+
+type GetEpisodePlaybackRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EpisodeId     int64                  `protobuf:"varint,1,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEpisodePlaybackRequest) Reset() {
+	*x = GetEpisodePlaybackRequest{}
+	mi := &file_movie_v1_movie_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEpisodePlaybackRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEpisodePlaybackRequest) ProtoMessage() {}
+
+func (x *GetEpisodePlaybackRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEpisodePlaybackRequest.ProtoReflect.Descriptor instead.
+func (*GetEpisodePlaybackRequest) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *GetEpisodePlaybackRequest) GetEpisodeId() int64 {
+	if x != nil {
+		return x.EpisodeId
+	}
+	return 0
+}
+
+type GetEpisodePlaybackResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EpisodeId     int64                  `protobuf:"varint,1,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	PlaybackUrl   string                 `protobuf:"bytes,2,opt,name=playback_url,json=playbackUrl,proto3" json:"playback_url,omitempty"`
+	DurationSec   int32                  `protobuf:"varint,3,opt,name=duration_sec,json=durationSec,proto3" json:"duration_sec,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEpisodePlaybackResponse) Reset() {
+	*x = GetEpisodePlaybackResponse{}
+	mi := &file_movie_v1_movie_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEpisodePlaybackResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEpisodePlaybackResponse) ProtoMessage() {}
+
+func (x *GetEpisodePlaybackResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEpisodePlaybackResponse.ProtoReflect.Descriptor instead.
+func (*GetEpisodePlaybackResponse) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *GetEpisodePlaybackResponse) GetEpisodeId() int64 {
+	if x != nil {
+		return x.EpisodeId
+	}
+	return 0
+}
+
+func (x *GetEpisodePlaybackResponse) GetPlaybackUrl() string {
+	if x != nil {
+		return x.PlaybackUrl
+	}
+	return ""
+}
+
+func (x *GetEpisodePlaybackResponse) GetDurationSec() int32 {
+	if x != nil {
+		return x.DurationSec
+	}
+	return 0
+}
+
+type GetEpisodeProgressRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	EpisodeId     int64                  `protobuf:"varint,2,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEpisodeProgressRequest) Reset() {
+	*x = GetEpisodeProgressRequest{}
+	mi := &file_movie_v1_movie_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEpisodeProgressRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEpisodeProgressRequest) ProtoMessage() {}
+
+func (x *GetEpisodeProgressRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEpisodeProgressRequest.ProtoReflect.Descriptor instead.
+func (*GetEpisodeProgressRequest) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetEpisodeProgressRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *GetEpisodeProgressRequest) GetEpisodeId() int64 {
+	if x != nil {
+		return x.EpisodeId
+	}
+	return 0
+}
+
+type GetEpisodeProgressResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EpisodeId     int64                  `protobuf:"varint,1,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	PositionSec   int64                  `protobuf:"varint,2,opt,name=position_sec,json=positionSec,proto3" json:"position_sec,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetEpisodeProgressResponse) Reset() {
+	*x = GetEpisodeProgressResponse{}
+	mi := &file_movie_v1_movie_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetEpisodeProgressResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetEpisodeProgressResponse) ProtoMessage() {}
+
+func (x *GetEpisodeProgressResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetEpisodeProgressResponse.ProtoReflect.Descriptor instead.
+func (*GetEpisodeProgressResponse) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetEpisodeProgressResponse) GetEpisodeId() int64 {
+	if x != nil {
+		return x.EpisodeId
+	}
+	return 0
+}
+
+func (x *GetEpisodeProgressResponse) GetPositionSec() int64 {
+	if x != nil {
+		return x.PositionSec
+	}
+	return 0
+}
+
+type SaveEpisodeProgressRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	EpisodeId     int64                  `protobuf:"varint,2,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	PositionSec   int64                  `protobuf:"varint,3,opt,name=position_sec,json=positionSec,proto3" json:"position_sec,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveEpisodeProgressRequest) Reset() {
+	*x = SaveEpisodeProgressRequest{}
+	mi := &file_movie_v1_movie_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveEpisodeProgressRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveEpisodeProgressRequest) ProtoMessage() {}
+
+func (x *SaveEpisodeProgressRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveEpisodeProgressRequest.ProtoReflect.Descriptor instead.
+func (*SaveEpisodeProgressRequest) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *SaveEpisodeProgressRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *SaveEpisodeProgressRequest) GetEpisodeId() int64 {
+	if x != nil {
+		return x.EpisodeId
+	}
+	return 0
+}
+
+func (x *SaveEpisodeProgressRequest) GetPositionSec() int64 {
+	if x != nil {
+		return x.PositionSec
+	}
+	return 0
+}
+
+type SaveEpisodeProgressResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EpisodeId     int64                  `protobuf:"varint,1,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	PositionSec   int64                  `protobuf:"varint,2,opt,name=position_sec,json=positionSec,proto3" json:"position_sec,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveEpisodeProgressResponse) Reset() {
+	*x = SaveEpisodeProgressResponse{}
+	mi := &file_movie_v1_movie_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveEpisodeProgressResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveEpisodeProgressResponse) ProtoMessage() {}
+
+func (x *SaveEpisodeProgressResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveEpisodeProgressResponse.ProtoReflect.Descriptor instead.
+func (*SaveEpisodeProgressResponse) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *SaveEpisodeProgressResponse) GetEpisodeId() int64 {
+	if x != nil {
+		return x.EpisodeId
+	}
+	return 0
+}
+
+func (x *SaveEpisodeProgressResponse) GetPositionSec() int64 {
+	if x != nil {
+		return x.PositionSec
+	}
+	return 0
+}
+
 var File_movie_v1_movie_proto protoreflect.FileDescriptor
 
 const file_movie_v1_movie_proto_rawDesc = "" +
@@ -810,12 +1218,45 @@ const file_movie_v1_movie_proto_rawDesc = "" +
 	"\x18GetAllSelectionsResponse\x123\n" +
 	"\n" +
 	"selections\x18\x01 \x03(\v2\x13.movie.v1.SelectionR\n" +
-	"selections2\xeb\x02\n" +
+	"selections\"+\n" +
+	"\x13SearchMoviesRequest\x12\x14\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\"C\n" +
+	"\x14SearchMoviesResponse\x12+\n" +
+	"\x06movies\x18\x01 \x03(\v2\x13.movie.v1.MovieCardR\x06movies\":\n" +
+	"\x19GetEpisodePlaybackRequest\x12\x1d\n" +
+	"\n" +
+	"episode_id\x18\x01 \x01(\x03R\tepisodeId\"\x81\x01\n" +
+	"\x1aGetEpisodePlaybackResponse\x12\x1d\n" +
+	"\n" +
+	"episode_id\x18\x01 \x01(\x03R\tepisodeId\x12!\n" +
+	"\fplayback_url\x18\x02 \x01(\tR\vplaybackUrl\x12!\n" +
+	"\fduration_sec\x18\x03 \x01(\x05R\vdurationSec\"S\n" +
+	"\x19GetEpisodeProgressRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1d\n" +
+	"\n" +
+	"episode_id\x18\x02 \x01(\x03R\tepisodeId\"^\n" +
+	"\x1aGetEpisodeProgressResponse\x12\x1d\n" +
+	"\n" +
+	"episode_id\x18\x01 \x01(\x03R\tepisodeId\x12!\n" +
+	"\fposition_sec\x18\x02 \x01(\x03R\vpositionSec\"w\n" +
+	"\x1aSaveEpisodeProgressRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1d\n" +
+	"\n" +
+	"episode_id\x18\x02 \x01(\x03R\tepisodeId\x12!\n" +
+	"\fposition_sec\x18\x03 \x01(\x03R\vpositionSec\"_\n" +
+	"\x1bSaveEpisodeProgressResponse\x12\x1d\n" +
+	"\n" +
+	"episode_id\x18\x01 \x01(\x03R\tepisodeId\x12!\n" +
+	"\fposition_sec\x18\x02 \x01(\x03R\vpositionSec2\xe0\x05\n" +
 	"\fMovieService\x12M\n" +
 	"\fGetMovieByID\x12\x1d.movie.v1.GetMovieByIDRequest\x1a\x1e.movie.v1.GetMovieByIDResponse\x12M\n" +
 	"\fGetActorByID\x12\x1d.movie.v1.GetActorByIDRequest\x1a\x1e.movie.v1.GetActorByIDResponse\x12b\n" +
 	"\x13GetSelectionByTitle\x12$.movie.v1.GetSelectionByTitleRequest\x1a%.movie.v1.GetSelectionByTitleResponse\x12Y\n" +
-	"\x10GetAllSelections\x12!.movie.v1.GetAllSelectionsRequest\x1a\".movie.v1.GetAllSelectionsResponseBGZEgithub.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1;moviev1b\x06proto3"
+	"\x10GetAllSelections\x12!.movie.v1.GetAllSelectionsRequest\x1a\".movie.v1.GetAllSelectionsResponse\x12M\n" +
+	"\fSearchMovies\x12\x1d.movie.v1.SearchMoviesRequest\x1a\x1e.movie.v1.SearchMoviesResponse\x12_\n" +
+	"\x12GetEpisodePlayback\x12#.movie.v1.GetEpisodePlaybackRequest\x1a$.movie.v1.GetEpisodePlaybackResponse\x12_\n" +
+	"\x12GetEpisodeProgress\x12#.movie.v1.GetEpisodeProgressRequest\x1a$.movie.v1.GetEpisodeProgressResponse\x12b\n" +
+	"\x13SaveEpisodeProgress\x12$.movie.v1.SaveEpisodeProgressRequest\x1a%.movie.v1.SaveEpisodeProgressResponseBGZEgithub.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1;moviev1b\x06proto3"
 
 var (
 	file_movie_v1_movie_proto_rawDescOnce sync.Once
@@ -829,7 +1270,7 @@ func file_movie_v1_movie_proto_rawDescGZIP() []byte {
 	return file_movie_v1_movie_proto_rawDescData
 }
 
-var file_movie_v1_movie_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_movie_v1_movie_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_movie_v1_movie_proto_goTypes = []any{
 	(*GetMovieByIDRequest)(nil),         // 0: movie.v1.GetMovieByIDRequest
 	(*ActorShort)(nil),                  // 1: movie.v1.ActorShort
@@ -843,6 +1284,14 @@ var file_movie_v1_movie_proto_goTypes = []any{
 	(*GetSelectionByTitleResponse)(nil), // 9: movie.v1.GetSelectionByTitleResponse
 	(*GetAllSelectionsRequest)(nil),     // 10: movie.v1.GetAllSelectionsRequest
 	(*GetAllSelectionsResponse)(nil),    // 11: movie.v1.GetAllSelectionsResponse
+	(*SearchMoviesRequest)(nil),         // 12: movie.v1.SearchMoviesRequest
+	(*SearchMoviesResponse)(nil),        // 13: movie.v1.SearchMoviesResponse
+	(*GetEpisodePlaybackRequest)(nil),   // 14: movie.v1.GetEpisodePlaybackRequest
+	(*GetEpisodePlaybackResponse)(nil),  // 15: movie.v1.GetEpisodePlaybackResponse
+	(*GetEpisodeProgressRequest)(nil),   // 16: movie.v1.GetEpisodeProgressRequest
+	(*GetEpisodeProgressResponse)(nil),  // 17: movie.v1.GetEpisodeProgressResponse
+	(*SaveEpisodeProgressRequest)(nil),  // 18: movie.v1.SaveEpisodeProgressRequest
+	(*SaveEpisodeProgressResponse)(nil), // 19: movie.v1.SaveEpisodeProgressResponse
 }
 var file_movie_v1_movie_proto_depIdxs = []int32{
 	1,  // 0: movie.v1.GetMovieByIDResponse.actors:type_name -> movie.v1.ActorShort
@@ -851,19 +1300,28 @@ var file_movie_v1_movie_proto_depIdxs = []int32{
 	5,  // 3: movie.v1.Selection.movies:type_name -> movie.v1.MovieCard
 	5,  // 4: movie.v1.GetSelectionByTitleResponse.movies:type_name -> movie.v1.MovieCard
 	8,  // 5: movie.v1.GetAllSelectionsResponse.selections:type_name -> movie.v1.Selection
-	0,  // 6: movie.v1.MovieService.GetMovieByID:input_type -> movie.v1.GetMovieByIDRequest
-	4,  // 7: movie.v1.MovieService.GetActorByID:input_type -> movie.v1.GetActorByIDRequest
-	7,  // 8: movie.v1.MovieService.GetSelectionByTitle:input_type -> movie.v1.GetSelectionByTitleRequest
-	10, // 9: movie.v1.MovieService.GetAllSelections:input_type -> movie.v1.GetAllSelectionsRequest
-	3,  // 10: movie.v1.MovieService.GetMovieByID:output_type -> movie.v1.GetMovieByIDResponse
-	6,  // 11: movie.v1.MovieService.GetActorByID:output_type -> movie.v1.GetActorByIDResponse
-	9,  // 12: movie.v1.MovieService.GetSelectionByTitle:output_type -> movie.v1.GetSelectionByTitleResponse
-	11, // 13: movie.v1.MovieService.GetAllSelections:output_type -> movie.v1.GetAllSelectionsResponse
-	10, // [10:14] is the sub-list for method output_type
-	6,  // [6:10] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	5,  // 6: movie.v1.SearchMoviesResponse.movies:type_name -> movie.v1.MovieCard
+	0,  // 7: movie.v1.MovieService.GetMovieByID:input_type -> movie.v1.GetMovieByIDRequest
+	4,  // 8: movie.v1.MovieService.GetActorByID:input_type -> movie.v1.GetActorByIDRequest
+	7,  // 9: movie.v1.MovieService.GetSelectionByTitle:input_type -> movie.v1.GetSelectionByTitleRequest
+	10, // 10: movie.v1.MovieService.GetAllSelections:input_type -> movie.v1.GetAllSelectionsRequest
+	12, // 11: movie.v1.MovieService.SearchMovies:input_type -> movie.v1.SearchMoviesRequest
+	14, // 12: movie.v1.MovieService.GetEpisodePlayback:input_type -> movie.v1.GetEpisodePlaybackRequest
+	16, // 13: movie.v1.MovieService.GetEpisodeProgress:input_type -> movie.v1.GetEpisodeProgressRequest
+	18, // 14: movie.v1.MovieService.SaveEpisodeProgress:input_type -> movie.v1.SaveEpisodeProgressRequest
+	3,  // 15: movie.v1.MovieService.GetMovieByID:output_type -> movie.v1.GetMovieByIDResponse
+	6,  // 16: movie.v1.MovieService.GetActorByID:output_type -> movie.v1.GetActorByIDResponse
+	9,  // 17: movie.v1.MovieService.GetSelectionByTitle:output_type -> movie.v1.GetSelectionByTitleResponse
+	11, // 18: movie.v1.MovieService.GetAllSelections:output_type -> movie.v1.GetAllSelectionsResponse
+	13, // 19: movie.v1.MovieService.SearchMovies:output_type -> movie.v1.SearchMoviesResponse
+	15, // 20: movie.v1.MovieService.GetEpisodePlayback:output_type -> movie.v1.GetEpisodePlaybackResponse
+	17, // 21: movie.v1.MovieService.GetEpisodeProgress:output_type -> movie.v1.GetEpisodeProgressResponse
+	19, // 22: movie.v1.MovieService.SaveEpisodeProgress:output_type -> movie.v1.SaveEpisodeProgressResponse
+	15, // [15:23] is the sub-list for method output_type
+	7,  // [7:15] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_movie_v1_movie_proto_init() }
@@ -877,7 +1335,7 @@ func file_movie_v1_movie_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_movie_v1_movie_proto_rawDesc), len(file_movie_v1_movie_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

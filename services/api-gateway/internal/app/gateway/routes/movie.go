@@ -1,0 +1,194 @@
+package routes
+
+import (
+	"net/http"
+	"strings"
+
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
+	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
+	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
+)
+
+func Movie(
+	cfg *config.Config,
+	movieClient moviev1.MovieServiceClient,
+	authMiddleware func(http.Handler) http.Handler,
+) []httpserver.Option {
+	return []httpserver.Option{
+		httpserver.WithRoute("GET /movie/selection/all", func(w http.ResponseWriter, r *http.Request) {
+			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			defer cancel()
+
+			resp, err := movieClient.GetAllSelections(r.Context(), &moviev1.GetAllSelectionsRequest{})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /movie/selection/{selection}", func(w http.ResponseWriter, r *http.Request) {
+			title := strings.TrimSpace(r.PathValue("selection"))
+			if title == "" {
+				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid selection title")
+				return
+			}
+
+			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			defer cancel()
+
+			resp, err := movieClient.GetSelectionByTitle(r.Context(), &moviev1.GetSelectionByTitleRequest{
+				Title: title,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /movie/search", func(w http.ResponseWriter, r *http.Request) {
+			query := strings.TrimSpace(r.URL.Query().Get("query"))
+			if query == "" {
+				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid search query")
+				return
+			}
+
+			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			defer cancel()
+
+			resp, err := movieClient.SearchMovies(r.Context(), &moviev1.SearchMoviesRequest{
+				Query: query,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /movie/{id}", func(w http.ResponseWriter, r *http.Request) {
+			movieID, ok := parsePathID(w, r, "id", "invalid movie id")
+			if !ok {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			defer cancel()
+
+			resp, err := movieClient.GetMovieByID(r.Context(), &moviev1.GetMovieByIDRequest{
+				MovieId: movieID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /movie/actor/{id}", func(w http.ResponseWriter, r *http.Request) {
+			actorID, ok := parsePathID(w, r, "id", "invalid actor id")
+			if !ok {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			defer cancel()
+
+			resp, err := movieClient.GetActorByID(r.Context(), &moviev1.GetActorByIDRequest{
+				ActorId: actorID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /episode/{id}/playback", func(w http.ResponseWriter, r *http.Request) {
+			episodeID, ok := parsePathID(w, r, "id", "invalid episode id")
+			if !ok {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			defer cancel()
+
+			resp, err := movieClient.GetEpisodePlayback(r.Context(), &moviev1.GetEpisodePlaybackRequest{
+				EpisodeId: episodeID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithMiddlewareRoute("GET /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
+			authCtx, ok := requireAuth(w, r)
+			if !ok {
+				return
+			}
+
+			episodeID, ok := parsePathID(w, r, "id", "invalid episode id")
+			if !ok {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			defer cancel()
+
+			resp, err := movieClient.GetEpisodeProgress(r.Context(), &moviev1.GetEpisodeProgressRequest{
+				UserId:    authCtx.UserID,
+				EpisodeId: episodeID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}, authMiddleware),
+
+		httpserver.WithMiddlewareRoute("PUT /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
+			authCtx, ok := requireAuth(w, r)
+			if !ok {
+				return
+			}
+
+			episodeID, ok := parsePathID(w, r, "id", "invalid episode id")
+			if !ok {
+				return
+			}
+
+			var req struct {
+				PositionSec int64 `json:"position_sec"`
+			}
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			defer cancel()
+
+			resp, err := movieClient.SaveEpisodeProgress(r.Context(), &moviev1.SaveEpisodeProgressRequest{
+				UserId:      authCtx.UserID,
+				EpisodeId:   episodeID,
+				PositionSec: req.PositionSec,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}, authMiddleware),
+	}
+}

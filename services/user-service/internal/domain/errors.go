@@ -12,5 +12,5 @@ var (
 	ErrAlreadyFriends     = errors.New("already friends")
 	ErrFriendNotFound     = errors.New("friend not found")
 	ErrSelfFriendship     = errors.New("self friendship is forbidden")
-	ErrInternal           = errors.New("internal server error")
+	ErrInternal           = errors.New("internal error")
 )
