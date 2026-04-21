@@ -16,34 +16,44 @@ func (s *Server) GetMovieByID(
 	}
 
 	resp := &moviev1.GetMovieByIDResponse{
-		Id:          movie.ID,
-		Title:       movie.Title,
-		Description: movie.Description,
-		Year:        int32(movie.Year),
-		Countries:   movie.Countries,
-		Genres:      movie.Genres,
-		AgeLimit:    int32(movie.AgeLimit),
-		DurationMin: int32(movie.DurationMin),
-		PosterUrl:   movie.PosterURL,
-		CardUrl:     movie.CardURL,
-		Actors:      make([]*moviev1.ActorShort, 0, len(movie.Actors)),
-		Episodes:    make([]*moviev1.EpisodeShort, 0, len(movie.Episodes)),
+		Id:                 movie.ID,
+		Title:              movie.Title,
+		Description:        movie.Description,
+		Director:           movie.Director,
+		TrailerUrl:         movie.TrailerURL,
+		ContentType:        movie.ContentType,
+		ReleaseYear:        int32(movie.ReleaseYear),
+		DurationSeconds:    int32(movie.DurationSeconds),
+		AgeLimit:           int32(movie.AgeLimit),
+		OriginalLanguageId: movie.OriginalLanguageID,
+		OriginalLanguage:   movie.OriginalLanguage,
+		CountryId:          movie.CountryID,
+		Country:            movie.Country,
+		ImgUrl:             movie.PictureFileKey,
+		PosterUrl:          movie.PosterFileKey,
+		Genres:             movie.Genres,
+		Actors:             make([]*moviev1.ActorShort, 0, len(movie.Actors)),
+		Episodes:           make([]*moviev1.EpisodeShort, 0, len(movie.Episodes)),
 	}
 
 	for _, actor := range movie.Actors {
 		resp.Actors = append(resp.Actors, &moviev1.ActorShort{
-			Id:        actor.ID,
-			Name:      actor.Name,
-			AvatarUrl: actor.AvatarURL,
+			Id:       actor.ID,
+			FullName: actor.FullName,
+			ImgUrl:   actor.PictureFileKey,
 		})
 	}
 
 	for _, episode := range movie.Episodes {
 		resp.Episodes = append(resp.Episodes, &moviev1.EpisodeShort{
-			Id:          episode.ID,
-			Number:      int32(episode.Number),
-			Title:       episode.Title,
-			DurationSec: int32(episode.DurationSec),
+			Id:              episode.ID,
+			MovieId:         episode.MovieID,
+			SeasonNumber:    int32(episode.SeasonNumber),
+			EpisodeNumber:   int32(episode.EpisodeNumber),
+			Title:           episode.Title,
+			Description:     episode.Description,
+			DurationSeconds: int32(episode.DurationSeconds),
+			ImgUrl:          episode.PictureFileKey,
 		})
 	}
 
@@ -60,20 +70,20 @@ func (s *Server) GetActorByID(
 	}
 
 	resp := &moviev1.GetActorByIDResponse{
-		Id:          actor.ID,
-		Name:        actor.Name,
-		Description: actor.Description,
-		AvatarUrl:   actor.AvatarURL,
-		Movies:      make([]*moviev1.MovieCard, 0, len(actor.Movies)),
+		Id:        actor.ID,
+		FullName:  actor.FullName,
+		Biography: actor.Biography,
+		Birthdate: actor.BirthDate,
+		CountryId: actor.CountryID,
+		ImgUrl:    actor.PictureFileKey,
+		Movies:    make([]*moviev1.MovieCard, 0, len(actor.Movies)),
 	}
 
 	for _, movie := range actor.Movies {
 		resp.Movies = append(resp.Movies, &moviev1.MovieCard{
-			Id:        movie.ID,
-			Title:     movie.Title,
-			Year:      int32(movie.Year),
-			PosterUrl: movie.PosterURL,
-			CardUrl:   movie.CardURL,
+			Id:     movie.ID,
+			Title:  movie.Title,
+			ImgUrl: movie.PictureFileKey,
 		})
 	}
 
@@ -96,11 +106,9 @@ func (s *Server) GetSelectionByTitle(
 
 	for _, movie := range selection.Movies {
 		resp.Movies = append(resp.Movies, &moviev1.MovieCard{
-			Id:        movie.ID,
-			Title:     movie.Title,
-			Year:      int32(movie.Year),
-			PosterUrl: movie.PosterURL,
-			CardUrl:   movie.CardURL,
+			Id:     movie.ID,
+			Title:  movie.Title,
+			ImgUrl: movie.PictureFileKey,
 		})
 	}
 
@@ -128,11 +136,9 @@ func (s *Server) GetAllSelections(
 
 		for _, movie := range selection.Movies {
 			item.Movies = append(item.Movies, &moviev1.MovieCard{
-				Id:        movie.ID,
-				Title:     movie.Title,
-				Year:      int32(movie.Year),
-				PosterUrl: movie.PosterURL,
-				CardUrl:   movie.CardURL,
+				Id:     movie.ID,
+				Title:  movie.Title,
+				ImgUrl: movie.PictureFileKey,
 			})
 		}
 
@@ -157,11 +163,9 @@ func (s *Server) SearchMovies(
 
 	for _, movie := range movies {
 		resp.Movies = append(resp.Movies, &moviev1.MovieCard{
-			Id:        movie.ID,
-			Title:     movie.Title,
-			Year:      int32(movie.Year),
-			PosterUrl: movie.PosterURL,
-			CardUrl:   movie.CardURL,
+			Id:     movie.ID,
+			Title:  movie.Title,
+			ImgUrl: movie.PictureFileKey,
 		})
 	}
 
@@ -178,9 +182,13 @@ func (s *Server) GetEpisodePlayback(
 	}
 
 	return &moviev1.GetEpisodePlaybackResponse{
-		EpisodeId:   playback.EpisodeID,
-		PlaybackUrl: playback.PlaybackURL,
-		DurationSec: int32(playback.DurationSec),
+		EpisodeId:       playback.EpisodeID,
+		MovieId:         playback.MovieID,
+		SeasonNumber:    int32(playback.SeasonNumber),
+		EpisodeNumber:   int32(playback.EpisodeNumber),
+		Title:           playback.Title,
+		DurationSeconds: int32(playback.DurationSeconds),
+		PlaybackUrl:     playback.PlaybackURL,
 	}, nil
 }
 
@@ -194,8 +202,8 @@ func (s *Server) GetEpisodeProgress(
 	}
 
 	return &moviev1.GetEpisodeProgressResponse{
-		EpisodeId:   progress.EpisodeID,
-		PositionSec: progress.PositionSec,
+		EpisodeId:       progress.EpisodeID,
+		PositionSeconds: progress.PositionSeconds,
 	}, nil
 }
 
@@ -203,13 +211,13 @@ func (s *Server) SaveEpisodeProgress(
 	ctx context.Context,
 	req *moviev1.SaveEpisodeProgressRequest,
 ) (*moviev1.SaveEpisodeProgressResponse, error) {
-	progress, err := s.usecase.SaveEpisodeProgress(ctx, req.GetUserId(), req.GetEpisodeId(), req.GetPositionSec())
+	progress, err := s.usecase.SaveEpisodeProgress(ctx, req.GetUserId(), req.GetEpisodeId(), req.GetPositionSeconds())
 	if err != nil {
 		return nil, mapError(err)
 	}
 
 	return &moviev1.SaveEpisodeProgressResponse{
-		EpisodeId:   progress.EpisodeID,
-		PositionSec: progress.PositionSec,
+		EpisodeId:       progress.EpisodeID,
+		PositionSeconds: progress.PositionSeconds,
 	}, nil
 }

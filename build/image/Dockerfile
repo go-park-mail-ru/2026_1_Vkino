@@ -2,8 +2,9 @@ FROM golang:1.26.0-alpine3.23 AS builder
 
 ENV CGO_ENABLED=0
 ENV GOOS=linux
+ENV TZ=Europe/Moscow
 
-RUN apk update --no-cache && apk add --no-cache tzdata
+RUN apk update --no-cache && apk add --no-cache tzdata ca-certificates
 
 WORKDIR /vkinoapi
 
@@ -20,20 +21,23 @@ RUN test -n "$BINARY_NAME"
 
 RUN go build -ldflags="-w -s" -o /vkinoapi/bin/${BINARY_NAME} ./${SERVICE_PATH}
 
-FROM alpine:3.23
+FROM golang:1.26.0-alpine3.23
 
 ENV TZ=Europe/Moscow
 
-RUN apk update --no-cache && apk add --no-cache ca-certificates tzdata
-
 WORKDIR /vkinoapi
 
-COPY --from=builder /usr/share/zoneinfo/${TZ} /etc/localtime
-RUN echo $TZ > /etc/timezone
-
 ARG BINARY_NAME
+ARG PORT=8080
+
 RUN test -n "$BINARY_NAME"
 
+COPY --from=builder /usr/share/zoneinfo/${TZ} /etc/localtime
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+RUN echo $TZ > /etc/timezone
+
 COPY --from=builder /vkinoapi/bin/${BINARY_NAME} ./${BINARY_NAME}
+
+EXPOSE ${PORT}
 
 CMD ["sh", "-c", "./${BINARY_NAME}"]

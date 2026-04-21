@@ -33,22 +33,24 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, movieID int64) (*domain.Mo
 		&movie.ID,
 		&movie.Title,
 		&movie.Description,
-		&movie.Year,
+		&movie.Director,
+		&movie.TrailerURL,
+		&movie.ContentType,
+		&movie.ReleaseYear,
+		&movie.DurationSeconds,
 		&movie.AgeLimit,
-		&movie.DurationMin,
+		&movie.OriginalLanguageID,
+		&movie.OriginalLanguage,
+		&movie.CountryID,
+		&movie.Country,
+		&movie.PictureFileKey,
 		&movie.PosterFileKey,
-		&movie.CardFileKey,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrMovieNotFound
 		}
 		return nil, fmt.Errorf("get movie by id: %w", err)
-	}
-
-	movie.Countries, err = r.getMovieCountries(ctx, movieID)
-	if err != nil {
-		return nil, err
 	}
 
 	movie.Genres, err = r.getMovieGenres(ctx, movieID)
@@ -74,9 +76,11 @@ func (r *MovieRepo) GetActorByID(ctx context.Context, actorID int64) (*domain.Ac
 
 	err := r.db.QueryRow(ctx, sqlGetActorBaseByID, actorID).Scan(
 		&actor.ID,
-		&actor.Name,
-		&actor.Description,
-		&actor.AvatarFileKey,
+		&actor.FullName,
+		&actor.BirthDate,
+		&actor.Biography,
+		&actor.CountryID,
+		&actor.PictureFileKey,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -110,9 +114,7 @@ func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (doma
 			&selection.Title,
 			&movie.ID,
 			&movie.Title,
-			&movie.Year,
-			&movie.PosterFileKey,
-			&movie.CardFileKey,
+			&movie.PictureFileKey,
 		); err != nil {
 			return domain.Selection{}, fmt.Errorf("scan selection movie: %w", err)
 		}
@@ -151,9 +153,7 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, e
 			&title,
 			&movie.ID,
 			&movie.Title,
-			&movie.Year,
-			&movie.PosterFileKey,
-			&movie.CardFileKey,
+			&movie.PictureFileKey,
 		); err != nil {
 			return nil, fmt.Errorf("scan all selections row: %w", err)
 		}
@@ -193,7 +193,7 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]domain.Mo
 	result := make([]domain.MovieCard, 0)
 	for rows.Next() {
 		var movie domain.MovieCard
-		if err = rows.Scan(&movie.ID, &movie.Title, &movie.Year, &movie.PosterFileKey, &movie.CardFileKey); err != nil {
+		if err = rows.Scan(&movie.ID, &movie.Title, &movie.PictureFileKey); err != nil {
 			return nil, fmt.Errorf("scan searched movie: %w", err)
 		}
 		result = append(result, movie)
@@ -212,9 +212,10 @@ func (r *MovieRepo) GetEpisodePlayback(ctx context.Context, episodeID int64) (*d
 	err := r.db.QueryRow(ctx, sqlGetEpisodePlayback, episodeID).Scan(
 		&episode.ID,
 		&episode.MovieID,
-		&episode.Number,
+		&episode.SeasonNumber,
+		&episode.EpisodeNumber,
 		&episode.Title,
-		&episode.DurationSec,
+		&episode.DurationSeconds,
 		&episode.VideoFileKey,
 	)
 	if err != nil {
@@ -232,13 +233,13 @@ func (r *MovieRepo) GetEpisodeProgress(ctx context.Context, userID, episodeID in
 
 	err := r.db.QueryRow(ctx, sqlGetEpisodeProgress, userID, episodeID).Scan(
 		&progress.EpisodeID,
-		&progress.PositionSec,
+		&progress.PositionSeconds,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.EpisodeProgress{
-				EpisodeID:   episodeID,
-				PositionSec: 0,
+				EpisodeID:       episodeID,
+				PositionSeconds: 0,
 			}, nil
 		}
 		return domain.EpisodeProgress{}, fmt.Errorf("get episode progress: %w", err)
@@ -247,41 +248,21 @@ func (r *MovieRepo) GetEpisodeProgress(ctx context.Context, userID, episodeID in
 	return progress, nil
 }
 
-func (r *MovieRepo) SaveEpisodeProgress(ctx context.Context, userID, episodeID, positionSec int64) (domain.EpisodeProgress, error) {
+func (r *MovieRepo) SaveEpisodeProgress(
+	ctx context.Context,
+	userID, episodeID, positionSec int64,
+) (domain.EpisodeProgress, error) {
 	var progress domain.EpisodeProgress
 
 	err := r.db.QueryRow(ctx, sqlSaveEpisodeProgress, userID, episodeID, positionSec).Scan(
 		&progress.EpisodeID,
-		&progress.PositionSec,
+		&progress.PositionSeconds,
 	)
 	if err != nil {
 		return domain.EpisodeProgress{}, fmt.Errorf("save episode progress: %w", err)
 	}
 
 	return progress, nil
-}
-
-func (r *MovieRepo) getMovieCountries(ctx context.Context, movieID int64) ([]string, error) {
-	rows, err := r.db.Query(ctx, sqlGetMovieCountriesByID, movieID)
-	if err != nil {
-		return nil, fmt.Errorf("get movie countries: %w", err)
-	}
-	defer rows.Close()
-
-	result := make([]string, 0)
-	for rows.Next() {
-		var item string
-		if err = rows.Scan(&item); err != nil {
-			return nil, fmt.Errorf("scan movie country: %w", err)
-		}
-		result = append(result, item)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate movie countries: %w", err)
-	}
-
-	return result, nil
 }
 
 func (r *MovieRepo) getMovieGenres(ctx context.Context, movieID int64) ([]string, error) {
@@ -317,7 +298,7 @@ func (r *MovieRepo) getMovieActors(ctx context.Context, movieID int64) ([]domain
 	result := make([]domain.ActorShort, 0)
 	for rows.Next() {
 		var actor domain.ActorShort
-		if err = rows.Scan(&actor.ID, &actor.Name, &actor.AvatarFileKey); err != nil {
+		if err = rows.Scan(&actor.ID, &actor.FullName, &actor.PictureFileKey); err != nil {
 			return nil, fmt.Errorf("scan movie actor: %w", err)
 		}
 		result = append(result, actor)
@@ -343,9 +324,12 @@ func (r *MovieRepo) getMovieEpisodes(ctx context.Context, movieID int64) ([]doma
 		if err = rows.Scan(
 			&episode.ID,
 			&episode.MovieID,
-			&episode.Number,
+			&episode.SeasonNumber,
+			&episode.EpisodeNumber,
 			&episode.Title,
-			&episode.DurationSec,
+			&episode.Description,
+			&episode.DurationSeconds,
+			&episode.PictureFileKey,
 			&episode.VideoFileKey,
 		); err != nil {
 			return nil, fmt.Errorf("scan movie episode: %w", err)
@@ -370,7 +354,7 @@ func (r *MovieRepo) getActorMovies(ctx context.Context, actorID int64) ([]domain
 	result := make([]domain.MovieCard, 0)
 	for rows.Next() {
 		var movie domain.MovieCard
-		if err = rows.Scan(&movie.ID, &movie.Title, &movie.Year, &movie.PosterFileKey, &movie.CardFileKey); err != nil {
+		if err = rows.Scan(&movie.ID, &movie.Title, &movie.PictureFileKey); err != nil {
 			return nil, fmt.Errorf("scan actor movie: %w", err)
 		}
 		result = append(result, movie)

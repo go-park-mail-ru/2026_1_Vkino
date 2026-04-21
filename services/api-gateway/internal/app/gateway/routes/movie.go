@@ -181,7 +181,7 @@ func Movie(
 			resp, err := movieClient.SaveEpisodeProgress(r.Context(), &moviev1.SaveEpisodeProgressRequest{
 				UserId:      authCtx.UserID,
 				EpisodeId:   episodeID,
-				PositionSec: req.PositionSec,
+				PositionSeconds: req.PositionSec,
 			})
 			if err != nil {
 				writeGRPCError(w, err)

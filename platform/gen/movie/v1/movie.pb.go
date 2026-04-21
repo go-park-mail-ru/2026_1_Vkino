@@ -68,8 +68,8 @@ func (x *GetMovieByIDRequest) GetMovieId() int64 {
 type ActorShort struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	AvatarUrl     string                 `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	FullName      string                 `protobuf:"bytes,2,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
+	ImgUrl        string                 `protobuf:"bytes,3,opt,name=img_url,json=imgUrl,proto3" json:"img_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -111,28 +111,32 @@ func (x *ActorShort) GetId() int64 {
 	return 0
 }
 
-func (x *ActorShort) GetName() string {
+func (x *ActorShort) GetFullName() string {
 	if x != nil {
-		return x.Name
+		return x.FullName
 	}
 	return ""
 }
 
-func (x *ActorShort) GetAvatarUrl() string {
+func (x *ActorShort) GetImgUrl() string {
 	if x != nil {
-		return x.AvatarUrl
+		return x.ImgUrl
 	}
 	return ""
 }
 
 type EpisodeShort struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Number        int32                  `protobuf:"varint,2,opt,name=number,proto3" json:"number,omitempty"`
-	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	DurationSec   int32                  `protobuf:"varint,4,opt,name=duration_sec,json=durationSec,proto3" json:"duration_sec,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	MovieId         int64                  `protobuf:"varint,2,opt,name=movie_id,json=movieId,proto3" json:"movie_id,omitempty"`
+	SeasonNumber    int32                  `protobuf:"varint,3,opt,name=season_number,json=seasonNumber,proto3" json:"season_number,omitempty"`
+	EpisodeNumber   int32                  `protobuf:"varint,4,opt,name=episode_number,json=episodeNumber,proto3" json:"episode_number,omitempty"`
+	Title           string                 `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"`
+	Description     string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	DurationSeconds int32                  `protobuf:"varint,7,opt,name=duration_seconds,json=durationSeconds,proto3" json:"duration_seconds,omitempty"`
+	ImgUrl          string                 `protobuf:"bytes,8,opt,name=img_url,json=imgUrl,proto3" json:"img_url,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *EpisodeShort) Reset() {
@@ -172,9 +176,23 @@ func (x *EpisodeShort) GetId() int64 {
 	return 0
 }
 
-func (x *EpisodeShort) GetNumber() int32 {
+func (x *EpisodeShort) GetMovieId() int64 {
 	if x != nil {
-		return x.Number
+		return x.MovieId
+	}
+	return 0
+}
+
+func (x *EpisodeShort) GetSeasonNumber() int32 {
+	if x != nil {
+		return x.SeasonNumber
+	}
+	return 0
+}
+
+func (x *EpisodeShort) GetEpisodeNumber() int32 {
+	if x != nil {
+		return x.EpisodeNumber
 	}
 	return 0
 }
@@ -186,29 +204,49 @@ func (x *EpisodeShort) GetTitle() string {
 	return ""
 }
 
-func (x *EpisodeShort) GetDurationSec() int32 {
+func (x *EpisodeShort) GetDescription() string {
 	if x != nil {
-		return x.DurationSec
+		return x.Description
+	}
+	return ""
+}
+
+func (x *EpisodeShort) GetDurationSeconds() int32 {
+	if x != nil {
+		return x.DurationSeconds
 	}
 	return 0
 }
 
+func (x *EpisodeShort) GetImgUrl() string {
+	if x != nil {
+		return x.ImgUrl
+	}
+	return ""
+}
+
 type GetMovieByIDResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Year          int32                  `protobuf:"varint,4,opt,name=year,proto3" json:"year,omitempty"`
-	Countries     []string               `protobuf:"bytes,5,rep,name=countries,proto3" json:"countries,omitempty"`
-	Genres        []string               `protobuf:"bytes,6,rep,name=genres,proto3" json:"genres,omitempty"`
-	AgeLimit      int32                  `protobuf:"varint,7,opt,name=age_limit,json=ageLimit,proto3" json:"age_limit,omitempty"`
-	DurationMin   int32                  `protobuf:"varint,8,opt,name=duration_min,json=durationMin,proto3" json:"duration_min,omitempty"`
-	PosterUrl     string                 `protobuf:"bytes,9,opt,name=poster_url,json=posterUrl,proto3" json:"poster_url,omitempty"`
-	CardUrl       string                 `protobuf:"bytes,10,opt,name=card_url,json=cardUrl,proto3" json:"card_url,omitempty"`
-	Actors        []*ActorShort          `protobuf:"bytes,11,rep,name=actors,proto3" json:"actors,omitempty"`
-	Episodes      []*EpisodeShort        `protobuf:"bytes,12,rep,name=episodes,proto3" json:"episodes,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title              string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Description        string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Director           string                 `protobuf:"bytes,4,opt,name=director,proto3" json:"director,omitempty"`
+	TrailerUrl         string                 `protobuf:"bytes,5,opt,name=trailer_url,json=trailerUrl,proto3" json:"trailer_url,omitempty"`
+	ContentType        string                 `protobuf:"bytes,6,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	ReleaseYear        int32                  `protobuf:"varint,7,opt,name=release_year,json=releaseYear,proto3" json:"release_year,omitempty"`
+	DurationSeconds    int32                  `protobuf:"varint,8,opt,name=duration_seconds,json=durationSeconds,proto3" json:"duration_seconds,omitempty"`
+	AgeLimit           int32                  `protobuf:"varint,9,opt,name=age_limit,json=ageLimit,proto3" json:"age_limit,omitempty"`
+	OriginalLanguageId int64                  `protobuf:"varint,10,opt,name=original_language_id,json=originalLanguageId,proto3" json:"original_language_id,omitempty"`
+	OriginalLanguage   string                 `protobuf:"bytes,11,opt,name=original_language,json=originalLanguage,proto3" json:"original_language,omitempty"`
+	CountryId          int64                  `protobuf:"varint,12,opt,name=country_id,json=countryId,proto3" json:"country_id,omitempty"`
+	Country            string                 `protobuf:"bytes,13,opt,name=country,proto3" json:"country,omitempty"`
+	ImgUrl             string                 `protobuf:"bytes,14,opt,name=img_url,json=imgUrl,proto3" json:"img_url,omitempty"`
+	PosterUrl          string                 `protobuf:"bytes,15,opt,name=poster_url,json=posterUrl,proto3" json:"poster_url,omitempty"`
+	Genres             []string               `protobuf:"bytes,16,rep,name=genres,proto3" json:"genres,omitempty"`
+	Actors             []*ActorShort          `protobuf:"bytes,17,rep,name=actors,proto3" json:"actors,omitempty"`
+	Episodes           []*EpisodeShort        `protobuf:"bytes,18,rep,name=episodes,proto3" json:"episodes,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *GetMovieByIDResponse) Reset() {
@@ -262,25 +300,39 @@ func (x *GetMovieByIDResponse) GetDescription() string {
 	return ""
 }
 
-func (x *GetMovieByIDResponse) GetYear() int32 {
+func (x *GetMovieByIDResponse) GetDirector() string {
 	if x != nil {
-		return x.Year
+		return x.Director
+	}
+	return ""
+}
+
+func (x *GetMovieByIDResponse) GetTrailerUrl() string {
+	if x != nil {
+		return x.TrailerUrl
+	}
+	return ""
+}
+
+func (x *GetMovieByIDResponse) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *GetMovieByIDResponse) GetReleaseYear() int32 {
+	if x != nil {
+		return x.ReleaseYear
 	}
 	return 0
 }
 
-func (x *GetMovieByIDResponse) GetCountries() []string {
+func (x *GetMovieByIDResponse) GetDurationSeconds() int32 {
 	if x != nil {
-		return x.Countries
+		return x.DurationSeconds
 	}
-	return nil
-}
-
-func (x *GetMovieByIDResponse) GetGenres() []string {
-	if x != nil {
-		return x.Genres
-	}
-	return nil
+	return 0
 }
 
 func (x *GetMovieByIDResponse) GetAgeLimit() int32 {
@@ -290,11 +342,39 @@ func (x *GetMovieByIDResponse) GetAgeLimit() int32 {
 	return 0
 }
 
-func (x *GetMovieByIDResponse) GetDurationMin() int32 {
+func (x *GetMovieByIDResponse) GetOriginalLanguageId() int64 {
 	if x != nil {
-		return x.DurationMin
+		return x.OriginalLanguageId
 	}
 	return 0
+}
+
+func (x *GetMovieByIDResponse) GetOriginalLanguage() string {
+	if x != nil {
+		return x.OriginalLanguage
+	}
+	return ""
+}
+
+func (x *GetMovieByIDResponse) GetCountryId() int64 {
+	if x != nil {
+		return x.CountryId
+	}
+	return 0
+}
+
+func (x *GetMovieByIDResponse) GetCountry() string {
+	if x != nil {
+		return x.Country
+	}
+	return ""
+}
+
+func (x *GetMovieByIDResponse) GetImgUrl() string {
+	if x != nil {
+		return x.ImgUrl
+	}
+	return ""
 }
 
 func (x *GetMovieByIDResponse) GetPosterUrl() string {
@@ -304,11 +384,11 @@ func (x *GetMovieByIDResponse) GetPosterUrl() string {
 	return ""
 }
 
-func (x *GetMovieByIDResponse) GetCardUrl() string {
+func (x *GetMovieByIDResponse) GetGenres() []string {
 	if x != nil {
-		return x.CardUrl
+		return x.Genres
 	}
-	return ""
+	return nil
 }
 
 func (x *GetMovieByIDResponse) GetActors() []*ActorShort {
@@ -373,9 +453,7 @@ type MovieCard struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Year          int32                  `protobuf:"varint,3,opt,name=year,proto3" json:"year,omitempty"`
-	PosterUrl     string                 `protobuf:"bytes,4,opt,name=poster_url,json=posterUrl,proto3" json:"poster_url,omitempty"`
-	CardUrl       string                 `protobuf:"bytes,5,opt,name=card_url,json=cardUrl,proto3" json:"card_url,omitempty"`
+	ImgUrl        string                 `protobuf:"bytes,3,opt,name=img_url,json=imgUrl,proto3" json:"img_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -424,23 +502,9 @@ func (x *MovieCard) GetTitle() string {
 	return ""
 }
 
-func (x *MovieCard) GetYear() int32 {
+func (x *MovieCard) GetImgUrl() string {
 	if x != nil {
-		return x.Year
-	}
-	return 0
-}
-
-func (x *MovieCard) GetPosterUrl() string {
-	if x != nil {
-		return x.PosterUrl
-	}
-	return ""
-}
-
-func (x *MovieCard) GetCardUrl() string {
-	if x != nil {
-		return x.CardUrl
+		return x.ImgUrl
 	}
 	return ""
 }
@@ -448,10 +512,12 @@ func (x *MovieCard) GetCardUrl() string {
 type GetActorByIDResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	AvatarUrl     string                 `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
-	Movies        []*MovieCard           `protobuf:"bytes,5,rep,name=movies,proto3" json:"movies,omitempty"`
+	FullName      string                 `protobuf:"bytes,2,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
+	Biography     string                 `protobuf:"bytes,3,opt,name=biography,proto3" json:"biography,omitempty"`
+	Birthdate     string                 `protobuf:"bytes,4,opt,name=birthdate,proto3" json:"birthdate,omitempty"`
+	CountryId     int64                  `protobuf:"varint,5,opt,name=country_id,json=countryId,proto3" json:"country_id,omitempty"`
+	ImgUrl        string                 `protobuf:"bytes,6,opt,name=img_url,json=imgUrl,proto3" json:"img_url,omitempty"`
+	Movies        []*MovieCard           `protobuf:"bytes,7,rep,name=movies,proto3" json:"movies,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -493,23 +559,37 @@ func (x *GetActorByIDResponse) GetId() int64 {
 	return 0
 }
 
-func (x *GetActorByIDResponse) GetName() string {
+func (x *GetActorByIDResponse) GetFullName() string {
 	if x != nil {
-		return x.Name
+		return x.FullName
 	}
 	return ""
 }
 
-func (x *GetActorByIDResponse) GetDescription() string {
+func (x *GetActorByIDResponse) GetBiography() string {
 	if x != nil {
-		return x.Description
+		return x.Biography
 	}
 	return ""
 }
 
-func (x *GetActorByIDResponse) GetAvatarUrl() string {
+func (x *GetActorByIDResponse) GetBirthdate() string {
 	if x != nil {
-		return x.AvatarUrl
+		return x.Birthdate
+	}
+	return ""
+}
+
+func (x *GetActorByIDResponse) GetCountryId() int64 {
+	if x != nil {
+		return x.CountryId
+	}
+	return 0
+}
+
+func (x *GetActorByIDResponse) GetImgUrl() string {
+	if x != nil {
+		return x.ImgUrl
 	}
 	return ""
 }
@@ -882,12 +962,16 @@ func (x *GetEpisodePlaybackRequest) GetEpisodeId() int64 {
 }
 
 type GetEpisodePlaybackResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	EpisodeId     int64                  `protobuf:"varint,1,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
-	PlaybackUrl   string                 `protobuf:"bytes,2,opt,name=playback_url,json=playbackUrl,proto3" json:"playback_url,omitempty"`
-	DurationSec   int32                  `protobuf:"varint,3,opt,name=duration_sec,json=durationSec,proto3" json:"duration_sec,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	EpisodeId       int64                  `protobuf:"varint,1,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	MovieId         int64                  `protobuf:"varint,2,opt,name=movie_id,json=movieId,proto3" json:"movie_id,omitempty"`
+	SeasonNumber    int32                  `protobuf:"varint,3,opt,name=season_number,json=seasonNumber,proto3" json:"season_number,omitempty"`
+	EpisodeNumber   int32                  `protobuf:"varint,4,opt,name=episode_number,json=episodeNumber,proto3" json:"episode_number,omitempty"`
+	Title           string                 `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"`
+	DurationSeconds int32                  `protobuf:"varint,6,opt,name=duration_seconds,json=durationSeconds,proto3" json:"duration_seconds,omitempty"`
+	PlaybackUrl     string                 `protobuf:"bytes,7,opt,name=playback_url,json=playbackUrl,proto3" json:"playback_url,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GetEpisodePlaybackResponse) Reset() {
@@ -927,18 +1011,46 @@ func (x *GetEpisodePlaybackResponse) GetEpisodeId() int64 {
 	return 0
 }
 
+func (x *GetEpisodePlaybackResponse) GetMovieId() int64 {
+	if x != nil {
+		return x.MovieId
+	}
+	return 0
+}
+
+func (x *GetEpisodePlaybackResponse) GetSeasonNumber() int32 {
+	if x != nil {
+		return x.SeasonNumber
+	}
+	return 0
+}
+
+func (x *GetEpisodePlaybackResponse) GetEpisodeNumber() int32 {
+	if x != nil {
+		return x.EpisodeNumber
+	}
+	return 0
+}
+
+func (x *GetEpisodePlaybackResponse) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *GetEpisodePlaybackResponse) GetDurationSeconds() int32 {
+	if x != nil {
+		return x.DurationSeconds
+	}
+	return 0
+}
+
 func (x *GetEpisodePlaybackResponse) GetPlaybackUrl() string {
 	if x != nil {
 		return x.PlaybackUrl
 	}
 	return ""
-}
-
-func (x *GetEpisodePlaybackResponse) GetDurationSec() int32 {
-	if x != nil {
-		return x.DurationSec
-	}
-	return 0
 }
 
 type GetEpisodeProgressRequest struct {
@@ -994,11 +1106,11 @@ func (x *GetEpisodeProgressRequest) GetEpisodeId() int64 {
 }
 
 type GetEpisodeProgressResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	EpisodeId     int64                  `protobuf:"varint,1,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
-	PositionSec   int64                  `protobuf:"varint,2,opt,name=position_sec,json=positionSec,proto3" json:"position_sec,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	EpisodeId       int64                  `protobuf:"varint,1,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	PositionSeconds int64                  `protobuf:"varint,2,opt,name=position_seconds,json=positionSeconds,proto3" json:"position_seconds,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GetEpisodeProgressResponse) Reset() {
@@ -1038,20 +1150,20 @@ func (x *GetEpisodeProgressResponse) GetEpisodeId() int64 {
 	return 0
 }
 
-func (x *GetEpisodeProgressResponse) GetPositionSec() int64 {
+func (x *GetEpisodeProgressResponse) GetPositionSeconds() int64 {
 	if x != nil {
-		return x.PositionSec
+		return x.PositionSeconds
 	}
 	return 0
 }
 
 type SaveEpisodeProgressRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	EpisodeId     int64                  `protobuf:"varint,2,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
-	PositionSec   int64                  `protobuf:"varint,3,opt,name=position_sec,json=positionSec,proto3" json:"position_sec,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	UserId          int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	EpisodeId       int64                  `protobuf:"varint,2,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	PositionSeconds int64                  `protobuf:"varint,3,opt,name=position_seconds,json=positionSeconds,proto3" json:"position_seconds,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *SaveEpisodeProgressRequest) Reset() {
@@ -1098,19 +1210,19 @@ func (x *SaveEpisodeProgressRequest) GetEpisodeId() int64 {
 	return 0
 }
 
-func (x *SaveEpisodeProgressRequest) GetPositionSec() int64 {
+func (x *SaveEpisodeProgressRequest) GetPositionSeconds() int64 {
 	if x != nil {
-		return x.PositionSec
+		return x.PositionSeconds
 	}
 	return 0
 }
 
 type SaveEpisodeProgressResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	EpisodeId     int64                  `protobuf:"varint,1,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
-	PositionSec   int64                  `protobuf:"varint,2,opt,name=position_sec,json=positionSec,proto3" json:"position_sec,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	EpisodeId       int64                  `protobuf:"varint,1,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	PositionSeconds int64                  `protobuf:"varint,2,opt,name=position_seconds,json=positionSeconds,proto3" json:"position_seconds,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *SaveEpisodeProgressResponse) Reset() {
@@ -1150,9 +1262,9 @@ func (x *SaveEpisodeProgressResponse) GetEpisodeId() int64 {
 	return 0
 }
 
-func (x *SaveEpisodeProgressResponse) GetPositionSec() int64 {
+func (x *SaveEpisodeProgressResponse) GetPositionSeconds() int64 {
 	if x != nil {
-		return x.PositionSec
+		return x.PositionSeconds
 	}
 	return 0
 }
@@ -1163,49 +1275,59 @@ const file_movie_v1_movie_proto_rawDesc = "" +
 	"\n" +
 	"\x14movie/v1/movie.proto\x12\bmovie.v1\"0\n" +
 	"\x13GetMovieByIDRequest\x12\x19\n" +
-	"\bmovie_id\x18\x01 \x01(\x03R\amovieId\"O\n" +
+	"\bmovie_id\x18\x01 \x01(\x03R\amovieId\"R\n" +
 	"\n" +
 	"ActorShort\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
-	"\n" +
-	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\"o\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
+	"\tfull_name\x18\x02 \x01(\tR\bfullName\x12\x17\n" +
+	"\aimg_url\x18\x03 \x01(\tR\x06imgUrl\"\x81\x02\n" +
 	"\fEpisodeShort\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
-	"\x06number\x18\x02 \x01(\x05R\x06number\x12\x14\n" +
-	"\x05title\x18\x03 \x01(\tR\x05title\x12!\n" +
-	"\fduration_sec\x18\x04 \x01(\x05R\vdurationSec\"\x84\x03\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
+	"\bmovie_id\x18\x02 \x01(\x03R\amovieId\x12#\n" +
+	"\rseason_number\x18\x03 \x01(\x05R\fseasonNumber\x12%\n" +
+	"\x0eepisode_number\x18\x04 \x01(\x05R\repisodeNumber\x12\x14\n" +
+	"\x05title\x18\x05 \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\x06 \x01(\tR\vdescription\x12)\n" +
+	"\x10duration_seconds\x18\a \x01(\x05R\x0fdurationSeconds\x12\x17\n" +
+	"\aimg_url\x18\b \x01(\tR\x06imgUrl\"\xf3\x04\n" +
 	"\x14GetMovieByIDResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x12\n" +
-	"\x04year\x18\x04 \x01(\x05R\x04year\x12\x1c\n" +
-	"\tcountries\x18\x05 \x03(\tR\tcountries\x12\x16\n" +
-	"\x06genres\x18\x06 \x03(\tR\x06genres\x12\x1b\n" +
-	"\tage_limit\x18\a \x01(\x05R\bageLimit\x12!\n" +
-	"\fduration_min\x18\b \x01(\x05R\vdurationMin\x12\x1d\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1a\n" +
+	"\bdirector\x18\x04 \x01(\tR\bdirector\x12\x1f\n" +
+	"\vtrailer_url\x18\x05 \x01(\tR\n" +
+	"trailerUrl\x12!\n" +
+	"\fcontent_type\x18\x06 \x01(\tR\vcontentType\x12!\n" +
+	"\frelease_year\x18\a \x01(\x05R\vreleaseYear\x12)\n" +
+	"\x10duration_seconds\x18\b \x01(\x05R\x0fdurationSeconds\x12\x1b\n" +
+	"\tage_limit\x18\t \x01(\x05R\bageLimit\x120\n" +
+	"\x14original_language_id\x18\n" +
+	" \x01(\x03R\x12originalLanguageId\x12+\n" +
+	"\x11original_language\x18\v \x01(\tR\x10originalLanguage\x12\x1d\n" +
 	"\n" +
-	"poster_url\x18\t \x01(\tR\tposterUrl\x12\x19\n" +
-	"\bcard_url\x18\n" +
-	" \x01(\tR\acardUrl\x12,\n" +
-	"\x06actors\x18\v \x03(\v2\x14.movie.v1.ActorShortR\x06actors\x122\n" +
-	"\bepisodes\x18\f \x03(\v2\x16.movie.v1.EpisodeShortR\bepisodes\"0\n" +
+	"country_id\x18\f \x01(\x03R\tcountryId\x12\x18\n" +
+	"\acountry\x18\r \x01(\tR\acountry\x12\x17\n" +
+	"\aimg_url\x18\x0e \x01(\tR\x06imgUrl\x12\x1d\n" +
+	"\n" +
+	"poster_url\x18\x0f \x01(\tR\tposterUrl\x12\x16\n" +
+	"\x06genres\x18\x10 \x03(\tR\x06genres\x12,\n" +
+	"\x06actors\x18\x11 \x03(\v2\x14.movie.v1.ActorShortR\x06actors\x122\n" +
+	"\bepisodes\x18\x12 \x03(\v2\x16.movie.v1.EpisodeShortR\bepisodes\"0\n" +
 	"\x13GetActorByIDRequest\x12\x19\n" +
-	"\bactor_id\x18\x01 \x01(\x03R\aactorId\"\x7f\n" +
+	"\bactor_id\x18\x01 \x01(\x03R\aactorId\"J\n" +
 	"\tMovieCard\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12\x12\n" +
-	"\x04year\x18\x03 \x01(\x05R\x04year\x12\x1d\n" +
-	"\n" +
-	"poster_url\x18\x04 \x01(\tR\tposterUrl\x12\x19\n" +
-	"\bcard_url\x18\x05 \x01(\tR\acardUrl\"\xa8\x01\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x17\n" +
+	"\aimg_url\x18\x03 \x01(\tR\x06imgUrl\"\xe4\x01\n" +
 	"\x14GetActorByIDResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
+	"\tfull_name\x18\x02 \x01(\tR\bfullName\x12\x1c\n" +
+	"\tbiography\x18\x03 \x01(\tR\tbiography\x12\x1c\n" +
+	"\tbirthdate\x18\x04 \x01(\tR\tbirthdate\x12\x1d\n" +
 	"\n" +
-	"avatar_url\x18\x04 \x01(\tR\tavatarUrl\x12+\n" +
-	"\x06movies\x18\x05 \x03(\v2\x13.movie.v1.MovieCardR\x06movies\"2\n" +
+	"country_id\x18\x05 \x01(\x03R\tcountryId\x12\x17\n" +
+	"\aimg_url\x18\x06 \x01(\tR\x06imgUrl\x12+\n" +
+	"\x06movies\x18\a \x03(\v2\x13.movie.v1.MovieCardR\x06movies\"2\n" +
 	"\x1aGetSelectionByTitleRequest\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\"N\n" +
 	"\tSelection\x12\x14\n" +
@@ -1225,29 +1347,33 @@ const file_movie_v1_movie_proto_rawDesc = "" +
 	"\x06movies\x18\x01 \x03(\v2\x13.movie.v1.MovieCardR\x06movies\":\n" +
 	"\x19GetEpisodePlaybackRequest\x12\x1d\n" +
 	"\n" +
-	"episode_id\x18\x01 \x01(\x03R\tepisodeId\"\x81\x01\n" +
+	"episode_id\x18\x01 \x01(\x03R\tepisodeId\"\x86\x02\n" +
 	"\x1aGetEpisodePlaybackResponse\x12\x1d\n" +
 	"\n" +
-	"episode_id\x18\x01 \x01(\x03R\tepisodeId\x12!\n" +
-	"\fplayback_url\x18\x02 \x01(\tR\vplaybackUrl\x12!\n" +
-	"\fduration_sec\x18\x03 \x01(\x05R\vdurationSec\"S\n" +
+	"episode_id\x18\x01 \x01(\x03R\tepisodeId\x12\x19\n" +
+	"\bmovie_id\x18\x02 \x01(\x03R\amovieId\x12#\n" +
+	"\rseason_number\x18\x03 \x01(\x05R\fseasonNumber\x12%\n" +
+	"\x0eepisode_number\x18\x04 \x01(\x05R\repisodeNumber\x12\x14\n" +
+	"\x05title\x18\x05 \x01(\tR\x05title\x12)\n" +
+	"\x10duration_seconds\x18\x06 \x01(\x05R\x0fdurationSeconds\x12!\n" +
+	"\fplayback_url\x18\a \x01(\tR\vplaybackUrl\"S\n" +
 	"\x19GetEpisodeProgressRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1d\n" +
 	"\n" +
-	"episode_id\x18\x02 \x01(\x03R\tepisodeId\"^\n" +
+	"episode_id\x18\x02 \x01(\x03R\tepisodeId\"f\n" +
 	"\x1aGetEpisodeProgressResponse\x12\x1d\n" +
 	"\n" +
-	"episode_id\x18\x01 \x01(\x03R\tepisodeId\x12!\n" +
-	"\fposition_sec\x18\x02 \x01(\x03R\vpositionSec\"w\n" +
+	"episode_id\x18\x01 \x01(\x03R\tepisodeId\x12)\n" +
+	"\x10position_seconds\x18\x02 \x01(\x03R\x0fpositionSeconds\"\x7f\n" +
 	"\x1aSaveEpisodeProgressRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1d\n" +
 	"\n" +
-	"episode_id\x18\x02 \x01(\x03R\tepisodeId\x12!\n" +
-	"\fposition_sec\x18\x03 \x01(\x03R\vpositionSec\"_\n" +
+	"episode_id\x18\x02 \x01(\x03R\tepisodeId\x12)\n" +
+	"\x10position_seconds\x18\x03 \x01(\x03R\x0fpositionSeconds\"g\n" +
 	"\x1bSaveEpisodeProgressResponse\x12\x1d\n" +
 	"\n" +
-	"episode_id\x18\x01 \x01(\x03R\tepisodeId\x12!\n" +
-	"\fposition_sec\x18\x02 \x01(\x03R\vpositionSec2\xe0\x05\n" +
+	"episode_id\x18\x01 \x01(\x03R\tepisodeId\x12)\n" +
+	"\x10position_seconds\x18\x02 \x01(\x03R\x0fpositionSeconds2\xe0\x05\n" +
 	"\fMovieService\x12M\n" +
 	"\fGetMovieByID\x12\x1d.movie.v1.GetMovieByIDRequest\x1a\x1e.movie.v1.GetMovieByIDResponse\x12M\n" +
 	"\fGetActorByID\x12\x1d.movie.v1.GetActorByIDRequest\x1a\x1e.movie.v1.GetActorByIDResponse\x12b\n" +

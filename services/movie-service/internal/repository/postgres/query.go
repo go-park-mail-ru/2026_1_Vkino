@@ -5,19 +5,21 @@ const (
 		select
 			m.id,
 			m.title,
-			coalesce(m.description, '') as description,
+			coalesce(m.description, ''),
+			coalesce(m.director, ''),
+			coalesce(m.trailer_url, ''),
+			m.content_type,
 			m.release_year,
+			m.duration_seconds,
 			m.age_limit,
-			ceil(m.duration_seconds / 60.0)::int as duration_min,
-			m.poster_file_key,
-			m.picture_file_key as card_file_key
+			m.original_language_id,
+			l.title,
+			m.country_id,
+			c.title,
+			m.picture_file_key,
+			coalesce(m.poster_file_key, '')
 		from movie m
-		where m.id = $1
-	`
-
-	sqlGetMovieCountriesByID = `
-		select c.title
-		from movie m
+		join language l on l.id = m.original_language_id
 		join country c on c.id = m.country_id
 		where m.id = $1
 	`
@@ -33,8 +35,8 @@ const (
 	sqlGetMovieActorsByID = `
 		select
 			a.id,
-			a.full_name as name,
-			a.picture_file_key as avatar_file_key
+			a.full_name,
+			a.picture_file_key
 		from actor_to_movie am
 		join actor a on a.id = am.actor_id
 		where am.movie_id = $1
@@ -45,9 +47,12 @@ const (
 		select
 			e.id,
 			e.movie_id,
-			e.episode_number as number,
-			coalesce(e.title, '') as title,
-			e.duration_seconds as duration_sec,
+			e.season_number,
+			e.episode_number,
+			coalesce(e.title, ''),
+			coalesce(e.description, ''),
+			e.duration_seconds,
+			e.picture_file_key,
 			e.video_file_key
 		from episode e
 		where e.movie_id = $1
@@ -57,9 +62,11 @@ const (
 	sqlGetActorBaseByID = `
 		select
 			a.id,
-			a.full_name as name,
-			coalesce(a.biography, '') as description,
-			a.picture_file_key as avatar_file_key
+			a.full_name,
+			a.birthdate,
+			coalesce(a.biography, ''),
+			a.country_id,
+			a.picture_file_key
 		from actor a
 		where a.id = $1
 	`
@@ -68,9 +75,7 @@ const (
 		select
 			m.id,
 			m.title,
-			m.release_year,
-			m.poster_file_key,
-			m.picture_file_key as card_file_key
+			m.picture_file_key
 		from actor_to_movie am
 		join movie m on m.id = am.movie_id
 		where am.actor_id = $1
@@ -82,9 +87,7 @@ const (
 			s.title,
 			m.id,
 			m.title,
-			m.release_year,
-			m.poster_file_key,
-			m.picture_file_key as card_file_key
+			m.picture_file_key
 		from selection s
 		join movie_to_selection ms on ms.selection_id = s.id
 		join movie m on m.id = ms.movie_id
@@ -97,9 +100,7 @@ const (
 			s.title,
 			m.id,
 			m.title,
-			m.release_year,
-			m.poster_file_key,
-			m.picture_file_key as card_file_key
+			m.picture_file_key
 		from selection s
 		join movie_to_selection ms on ms.selection_id = s.id
 		join movie m on m.id = ms.movie_id
@@ -110,9 +111,7 @@ const (
 		select
 			m.id,
 			m.title,
-			m.release_year,
-			m.poster_file_key,
-			m.picture_file_key as card_file_key
+			m.picture_file_key
 		from movie m
 		where (
 			setweight(to_tsvector('simple', coalesce(m.title, '')), 'A') ||
@@ -137,9 +136,10 @@ const (
 		select
 			e.id,
 			e.movie_id,
-			e.episode_number as number,
-			coalesce(e.title, '') as title,
-			e.duration_seconds as duration_sec,
+			e.season_number,
+			e.episode_number,
+			coalesce(e.title, ''),
+			e.duration_seconds,
 			e.video_file_key
 		from episode e
 		where e.id = $1
@@ -148,7 +148,7 @@ const (
 	sqlGetEpisodeProgress = `
 		select
 			wpe.episode_id,
-			wpe.position_seconds as position_sec
+			coalesce(wpe.position_seconds, 0)
 		from watch_progress_episode wpe
 		where wpe.user_id = $1 and wpe.episode_id = $2
 	`
@@ -160,6 +160,6 @@ const (
 		do update set
 			position_seconds = excluded.position_seconds,
 			updated_at = now()
-		returning episode_id, position_seconds as position_sec
+		returning episode_id, position_seconds
 	`
 )

@@ -15,12 +15,15 @@ services:
       - api-gateway
 
   api-gateway:
+    
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
       args:
         SERVICE_PATH: services/api-gateway/cmd/gateway
         BINARY_NAME: gateway
+    ports:
+      - "8080:8080"
     container_name: api-gateway
     restart: always
     volumes:
@@ -51,6 +54,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    expose:
+      - "8081"
 
   user-service:
     build:
@@ -70,6 +75,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    expose:
+      - "8082"
 
   movie-service:
     build:
@@ -89,6 +96,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    expose:
+      - "8083"
 
   db:
     container_name: dev-postgres

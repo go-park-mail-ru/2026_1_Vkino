@@ -1,51 +1,63 @@
 package domain
 
-import "strings"
+import (
+	"strings"
+	"time"
+)
 
 type Movie struct {
-	ID            int64
-	Title         string
-	Description   string
-	Year          int
-	AgeLimit      int
-	DurationMin   int
-	PosterFileKey *string
-	CardFileKey   *string
-	Countries     []string
-	Genres        []string
-	Actors        []ActorShort
-	Episodes      []Episode
+	ID                 int64
+	Title              string
+	Description        string
+	Director           string
+	TrailerURL         string
+	ContentType        string
+	ReleaseYear        int
+	DurationSeconds    int
+	AgeLimit           int
+	OriginalLanguageID int64
+	OriginalLanguage   string
+	CountryID          int64
+	Country            string
+	PictureFileKey     string
+	PosterFileKey      string
+	Genres             []string
+	Actors             []ActorShort
+	Episodes           []Episode
 }
 
 type Actor struct {
-	ID            int64
-	Name          string
-	Description   string
-	AvatarFileKey *string
-	Movies        []MovieCard
+	ID             int64
+	FullName       string
+	BirthDate      *time.Time
+	Biography      string
+	CountryID      int64
+	PictureFileKey string
+	Movies         []MovieCard
 }
 
 type ActorShort struct {
-	ID            int64
-	Name          string
-	AvatarFileKey *string
+	ID             int64
+	FullName       string
+	PictureFileKey string
 }
 
 type Episode struct {
-	ID           int64
-	MovieID      int64
-	Number       int
-	Title        string
-	DurationSec  int
-	VideoFileKey *string
+	ID              int64
+	MovieID         int64
+	SeasonNumber    int
+	EpisodeNumber   int
+	Title           string
+	Description     string
+	DurationSeconds int
+	PictureFileKey  string
+	VideoFileKey    string
 }
 
 type MovieCard struct {
-	ID            int64
-	Title         string
-	Year          int
-	PosterFileKey *string
-	CardFileKey   *string
+	ID             int64
+	Title          string
+	PictureFileKey string
 }
 
 type Selection struct {
@@ -53,15 +65,9 @@ type Selection struct {
 	Movies []MovieCard
 }
 
-type EpisodePlayback struct {
-	EpisodeID   int64
-	PlaybackURL string
-	DurationSec int
-}
-
 type EpisodeProgress struct {
-	EpisodeID   int64
-	PositionSec int64
+	EpisodeID       int64
+	PositionSeconds int64
 }
 
 func ValidateSelectionTitle(title string) bool {

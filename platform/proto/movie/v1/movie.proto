@@ -22,30 +22,40 @@ message GetMovieByIDRequest {
 
 message ActorShort {
   int64 id = 1;
-  string name = 2;
-  string avatar_url = 3;
+  string full_name = 2;
+  string img_url = 3;
 }
 
 message EpisodeShort {
   int64 id = 1;
-  int32 number = 2;
-  string title = 3;
-  int32 duration_sec = 4;
+  int64 movie_id = 2;
+  int32 season_number = 3;
+  int32 episode_number = 4;
+  string title = 5;
+  string description = 6;
+  int32 duration_seconds = 7;
+  string img_url = 8;
 }
 
 message GetMovieByIDResponse {
   int64 id = 1;
   string title = 2;
   string description = 3;
-  int32 year = 4;
-  repeated string countries = 5;
-  repeated string genres = 6;
-  int32 age_limit = 7;
-  int32 duration_min = 8;
-  string poster_url = 9;
-  string card_url = 10;
-  repeated ActorShort actors = 11;
-  repeated EpisodeShort episodes = 12;
+  string director = 4;
+  string trailer_url = 5;
+  string content_type = 6;
+  int32 release_year = 7;
+  int32 duration_seconds = 8;
+  int32 age_limit = 9;
+  int64 original_language_id = 10;
+  string original_language = 11;
+  int64 country_id = 12;
+  string country = 13;
+  string img_url = 14;
+  string poster_url = 15;
+  repeated string genres = 16;
+  repeated ActorShort actors = 17;
+  repeated EpisodeShort episodes = 18;
 }
 
 message GetActorByIDRequest {
@@ -55,17 +65,17 @@ message GetActorByIDRequest {
 message MovieCard {
   int64 id = 1;
   string title = 2;
-  int32 year = 3;
-  string poster_url = 4;
-  string card_url = 5;
+  string img_url = 3;
 }
 
 message GetActorByIDResponse {
   int64 id = 1;
-  string name = 2;
-  string description = 3;
-  string avatar_url = 4;
-  repeated MovieCard movies = 5;
+  string full_name = 2;
+  string biography = 3;
+  string birthdate = 4;
+  int64 country_id = 5;
+  string img_url = 6;
+  repeated MovieCard movies = 7;
 }
 
 message GetSelectionByTitleRequest {
@@ -102,8 +112,12 @@ message GetEpisodePlaybackRequest {
 
 message GetEpisodePlaybackResponse {
   int64 episode_id = 1;
-  string playback_url = 2;
-  int32 duration_sec = 3;
+  int64 movie_id = 2;
+  int32 season_number = 3;
+  int32 episode_number = 4;
+  string title = 5;
+  int32 duration_seconds = 6;
+  string playback_url = 7;
 }
 
 message GetEpisodeProgressRequest {
@@ -113,16 +127,16 @@ message GetEpisodeProgressRequest {
 
 message GetEpisodeProgressResponse {
   int64 episode_id = 1;
-  int64 position_sec = 2;
+  int64 position_seconds = 2;
 }
 
 message SaveEpisodeProgressRequest {
   int64 user_id = 1;
   int64 episode_id = 2;
-  int64 position_sec = 3;
+  int64 position_seconds = 3;
 }
 
 message SaveEpisodeProgressResponse {
   int64 episode_id = 1;
-  int64 position_sec = 2;
+  int64 position_seconds = 2;
 }

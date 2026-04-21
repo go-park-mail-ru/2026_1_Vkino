@@ -23,9 +23,13 @@ func (u *MovieUsecase) GetEpisodePlayback(ctx context.Context, episodeID int64) 
 	}
 
 	return domain.EpisodePlaybackResponse{
-		EpisodeID:   episode.ID,
-		PlaybackURL: playbackURL,
-		DurationSec: episode.DurationSec,
+		EpisodeID:       episode.ID,
+		MovieID:         episode.MovieID,
+		SeasonNumber:    episode.SeasonNumber,
+		EpisodeNumber:   episode.EpisodeNumber,
+		Title:           episode.Title,
+		DurationSeconds: episode.DurationSeconds,
+		PlaybackURL:     playbackURL,
 	}, nil
 }
 
@@ -46,8 +50,8 @@ func (u *MovieUsecase) GetEpisodeProgress(
 	}
 
 	return domain.EpisodeProgressResponse{
-		EpisodeID:   progress.EpisodeID,
-		PositionSec: progress.PositionSec,
+		EpisodeID:       progress.EpisodeID,
+		PositionSeconds: progress.PositionSeconds,
 	}, nil
 }
 
@@ -71,7 +75,7 @@ func (u *MovieUsecase) SaveEpisodeProgress(
 	}
 
 	return domain.EpisodeProgressResponse{
-		EpisodeID:   progress.EpisodeID,
-		PositionSec: progress.PositionSec,
+		EpisodeID:       progress.EpisodeID,
+		PositionSeconds: progress.PositionSeconds,
 	}, nil
 }
