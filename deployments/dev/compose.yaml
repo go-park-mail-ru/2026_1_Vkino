@@ -1,18 +1,15 @@
 services:
   nginx:
     image: nginx:trixie-perl
-    container_name: front-nginx
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - 80:80
+      - 443:443
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./logs/nginx:/var/log/nginx
     extra_hosts:
       - host.docker.internal:host-gateway
-    depends_on:
-      - api-gateway
 
   api-gateway:
     build:
@@ -22,18 +19,12 @@ services:
         SERVICE_PATH: services/api-gateway/cmd/gateway
         BINARY_NAME: gateway
     ports:
-      - "8080:8080"
-    container_name: api-gateway
+      - 8080:8080
     restart: always
     volumes:
       - ../../services/api-gateway/configs/gateway.yaml:/etc/vkino/gateway.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./gateway -config /etc/vkino/gateway.yaml
-    depends_on:
-      user-service:
-        condition: service_started
-      movie-service:
-        condition: service_started
 
   auth-service:
     env_file:
@@ -44,19 +35,13 @@ services:
       args:
         SERVICE_PATH: services/auth-service/cmd/auth-service
         BINARY_NAME: auth-service
-    container_name: auth-service
     restart: always
     volumes:
       - ../../services/auth-service/configs/auth.yaml:/etc/vkino/auth.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./auth-service -config /etc/vkino/auth.yaml
-    depends_on:
-      db:
-        condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
     expose:
-      - "8081"
+      - "9090"
 
   user-service:
     env_file:
@@ -67,19 +52,13 @@ services:
       args:
         SERVICE_PATH: services/user-service/cmd/user-service
         BINARY_NAME: user-service
-    container_name: user-service
     restart: always
     volumes:
       - ../../services/user-service/configs/user.yaml:/etc/vkino/user.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./user-service -config /etc/vkino/user.yaml
-    depends_on:
-      db:
-        condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
     expose:
-      - "8082"
+      - "9091"
 
   movie-service:
     env_file:
@@ -90,22 +69,15 @@ services:
       args:
         SERVICE_PATH: services/movie-service/cmd/movie-service
         BINARY_NAME: movie-service
-    container_name: movie-service
     restart: always
     volumes:
       - ../../services/movie-service/configs/movie.yaml:/etc/vkino/movie.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./movie-service -config /etc/vkino/movie.yaml
-    depends_on:
-      db:
-        condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
     expose:
-      - "8083"
+      - "9092"
 
   db:
-    container_name: dev-postgres
     image: postgres:18.3
     env_file:
       - ./.env
@@ -120,7 +92,7 @@ services:
       retries: 5
       start_period: 30s
     ports:
-      - "5434:5432"
+      - 5434:5432
     volumes:
       - db-data:/var/lib/postgresql
 
@@ -145,13 +117,12 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: vkino-minio
     restart: always
     env_file:
       - ./.env
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - 9000:9000
+      - 9001:9001
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
@@ -165,6 +136,7 @@ services:
       - ./.env
     depends_on:
       - minio
+    restart: "no"
     entrypoint: >
       /bin/sh -c "
       until /usr/bin/mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}; do
