@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/respond"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 )
 
@@ -61,7 +62,7 @@ func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 			AccessToken: accessToken,
 		})
 		if err != nil {
-			grpcx.WriteError(w, err)
+			respond.Error(w, err)
 			return
 		}
 
