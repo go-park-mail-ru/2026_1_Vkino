@@ -3,6 +3,8 @@ package httpserver
 import (
 	"net/http"
 	"time"
+
+	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
 )
 
 type TimeoutsConfig struct {
@@ -24,7 +26,7 @@ type Config struct {
 	CORS     CORSConfig     `mapstructure:"cors"`
 }
 
-type Middleware func(http.Handler) http.Handler
+type Middleware = rootmw.Middleware
 
 type Server struct {
 	server      *http.Server
@@ -56,9 +58,5 @@ func (s *Server) Run() error {
 }
 
 func (s *Server) applyMiddlewares(h http.Handler) http.Handler {
-	for i := len(s.middlewares) - 1; i >= 0; i-- {
-		h = s.middlewares[i](h)
-	}
-
-	return h
+	return rootmw.Chain(h, s.middlewares...)
 }

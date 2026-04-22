@@ -31,7 +31,7 @@ func WithRoute(pattern string, handler http.HandlerFunc) Option {
 }
 
 func WithMiddlewareRoute(pattern string, handler http.HandlerFunc,
-	middlewares ...func(http.Handler) http.Handler) Option {
+	middlewares ...Middleware) Option {
 	return func(s *Server) {
 		wrappedHandler := middleware.Chain(
 			http.HandlerFunc(handler),
