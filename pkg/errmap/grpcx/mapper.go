@@ -3,26 +3,27 @@ package grpcx
 import (
 	"errors"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/errmap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-type Rule struct {
+type ErrResponse struct {
 	Code    codes.Code
 	Message string
 }
 
 type Mapper struct {
-	order       []error
-	rules       map[error]Rule
+	mapper      *errmap.Mapper[error, error, ErrResponse]
 	defaultCode codes.Code
 	defaultMsg  string
 }
 
-func New(order []error, rules map[error]Rule, defaultCode codes.Code, defaultMsg string) *Mapper {
+func New(order []error, rules map[error]ErrResponse, defaultCode codes.Code, defaultMsg string) *Mapper {
 	return &Mapper{
-		order:       order,
-		rules:       rules,
+		mapper: errmap.New(order, rules, func(subject error, key error) bool {
+			return errors.Is(subject, key)
+		}),
 		defaultCode: defaultCode,
 		defaultMsg:  defaultMsg,
 	}
@@ -33,12 +34,10 @@ func (m *Mapper) Map(err error) error {
 		return nil
 	}
 
-	for _, key := range m.order {
-		if errors.Is(err, key) {
-			rule := m.rules[key]
-			return status.Error(rule.Code, rule.Message)
-		}
+	rule, ok := m.mapper.Resolve(err)
+	if !ok {
+		return status.Error(m.defaultCode, m.defaultMsg)
 	}
 
-	return status.Error(m.defaultCode, m.defaultMsg)
+	return status.Error(rule.Code, rule.Message)
 }

@@ -31,7 +31,7 @@ var movieGRPCErrorMapper = grpcx.New(
 
 		domain.ErrInternal,
 	},
-	map[error]grpcx.Rule{
+	map[error]grpcx.ErrResponse{
 		domain.ErrInvalidMovieID:        {Code: codes.InvalidArgument, Message: "invalid movie id"},
 		domain.ErrInvalidActorID:        {Code: codes.InvalidArgument, Message: "invalid actor id"},
 		domain.ErrInvalidEpisodeID:      {Code: codes.InvalidArgument, Message: "invalid episode id"},

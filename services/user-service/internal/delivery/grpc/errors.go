@@ -29,7 +29,7 @@ var userGRPCErrorMapper = grpcx.New(
 
 		domain.ErrInternal,
 	},
-	map[error]grpcx.Rule{
+	map[error]grpcx.ErrResponse{
 		domain.ErrInvalidToken: {Code: codes.Unauthenticated, Message: "unauthorized"},
 
 		domain.ErrUserNotFound:       {Code: codes.NotFound, Message: "user not found"},

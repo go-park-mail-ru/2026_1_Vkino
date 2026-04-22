@@ -23,9 +23,9 @@ var authGRPCErrorMapper = grpcx.New(
 
 		domain.ErrInternal,
 	},
-	map[error]grpcx.Rule{
-		domain.ErrUserAlreadyExists:      {Code: codes.AlreadyExists, Message: "user already exists"},
-		postgresrepo.ErrUserAlreadyExists:{Code: codes.AlreadyExists, Message: "user already exists"},
+	map[error]grpcx.ErrResponse{
+		domain.ErrUserAlreadyExists:       {Code: codes.AlreadyExists, Message: "user already exists"},
+		postgresrepo.ErrUserAlreadyExists: {Code: codes.AlreadyExists, Message: "user already exists"},
 
 		domain.ErrInvalidCredentials: {Code: codes.Unauthenticated, Message: "unauthorized"},
 		domain.ErrPasswordMismatch:   {Code: codes.Unauthenticated, Message: "unauthorized"},
