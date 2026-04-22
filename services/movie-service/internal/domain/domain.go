@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"strings"
 	"time"
 )
 
@@ -68,14 +67,4 @@ type Selection struct {
 type EpisodeProgress struct {
 	EpisodeID       int64
 	PositionSeconds int64
-}
-
-func ValidateSelectionTitle(title string) bool {
-	trimmed := strings.TrimSpace(title)
-	return trimmed != "" && len(trimmed) <= 255
-}
-
-func ValidateSearchQuery(query string) bool {
-	trimmed := strings.TrimSpace(query)
-	return trimmed != "" && len(trimmed) <= 255
 }
