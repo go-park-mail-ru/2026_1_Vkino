@@ -7,7 +7,7 @@ logger:
   output_path: "logs/app/auth-service.log"
 
 auth:
-  jwt_secret: "dev-secret"
+  jwt_secret: ""
   access_token_ttl: "15m"
   refresh_token_ttl: "336h"
   issuer: "vkino-auth-service"
@@ -15,9 +15,9 @@ auth:
 postgres:
   host: "db"
   port: 5432
-  user: "vkino_user"
-  password: "vkino"
-  dbname: "vkino"
+  user: ""
+  password: ""
+  dbname: ""
   sslmode: "disable"
   max_pool_size: 10
   conn_attempts: 10

@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:trixie-perl
     container_name: front-nginx
     restart: always
     ports:
@@ -15,7 +15,6 @@ services:
       - api-gateway
 
   api-gateway:
-    
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
@@ -37,6 +36,8 @@ services:
         condition: service_started
 
   auth-service:
+    env_file:
+      - ./.env
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
@@ -58,6 +59,8 @@ services:
       - "8081"
 
   user-service:
+    env_file:
+      - ./.env
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
@@ -79,6 +82,8 @@ services:
       - "8082"
 
   movie-service:
+    env_file:
+      - ./.env
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
@@ -102,6 +107,8 @@ services:
   db:
     container_name: dev-postgres
     image: postgres:18.3
+    env_file:
+      - ./.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -119,6 +126,8 @@ services:
 
   migrate:
     image: migrate/migrate
+    env_file:
+      - ./.env
     volumes:
       - ../../migrations:/migrations
     command:
@@ -138,23 +147,27 @@ services:
     image: minio/minio:latest
     container_name: vkino-minio
     restart: always
+    env_file:
+      - ./.env
     ports:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
 
   minio-init:
     image: minio/mc:latest
+    env_file:
+      - ./.env
     depends_on:
       - minio
     entrypoint: >
       /bin/sh -c "
-      until /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin; do
+      until /usr/bin/mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}; do
         echo 'waiting for minio...';
         sleep 2;
       done;

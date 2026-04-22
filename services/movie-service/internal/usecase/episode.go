@@ -49,10 +49,7 @@ func (u *MovieUsecase) GetEpisodeProgress(
 		return domain.EpisodeProgressResponse{}, err
 	}
 
-	return domain.EpisodeProgressResponse{
-		EpisodeID:       progress.EpisodeID,
-		PositionSeconds: progress.PositionSeconds,
-	}, nil
+	return domain.EpisodeProgressResponse(progress), nil
 }
 
 func (u *MovieUsecase) SaveEpisodeProgress(
@@ -74,8 +71,5 @@ func (u *MovieUsecase) SaveEpisodeProgress(
 		return domain.EpisodeProgressResponse{}, fmt.Errorf("%w: save episode progress: %v", domain.ErrInternal, err)
 	}
 
-	return domain.EpisodeProgressResponse{
-		EpisodeID:       progress.EpisodeID,
-		PositionSeconds: progress.PositionSeconds,
-	}, nil
+	return domain.EpisodeProgressResponse(progress), nil
 }

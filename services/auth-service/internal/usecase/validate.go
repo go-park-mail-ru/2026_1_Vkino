@@ -43,8 +43,5 @@ func (u *AuthUsecase) ValidateAccessToken(tokenString string) (AuthContext, erro
 		return AuthContext{}, domain.ErrInvalidToken
 	}
 
-	return AuthContext{
-		UserID: authCtx.UserID,
-		Email:  authCtx.Email,
-	}, nil
+	return AuthContext(authCtx), nil
 }
