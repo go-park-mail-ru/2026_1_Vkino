@@ -26,7 +26,7 @@ user_grpc:
   request_timeout: 5s
 
 movie_grpc:
-  address: "movie-service:9092"
+  address: "movie:9092"
   request_timeout: 5s
 
 user_auth:

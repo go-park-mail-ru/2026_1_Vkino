@@ -31,7 +31,7 @@ func Run(configPath string) error {
 		return fmt.Errorf("init logger: %w", err)
 	}
 
-	appLogger := baseLogger.WithField("component", "movie-service")
+	appLogger := baseLogger.WithField("component", "movie")
 
 	options := corepostgres.BuildPostgresOptions(&cfg.Postgres)
 	pgDB, err := corepostgres.New(cfg.Postgres, options...)

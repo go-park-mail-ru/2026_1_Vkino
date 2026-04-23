@@ -8,7 +8,7 @@ auth_grpc:
 logger:
   level: "info"
   format: "json"
-  output_path: "logs/app/movie-service.log"
+  output_path: "logs/app/movie.log"
 
 postgres:
   host: "db"

@@ -3,10 +3,10 @@ package routes
 import (
 	"net/http"
 
+	dto "github.com/go-park-mail-ru/2026_1_VKino/internal/api-gateway/domain"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
-	dto "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/domain"
 )
 
 func Auth(

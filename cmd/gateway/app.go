@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/api-gateway/routes"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
@@ -11,7 +12,7 @@ import (
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/cmd/gateway/routes"
+	"google.golang.org/grpc"
 )
 
 func Run(configPath string) error {
@@ -27,41 +28,47 @@ func Run(configPath string) error {
 
 	appLogger := baseLogger.WithField("component", "api-gateway")
 
-	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
-		Address:        cfg.AuthGRPC.Address,
-		RequestTimeout: cfg.AuthGRPC.RequestTimeout,
-	})
+	authConn, err := newGRPCConn(cfg.AuthGRPC)
 	if err != nil {
 		return fmt.Errorf("init auth grpc client: %w", err)
 	}
 	defer authConn.Close()
 
-	userConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
-		Address:        cfg.UserGRPC.Address,
-		RequestTimeout: cfg.UserGRPC.RequestTimeout,
-	})
+	userConn, err := newGRPCConn(cfg.UserGRPC)
 	if err != nil {
 		return fmt.Errorf("init user grpc client: %w", err)
 	}
 	defer userConn.Close()
 
-	movieConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
-		Address:        cfg.MovieGRPC.Address,
-		RequestTimeout: cfg.MovieGRPC.RequestTimeout,
-	})
+	movieConn, err := newGRPCConn(cfg.MovieGRPC)
 	if err != nil {
 		return fmt.Errorf("init movie grpc client: %w", err)
 	}
 	defer movieConn.Close()
 
-	authClient := authv1.NewAuthServiceClient(authConn)
-	userClient := userv1.NewUserServiceClient(userConn)
-	movieClient := moviev1.NewMovieServiceClient(movieConn)
+	server := httpserver.New(append(serverOptions(cfg, appLogger), routes.Register(
+		cfg,
+		authv1.NewAuthServiceClient(authConn),
+		userv1.NewUserServiceClient(userConn),
+		moviev1.NewMovieServiceClient(movieConn),
+	)...)...)
 
-	opts := []httpserver.Option{
+	appLogger.WithField("port", cfg.Server.Port).Info("starting api gateway")
+
+	return server.Run()
+}
+
+func newGRPCConn(cfg ServiceGRPCConfig) (*grpc.ClientConn, error) {
+	return grpcx.Dial(context.Background(), grpcx.ClientConfig{
+		Address:        cfg.Address,
+		RequestTimeout: cfg.RequestTimeout,
+	})
+}
+
+func serverOptions(cfg *Config, log *logger.Logger) []httpserver.Option {
+	return []httpserver.Option{
 		httpserver.Port(cfg.Server.Port),
 		httpserver.Timeout(cfg.Server.Timeouts),
-
 		httpserver.WithMiddleware(rootmw.RequestIDMiddleware),
 		httpserver.WithMiddleware(rootmw.CorsMiddleware(rootmw.CORSConfig{
 			AllowedOrigins:   cfg.Server.CORS.AllowedOrigins,
@@ -70,20 +77,7 @@ func Run(configPath string) error {
 			AllowCredentials: cfg.Server.CORS.AllowCredentials,
 			MaxAge:           3600,
 		})),
-		httpserver.WithMiddleware(rootmw.LoggerMiddleware(appLogger)),
+		httpserver.WithMiddleware(rootmw.LoggerMiddleware(log)),
 		httpserver.WithMiddleware(rootmw.RecoveryMiddleware),
 	}
-
-	opts = append(opts, routes.Register(
-		cfg,
-		authClient,
-		userClient,
-		movieClient,
-	)...)
-
-	server := httpserver.New(opts...)
-
-	appLogger.WithField("port", cfg.Server.Port).Info("starting api gateway")
-
-	return server.Run()
 }
