@@ -23,7 +23,7 @@ import (
 
 func Run(configPath string) error {
 	cfg := Config{}
-	if err := Load(configPath, cfg); err != nil {
+	if err := Load(configPath, &cfg); err != nil {
 		return fmt.Errorf("unable to load config: %w", err)
 	}
 

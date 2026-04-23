@@ -32,7 +32,7 @@ type Config struct {
 func Load(path string, cfg any) error {
 	v := viper.New()
 
-	const defaultConfigPath = "services/movie/configs/config.yaml"
+	const defaultConfigPath = "./config.yaml"
 
 	if path != "" {
 		v.SetConfigFile(path)

@@ -16,13 +16,13 @@ services:
       context: ../..
       dockerfile: build/image/Dockerfile
       args:
-        SERVICE_PATH: services/api-gateway/cmd/gateway
+        SERVICE_PATH: cmd/gateway
         BINARY_NAME: gateway
     ports:
       - 8080:8080
     restart: always
     volumes:
-      - ../../services/api-gateway/configs/config.yaml:/etc/vkino/config.yaml:ro
+      - ../../cmd/gateway/config.yaml:/etc/vkino/config.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./gateway -config /etc/vkino/config.yaml
 
@@ -33,11 +33,11 @@ services:
       context: ../..
       dockerfile: build/image/Dockerfile
       args:
-        SERVICE_PATH: services/auth/cmd/auth
+        SERVICE_PATH: cmd/auth
         BINARY_NAME: auth
     restart: always
     volumes:
-      - ../../services/auth/configs/config.yaml:/etc/vkino/config.yaml:ro
+      - ../../cmd/auth/config.yaml:/etc/vkino/config.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./auth -config /etc/vkino/config.yaml
     expose:
@@ -50,11 +50,11 @@ services:
       context: ../..
       dockerfile: build/image/Dockerfile
       args:
-        SERVICE_PATH: services/user/cmd/user
+        SERVICE_PATH: cmd/user
         BINARY_NAME: user
     restart: always
     volumes:
-      - ../../services/user/configs/config.yaml:/etc/vkino/config.yaml:ro
+      - ../../cmd/user/config.yaml:/etc/vkino/config.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./user -config /etc/vkino/config.yaml
     expose:
@@ -67,11 +67,11 @@ services:
       context: ../..
       dockerfile: build/image/Dockerfile
       args:
-        SERVICE_PATH: services/movie/cmd/movie
+        SERVICE_PATH: cmd/movie
         BINARY_NAME: movie
     restart: always
     volumes:
-      - ../../services/movie/configs/config.yaml:/etc/vkino/config.yaml:ro
+      - ../../cmd/movie/config.yaml:/etc/vkino/config.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./movie -config /etc/vkino/config.yaml
     expose:

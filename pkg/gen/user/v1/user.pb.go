@@ -770,7 +770,7 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x12SearchUsersByEmail\x12\".user.v1.SearchUsersByEmailRequest\x1a#.user.v1.SearchUsersByEmailResponse\x12B\n" +
 	"\tAddFriend\x12\x19.user.v1.AddFriendRequest\x1a\x1a.user.v1.AddFriendResponse\x12K\n" +
 	"\fDeleteFriend\x12\x1c.user.v1.DeleteFriendRequest\x1a\x1d.user.v1.DeleteFriendResponse\x12`\n" +
-	"\x13AddMovieToFavorites\x12#.user.v1.AddMovieToFavoritesRequest\x1a$.user.v1.AddMovieToFavoritesResponseBEZCgithub.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1;userv1b\x06proto3"
+	"\x13AddMovieToFavorites\x12#.user.v1.AddMovieToFavoritesRequest\x1a$.user.v1.AddMovieToFavoritesResponseB@Z>github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1;userv1b\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once

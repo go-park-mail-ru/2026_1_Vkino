@@ -10,19 +10,19 @@ import (
 	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/delivery/grpc"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/repository/postgres"
 	movieusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/usecase"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
-	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 
 	"google.golang.org/grpc"
 )
 
 func Run(configPath string) error {
 	cfg := Config{}
-	if err := Load(configPath, cfg); err != nil {
+	if err := Load(configPath, &cfg); err != nil {
 		return fmt.Errorf("unable to load config: %w", err)
 	}
 
