@@ -37,9 +37,9 @@ services:
         BINARY_NAME: auth-service
     restart: always
     volumes:
-      - ../../services/auth-service/configs/auth.yaml:/etc/vkino/auth.yaml:ro
+      - ../../services/auth-service/configs/config.yaml:/etc/vkino/config.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./auth-service -config /etc/vkino/auth.yaml
+    command: ./auth-service -config /etc/vkino/config.yaml
     expose:
       - "9090"
 
