@@ -11,8 +11,7 @@ import (
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/app/gateway/routes"
-	authmw "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/delivery/http/middleware"
+	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/cmd/gateway/routes"
 )
 
 func Run(configPath string) error {
@@ -59,11 +58,6 @@ func Run(configPath string) error {
 	userClient := userv1.NewUserServiceClient(userConn)
 	movieClient := moviev1.NewMovieServiceClient(movieConn)
 
-	authMiddleware := authmw.NewAuthMiddleware(authClient, grpcx.ClientConfig{
-		Address:        cfg.AuthGRPC.Address,
-		RequestTimeout: cfg.AuthGRPC.RequestTimeout,
-	})
-
 	opts := []httpserver.Option{
 		httpserver.Port(cfg.Server.Port),
 		httpserver.Timeout(cfg.Server.Timeouts),
@@ -85,7 +79,6 @@ func Run(configPath string) error {
 		authClient,
 		userClient,
 		movieClient,
-		authMiddleware.Middleware,
 	)...)
 
 	server := httpserver.New(opts...)

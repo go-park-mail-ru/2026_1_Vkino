@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/configenv"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
@@ -15,8 +16,14 @@ type GRPCConfig struct {
 	Port int `mapstructure:"port"`
 }
 
+type ServiceGRPCConfig struct {
+	Address        string        `mapstructure:"address"`
+	RequestTimeout time.Duration `mapstructure:"request_timeout"`
+}
+
 type Config struct {
 	GRPC     GRPCConfig          `mapstructure:"grpc"`
+	AuthGRPC ServiceGRPCConfig   `mapstructure:"auth_grpc"`
 	Logger   logger.Config       `mapstructure:"logger"`
 	Postgres corepostgres.Config `mapstructure:"postgres"`
 	S3       storage.S3Config    `mapstructure:"s3"`

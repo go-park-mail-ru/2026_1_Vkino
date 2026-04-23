@@ -8,7 +8,12 @@ import (
 )
 
 func (s *Server) GetProfile(ctx context.Context, req *userv1.GetProfileRequest) (*userv1.GetProfileResponse, error) {
-	profile, err := s.usecase.GetProfile(ctx, req.GetUserId())
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	profile, err := s.usecase.GetProfile(ctx, authCtx.UserID)
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -26,8 +31,12 @@ func (s *Server) GetProfile(ctx context.Context, req *userv1.GetProfileRequest) 
 }
 
 func (s *Server) UpdateProfile(ctx context.Context, req *userv1.UpdateProfileRequest) (*userv1.UpdateProfileResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	var body *bytes.Reader
-	
 	var size int64
 
 	if len(req.GetAvatar()) > 0 {
@@ -37,7 +46,7 @@ func (s *Server) UpdateProfile(ctx context.Context, req *userv1.UpdateProfileReq
 
 	profile, err := s.usecase.UpdateProfile(
 		ctx,
-		req.GetUserId(),
+		authCtx.UserID,
 		req.GetBirthdate(),
 		body,
 		size,
@@ -63,7 +72,12 @@ func (s *Server) SearchUsersByEmail(
 	ctx context.Context,
 	req *userv1.SearchUsersByEmailRequest,
 ) (*userv1.SearchUsersByEmailResponse, error) {
-	users, err := s.usecase.SearchUsersByEmail(ctx, req.GetUserId(), req.GetEmailQuery())
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	users, err := s.usecase.SearchUsersByEmail(ctx, authCtx.UserID, req.GetEmailQuery())
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -84,7 +98,12 @@ func (s *Server) SearchUsersByEmail(
 }
 
 func (s *Server) AddFriend(ctx context.Context, req *userv1.AddFriendRequest) (*userv1.AddFriendResponse, error) {
-	friend, err := s.usecase.AddFriend(ctx, req.GetUserId(), req.GetFriendId())
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	friend, err := s.usecase.AddFriend(ctx, authCtx.UserID, req.GetFriendId())
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -99,7 +118,12 @@ func (s *Server) DeleteFriend(
 	ctx context.Context,
 	req *userv1.DeleteFriendRequest,
 ) (*userv1.DeleteFriendResponse, error) {
-	err := s.usecase.DeleteFriend(ctx, req.GetUserId(), req.GetFriendId())
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.usecase.DeleteFriend(ctx, authCtx.UserID, req.GetFriendId())
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -111,7 +135,12 @@ func (s *Server) AddMovieToFavorites(
 	ctx context.Context,
 	req *userv1.AddMovieToFavoritesRequest,
 ) (*userv1.AddMovieToFavoritesResponse, error) {
-	favorite, err := s.usecase.AddMovieToFavorites(ctx, req.GetUserId(), req.GetMovieId())
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	favorite, err := s.usecase.AddMovieToFavorites(ctx, authCtx.UserID, req.GetMovieId())
 	if err != nil {
 		return nil, mapError(err)
 	}

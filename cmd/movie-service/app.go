@@ -14,6 +14,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
 
 	"google.golang.org/grpc"
@@ -71,13 +72,24 @@ func Run(configPath string) error {
 		videoStore,
 	)
 
+	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
+		Address:        cfg.AuthGRPC.Address,
+		RequestTimeout: cfg.AuthGRPC.RequestTimeout,
+	})
+	if err != nil {
+		return fmt.Errorf("init auth grpc client: %w", err)
+	}
+	defer authConn.Close()
+
+	authClient := authv1.NewAuthServiceClient(authConn)
+
 	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {
 		return err
 	}
 
 	grpcServer := grpcx.NewServer(appLogger, func(server *grpc.Server) {
-		moviev1.RegisterMovieServiceServer(server, deliverygrpc.NewServer(movieUC))
+		moviev1.RegisterMovieServiceServer(server, deliverygrpc.NewServer(movieUC, authClient))
 	})
 
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")

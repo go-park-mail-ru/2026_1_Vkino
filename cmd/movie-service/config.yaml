@@ -1,6 +1,10 @@
 grpc:
   port: 9092
 
+auth_grpc:
+  address: "auth:9090"
+  request_timeout: "5s"
+
 logger:
   level: "info"
   format: "json"

@@ -3,26 +3,22 @@ package routes
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/respond"
-	authmw "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/delivery/http/middleware"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
 )
-
-func requireAuth(w http.ResponseWriter, r *http.Request) (authmw.AuthContext, bool) {
-	authCtx, err := authmw.AuthFromContext(r.Context())
-	if err != nil {
-		httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
-		return authmw.AuthContext{}, false
-	}
-
-	return authCtx, true
-}
 
 func grpcContext(r *http.Request, timeout time.Duration) (contextDone func()) {
 	ctx, cancel := grpcx.WithTimeout(r.Context(), timeout)
+
+	if authorization := strings.TrimSpace(r.Header.Get("Authorization")); authorization != "" {
+		ctx = authctx.AppendOutgoing(ctx, authorization)
+	}
+
 	*r = *r.WithContext(ctx)
 	return cancel
 }

@@ -12,7 +12,6 @@ import (
 func Movie(
 	cfg Config,
 	movieClient moviev1.MovieServiceClient,
-	authMiddleware func(http.Handler) http.Handler,
 ) []httpserver.Option {
 	return []httpserver.Option{
 		httpserver.WithRoute("GET /movie/selection/all", func(w http.ResponseWriter, r *http.Request) {
@@ -130,12 +129,7 @@ func Movie(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithMiddlewareRoute("GET /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
-			authCtx, ok := requireAuth(w, r)
-			if !ok {
-				return
-			}
-
+		httpserver.WithRoute("GET /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
 			episodeID, ok := parsePathID(w, r, "id", "invalid episode id")
 			if !ok {
 				return
@@ -145,7 +139,6 @@ func Movie(
 			defer cancel()
 
 			resp, err := movieClient.GetEpisodeProgress(r.Context(), &moviev1.GetEpisodeProgressRequest{
-				UserId:    authCtx.UserID,
 				EpisodeId: episodeID,
 			})
 			if err != nil {
@@ -154,14 +147,9 @@ func Movie(
 			}
 
 			httppkg.Response(w, http.StatusOK, resp)
-		}, authMiddleware),
+		}),
 
-		httpserver.WithMiddlewareRoute("PUT /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
-			authCtx, ok := requireAuth(w, r)
-			if !ok {
-				return
-			}
-
+		httpserver.WithRoute("PUT /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
 			episodeID, ok := parsePathID(w, r, "id", "invalid episode id")
 			if !ok {
 				return
@@ -178,7 +166,6 @@ func Movie(
 			defer cancel()
 
 			resp, err := movieClient.SaveEpisodeProgress(r.Context(), &moviev1.SaveEpisodeProgressRequest{
-				UserId:          authCtx.UserID,
 				EpisodeId:       episodeID,
 				PositionSeconds: req.PositionSec,
 			})
@@ -188,6 +175,6 @@ func Movie(
 			}
 
 			httppkg.Response(w, http.StatusOK, resp)
-		}, authMiddleware),
+		}),
 	}
 }

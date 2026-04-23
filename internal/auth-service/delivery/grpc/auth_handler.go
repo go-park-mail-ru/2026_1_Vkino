@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 )
 
@@ -61,7 +62,17 @@ func (s *Server) Validate(ctx context.Context, req *authv1.ValidateRequest) (*au
 }
 
 func (s *Server) Logout(ctx context.Context, req *authv1.LogoutRequest) (*authv1.LogoutResponse, error) {
-	err := s.usecase.LogOut(ctx, req.GetEmail())
+	accessToken, err := authctx.AccessTokenFromIncomingContext(ctx)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	authData, err := s.usecase.ValidateAccessToken(accessToken)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	err = s.usecase.LogOut(ctx, authData.Email)
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -73,7 +84,17 @@ func (s *Server) ChangePassword(
 	ctx context.Context,
 	req *authv1.ChangePasswordRequest,
 ) (*authv1.ChangePasswordResponse, error) {
-	err := s.usecase.ChangePassword(ctx, req.GetUserId(), req.GetOldPassword(), req.GetNewPassword())
+	accessToken, err := authctx.AccessTokenFromIncomingContext(ctx)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	authData, err := s.usecase.ValidateAccessToken(accessToken)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	err = s.usecase.ChangePassword(ctx, authData.UserID, req.GetOldPassword(), req.GetNewPassword())
 	if err != nil {
 		return nil, mapError(err)
 	}

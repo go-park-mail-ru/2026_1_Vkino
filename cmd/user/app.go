@@ -15,6 +15,7 @@ import (
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
 
 	"google.golang.org/grpc"
@@ -52,13 +53,24 @@ func Run(configPath string) error {
 
 	userUC := userusecase.NewUserUsecase(userRepo, avatarStore, clockService)
 
+	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
+		Address:        cfg.AuthGRPC.Address,
+		RequestTimeout: cfg.AuthGRPC.RequestTimeout,
+	})
+	if err != nil {
+		return fmt.Errorf("init auth grpc client: %w", err)
+	}
+	defer authConn.Close()
+
+	authClient := authv1.NewAuthServiceClient(authConn)
+
 	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {
 		return err
 	}
 
 	grpcServer := grpcx.NewServer(appLogger, func(server *grpc.Server) {
-		userv1.RegisterUserServiceServer(server, deliverygrpc.NewServer(userUC))
+		userv1.RegisterUserServiceServer(server, deliverygrpc.NewServer(userUC, authClient))
 	})
 
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")

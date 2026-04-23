@@ -14,7 +14,6 @@ func Register(
 	authClient authv1.AuthServiceClient,
 	userClient userv1.UserServiceClient,
 	movieClient moviev1.MovieServiceClient,
-	authMiddleware func(http.Handler) http.Handler,
 ) []httpserver.Option {
 	result := []httpserver.Option{
 		httpserver.WithRoute("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -23,9 +22,9 @@ func Register(
 		}),
 	}
 
-	result = append(result, Auth(cfg, authClient, authMiddleware)...)
-	result = append(result, User(cfg, userClient, authMiddleware)...)
-	result = append(result, Movie(cfg, movieClient, authMiddleware)...)
+	result = append(result, Auth(cfg, authClient)...)
+	result = append(result, User(cfg, userClient)...)
+	result = append(result, Movie(cfg, movieClient)...)
 
 	return result
 }

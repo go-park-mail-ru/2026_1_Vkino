@@ -12,7 +12,6 @@ import (
 func Auth(
 	cfg Config,
 	authClient authv1.AuthServiceClient,
-	authMiddleware func(http.Handler) http.Handler,
 ) []httpserver.Option {
 	return []httpserver.Option{
 		httpserver.WithRoute("POST /user/sign-up", func(w http.ResponseWriter, r *http.Request) {
@@ -111,18 +110,11 @@ func Auth(
 			})
 		}),
 
-		httpserver.WithMiddlewareRoute("POST /user/logout", func(w http.ResponseWriter, r *http.Request) {
-			authCtx, ok := requireAuth(w, r)
-			if !ok {
-				return
-			}
-
+		httpserver.WithRoute("POST /user/logout", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.AuthRequestTimeout())
 			defer cancel()
 
-			_, err := authClient.Logout(r.Context(), &authv1.LogoutRequest{
-				Email: authCtx.Email,
-			})
+			_, err := authClient.Logout(r.Context(), &authv1.LogoutRequest{})
 			if err != nil {
 				writeGRPCError(w, err)
 				return
@@ -141,14 +133,9 @@ func Auth(
 			httppkg.Response(w, http.StatusOK, map[string]string{
 				"message": "successfully log out",
 			})
-		}, authMiddleware),
+		}),
 
-		httpserver.WithMiddlewareRoute("POST /user/change-password", func(w http.ResponseWriter, r *http.Request) {
-			authCtx, ok := requireAuth(w, r)
-			if !ok {
-				return
-			}
-
+		httpserver.WithRoute("POST /user/change-password", func(w http.ResponseWriter, r *http.Request) {
 			var req dto.ChangePasswordRequest
 			if !readJSON(w, r, &req) {
 				return
@@ -158,7 +145,6 @@ func Auth(
 			defer cancel()
 
 			_, err := authClient.ChangePassword(r.Context(), &authv1.ChangePasswordRequest{
-				UserId:      authCtx.UserID,
 				OldPassword: req.OldPassword,
 				NewPassword: req.NewPassword,
 			})
@@ -170,6 +156,6 @@ func Auth(
 			httppkg.Response(w, http.StatusOK, map[string]string{
 				"message": "password updated",
 			})
-		}, authMiddleware),
+		}),
 	}
 }

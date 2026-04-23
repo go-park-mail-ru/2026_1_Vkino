@@ -125,7 +125,12 @@ func (s *Server) GetEpisodeProgress(
 	ctx context.Context,
 	req *moviev1.GetEpisodeProgressRequest,
 ) (*moviev1.GetEpisodeProgressResponse, error) {
-	progress, err := s.usecase.GetEpisodeProgress(ctx, req.GetUserId(), req.GetEpisodeId())
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	progress, err := s.usecase.GetEpisodeProgress(ctx, authCtx.UserID, req.GetEpisodeId())
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -140,9 +145,14 @@ func (s *Server) SaveEpisodeProgress(
 	ctx context.Context,
 	req *moviev1.SaveEpisodeProgressRequest,
 ) (*moviev1.SaveEpisodeProgressResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	progress, err := s.usecase.SaveEpisodeProgress(
 		ctx,
-		req.GetUserId(),
+		authCtx.UserID,
 		req.GetEpisodeId(),
 		req.GetPositionSeconds(),
 	)
