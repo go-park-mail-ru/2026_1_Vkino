@@ -22,9 +22,9 @@ services:
       - 8080:8080
     restart: always
     volumes:
-      - ../../services/api-gateway/configs/gateway.yaml:/etc/vkino/gateway.yaml:ro
+      - ../../services/api-gateway/configs/config.yaml:/etc/vkino/config.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./gateway -config /etc/vkino/gateway.yaml
+    command: ./gateway -config /etc/vkino/config.yaml
 
   auth-service:
     env_file:

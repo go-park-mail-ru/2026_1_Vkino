@@ -4,20 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
-	config "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
 	routes "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/app/gateway/routes"
 	authmw "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/delivery/http/middleware"
 )
 
 func Run(configPath string) error {
-	cfg := &config.Config{}
+	cfg := &Config{}
 	if err := Load(configPath, cfg); err != nil {
 		return fmt.Errorf("unable to load config: %w", err)
 	}
