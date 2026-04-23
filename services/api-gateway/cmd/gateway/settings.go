@@ -30,6 +30,26 @@ type Config struct {
 	UserAuth  UserAuthConfig    `mapstructure:"user_auth"`
 }
 
+func (c *Config) AuthRequestTimeout() time.Duration {
+	return c.AuthGRPC.RequestTimeout
+}
+
+func (c *Config) UserRequestTimeout() time.Duration {
+	return c.UserGRPC.RequestTimeout
+}
+
+func (c *Config) MovieRequestTimeout() time.Duration {
+	return c.MovieGRPC.RequestTimeout
+}
+
+func (c *Config) RefreshCookieName() string {
+	return c.UserAuth.RefreshCookieName
+}
+
+func (c *Config) CookieSecure() bool {
+	return c.UserAuth.CookieSecure
+}
+
 func Load(path string, cfg *Config) error {
 	v := viper.New()
 

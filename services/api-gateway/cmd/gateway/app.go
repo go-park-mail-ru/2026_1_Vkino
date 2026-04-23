@@ -11,7 +11,7 @@ import (
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
-	routes "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/app/gateway/routes"
+	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/app/gateway/routes"
 	authmw "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/delivery/http/middleware"
 )
 

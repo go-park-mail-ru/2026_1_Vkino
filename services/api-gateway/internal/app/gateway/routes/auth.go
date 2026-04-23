@@ -3,16 +3,14 @@ package routes
 import (
 	"net/http"
 
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 	dto "github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/domain"
 )
 
-
 func Auth(
-	cfg *config.Config,
+	cfg Config,
 	authClient authv1.AuthServiceClient,
 	authMiddleware func(http.Handler) http.Handler,
 ) []httpserver.Option {
@@ -23,7 +21,7 @@ func Auth(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.AuthGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.AuthRequestTimeout())
 			defer cancel()
 
 			resp, err := authClient.SignUp(r.Context(), &authv1.SignUpRequest{
@@ -36,11 +34,11 @@ func Auth(
 			}
 
 			http.SetCookie(w, &http.Cookie{
-				Name:     cfg.UserAuth.RefreshCookieName,
+				Name:     cfg.RefreshCookieName(),
 				Value:    resp.GetRefreshToken(),
 				Path:     "/",
 				HttpOnly: true,
-				Secure:   cfg.UserAuth.CookieSecure,
+				Secure:   cfg.CookieSecure(),
 				SameSite: http.SameSiteLaxMode,
 			})
 
@@ -55,7 +53,7 @@ func Auth(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.AuthGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.AuthRequestTimeout())
 			defer cancel()
 
 			resp, err := authClient.SignIn(r.Context(), &authv1.SignInRequest{
@@ -68,11 +66,11 @@ func Auth(
 			}
 
 			http.SetCookie(w, &http.Cookie{
-				Name:     cfg.UserAuth.RefreshCookieName,
+				Name:     cfg.RefreshCookieName(),
 				Value:    resp.GetRefreshToken(),
 				Path:     "/",
 				HttpOnly: true,
-				Secure:   cfg.UserAuth.CookieSecure,
+				Secure:   cfg.CookieSecure(),
 				SameSite: http.SameSiteLaxMode,
 			})
 
@@ -82,13 +80,13 @@ func Auth(
 		}),
 
 		httpserver.WithRoute("POST /user/refresh", func(w http.ResponseWriter, r *http.Request) {
-			cookie, err := r.Cookie(cfg.UserAuth.RefreshCookieName)
+			cookie, err := r.Cookie(cfg.RefreshCookieName())
 			if err != nil {
 				httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
 				return
 			}
 
-			cancel := grpcContext(r, cfg.AuthGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.AuthRequestTimeout())
 			defer cancel()
 
 			resp, err := authClient.Refresh(r.Context(), &authv1.RefreshRequest{
@@ -100,11 +98,11 @@ func Auth(
 			}
 
 			http.SetCookie(w, &http.Cookie{
-				Name:     cfg.UserAuth.RefreshCookieName,
+				Name:     cfg.RefreshCookieName(),
 				Value:    resp.GetRefreshToken(),
 				Path:     "/",
 				HttpOnly: true,
-				Secure:   cfg.UserAuth.CookieSecure,
+				Secure:   cfg.CookieSecure(),
 				SameSite: http.SameSiteLaxMode,
 			})
 
@@ -119,7 +117,7 @@ func Auth(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.AuthGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.AuthRequestTimeout())
 			defer cancel()
 
 			_, err := authClient.Logout(r.Context(), &authv1.LogoutRequest{
@@ -131,11 +129,11 @@ func Auth(
 			}
 
 			http.SetCookie(w, &http.Cookie{
-				Name:     cfg.UserAuth.RefreshCookieName,
+				Name:     cfg.RefreshCookieName(),
 				Value:    "",
 				Path:     "/",
 				HttpOnly: true,
-				Secure:   cfg.UserAuth.CookieSecure,
+				Secure:   cfg.CookieSecure(),
 				SameSite: http.SameSiteLaxMode,
 				MaxAge:   -1,
 			})
@@ -156,7 +154,7 @@ func Auth(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.AuthGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.AuthRequestTimeout())
 			defer cancel()
 
 			_, err := authClient.ChangePassword(r.Context(), &authv1.ChangePasswordRequest{

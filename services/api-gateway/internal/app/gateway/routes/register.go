@@ -3,15 +3,14 @@ package routes
 import (
 	"net/http"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
 )
 
 func Register(
-	cfg *config.Config,
+	cfg Config,
 	authClient authv1.AuthServiceClient,
 	userClient userv1.UserServiceClient,
 	movieClient moviev1.MovieServiceClient,

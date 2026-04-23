@@ -1,15 +1,14 @@
 package routes
 
 import (
-	"net/http"
-	"strings"
 	"errors"
 	"io"
+	"net/http"
+	"strings"
 
-	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
 )
 
 type updateProfileRequest struct {
@@ -80,7 +79,7 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 }
 
 func User(
-	cfg *config.Config,
+	cfg Config,
 	userClient userv1.UserServiceClient,
 	authMiddleware func(http.Handler) http.Handler,
 ) []httpserver.Option {
@@ -91,7 +90,7 @@ func User(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.UserGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
 			resp, err := userClient.GetProfile(r.Context(), &userv1.GetProfileRequest{
@@ -111,7 +110,7 @@ func User(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.UserGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
 			resp, err := userClient.SearchUsersByEmail(r.Context(), &userv1.SearchUsersByEmailRequest{
@@ -137,7 +136,7 @@ func User(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.UserGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
 			resp, err := userClient.UpdateProfile(r.Context(), &userv1.UpdateProfileRequest{
@@ -165,7 +164,7 @@ func User(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.UserGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
 			resp, err := userClient.AddFriend(r.Context(), &userv1.AddFriendRequest{
@@ -191,7 +190,7 @@ func User(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.UserGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
 			_, err := userClient.DeleteFriend(r.Context(), &userv1.DeleteFriendRequest{
@@ -219,7 +218,7 @@ func User(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.UserGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
 			resp, err := userClient.AddMovieToFavorites(r.Context(), &userv1.AddMovieToFavoritesRequest{

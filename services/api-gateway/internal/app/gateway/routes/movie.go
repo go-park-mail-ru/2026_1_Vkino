@@ -4,20 +4,19 @@ import (
 	"net/http"
 	"strings"
 
-	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/api-gateway/internal/config"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
 )
 
 func Movie(
-	cfg *config.Config,
+	cfg Config,
 	movieClient moviev1.MovieServiceClient,
 	authMiddleware func(http.Handler) http.Handler,
 ) []httpserver.Option {
 	return []httpserver.Option{
 		httpserver.WithRoute("GET /movie/selection/all", func(w http.ResponseWriter, r *http.Request) {
-			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
 			resp, err := movieClient.GetAllSelections(r.Context(), &moviev1.GetAllSelectionsRequest{})
@@ -36,7 +35,7 @@ func Movie(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
 			resp, err := movieClient.GetSelectionByTitle(r.Context(), &moviev1.GetSelectionByTitleRequest{
@@ -57,7 +56,7 @@ func Movie(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
 			resp, err := movieClient.SearchMovies(r.Context(), &moviev1.SearchMoviesRequest{
@@ -77,7 +76,7 @@ func Movie(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
 			resp, err := movieClient.GetMovieByID(r.Context(), &moviev1.GetMovieByIDRequest{
@@ -97,7 +96,7 @@ func Movie(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
 			resp, err := movieClient.GetActorByID(r.Context(), &moviev1.GetActorByIDRequest{
@@ -117,7 +116,7 @@ func Movie(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
 			resp, err := movieClient.GetEpisodePlayback(r.Context(), &moviev1.GetEpisodePlaybackRequest{
@@ -142,7 +141,7 @@ func Movie(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
 			resp, err := movieClient.GetEpisodeProgress(r.Context(), &moviev1.GetEpisodeProgressRequest{
@@ -175,12 +174,12 @@ func Movie(
 				return
 			}
 
-			cancel := grpcContext(r, cfg.MovieGRPC.RequestTimeout)
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
 			resp, err := movieClient.SaveEpisodeProgress(r.Context(), &moviev1.SaveEpisodeProgressRequest{
-				UserId:      authCtx.UserID,
-				EpisodeId:   episodeID,
+				UserId:          authCtx.UserID,
+				EpisodeId:       episodeID,
 				PositionSeconds: req.PositionSec,
 			})
 			if err != nil {
