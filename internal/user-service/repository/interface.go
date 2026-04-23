@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/user-service/domain"
 )
 
 type UserRepo interface {

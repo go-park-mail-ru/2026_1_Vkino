@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/user-service/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/domain"
 )
 
 func (u *UserUsecase) GetProfile(ctx context.Context, userID int64) (domain.ProfileResponse, error) {

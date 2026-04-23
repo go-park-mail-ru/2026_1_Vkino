@@ -33,13 +33,13 @@ services:
       context: ../..
       dockerfile: build/image/Dockerfile
       args:
-        SERVICE_PATH: services/auth-service/cmd/auth-service
-        BINARY_NAME: auth-service
+        SERVICE_PATH: services/auth/cmd/auth
+        BINARY_NAME: auth
     restart: always
     volumes:
-      - ../../services/auth-service/configs/config.yaml:/etc/vkino/config.yaml:ro
+      - ../../services/auth/configs/config.yaml:/etc/vkino/config.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./auth-service -config /etc/vkino/config.yaml
+    command: ./auth -config /etc/vkino/config.yaml
     expose:
       - "9090"
 
@@ -50,13 +50,13 @@ services:
       context: ../..
       dockerfile: build/image/Dockerfile
       args:
-        SERVICE_PATH: services/user-service/cmd/user-service
-        BINARY_NAME: user-service
+        SERVICE_PATH: services/user/cmd/user
+        BINARY_NAME: user
     restart: always
     volumes:
-      - ../../services/user-service/configs/user.yaml:/etc/vkino/user.yaml:ro
+      - ../../services/user/configs/config.yaml:/etc/vkino/config.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./user-service -config /etc/vkino/user.yaml
+    command: ./user -config /etc/vkino/config.yaml
     expose:
       - "9091"
 

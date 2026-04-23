@@ -4,7 +4,7 @@ grpc:
 logger:
   level: "info"
   format: "json"
-  output_path: "logs/app/user-service.log"
+  output_path: "logs/app/user.log"
 
 postgres:
   host: "db"

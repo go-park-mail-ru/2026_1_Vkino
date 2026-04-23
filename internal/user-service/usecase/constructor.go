@@ -1,9 +1,9 @@
 package usecase
 
 import (
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/user-service/internal/repository"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/user-service/repository"
 	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
 func NewUserUsecase(

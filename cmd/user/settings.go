@@ -5,13 +5,27 @@ import (
 	"strings"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/configenv"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"github.com/spf13/viper"
 )
+
+type GRPCConfig struct {
+	Port int `mapstructure:"port"`
+}
+
+type Config struct {
+	GRPC     GRPCConfig          `mapstructure:"grpc"`
+	Logger   logger.Config       `mapstructure:"logger"`
+	Postgres corepostgres.Config `mapstructure:"postgres"`
+	S3       storage.S3Config    `mapstructure:"s3"`
+}
 
 func Load(path string, cfg any) error {
 	v := viper.New()
 
-	const defaultConfigPath = "services/user-service/configs/user.yaml"
+	const defaultConfigPath = "./config.yaml"
 
 	if path != "" {
 		v.SetConfigFile(path)

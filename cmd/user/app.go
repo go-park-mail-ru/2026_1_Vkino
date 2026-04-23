@@ -1,27 +1,27 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
-	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/auth-service/delivery/grpc"
-	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/auth-service/repository/postgres"
-	authusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/auth-service/usecase"
+	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/user-service/delivery/grpc"
+	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/user-service/repository/postgres"
+	userusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/user-service/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
-	jwtsvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/jwt"
-	passwordsvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/password"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
 
 	"google.golang.org/grpc"
 )
 
 func Run(configPath string) error {
-	cfg := &Config{}
+	cfg := Config{}
 	if err := Load(configPath, cfg); err != nil {
 		return fmt.Errorf("unable to load config: %w", err)
 	}
@@ -31,7 +31,7 @@ func Run(configPath string) error {
 		return fmt.Errorf("init logger: %w", err)
 	}
 
-	appLogger := baseLogger.WithField("component", "auth-service")
+	appLogger := baseLogger.WithField("component", "user")
 
 	options := corepostgres.BuildPostgresOptions(&cfg.Postgres)
 	pgDB, err := corepostgres.New(cfg.Postgres, options...)
@@ -42,24 +42,15 @@ func Run(configPath string) error {
 
 	appLogger.Info("successfully connected to postgres")
 
+	avatarStore, err := storage.NewS3Storage(context.Background(), cfg.S3.Config().WithBucket(cfg.S3.BucketAvatars))
+	if err != nil {
+		return fmt.Errorf("init avatar storage: %w", err)
+	}
+
 	userRepo := postgresrepo.NewUserRepo(pgDB)
-	sessionRepo := postgresrepo.NewSessionRepo(pgDB)
-
 	clockService := clocksvc.New()
-	passwordService := passwordsvc.New()
-	jwtService := jwtsvc.New(jwtsvc.Config{
-		Secret: cfg.Auth.JWTSecret,
-		Issuer: cfg.Auth.Issuer,
-	})
 
-	authUC := authusecase.NewAuthUsecase(
-		userRepo,
-		sessionRepo,
-		jwtService,
-		passwordService,
-		clockService,
-		cfg.Auth,
-	)
+	userUC := userusecase.NewUserUsecase(userRepo, avatarStore, clockService)
 
 	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {
@@ -67,7 +58,7 @@ func Run(configPath string) error {
 	}
 
 	grpcServer := grpcx.NewServer(appLogger, func(server *grpc.Server) {
-		authv1.RegisterAuthServiceServer(server, deliverygrpc.NewServer(authUC))
+		userv1.RegisterUserServiceServer(server, deliverygrpc.NewServer(userUC))
 	})
 
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")
