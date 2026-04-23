@@ -15,7 +15,7 @@ import (
 	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
 	jwtsvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/jwt"
 	passwordsvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/password"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 
 	"google.golang.org/grpc"
 )

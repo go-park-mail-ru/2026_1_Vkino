@@ -6,7 +6,7 @@ import (
 	dto "github.com/go-park-mail-ru/2026_1_VKino/internal/api-gateway/domain"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 )
 
 func Auth(

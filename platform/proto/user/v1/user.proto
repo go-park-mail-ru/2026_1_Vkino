@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package user.v1;
 
-option go_package = "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1;userv1";
+option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1;userv1";
 
 service UserService {
   rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);

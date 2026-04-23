@@ -14,8 +14,8 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
-	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 
 	"google.golang.org/grpc"
 )

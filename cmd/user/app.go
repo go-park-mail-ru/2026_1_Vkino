@@ -15,8 +15,8 @@ import (
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
-	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 
 	"google.golang.org/grpc"
 )

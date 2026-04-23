@@ -1382,7 +1382,7 @@ const file_movie_v1_movie_proto_rawDesc = "" +
 	"\fSearchMovies\x12\x1d.movie.v1.SearchMoviesRequest\x1a\x1e.movie.v1.SearchMoviesResponse\x12_\n" +
 	"\x12GetEpisodePlayback\x12#.movie.v1.GetEpisodePlaybackRequest\x1a$.movie.v1.GetEpisodePlaybackResponse\x12_\n" +
 	"\x12GetEpisodeProgress\x12#.movie.v1.GetEpisodeProgressRequest\x1a$.movie.v1.GetEpisodeProgressResponse\x12b\n" +
-	"\x13SaveEpisodeProgress\x12$.movie.v1.SaveEpisodeProgressRequest\x1a%.movie.v1.SaveEpisodeProgressResponseBGZEgithub.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1;moviev1b\x06proto3"
+	"\x13SaveEpisodeProgress\x12$.movie.v1.SaveEpisodeProgressRequest\x1a%.movie.v1.SaveEpisodeProgressResponseBGZEgithub.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1;moviev1b\x06proto3"
 
 var (
 	file_movie_v1_movie_proto_rawDescOnce sync.Once

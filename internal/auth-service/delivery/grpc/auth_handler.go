@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 )
 
 func (s *Server) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*authv1.SignUpResponse, error) {

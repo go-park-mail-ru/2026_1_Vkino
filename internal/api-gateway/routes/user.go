@@ -8,7 +8,7 @@ import (
 
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
-	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 )
 
 type updateProfileRequest struct {

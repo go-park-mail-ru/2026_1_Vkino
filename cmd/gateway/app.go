@@ -9,9 +9,9 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
-	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
-	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	"google.golang.org/grpc"
 )
 

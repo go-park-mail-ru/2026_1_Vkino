@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"

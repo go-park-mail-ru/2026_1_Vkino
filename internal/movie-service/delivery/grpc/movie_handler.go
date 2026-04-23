@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/domain"
-	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 )
 
 func (s *Server) GetMovieByID(

@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
-	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
-	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 )
 
 func Register(

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package movie.v1;
 
-option go_package = "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1;moviev1";
+option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1;moviev1";
 
 service MovieService {
   rpc GetMovieByID(GetMovieByIDRequest) returns (GetMovieByIDResponse);

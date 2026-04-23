@@ -665,7 +665,7 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\aRefresh\x12\x17.auth.v1.RefreshRequest\x1a\x18.auth.v1.RefreshResponse\x12?\n" +
 	"\bValidate\x12\x18.auth.v1.ValidateRequest\x1a\x19.auth.v1.ValidateResponse\x129\n" +
 	"\x06Logout\x12\x16.auth.v1.LogoutRequest\x1a\x17.auth.v1.LogoutResponse\x12Q\n" +
-	"\x0eChangePassword\x12\x1e.auth.v1.ChangePasswordRequest\x1a\x1f.auth.v1.ChangePasswordResponseBEZCgithub.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1;authv1b\x06proto3"
+	"\x0eChangePassword\x12\x1e.auth.v1.ChangePasswordRequest\x1a\x1f.auth.v1.ChangePasswordResponseBEZCgithub.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1;authv1b\x06proto3"
 
 var (
 	file_auth_v1_auth_proto_rawDescOnce sync.Once

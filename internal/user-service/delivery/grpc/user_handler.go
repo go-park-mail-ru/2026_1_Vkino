@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 
-	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 )
 
 func (s *Server) GetProfile(ctx context.Context, req *userv1.GetProfileRequest) (*userv1.GetProfileResponse, error) {

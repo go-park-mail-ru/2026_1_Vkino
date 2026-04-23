@@ -2,8 +2,8 @@ package grpc
 
 import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/user-service/usecase"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/auth/v1"
-	userv1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/user/v1"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 )
 
 type Server struct {
