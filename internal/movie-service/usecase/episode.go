@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/domain"
 )
 
 func (u *MovieUsecase) GetEpisodePlayback(ctx context.Context, episodeID int64) (domain.EpisodePlaybackResponse, error) {

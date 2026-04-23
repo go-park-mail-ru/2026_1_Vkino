@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/domain"
 )
 
 func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Movie) (domain.MovieResponse, error) {

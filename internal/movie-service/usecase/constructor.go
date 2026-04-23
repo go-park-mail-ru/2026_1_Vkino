@@ -1,8 +1,8 @@
 package usecase
 
 import (
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/repository"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/repository"
 )
 
 func NewMovieUsecase(

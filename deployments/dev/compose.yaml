@@ -71,9 +71,9 @@ services:
         BINARY_NAME: movie-service
     restart: always
     volumes:
-      - ../../services/movie-service/configs/movie.yaml:/etc/vkino/movie.yaml:ro
+      - ../../services/movie-service/configs/config.yaml:/etc/vkino/config.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./movie-service -config /etc/vkino/movie.yaml
+    command: ./movie-service -config /etc/vkino/config.yaml
     expose:
       - "9092"
 

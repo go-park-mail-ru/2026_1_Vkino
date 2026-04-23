@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/domain"
 )
 
 type MovieRepo interface {

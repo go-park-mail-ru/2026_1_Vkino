@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/domain"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/domain"
-
 	"github.com/jackc/pgx/v5"
 )
 

@@ -1,10 +1,9 @@
 package grpc
 
 import (
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/domain"
+	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/repository/postgres"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/errmap/grpcx"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/domain"
-	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/repository/postgres"
-
 	"google.golang.org/grpc/codes"
 )
 

@@ -1,8 +1,8 @@
 package grpc
 
 import (
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/usecase"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/usecase"
 )
 
 type Server struct {

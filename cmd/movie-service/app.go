@@ -7,21 +7,20 @@ import (
 	"os/signal"
 	"syscall"
 
-	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
-	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
+	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/delivery/grpc"
+	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/repository/postgres"
+	movieusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
-	"github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/config"
-	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/delivery/grpc"
-	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/repository/postgres"
-	movieusecase "github.com/go-park-mail-ru/2026_1_VKino/services/movie-service/internal/usecase"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/platform/gen/movie/v1"
 
 	"google.golang.org/grpc"
 )
 
 func Run(configPath string) error {
-	cfg := &config.Config{}
+	cfg := Config{}
 	if err := Load(configPath, cfg); err != nil {
 		return fmt.Errorf("unable to load config: %w", err)
 	}
