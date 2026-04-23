@@ -21,8 +21,7 @@ func Dial(ctx context.Context, cfg ClientConfig) (*grpc.ClientConn, error) {
 		return nil, fmt.Errorf("grpc address is empty")
 	}
 
-	conn, err := grpc.DialContext(
-		ctx,
+	conn, err := grpc.NewClient(
 		cfg.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)

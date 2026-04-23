@@ -6,14 +6,10 @@ import (
 	"net/http"
 	"strings"
 
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
-	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 )
-
-type updateProfileRequest struct {
-	Birthdate string `json:"birthdate"`
-}
 
 type updateProfileJSONRequest struct {
 	Birthdate string `json:"birthdate"`
@@ -35,6 +31,7 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 
 		if err := r.ParseMultipartForm(10 << 20); err != nil {
 			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid multipart form body")
+
 			return updateProfilePayload{}, false
 		}
 
@@ -49,13 +46,18 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 			}
 
 			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid avatar file")
+
 			return updateProfilePayload{}, false
 		}
-		defer file.Close()
+
+		defer func() {
+			_ = file.Close()
+		}()
 
 		avatarBytes, err := io.ReadAll(file)
 		if err != nil {
 			httppkg.ErrResponse(w, http.StatusBadRequest, "failed to read avatar file")
+
 			return updateProfilePayload{}, false
 		}
 
@@ -90,6 +92,7 @@ func User(
 			resp, err := userClient.GetProfile(r.Context(), &userv1.GetProfileRequest{})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -105,6 +108,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -127,6 +131,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -134,7 +139,7 @@ func User(
 		}),
 
 		httpserver.WithRoute("POST /user/friends/{id}", func(w http.ResponseWriter, r *http.Request) {
-			friendID, ok := parsePathID(w, r, "id", "invalid friend id")
+			friendID, ok := parsePathID(w, r, "invalid friend id")
 			if !ok {
 				return
 			}
@@ -147,6 +152,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -154,7 +160,7 @@ func User(
 		}),
 
 		httpserver.WithRoute("DELETE /user/friends/{id}", func(w http.ResponseWriter, r *http.Request) {
-			friendID, ok := parsePathID(w, r, "id", "invalid friend id")
+			friendID, ok := parsePathID(w, r, "invalid friend id")
 			if !ok {
 				return
 			}
@@ -167,6 +173,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -176,7 +183,7 @@ func User(
 		}),
 
 		httpserver.WithRoute("PUT /user/favorites/{id}", func(w http.ResponseWriter, r *http.Request) {
-			movieID, ok := parsePathID(w, r, "id", "invalid movie id")
+			movieID, ok := parsePathID(w, r, "invalid movie id")
 			if !ok {
 				return
 			}
@@ -189,6 +196,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 

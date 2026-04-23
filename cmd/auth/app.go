@@ -9,13 +9,13 @@ import (
 	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/auth-service/delivery/grpc"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/auth-service/repository/postgres"
 	authusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/auth-service/usecase"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
 	jwtsvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/jwt"
 	passwordsvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/password"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 
 	"google.golang.org/grpc"
 )
@@ -34,6 +34,7 @@ func Run(configPath string) error {
 	appLogger := baseLogger.WithField("component", "auth")
 
 	options := corepostgres.BuildPostgresOptions(&cfg.Postgres)
+
 	pgDB, err := corepostgres.New(cfg.Postgres, options...)
 	if err != nil {
 		return fmt.Errorf("failed to connect to postgres: %w", err)
@@ -73,6 +74,7 @@ func Run(configPath string) error {
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")
 
 	errCh := make(chan error, 1)
+
 	go func() {
 		errCh <- grpcServer.Serve(lis)
 	}()

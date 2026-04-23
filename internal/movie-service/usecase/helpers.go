@@ -29,6 +29,7 @@ func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Mov
 	}
 
 	var err error
+
 	resp.PictureFileKey, err = u.presignCard(ctx, movie.PictureFileKey)
 	if err != nil {
 		return domain.MovieResponse{}, err
@@ -90,6 +91,7 @@ func (u *MovieUsecase) buildActorResponse(ctx context.Context, actor *domain.Act
 	}
 
 	var err error
+
 	resp.PictureFileKey, err = u.presignActor(ctx, actor.PictureFileKey)
 	if err != nil {
 		return domain.ActorResponse{}, err
@@ -100,6 +102,7 @@ func (u *MovieUsecase) buildActorResponse(ctx context.Context, actor *domain.Act
 		if buildErr != nil {
 			return domain.ActorResponse{}, buildErr
 		}
+
 		resp.Movies = append(resp.Movies, card)
 	}
 
@@ -120,6 +123,7 @@ func (u *MovieUsecase) buildSelectionResponse(
 		if err != nil {
 			return domain.SelectionResponse{}, err
 		}
+
 		resp.Movies = append(resp.Movies, card)
 	}
 

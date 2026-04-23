@@ -30,13 +30,15 @@ func (s *Server) GetProfile(ctx context.Context, req *userv1.GetProfileRequest) 
 	return resp, nil
 }
 
-func (s *Server) UpdateProfile(ctx context.Context, req *userv1.UpdateProfileRequest) (*userv1.UpdateProfileResponse, error) {
+func (s *Server) UpdateProfile(ctx context.Context, req *userv1.UpdateProfileRequest) (*userv1.UpdateProfileResponse,
+	error) {
 	authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var body *bytes.Reader
+
 	var size int64
 
 	if len(req.GetAvatar()) > 0 {

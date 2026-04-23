@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	dto "github.com/go-park-mail-ru/2026_1_VKino/internal/api-gateway/domain"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 )
 
 func Auth(
@@ -29,6 +29,7 @@ func Auth(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -61,6 +62,7 @@ func Auth(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -82,6 +84,7 @@ func Auth(
 			cookie, err := r.Cookie(cfg.RefreshCookieName())
 			if err != nil {
 				httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
+
 				return
 			}
 
@@ -93,6 +96,7 @@ func Auth(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -117,6 +121,7 @@ func Auth(
 			_, err := authClient.Logout(r.Context(), &authv1.LogoutRequest{})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -150,6 +155,7 @@ func Auth(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 

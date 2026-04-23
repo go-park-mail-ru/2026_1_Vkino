@@ -9,6 +9,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,6 +40,7 @@ func LoggerMiddleware(baseLogger *logger.Logger) func(http.Handler) http.Handler
 			lw.Header().Set(requestIDHeader, requestID)
 
 			startedAt := time.Now()
+
 			next.ServeHTTP(lw, r.WithContext(ctx))
 
 			requestLogger.
@@ -130,7 +132,7 @@ func (w *loggingResponseWriter) Unwrap() http.ResponseWriter {
 func newRequestID() string {
 	var id [16]byte
 	if _, err := rand.Read(id[:]); err != nil {
-		return fmt.Sprintf("%d", time.Now().UnixNano())
+		return strconv.FormatInt(time.Now().UnixNano(), 10)
 	}
 
 	return hex.EncodeToString(id[:])

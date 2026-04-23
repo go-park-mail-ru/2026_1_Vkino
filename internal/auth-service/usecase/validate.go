@@ -43,5 +43,5 @@ func (u *AuthUsecase) ValidateAccessToken(tokenString string) (AuthContext, erro
 		return AuthContext{}, domain.ErrInvalidToken
 	}
 
-	return AuthContext(authCtx), nil
+	return authCtx, nil
 }

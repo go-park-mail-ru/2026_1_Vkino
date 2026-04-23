@@ -25,6 +25,7 @@ func (m *Mapper[S, K, R]) Resolve(subject S) (R, bool) {
 			if !ok {
 				return zero, false
 			}
+
 			return rule, true
 		}
 	}

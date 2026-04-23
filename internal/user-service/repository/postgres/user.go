@@ -76,7 +76,8 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 	return &user, nil
 }
 
-func (r *UserRepo) SearchUsersByEmail(ctx context.Context, userID int64, query string) ([]domain.UserSearchResult, error) {
+func (r *UserRepo) SearchUsersByEmail(ctx context.Context, userID int64,
+	query string) ([]domain.UserSearchResult, error) {
 	rows, err := r.db.Query(ctx, sqlSearchUsersByEmail, userID, query)
 	if err != nil {
 		return nil, fmt.Errorf("search users by email: %w", err)
@@ -84,6 +85,7 @@ func (r *UserRepo) SearchUsersByEmail(ctx context.Context, userID int64, query s
 	defer rows.Close()
 
 	users := make([]domain.UserSearchResult, 0)
+
 	for rows.Next() {
 		var user domain.UserSearchResult
 

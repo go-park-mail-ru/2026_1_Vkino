@@ -34,6 +34,7 @@ func Run(configPath string) error {
 	appLogger := baseLogger.WithField("component", "movie")
 
 	options := corepostgres.BuildPostgresOptions(&cfg.Postgres)
+
 	pgDB, err := corepostgres.New(cfg.Postgres, options...)
 	if err != nil {
 		return fmt.Errorf("failed to connect to postgres: %w", err)
@@ -79,7 +80,10 @@ func Run(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("init auth grpc client: %w", err)
 	}
-	defer authConn.Close()
+
+	defer func() {
+		_ = authConn.Close()
+	}()
 
 	authClient := authv1.NewAuthServiceClient(authConn)
 
@@ -95,6 +99,7 @@ func Run(configPath string) error {
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")
 
 	errCh := make(chan error, 1)
+
 	go func() {
 		errCh <- grpcServer.Serve(lis)
 	}()

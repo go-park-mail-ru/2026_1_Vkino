@@ -28,10 +28,12 @@ func TestMinioClientAdapter(t *testing.T) {
 	t.Parallel()
 
 	client := newClosedMinioClient(t)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
-	if _, err := client.PutObject(ctx, "avatars", "avatars/1.png", strings.NewReader("data"), 4, minio.PutObjectOptions{}); err == nil {
+	if _, err := client.PutObject(ctx, "avatars", "avatars/1.png", strings.NewReader("data"),
+		4, minio.PutObjectOptions{}); err == nil {
 		t.Fatal("expected put object error")
 	}
 

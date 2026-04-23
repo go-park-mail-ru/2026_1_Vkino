@@ -49,6 +49,7 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, movieID int64) (*domain.Mo
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrMovieNotFound
 		}
+
 		return nil, fmt.Errorf("get movie by id: %w", err)
 	}
 
@@ -85,6 +86,7 @@ func (r *MovieRepo) GetActorByID(ctx context.Context, actorID int64) (*domain.Ac
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrActorNotFound
 		}
+
 		return nil, fmt.Errorf("get actor by id: %w", err)
 	}
 
@@ -190,11 +192,13 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]domain.Mo
 	defer rows.Close()
 
 	result := make([]domain.MovieCard, 0)
+
 	for rows.Next() {
 		var movie domain.MovieCard
 		if err = rows.Scan(&movie.ID, &movie.Title, &movie.PictureFileKey); err != nil {
 			return nil, fmt.Errorf("scan searched movie: %w", err)
 		}
+
 		result = append(result, movie)
 	}
 
@@ -221,6 +225,7 @@ func (r *MovieRepo) GetEpisodePlayback(ctx context.Context, episodeID int64) (*d
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrEpisodeNotFound
 		}
+
 		return nil, fmt.Errorf("get episode playback: %w", err)
 	}
 
@@ -241,6 +246,7 @@ func (r *MovieRepo) GetEpisodeProgress(ctx context.Context, userID, episodeID in
 				PositionSeconds: 0,
 			}, nil
 		}
+
 		return domain.EpisodeProgress{}, fmt.Errorf("get episode progress: %w", err)
 	}
 
@@ -272,11 +278,13 @@ func (r *MovieRepo) getMovieGenres(ctx context.Context, movieID int64) ([]string
 	defer rows.Close()
 
 	result := make([]string, 0)
+
 	for rows.Next() {
 		var item string
 		if err = rows.Scan(&item); err != nil {
 			return nil, fmt.Errorf("scan movie genre: %w", err)
 		}
+
 		result = append(result, item)
 	}
 
@@ -295,11 +303,13 @@ func (r *MovieRepo) getMovieActors(ctx context.Context, movieID int64) ([]domain
 	defer rows.Close()
 
 	result := make([]domain.ActorShort, 0)
+
 	for rows.Next() {
 		var actor domain.ActorShort
 		if err = rows.Scan(&actor.ID, &actor.FullName, &actor.PictureFileKey); err != nil {
 			return nil, fmt.Errorf("scan movie actor: %w", err)
 		}
+
 		result = append(result, actor)
 	}
 
@@ -318,6 +328,7 @@ func (r *MovieRepo) getMovieEpisodes(ctx context.Context, movieID int64) ([]doma
 	defer rows.Close()
 
 	result := make([]domain.Episode, 0)
+
 	for rows.Next() {
 		var episode domain.Episode
 		if err = rows.Scan(
@@ -333,6 +344,7 @@ func (r *MovieRepo) getMovieEpisodes(ctx context.Context, movieID int64) ([]doma
 		); err != nil {
 			return nil, fmt.Errorf("scan movie episode: %w", err)
 		}
+
 		result = append(result, episode)
 	}
 
@@ -351,11 +363,13 @@ func (r *MovieRepo) getActorMovies(ctx context.Context, actorID int64) ([]domain
 	defer rows.Close()
 
 	result := make([]domain.MovieCard, 0)
+
 	for rows.Next() {
 		var movie domain.MovieCard
 		if err = rows.Scan(&movie.ID, &movie.Title, &movie.PictureFileKey); err != nil {
 			return nil, fmt.Errorf("scan actor movie: %w", err)
 		}
+
 		result = append(result, movie)
 	}
 

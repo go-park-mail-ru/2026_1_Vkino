@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
-	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 )
 
 func Movie(
@@ -21,6 +21,7 @@ func Movie(
 			resp, err := movieClient.GetAllSelections(r.Context(), &moviev1.GetAllSelectionsRequest{})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -31,6 +32,7 @@ func Movie(
 			title := strings.TrimSpace(r.PathValue("selection"))
 			if title == "" {
 				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid selection title")
+
 				return
 			}
 
@@ -42,6 +44,7 @@ func Movie(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -52,6 +55,7 @@ func Movie(
 			query := strings.TrimSpace(r.URL.Query().Get("query"))
 			if query == "" {
 				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid search query")
+
 				return
 			}
 
@@ -63,6 +67,7 @@ func Movie(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -70,7 +75,7 @@ func Movie(
 		}),
 
 		httpserver.WithRoute("GET /movie/{id}", func(w http.ResponseWriter, r *http.Request) {
-			movieID, ok := parsePathID(w, r, "id", "invalid movie id")
+			movieID, ok := parsePathID(w, r, "invalid movie id")
 			if !ok {
 				return
 			}
@@ -83,6 +88,7 @@ func Movie(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -90,7 +96,7 @@ func Movie(
 		}),
 
 		httpserver.WithRoute("GET /movie/actor/{id}", func(w http.ResponseWriter, r *http.Request) {
-			actorID, ok := parsePathID(w, r, "id", "invalid actor id")
+			actorID, ok := parsePathID(w, r, "invalid actor id")
 			if !ok {
 				return
 			}
@@ -103,6 +109,7 @@ func Movie(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -110,7 +117,7 @@ func Movie(
 		}),
 
 		httpserver.WithRoute("GET /episode/{id}/playback", func(w http.ResponseWriter, r *http.Request) {
-			episodeID, ok := parsePathID(w, r, "id", "invalid episode id")
+			episodeID, ok := parsePathID(w, r, "invalid episode id")
 			if !ok {
 				return
 			}
@@ -123,6 +130,7 @@ func Movie(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -130,7 +138,7 @@ func Movie(
 		}),
 
 		httpserver.WithRoute("GET /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
-			episodeID, ok := parsePathID(w, r, "id", "invalid episode id")
+			episodeID, ok := parsePathID(w, r, "invalid episode id")
 			if !ok {
 				return
 			}
@@ -143,6 +151,7 @@ func Movie(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -150,7 +159,7 @@ func Movie(
 		}),
 
 		httpserver.WithRoute("PUT /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
-			episodeID, ok := parsePathID(w, r, "id", "invalid episode id")
+			episodeID, ok := parsePathID(w, r, "invalid episode id")
 			if !ok {
 				return
 			}
@@ -171,6 +180,7 @@ func Movie(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 

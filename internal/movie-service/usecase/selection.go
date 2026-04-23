@@ -33,6 +33,7 @@ func (u *MovieUsecase) GetAllSelections(ctx context.Context) ([]domain.Selection
 		if buildErr != nil {
 			return nil, buildErr
 		}
+
 		result = append(result, item)
 	}
 

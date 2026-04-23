@@ -2,6 +2,8 @@ package postgresx
 
 import (
 	"fmt"
+	"net"
+	"strconv"
 	"time"
 )
 
@@ -38,12 +40,13 @@ func (c *Config) SetDefaults() {
 }
 
 func (c *Config) DSN() string {
+	hostPort := net.JoinHostPort(c.Host, strconv.Itoa(c.Port))
+
 	return fmt.Sprintf(
-		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		"postgres://%s:%s@%s/%s?sslmode=%s",
 		c.User,
 		c.Password,
-		c.Host,
-		c.Port,
+		hostPort,
 		c.DBName,
 		c.SSLMode,
 	)

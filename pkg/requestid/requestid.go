@@ -17,6 +17,7 @@ type contextKey string
 
 func Generate() string {
 	buf := make([]byte, 16)
+
 	_, err := rand.Read(buf)
 	if err != nil {
 		return "unknown-request-id"

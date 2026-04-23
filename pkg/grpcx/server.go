@@ -1,6 +1,7 @@
 package grpcx
 
 import (
+	"context"
 	"fmt"
 	"net"
 
@@ -13,7 +14,7 @@ import (
 func Listen(port int) (net.Listener, error) {
 	addr := fmt.Sprintf(":%d", port)
 
-	lis, err := net.Listen("tcp", addr)
+	lis, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", addr)
 	if err != nil {
 		return nil, fmt.Errorf("listen grpc on %s: %w", addr, err)
 	}
@@ -22,13 +23,14 @@ func Listen(port int) (net.Listener, error) {
 }
 
 func NewServer(log *logger.Logger, register func(*grpc.Server), opts ...grpc.ServerOption) *grpc.Server {
-	baseOpts := []grpc.ServerOption{
+	baseOpts := make([]grpc.ServerOption, 0, 1+len(opts))
+	baseOpts = append(baseOpts,
 		grpc.ChainUnaryInterceptor(
 			interceptor.UnaryRequestID(),
 			interceptor.UnaryRecovery(log),
 			interceptor.UnaryLogging(log),
 		),
-	}
+	)
 
 	baseOpts = append(baseOpts, opts...)
 

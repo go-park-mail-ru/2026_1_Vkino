@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -246,9 +247,7 @@ func (f *fieldsStore) snapshot() logrus.Fields {
 	}
 
 	cloned := make(logrus.Fields, len(f.fields))
-	for key, value := range f.fields {
-		cloned[key] = value
-	}
+	maps.Copy(cloned, f.fields)
 
 	return cloned
 }

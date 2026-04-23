@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/api-gateway/routes"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
-	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
-	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
-	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	"google.golang.org/grpc"
 )
 
@@ -32,19 +32,28 @@ func Run(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("init auth grpc client: %w", err)
 	}
-	defer authConn.Close()
+
+	defer func() {
+		_ = authConn.Close()
+	}()
 
 	userConn, err := newGRPCConn(cfg.UserGRPC)
 	if err != nil {
 		return fmt.Errorf("init user grpc client: %w", err)
 	}
-	defer userConn.Close()
+
+	defer func() {
+		_ = userConn.Close()
+	}()
 
 	movieConn, err := newGRPCConn(cfg.MovieGRPC)
 	if err != nil {
 		return fmt.Errorf("init movie grpc client: %w", err)
 	}
-	defer movieConn.Close()
+
+	defer func() {
+		_ = movieConn.Close()
+	}()
 
 	server := httpserver.New(append(serverOptions(cfg, appLogger), routes.Register(
 		cfg,

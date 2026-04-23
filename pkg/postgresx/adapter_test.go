@@ -30,6 +30,7 @@ func TestPgxPoolAdapter(t *testing.T) {
 	t.Parallel()
 
 	pool := newClosedPgxPool(t)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
@@ -42,6 +43,7 @@ func TestPgxPoolAdapter(t *testing.T) {
 	}
 
 	row := pool.QueryRow(ctx, "select 1")
+
 	var value int
 	if err := row.Scan(&value); err == nil {
 		t.Fatal("expected query row scan error")

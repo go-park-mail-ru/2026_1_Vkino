@@ -42,7 +42,8 @@ func UnaryLogging(log *logger.Logger) grpc.UnaryServerInterceptor {
 				WithField("duration_ms", durationMs).
 				WithField("error", err.Error()).
 				Error("grpc request failed")
-			return resp, err
+
+			return nil, err
 		}
 
 		requestLog.

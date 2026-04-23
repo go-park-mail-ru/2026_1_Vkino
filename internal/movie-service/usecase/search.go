@@ -24,6 +24,7 @@ func (u *MovieUsecase) SearchMovies(ctx context.Context, query string) ([]domain
 		if buildErr != nil {
 			return nil, buildErr
 		}
+
 		result = append(result, card)
 	}
 

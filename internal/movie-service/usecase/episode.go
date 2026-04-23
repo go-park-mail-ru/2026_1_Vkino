@@ -7,7 +7,8 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/movie-service/domain"
 )
 
-func (u *MovieUsecase) GetEpisodePlayback(ctx context.Context, episodeID int64) (domain.EpisodePlaybackResponse, error) {
+func (u *MovieUsecase) GetEpisodePlayback(ctx context.Context,
+	episodeID int64) (domain.EpisodePlaybackResponse, error) {
 	if episodeID <= 0 {
 		return domain.EpisodePlaybackResponse{}, domain.ErrInvalidEpisodeID
 	}
@@ -40,6 +41,7 @@ func (u *MovieUsecase) GetEpisodeProgress(
 	if episodeID <= 0 {
 		return domain.EpisodeProgressResponse{}, domain.ErrInvalidEpisodeID
 	}
+
 	if userID <= 0 {
 		return domain.EpisodeProgressResponse{}, domain.ErrInternal
 	}
@@ -59,9 +61,11 @@ func (u *MovieUsecase) SaveEpisodeProgress(
 	if episodeID <= 0 {
 		return domain.EpisodeProgressResponse{}, domain.ErrInvalidEpisodeID
 	}
+
 	if userID <= 0 {
 		return domain.EpisodeProgressResponse{}, domain.ErrInternal
 	}
+
 	if positionSec < 0 {
 		return domain.EpisodeProgressResponse{}, domain.ErrInvalidWatchProgress
 	}

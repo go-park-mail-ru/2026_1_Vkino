@@ -20,14 +20,17 @@ func grpcContext(r *http.Request, timeout time.Duration) (contextDone func()) {
 	}
 
 	*r = *r.WithContext(ctx)
+
 	return cancel
 }
 
-func parsePathID(w http.ResponseWriter, r *http.Request, name string, message string) (int64, bool) {
-	value := r.PathValue(name)
+func parsePathID(w http.ResponseWriter, r *http.Request, message string) (int64, bool) {
+	value := r.PathValue("id")
+
 	id, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		httppkg.ErrResponse(w, http.StatusBadRequest, message)
+
 		return 0, false
 	}
 
@@ -37,6 +40,7 @@ func parsePathID(w http.ResponseWriter, r *http.Request, name string, message st
 func readJSON[T any](w http.ResponseWriter, r *http.Request, dst *T) bool {
 	if err := httppkg.Read(r, dst); err != nil {
 		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid json body")
+
 		return false
 	}
 
