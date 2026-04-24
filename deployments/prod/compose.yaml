@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:trixie-perl
     container_name: front-nginx
     restart: always
     ports:
@@ -12,20 +12,60 @@ services:
       - ./logs/nginx:/var/log/nginx
       - /etc/letsencrypt:/etc/letsencrypt:ro
     networks:
-      - app-network 
+      - app-network
 
-  vkinoapi:
-    image: saucesamba/vkino-back:v0.1.15
+  api-gateway:
+    image: saucesamba/vkino-gateway:v0.1.1
     platform: linux/amd64
     restart: always
-    command: ./vkinoapi --config=/usr/local/etc/auth.yaml
+    command: ./gateway -config /etc/vkino/gateway.yaml
     volumes:
-      - ./vkinoapi/auth.yaml:/usr/local/etc/auth.yaml
+      - ./gateway/config.yaml:/etc/vkino/gateway.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
     networks:
-      - app-network  
+      - app-network
+
+  auth-service:
+    image: saucesamba/vkino-auth:v0.1.1
+    platform: linux/amd64
+    restart: always
+    command: ./auth -config /etc/vkino/auth.yaml
+    volumes:
+      - ./auth/config.yaml:/etc/vkino/auth.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  user-service:
+    image: saucesamba/vkino-user:v0.1.1
+    platform: linux/amd64
+    restart: always
+    command: ./user -config /etc/vkino/user.yaml
+    volumes:
+      - ./user/config.yaml:/etc/vkino/user.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  movie-service:
+    image: saucesamba/vkino-movie:v0.1.1
+    platform: linux/amd64
+    restart: always
+    command: ./movie -config /etc/vkino/movie.yaml
+    volumes:
+      - ./movie/config.yaml:/etc/vkino/movie.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
 
   db:
     image: postgres:18.3
@@ -42,30 +82,36 @@ services:
     volumes:
       - db-data:/var/lib/postgresql
     networks:
-      - app-network 
+      - app-network
 
   migrate:
     image: migrate/migrate
     volumes:
       - ../../migrations:/migrations
-    command: ["-path", "/migrations", "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable", "up"]
+    command:
+      [
+        "-path",
+        "/migrations",
+        "-database",
+        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable",
+        "up"
+      ]
     depends_on:
       db:
         condition: service_healthy
     restart: "no"
     networks:
-      - app-network 
-
+      - app-network
 
   minio:
     image: minio/minio:latest
     container_name: vkino-minio
     restart: always
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-      MINIO_BROWSER_REDIRECT_URL: https://minio.vkino.tech
-      MINIO_SERVER_URL: https://media.vkino.tech
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL:-https://minio.vkino.tech}
+      MINIO_SERVER_URL: ${MINIO_SERVER_URL:-https://media.vkino.tech}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
@@ -78,7 +124,7 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      until /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin; do
+      until /usr/bin/mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}; do
         echo 'waiting for minio...';
         sleep 2;
       done;
@@ -95,13 +141,13 @@ services:
       exit 0;
       "
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     networks:
       - app-network
 
 networks:
-  app-network:  
+  app-network:
 
 volumes:
   db-data:
