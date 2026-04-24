@@ -18,6 +18,8 @@ services:
     image: saucesamba/vkino-gateway:v0.1.1
     platform: linux/amd64
     restart: always
+    env_file:
+      - ./.env
     command: ./gateway -config /etc/vkino/gateway.yaml
     volumes:
       - ./gateway/config.yaml:/etc/vkino/gateway.yaml:ro
@@ -29,10 +31,17 @@ services:
     image: saucesamba/vkino-auth:v0.1.1
     platform: linux/amd64
     restart: always
+    env_file:
+      - ./.env
     command: ./auth -config /etc/vkino/auth.yaml
     volumes:
       - ./auth/config.yaml:/etc/vkino/auth.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
+    environment:
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     depends_on:
       db:
         condition: service_healthy
@@ -43,10 +52,18 @@ services:
     image: saucesamba/vkino-user:v0.1.1
     platform: linux/amd64
     restart: always
+    env_file:
+      - ./.env
     command: ./user -config /etc/vkino/user.yaml
     volumes:
       - ./user/config.yaml:/etc/vkino/user.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     depends_on:
       db:
         condition: service_healthy
@@ -57,10 +74,18 @@ services:
     image: saucesamba/vkino-movie:v0.1.1
     platform: linux/amd64
     restart: always
+    env_file:
+      - ./.env
     command: ./movie -config /etc/vkino/movie.yaml
     volumes:
       - ./movie/config.yaml:/etc/vkino/movie.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     depends_on:
       db:
         condition: service_healthy
@@ -69,6 +94,8 @@ services:
 
   db:
     image: postgres:18.3
+    env_file:
+      - ./.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -86,6 +113,8 @@ services:
 
   migrate:
     image: migrate/migrate
+    env_file:
+      - ./.env
     volumes:
       - ../../migrations:/migrations
     command:
@@ -107,6 +136,8 @@ services:
     image: minio/minio:latest
     container_name: vkino-minio
     restart: always
+    env_file:
+      - ./.env
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
@@ -120,6 +151,8 @@ services:
 
   minio-init:
     image: minio/mc:latest
+    env_file:
+      - ./.env
     depends_on:
       - minio
     entrypoint: >
