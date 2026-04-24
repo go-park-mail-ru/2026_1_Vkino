@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/user-service/delivery/grpc"
-	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/user-service/repository/postgres"
-	userusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/user-service/usecase"
+	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/delivery/grpc"
+	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository/postgres"
+	userusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/usecase"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"

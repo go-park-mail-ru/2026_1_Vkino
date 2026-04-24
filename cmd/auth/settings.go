@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	authusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/auth-service/usecase"
+	authusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/configenv"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
@@ -25,7 +25,7 @@ type Config struct {
 func Load(path string, cfg any) error {
 	v := viper.New()
 
-	const defaultConfigPath = "./config.yaml"
+	const defaultConfigPath = "configs/auth.yaml"
 
 	if path != "" {
 		v.SetConfigFile(path)

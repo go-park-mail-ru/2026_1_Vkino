@@ -6,9 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/auth-service/delivery/grpc"
-	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/auth-service/repository/postgres"
-	authusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/auth-service/usecase"
+	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/delivery/grpc"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/repository/postgres"
+	authusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/usecase"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
@@ -43,8 +43,8 @@ func Run(configPath string) error {
 
 	appLogger.Info("successfully connected to postgres")
 
-	userRepo := postgresrepo.NewUserRepo(pgDB)
-	sessionRepo := postgresrepo.NewSessionRepo(pgDB)
+	userRepo := postgres.NewUserRepo(pgDB)
+	sessionRepo := postgres.NewSessionRepo(pgDB)
 
 	clockService := clocksvc.New()
 	passwordService := passwordsvc.New()

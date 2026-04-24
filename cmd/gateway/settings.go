@@ -53,7 +53,7 @@ func (c *Config) CookieSecure() bool {
 func Load(path string, cfg *Config) error {
 	v := viper.New()
 
-	const defaultConfigPath = "./config.yaml"
+	const defaultConfigPath = "configs/gateway.yaml"
 
 	if path != "" {
 		v.SetConfigFile(path)

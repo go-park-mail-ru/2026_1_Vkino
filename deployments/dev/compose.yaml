@@ -22,9 +22,9 @@ services:
       - 8080:8080
     restart: always
     volumes:
-      - ../../cmd/gateway/config.yaml:/etc/vkino/config.yaml:ro
+      - ../../configs/gateway.yaml:/etc/vkino/gateway.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./gateway -config /etc/vkino/config.yaml
+    command: ./gateway -config /etc/vkino/gateway.yaml
 
   auth-service:
     env_file:
@@ -37,9 +37,9 @@ services:
         BINARY_NAME: auth
     restart: always
     volumes:
-      - ../../cmd/auth/config.yaml:/etc/vkino/config.yaml:ro
+      - ../../configs/auth.yaml:/etc/vkino/auth.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./auth -config /etc/vkino/config.yaml
+    command: ./auth -config /etc/vkino/auth.yaml
     expose:
       - "9090"
 
@@ -54,9 +54,9 @@ services:
         BINARY_NAME: user
     restart: always
     volumes:
-      - ../../cmd/user/config.yaml:/etc/vkino/config.yaml:ro
+      - ../../configs/user.yaml:/etc/vkino/user.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./user -config /etc/vkino/config.yaml
+    command: ./user -config /etc/vkino/user.yaml
     expose:
       - "9091"
 
@@ -71,9 +71,9 @@ services:
         BINARY_NAME: movie
     restart: always
     volumes:
-      - ../../cmd/movie/config.yaml:/etc/vkino/config.yaml:ro
+      - ../../configs/movie.yaml:/etc/vkino/movie.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./movie -config /etc/vkino/config.yaml
+    command: ./movie -config /etc/vkino/movie.yaml
     expose:
       - "9092"
 
