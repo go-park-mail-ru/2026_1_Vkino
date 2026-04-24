@@ -1,13 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"strings"
 	"time"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/configenv"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
-	"github.com/spf13/viper"
 )
 
 type ServiceGRPCConfig struct {
@@ -51,26 +49,7 @@ func (c *Config) CookieSecure() bool {
 }
 
 func Load(path string, cfg *Config) error {
-	v := viper.New()
-
 	const defaultConfigPath = "configs/gateway.yaml"
 
-	if path != "" {
-		v.SetConfigFile(path)
-	} else {
-		v.SetConfigFile(defaultConfigPath)
-	}
-
-	v.AutomaticEnv()
-	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-
-	if err := v.ReadInConfig(); err != nil {
-		return fmt.Errorf("error reading config file: %w", err)
-	}
-
-	if err := v.Unmarshal(cfg); err != nil {
-		return fmt.Errorf("error unmarshalling config: %w", err)
-	}
-
-	return nil
+	return configenv.Load(path, defaultConfigPath, cfg, nil)
 }
