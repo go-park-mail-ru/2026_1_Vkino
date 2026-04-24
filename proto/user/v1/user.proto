@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package user.v1;
+
+option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1;userv1";
+
+service UserService {
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+  rpc SearchUsersByEmail(SearchUsersByEmailRequest) returns (SearchUsersByEmailResponse);
+  rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
+  rpc DeleteFriend(DeleteFriendRequest) returns (DeleteFriendResponse);
+  rpc AddMovieToFavorites(AddMovieToFavoritesRequest) returns (AddMovieToFavoritesResponse);
+}
+
+message GetProfileRequest {
+  int64 user_id = 1;
+}
+
+message GetProfileResponse {
+  string email = 1;
+  string birthdate = 2;
+  string avatar_url = 3;
+}
+
+message UpdateProfileRequest {
+  int64 user_id = 1;
+  string birthdate = 2;
+  bytes avatar = 3;
+  string avatar_content_type = 4;
+}
+
+message UpdateProfileResponse {
+  string email = 1;
+  string birthdate = 2;
+  string avatar_url = 3;
+}
+
+message SearchUsersByEmailRequest {
+  int64 user_id = 1;
+  string email_query = 2;
+}
+
+message UserSearchResult {
+  int64 id = 1;
+  string email = 2;
+  bool is_friend = 3;
+}
+
+message SearchUsersByEmailResponse {
+  repeated UserSearchResult users = 1;
+}
+
+message AddFriendRequest {
+  int64 user_id = 1;
+  int64 friend_id = 2;
+}
+
+message AddFriendResponse {
+  int64 id = 1;
+  string email = 2;
+}
+
+message DeleteFriendRequest {
+  int64 user_id = 1;
+  int64 friend_id = 2;
+}
+
+message DeleteFriendResponse {
+  bool success = 1;
+}
+
+message AddMovieToFavoritesRequest {
+  int64 user_id = 1;
+  int64 movie_id = 2;
+}
+
+message AddMovieToFavoritesResponse {
+  int64 movie_id = 1;
+  bool is_favorite = 2;
+}

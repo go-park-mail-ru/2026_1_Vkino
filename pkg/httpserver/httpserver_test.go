@@ -55,12 +55,14 @@ func TestWithMiddlewareRoute(t *testing.T) {
 	mw := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			middlewareCalled = true
+
 			next.ServeHTTP(w, r)
 		})
 	}
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handlerCalled = true
+
 		w.WriteHeader(http.StatusAccepted)
 	})
 
@@ -81,6 +83,7 @@ func TestWithMiddleware(t *testing.T) {
 	mw := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			order = append(order, "mw")
+
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -89,6 +92,7 @@ func TestWithMiddleware(t *testing.T) {
 		WithMiddleware(mw),
 		WithRoute("/test", func(w http.ResponseWriter, r *http.Request) {
 			order = append(order, "handler")
+
 			w.WriteHeader(http.StatusNoContent)
 		}),
 	)

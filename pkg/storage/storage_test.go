@@ -142,6 +142,8 @@ func TestS3Storage_PutObject(t *testing.T) {
 	t.Parallel()
 
 	t.Run("validation errors", func(t *testing.T) {
+		t.Parallel()
+
 		store := &S3Storage{}
 
 		if err := store.PutObject(context.Background(), "", strings.NewReader("data"), 4, "image/png"); err == nil {
@@ -154,6 +156,8 @@ func TestS3Storage_PutObject(t *testing.T) {
 	})
 
 	t.Run("upload failed", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -165,6 +169,7 @@ func TestS3Storage_PutObject(t *testing.T) {
 			Return(minio.UploadInfo{}, errors.New("upload failed"))
 
 		store := &S3Storage{bucket: "avatars", client: client}
+
 		err := store.PutObject(context.Background(), "avatars/1.png", strings.NewReader("data"), 4, "image/png")
 		if !errors.Is(err, ErrUploadFailed) {
 			t.Fatalf("expected ErrUploadFailed, got %v", err)
@@ -172,6 +177,8 @@ func TestS3Storage_PutObject(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -193,6 +200,8 @@ func TestS3Storage_DeleteObject(t *testing.T) {
 	t.Parallel()
 
 	t.Run("empty key", func(t *testing.T) {
+		t.Parallel()
+
 		store := &S3Storage{}
 		if err := store.DeleteObject(context.Background(), ""); err == nil {
 			t.Fatal("expected empty key error")
@@ -200,6 +209,8 @@ func TestS3Storage_DeleteObject(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -219,6 +230,8 @@ func TestS3Storage_PresignGetObject(t *testing.T) {
 	t.Parallel()
 
 	t.Run("validation errors", func(t *testing.T) {
+		t.Parallel()
+
 		store := &S3Storage{presignTTL: 5 * time.Minute}
 
 		if _, err := store.PresignGetObject(context.Background(), "", time.Minute); err == nil {
@@ -231,6 +244,8 @@ func TestS3Storage_PresignGetObject(t *testing.T) {
 	})
 
 	t.Run("success uses default ttl", func(t *testing.T) {
+		t.Parallel()
+
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -241,6 +256,7 @@ func TestS3Storage_PresignGetObject(t *testing.T) {
 			Return(wantURL, nil)
 
 		store := &S3Storage{bucket: "avatars", presignTTL: 5 * time.Minute, presignClient: client}
+
 		got, err := store.PresignGetObject(context.Background(), "avatars/1.png", 0)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -265,11 +281,15 @@ func TestS3Storage_GetObject(t *testing.T) {
 		Return(reader, nil)
 
 	store := &S3Storage{bucket: "avatars", client: client}
+
 	got, err := store.GetObject(context.Background(), "avatars/1.png")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	defer got.Close()
+
+	defer func() {
+		_ = got.Close()
+	}()
 
 	data, err := io.ReadAll(got)
 	if err != nil {

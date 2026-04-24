@@ -1,0 +1,24 @@
+grpc:
+  port: 9090
+
+logger:
+  level: "info"
+  format: "json"
+  output_path: "logs/app/auth.log"
+
+auth:
+  jwt_secret: ""
+  access_token_ttl: "15m"
+  refresh_token_ttl: "336h"
+  issuer: "vkino-auth"
+
+postgres:
+  host: "db"
+  port: 5432
+  user: ""
+  password: ""
+  dbname: ""
+  sslmode: "disable"
+  max_pool_size: 10
+  conn_attempts: 10
+  conn_timeout: "5s"

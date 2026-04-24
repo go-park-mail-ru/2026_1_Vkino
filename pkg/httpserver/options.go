@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2026_1_VKino/internal/pkg/middleware"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
 )
 
 type Option func(*Server)
@@ -31,10 +31,10 @@ func WithRoute(pattern string, handler http.HandlerFunc) Option {
 }
 
 func WithMiddlewareRoute(pattern string, handler http.HandlerFunc,
-	middlewares ...func(http.Handler) http.Handler) Option {
+	middlewares ...Middleware) Option {
 	return func(s *Server) {
 		wrappedHandler := middleware.Chain(
-			http.HandlerFunc(handler),
+			handler,
 			middlewares...,
 		)
 

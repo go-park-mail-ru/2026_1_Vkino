@@ -8,4 +8,6 @@ logs/
 .gomodcache/
 coverage*.out
 .env
+deployments/dev/.env
+deployments/prod/.env
 frontend-dist/

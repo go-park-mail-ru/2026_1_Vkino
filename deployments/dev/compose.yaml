@@ -1,37 +1,86 @@
 services:
   nginx:
-    image: nginx:latest
-    container_name: front-nginx
+    image: nginx:trixie-perl
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - 80:80
+      - 443:443
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./logs/nginx:/var/log/nginx
     extra_hosts:
       - host.docker.internal:host-gateway
-    depends_on:
-      - vkinoapi
 
-  vkinoapi:
+  api-gateway:
     build:
       context: ../..
       dockerfile: build/image/Dockerfile
-    restart: always
+      args:
+        SERVICE_PATH: cmd/gateway
+        BINARY_NAME: gateway
     ports:
-      - "8080:8080"
+      - 8080:8080
+    restart: always
     volumes:
-      - ../../configs/api.yaml:/etc/vkino/config.yaml
+      - ../../configs/gateway.yaml:/etc/vkino/gateway.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
-    command: ./vkinoapi --config=/etc/vkino/config.yaml
-    depends_on:
-      db:
-        condition: service_healthy
+    command: ./gateway -config /etc/vkino/gateway.yaml
+
+  auth-service:
+    env_file:
+      - ./.env
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+      args:
+        SERVICE_PATH: cmd/auth
+        BINARY_NAME: auth
+    restart: always
+    volumes:
+      - ../../configs/auth.yaml:/etc/vkino/auth.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    command: ./auth -config /etc/vkino/auth.yaml
+    expose:
+      - "9090"
+
+  user-service:
+    env_file:
+      - ./.env
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+      args:
+        SERVICE_PATH: cmd/user
+        BINARY_NAME: user
+    restart: always
+    volumes:
+      - ../../configs/user.yaml:/etc/vkino/user.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    command: ./user -config /etc/vkino/user.yaml
+    expose:
+      - "9091"
+
+  movie-service:
+    env_file:
+      - ./.env
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+      args:
+        SERVICE_PATH: cmd/movie
+        BINARY_NAME: movie
+    restart: always
+    volumes:
+      - ../../configs/movie.yaml:/etc/vkino/movie.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    command: ./movie -config /etc/vkino/movie.yaml
+    expose:
+      - "9092"
 
   db:
-    container_name: dev-postgres
     image: postgres:18.3
+    env_file:
+      - ./.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -43,12 +92,14 @@ services:
       retries: 5
       start_period: 30s
     ports:
-      - "5434:5432"
+      - 5434:5432
     volumes:
       - db-data:/var/lib/postgresql
 
   migrate:
     image: migrate/migrate
+    env_file:
+      - ./.env
     volumes:
       - ../../migrations:/migrations
     command:
@@ -66,25 +117,29 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: vkino-minio
     restart: always
+    env_file:
+      - ./.env
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - 9000:9000
+      - 9001:9001
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
 
   minio-init:
     image: minio/mc:latest
+    env_file:
+      - ./.env
     depends_on:
       - minio
+    restart: "no"
     entrypoint: >
       /bin/sh -c "
-      until /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin; do
+      until /usr/bin/mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}; do
         echo 'waiting for minio...';
         sleep 2;
       done;

@@ -191,6 +191,7 @@ func TestFatal(t *testing.T) {
 	log.SetOutput(&output)
 
 	var exitCode int
+
 	log.entry.Logger.ExitFunc = func(code int) {
 		exitCode = code
 	}
