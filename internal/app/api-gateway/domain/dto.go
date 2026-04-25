@@ -14,3 +14,31 @@ type ChangePasswordRequest struct {
 	OldPassword string `json:"old_password"`
 	NewPassword string `json:"new_password"`
 }
+
+type SupportCreateTicketRequest struct {
+	Category          string `json:"category"`
+	Title             string `json:"title"`
+	Description       string `json:"description"`
+	AttachmentFileKey string `json:"attachment_file_key"`
+}
+
+type SupportGetTicketsRequest struct {
+	Role        string `json:"role"`
+	Status      string `json:"status"`
+	Category    string `json:"category"`
+	SupportLine int64  `json:"support_line"`
+}
+
+type SupportUpdateTicketRequest struct {
+	Category          string `json:"category"`
+	Status            string `json:"status"`
+	SupportLine       int64  `json:"support_line"`
+	Title             string `json:"title"`
+	Description       string `json:"description"`
+	AttachmentFileKey string `json:"attachment_file_key"`
+}
+
+type SupportCreateTicketMessageRequest struct {
+	Content        string `json:"content"`
+	ContentFileKey string `json:"content_file_key"`
+}
