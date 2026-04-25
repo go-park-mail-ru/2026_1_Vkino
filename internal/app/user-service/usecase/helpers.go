@@ -10,6 +10,7 @@ import (
 func (u *UserUsecase) profileResponse(ctx context.Context, user *domain2.User) (domain2.ProfileResponse, error) {
 	resp := domain2.ProfileResponse{
 		Email: user.Email,
+		Role:  user.Role,
 	}
 
 	if user.Birthdate != nil {

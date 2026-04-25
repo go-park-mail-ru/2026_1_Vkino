@@ -21,6 +21,7 @@ message GetProfileResponse {
   string email = 1;
   string birthdate = 2;
   string avatar_url = 3;
+  string role = 4;
 }
 
 message UpdateProfileRequest {

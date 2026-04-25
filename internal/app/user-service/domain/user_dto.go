@@ -7,6 +7,7 @@ type FavoriteMovieResponse struct {
 
 type ProfileResponse struct {
 	Email     string  `json:"email"`
+	Role      string  `json:"role"`
 	Birthdate *string `json:"birthdate"`
 	AvatarURL string  `json:"avatar_url"`
 }

@@ -11,6 +11,7 @@ import (
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository/postgres"
 	userusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/usecase"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
+	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
@@ -50,9 +51,11 @@ func Run(configPath string) error {
 	}
 
 	userRepo := postgresrepo.NewUserRepo(pgDB)
+	supportRepo := postgresrepo.NewSupportRepo(pgDB)
 	clockService := clocksvc.New()
 
 	userUC := userusecase.NewUserUsecase(userRepo, avatarStore, clockService)
+	supportUC := userusecase.NewSupportUsecase(supportRepo, userRepo)
 
 	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
 		Address:        cfg.AuthGRPC.Address,
@@ -75,6 +78,7 @@ func Run(configPath string) error {
 
 	grpcServer := grpcx.NewServer(appLogger, func(server *grpc.Server) {
 		userv1.RegisterUserServiceServer(server, deliverygrpc.NewServer(userUC, authClient))
+		supportv1.RegisterSupportServiceServer(server, deliverygrpc.NewSupportServer(supportUC, authClient))
 	})
 
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")

@@ -1,14 +1,18 @@
 package postgres
 
 const (
+	sqlGetUserRole = `
+		select role from users where id = $1
+	`
+
 	sqlGetUserByEmail = `
-		select id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+		select id, email, password_hash, role, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
 		from users
 		where email = $1
 	`
 
 	sqlGetUserByID = `
-		select id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+		select id, email, password_hash, role, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
 		from users
 		where id = $1
 	`
@@ -34,14 +38,14 @@ const (
 		update users
 		set birthdate = $1, updated_at = now()
 		where id = $2
-		returning id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+		returning id, email, password_hash, role, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
 	`
 
 	sqlUpdateUserAvatarFileKey = `
 		update users
 		set avatar_file_key = $1, updated_at = now()
 		where id = $2
-		returning id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+		returning id, email, password_hash, role, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
 	`
 
 	sqlUpsertUserFavoriteMovie = `
