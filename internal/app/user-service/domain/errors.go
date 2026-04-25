@@ -13,4 +13,8 @@ var (
 	ErrFriendNotFound     = errors.New("friend not found")
 	ErrSelfFriendship     = errors.New("self friendship is forbidden")
 	ErrInternal           = errors.New("internal error")
+
+	ErrTicketNotFound  = errors.New("ticket not found")
+	ErrAccessDenied    = errors.New("access denied")
+	ErrInvalidTicketID = errors.New("invalid ticket id")
 )

@@ -33,6 +33,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain2.U
 		&user.ID,
 		&user.Email,
 		&user.Password,
+		&user.Role,
 		&user.Birthdate,
 		&user.AvatarFileKey,
 		&user.RegistrationDate,
@@ -58,6 +59,7 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain2.User, er
 		&user.ID,
 		&user.Email,
 		&user.Password,
+		&user.Role,
 		&user.Birthdate,
 		&user.AvatarFileKey,
 		&user.RegistrationDate,
@@ -110,6 +112,7 @@ func (r *UserRepo) UpdateBirthdate(ctx context.Context, userID int64, birthdate 
 		&user.ID,
 		&user.Email,
 		&user.Password,
+		&user.Role,
 		&user.Birthdate,
 		&user.AvatarFileKey,
 		&user.RegistrationDate,
@@ -135,6 +138,7 @@ func (r *UserRepo) UpdateAvatarFileKey(ctx context.Context, userID int64, avatar
 		&user.ID,
 		&user.Email,
 		&user.Password,
+		&user.Role,
 		&user.Birthdate,
 		&user.AvatarFileKey,
 		&user.RegistrationDate,
@@ -191,4 +195,19 @@ func (r *UserRepo) DeleteFriend(ctx context.Context, userID int64, friendID int6
 	}
 
 	return nil
+}
+
+func (r *UserRepo) GetUserRole(ctx context.Context, userID int64) (string, error) {
+	var role string
+
+	err := r.db.QueryRow(ctx, sqlGetUserRole, userID).Scan(&role)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", ErrUserNotFound
+		}
+
+		return "", fmt.Errorf("get user role: %w", err)
+	}
+
+	return role, nil
 }

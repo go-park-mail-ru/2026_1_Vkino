@@ -10,6 +10,7 @@ type User struct {
 	ID               int64
 	Email            string
 	Password         string
+	Role             string
 	Birthdate        *time.Time
 	AvatarFileKey    *string
 	RegistrationDate time.Time
