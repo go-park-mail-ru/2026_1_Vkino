@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	dto "github.com/go-park-mail-ru/2026_1_VKino/internal/app/api-gateway/domain"
@@ -340,12 +341,21 @@ func User(
 		}),
 
 		httpserver.WithRoute("GET /support/tickets", func(w http.ResponseWriter, r *http.Request) {
-			var req dto.SupportGetTicketsRequest
-			if !readJSON(w, r, &req) {
-				return
+			query := r.URL.Query()
+
+			supportLine := int64(0)
+			if rawSupportLine := strings.TrimSpace(query.Get("support_line")); rawSupportLine != "" {
+				parsedSupportLine, err := strconv.ParseInt(rawSupportLine, 10, 64)
+				if err != nil {
+					httppkg.ErrResponse(w, http.StatusBadRequest, "invalid support line")
+
+					return
+				}
+
+				supportLine = parsedSupportLine
 			}
 
-			role := strings.TrimSpace(req.Role)
+			role := strings.TrimSpace(query.Get("role"))
 			if role == "" {
 				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid role")
 
@@ -356,10 +366,10 @@ func User(
 			defer cancel()
 
 			request := &supportv1.GetTicketsRequest{
-				Status:      strings.TrimSpace(req.Status),
-				Category:    strings.TrimSpace(req.Category),
-				UserEmail:   strings.TrimSpace(req.UserEmail),
-				SupportLine: req.SupportLine,
+				Status:      strings.TrimSpace(query.Get("status")),
+				Category:    strings.TrimSpace(query.Get("category")),
+				UserEmail:   strings.TrimSpace(query.Get("user_email")),
+				SupportLine: supportLine,
 			}
 
 			switch role {
