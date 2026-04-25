@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/api-gateway/routes"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
@@ -60,6 +61,7 @@ func Run(configPath string) error {
 		authv1.NewAuthServiceClient(authConn),
 		userv1.NewUserServiceClient(userConn),
 		moviev1.NewMovieServiceClient(movieConn),
+		supportv1.NewSupportServiceClient(userConn),
 	)...)...)
 
 	appLogger.WithField("port", cfg.Server.Port).Info("starting api gateway")

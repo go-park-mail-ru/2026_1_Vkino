@@ -11,6 +11,7 @@ import (
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository/postgres"
 	userusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/usecase"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
+	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
@@ -74,7 +75,10 @@ func Run(configPath string) error {
 	}
 
 	grpcServer := grpcx.NewServer(appLogger, func(server *grpc.Server) {
-		userv1.RegisterUserServiceServer(server, deliverygrpc.NewServer(userUC, authClient))
+		serviceServer := deliverygrpc.NewServer(userUC, nil, authClient)
+
+		userv1.RegisterUserServiceServer(server, serviceServer)
+		supportv1.RegisterSupportServiceServer(server, serviceServer)
 	})
 
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")

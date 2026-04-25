@@ -20,6 +20,36 @@ type Usecase interface {
 	AddMovieToFavorites(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error)
 }
 
+type SupportUsecase interface {
+	CreateTicket(ctx context.Context, actorUserID int64, req domain.CreateSupportTicketRequest) (domain.SupportTicketResponse, error)
+	GetTickets(
+		ctx context.Context,
+		actorUserID int64,
+		req domain.GetSupportTicketsRequest,
+	) ([]domain.SupportTicketResponse, error)
+	UpdateTicket(ctx context.Context, actorUserID int64, req domain.UpdateSupportTicketRequest) (domain.SupportTicketResponse, error)
+	GetTicketMessages(
+		ctx context.Context,
+		actorUserID int64,
+		req domain.GetSupportTicketMessagesRequest,
+	) ([]domain.SupportTicketMessageResponse, error)
+	CreateTicketMessage(
+		ctx context.Context,
+		actorUserID int64,
+		req domain.CreateSupportTicketMessageRequest,
+	) (domain.SupportTicketMessageResponse, error)
+	GetTicketStatistics(
+		ctx context.Context,
+		actorUserID int64,
+		req domain.GetSupportTicketStatisticsRequest,
+	) (domain.SupportTicketStatisticsResponse, error)
+	SubscribeTicket(
+		ctx context.Context,
+		actorUserID int64,
+		req domain.SubscribeSupportTicketRequest,
+	) (<-chan domain.SupportTicketEventResponse, func(), error)
+}
+
 type UserUsecase struct {
 	userRepo     repository.UserRepo
 	avatarStore  storage.FileStorage

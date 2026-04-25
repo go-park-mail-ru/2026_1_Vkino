@@ -5,14 +5,15 @@ import (
 
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 )
 
 func Register(cfg Config, authClient authv1.AuthServiceClient, userClient userv1.UserServiceClient,
-	movieClient moviev1.MovieServiceClient) []httpserver.Option {
+	movieClient moviev1.MovieServiceClient, supportClient supportv1.SupportServiceClient) []httpserver.Option {
 	result := make([]httpserver.Option, 0, 1+len(Auth(cfg, authClient))+len(User(cfg, userClient))+len(Movie(cfg,
-		movieClient)))
+		movieClient))+len(Support(cfg, supportClient)))
 	result = append(result,
 		httpserver.WithRoute("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -23,6 +24,7 @@ func Register(cfg Config, authClient authv1.AuthServiceClient, userClient userv1
 	result = append(result, Auth(cfg, authClient)...)
 	result = append(result, User(cfg, userClient)...)
 	result = append(result, Movie(cfg, movieClient)...)
+	result = append(result, Support(cfg, supportClient)...)
 
 	return result
 }
