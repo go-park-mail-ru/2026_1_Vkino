@@ -6,6 +6,7 @@ var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrInvalidSearchQuery = errors.New("invalid search query")
 	ErrInvalidToken       = errors.New("invalid token")
+	ErrInvalidEmail       = errors.New("invalid email")
 	ErrInvalidMovieID     = errors.New("invalid movie id")
 	ErrInvalidBirthdate   = errors.New("invalid birthdate")
 	ErrInvalidAvatar      = errors.New("invalid avatar")

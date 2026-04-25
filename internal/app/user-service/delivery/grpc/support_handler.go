@@ -2,11 +2,15 @@ package grpc
 
 import (
 	"context"
+	"errors"
 
 	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
+	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *SupportServer) authorize(ctx context.Context) (int64, error) {
@@ -18,11 +22,31 @@ func (s *SupportServer) authorize(ctx context.Context) (int64, error) {
 	return authCtx.UserID, nil
 }
 
+func (s *SupportServer) authorizeOptional(ctx context.Context) (int64, error) {
+	accessToken, err := authctx.AccessTokenFromIncomingContext(ctx)
+	if err != nil {
+		if errors.Is(err, authctx.ErrAuthorizationHeaderMissing) {
+			return 0, nil
+		}
+
+		return 0, status.Error(codes.Unauthenticated, "unauthorized")
+	}
+
+	resp, err := s.authClient.Validate(ctx, &authv1.ValidateRequest{
+		AccessToken: accessToken,
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return resp.GetUserId(), nil
+}
+
 func (s *SupportServer) CreateTicket(
 	ctx context.Context,
 	req *supportv1.CreateTicketRequest,
 ) (*supportv1.TicketResponse, error) {
-	userID, err := s.authorize(ctx)
+	userID, err := s.authorizeOptional(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +55,7 @@ func (s *SupportServer) CreateTicket(
 		Category:          req.GetCategory(),
 		Title:             req.GetTitle(),
 		Description:       req.GetDescription(),
+		UserEmail:         req.GetUserEmail(),
 		AttachmentFileKey: req.GetAttachmentFileKey(),
 	})
 	if err != nil {
@@ -52,6 +77,7 @@ func (s *SupportServer) GetTickets(
 	tickets, err := s.usecase.GetTickets(ctx, userID, domain2.GetSupportTicketsRequest{
 		Status:      req.GetStatus(),
 		Category:    req.GetCategory(),
+		UserEmail:   req.GetUserEmail(),
 		SupportLine: req.GetSupportLine(),
 	})
 	if err != nil {
@@ -84,6 +110,7 @@ func (s *SupportServer) UpdateTicket(
 		Status:            req.GetStatus(),
 		SupportLine:       req.GetSupportLine(),
 		Title:             req.GetTitle(),
+		UserEmail:         req.GetUserEmail(),
 		Description:       req.GetDescription(),
 		AttachmentFileKey: req.GetAttachmentFileKey(),
 	})
@@ -217,6 +244,7 @@ func toProtoTicket(t domain2.SupportTicketResponse) *supportv1.Ticket {
 	return &supportv1.Ticket{
 		Id:                t.ID,
 		UserId:            t.UserID,
+		UserEmail:         t.UserEmail,
 		Category:          t.Category,
 		Status:            t.Status,
 		SupportLine:       t.SupportLine,

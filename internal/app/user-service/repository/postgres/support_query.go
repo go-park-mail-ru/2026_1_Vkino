@@ -4,15 +4,17 @@ const (
 	sqlCreateSupportTicket = `
 		insert into support_ticket (
 			user_id,
+			user_email,
 			category,
 			title,
 			description,
 			attachment_file_key
 		)
-		values ($1, $2, $3, $4, $5)
+		values ($1, $2, $3, $4, $5, $6)
 		returning
 			id,
 			user_id,
+			user_email,
 			category,
 			status,
 			support_line,
@@ -29,6 +31,7 @@ const (
 		select
 			id,
 			user_id,
+			user_email,
 			category,
 			status,
 			support_line,
@@ -47,6 +50,7 @@ const (
 		select
 			id,
 			user_id,
+			user_email,
 			category,
 			status,
 			support_line,
@@ -60,9 +64,10 @@ const (
 		from support_ticket
 		where
 			($1 = 0 or user_id = $1)
-			and ($2 = '' or status = $2)
-			and ($3 = '' or category = $3)
-			and ($4 = 0 or support_line = $4)
+			and ($2 = '' or user_email = $2)
+			and ($3 = '' or status = $3)
+			and ($4 = '' or category = $4)
+			and ($5 = 0 or support_line = $5)
 		order by created_at desc
 	`
 
@@ -78,6 +83,7 @@ const (
 			title = coalesce(nullif($5, ''), title),
 			description = coalesce(nullif($6, ''), description),
 			attachment_file_key = coalesce(nullif($7, ''), attachment_file_key),
+			user_email = coalesce(nullif($8, ''), user_email),
 			closed_at = case
 				when $3 in ('resolved', 'closed') then now()
 				else closed_at
@@ -86,6 +92,7 @@ const (
 		returning
 			id,
 			user_id,
+			user_email,
 			category,
 			status,
 			support_line,
@@ -138,10 +145,11 @@ const (
 		set rating = $2
 		where id = $1
 			and user_id = $3
-			and status in ('resolved', 'closed')
+		and status in ('resolved', 'closed')
 		returning
 			id,
 			user_id,
+			user_email,
 			category,
 			status,
 			support_line,

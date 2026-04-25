@@ -4,12 +4,14 @@ type CreateSupportTicketRequest struct {
 	Category          string
 	Title             string
 	Description       string
+	UserEmail         string
 	AttachmentFileKey string
 }
 
 type GetSupportTicketsRequest struct {
 	Status      string
 	Category    string
+	UserEmail   string
 	SupportLine int64
 }
 
@@ -19,6 +21,7 @@ type UpdateSupportTicketRequest struct {
 	Status            string
 	SupportLine       int64
 	Title             string
+	UserEmail         string
 	Description       string
 	AttachmentFileKey string
 }
@@ -42,6 +45,7 @@ type SubscribeSupportTicketRequest struct {
 type SupportTicketResponse struct {
 	ID                int64
 	UserID            int64
+	UserEmail         string
 	Category          string
 	Status            string
 	SupportLine       int64

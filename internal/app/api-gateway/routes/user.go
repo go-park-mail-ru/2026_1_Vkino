@@ -327,6 +327,7 @@ func User(
 				Category:          req.Category,
 				Title:             req.Title,
 				Description:       req.Description,
+				UserEmail:         strings.TrimSpace(req.UserEmail),
 				AttachmentFileKey: req.AttachmentFileKey,
 			})
 			if err != nil {
@@ -357,6 +358,7 @@ func User(
 			request := &supportv1.GetTicketsRequest{
 				Status:      strings.TrimSpace(req.Status),
 				Category:    strings.TrimSpace(req.Category),
+				UserEmail:   strings.TrimSpace(req.UserEmail),
 				SupportLine: req.SupportLine,
 			}
 
@@ -398,6 +400,7 @@ func User(
 				Status:            req.Status,
 				SupportLine:       req.SupportLine,
 				Title:             req.Title,
+				UserEmail:         strings.TrimSpace(req.UserEmail),
 				Description:       req.Description,
 				AttachmentFileKey: req.AttachmentFileKey,
 			})
