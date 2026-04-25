@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
@@ -19,6 +20,24 @@ type SupportRepo struct {
 
 func NewSupportRepo(db *corepostgres.Client) *SupportRepo {
 	return &SupportRepo{db: db}
+}
+
+func optionalStringPtr(value string) *string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil
+	}
+
+	return &value
+}
+
+func normalizedOptionalStringValue(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+
+	return value
 }
 
 func scanTicket(
@@ -94,8 +113,10 @@ func (r *SupportRepo) CreateTicket(
 	userID int64,
 	req domain2.CreateSupportTicketRequest,
 ) (*domain2.SupportTicketResponse, error) {
+	attachmentFileKey := optionalStringPtr(req.AttachmentFileKey)
+
 	row := r.db.QueryRow(ctx, sqlCreateSupportTicket,
-		userID, req.Category, req.Title, req.Description, req.AttachmentFileKey,
+		userID, req.Category, req.Title, req.Description, attachmentFileKey,
 	)
 
 	ticket, err := r.scanTicketRow(row)
@@ -173,9 +194,11 @@ func (r *SupportRepo) UpdateTicket(
 	ctx context.Context,
 	req domain2.UpdateSupportTicketRequest,
 ) (*domain2.SupportTicketResponse, error) {
+	attachmentFileKey := normalizedOptionalStringValue(req.AttachmentFileKey)
+
 	row := r.db.QueryRow(ctx, sqlUpdateSupportTicket,
 		req.TicketID, req.Category, req.Status, req.SupportLine,
-		req.Title, req.Description, req.AttachmentFileKey,
+		req.Title, req.Description, attachmentFileKey,
 	)
 
 	ticket, err := r.scanTicketRow(row)
@@ -246,15 +269,8 @@ func (r *SupportRepo) CreateTicketMessage(
 	senderID int64,
 	req domain2.CreateSupportTicketMessageRequest,
 ) (*domain2.SupportTicketMessageResponse, error) {
-	var contentPtr *string
-	if req.Content != "" {
-		contentPtr = &req.Content
-	}
-
-	var contentFileKeyPtr *string
-	if req.ContentFileKey != "" {
-		contentFileKeyPtr = &req.ContentFileKey
-	}
+	contentPtr := optionalStringPtr(req.Content)
+	contentFileKeyPtr := optionalStringPtr(req.ContentFileKey)
 
 	var (
 		id             int64
