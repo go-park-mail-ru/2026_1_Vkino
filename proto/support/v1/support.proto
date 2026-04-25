@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package support.v1;
+
+option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1;supportv1";
+
+service SupportService {
+  rpc CreateTicket(CreateTicketRequest) returns (TicketResponse);
+  rpc GetTickets(GetTicketsRequest) returns (TicketsResponse);
+  rpc UpdateTicket(UpdateTicketRequest) returns (TicketResponse);
+
+  rpc GetTicketMessages(GetTicketMessagesRequest) returns (TicketMessagesResponse);
+  rpc CreateTicketMessage(CreateTicketMessageRequest) returns (TicketMessageResponse);
+
+  rpc GetTicketStatistics(GetTicketStatisticsRequest) returns (TicketStatisticsResponse);
+
+  rpc SubscribeTicket(SubscribeTicketRequest) returns (stream TicketEvent);
+}
+
+message Ticket {
+  int64 id = 1;
+  int64 user_id = 2;
+  string category = 3;
+  string status = 4;
+  int64 support_line = 5;
+  string title = 6;
+  string description = 7;
+  string attachment_file_key = 8;
+  int64 rating = 9;
+  string created_at = 10;
+  string updated_at = 11;
+  string closed_at = 12;
+}
+
+message TicketMessage {
+  int64 id = 1;
+  int64 ticket_id = 2;
+  int64 sender_id = 3;
+  string content = 4;
+  string content_file_key = 5;
+  string created_at = 6;
+}
+
+message CreateTicketRequest {
+  string category = 1;
+  string title = 2;
+  string description = 3;
+  string attachment_file_key = 4;
+}
+
+message GetTicketsRequest {
+  string status = 1;
+  string category = 2;
+  int64 support_line = 3;
+}
+
+message UpdateTicketRequest {
+  int64 ticket_id = 1;
+  string category = 2;
+  string status = 3;
+  int64 support_line = 4;
+  string title = 5;
+  string description = 6;
+  string attachment_file_key = 7;
+}
+
+message GetTicketMessagesRequest {
+  int64 ticket_id = 1;
+}
+
+message CreateTicketMessageRequest {
+  int64 ticket_id = 1;
+  string content = 2;
+  string content_file_key = 3;
+}
+
+message GetTicketStatisticsRequest {}
+
+message SubscribeTicketRequest {
+  int64 ticket_id = 1;
+}
+
+message TicketEvent {
+  string type = 1;
+  Ticket ticket = 2;
+  TicketMessage message = 3;
+}
+
+message TicketResponse {
+  Ticket ticket = 1;
+}
+
+message TicketsResponse {
+  repeated Ticket tickets = 1;
+}
+
+message TicketMessageResponse {
+  TicketMessage message = 1;
+}
+
+message TicketMessagesResponse {
+  repeated TicketMessage messages = 1;
+}
+
+message TicketStatisticsResponse {
+  int64 total = 1;
+  int64 open = 2;
+  int64 in_progress = 3;
+  int64 waiting_user = 4;
+  int64 resolved = 5;
+  int64 closed = 6;
+  double average_rating = 7;
+}
