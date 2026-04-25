@@ -1,15 +1,126 @@
 package routes
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net/http"
 	"strings"
 
+	dto "github.com/go-park-mail-ru/2026_1_VKino/internal/app/api-gateway/domain"
+	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
+	"google.golang.org/grpc"
 )
+
+type UserClient interface {
+	userv1.UserServiceClient
+	supportRPC
+}
+
+type supportRPC interface {
+	CreateTicket(ctx context.Context, in *supportv1.CreateTicketRequest, opts ...grpc.CallOption) (
+		*supportv1.TicketResponse, error)
+	GetTickets(ctx context.Context, in *supportv1.GetTicketsRequest, opts ...grpc.CallOption) (
+		*supportv1.TicketsResponse, error)
+	UpdateTicket(ctx context.Context, in *supportv1.UpdateTicketRequest, opts ...grpc.CallOption) (
+		*supportv1.TicketResponse, error)
+	GetTicketMessages(ctx context.Context, in *supportv1.GetTicketMessagesRequest, opts ...grpc.CallOption) (
+		*supportv1.TicketMessagesResponse, error)
+	CreateTicketMessage(ctx context.Context, in *supportv1.CreateTicketMessageRequest, opts ...grpc.CallOption) (
+		*supportv1.TicketMessageResponse, error)
+	GetTicketStatistics(ctx context.Context, in *supportv1.GetTicketStatisticsRequest, opts ...grpc.CallOption) (
+		*supportv1.TicketStatisticsResponse, error)
+}
+
+type grpcUserClient struct {
+	user userv1.UserServiceClient
+	sup  supportRPC
+}
+
+func NewUserClient(conn grpc.ClientConnInterface) UserClient {
+	return grpcUserClient{
+		user: userv1.NewUserServiceClient(conn),
+		sup:  supportv1.NewSupportServiceClient(conn),
+	}
+}
+
+func (c grpcUserClient) GetProfile(ctx context.Context, in *userv1.GetProfileRequest, opts ...grpc.CallOption) (
+	*userv1.GetProfileResponse, error) {
+	return c.user.GetProfile(ctx, in, opts...)
+}
+
+func (c grpcUserClient) SearchUsersByEmail(
+	ctx context.Context,
+	in *userv1.SearchUsersByEmailRequest,
+	opts ...grpc.CallOption,
+) (*userv1.SearchUsersByEmailResponse, error) {
+	return c.user.SearchUsersByEmail(ctx, in, opts...)
+}
+
+func (c grpcUserClient) UpdateProfile(ctx context.Context, in *userv1.UpdateProfileRequest, opts ...grpc.CallOption) (
+	*userv1.UpdateProfileResponse, error) {
+	return c.user.UpdateProfile(ctx, in, opts...)
+}
+
+func (c grpcUserClient) AddFriend(ctx context.Context, in *userv1.AddFriendRequest, opts ...grpc.CallOption) (
+	*userv1.AddFriendResponse, error) {
+	return c.user.AddFriend(ctx, in, opts...)
+}
+
+func (c grpcUserClient) DeleteFriend(ctx context.Context, in *userv1.DeleteFriendRequest, opts ...grpc.CallOption) (
+	*userv1.DeleteFriendResponse, error) {
+	return c.user.DeleteFriend(ctx, in, opts...)
+}
+
+func (c grpcUserClient) AddMovieToFavorites(
+	ctx context.Context,
+	in *userv1.AddMovieToFavoritesRequest,
+	opts ...grpc.CallOption,
+) (*userv1.AddMovieToFavoritesResponse, error) {
+	return c.user.AddMovieToFavorites(ctx, in, opts...)
+}
+
+func (c grpcUserClient) CreateTicket(ctx context.Context, in *supportv1.CreateTicketRequest, opts ...grpc.CallOption) (
+	*supportv1.TicketResponse, error) {
+	return c.sup.CreateTicket(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetTickets(ctx context.Context, in *supportv1.GetTicketsRequest, opts ...grpc.CallOption) (
+	*supportv1.TicketsResponse, error) {
+	return c.sup.GetTickets(ctx, in, opts...)
+}
+
+func (c grpcUserClient) UpdateTicket(ctx context.Context, in *supportv1.UpdateTicketRequest, opts ...grpc.CallOption) (
+	*supportv1.TicketResponse, error) {
+	return c.sup.UpdateTicket(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetTicketMessages(
+	ctx context.Context,
+	in *supportv1.GetTicketMessagesRequest,
+	opts ...grpc.CallOption,
+) (*supportv1.TicketMessagesResponse, error) {
+	return c.sup.GetTicketMessages(ctx, in, opts...)
+}
+
+func (c grpcUserClient) CreateTicketMessage(
+	ctx context.Context,
+	in *supportv1.CreateTicketMessageRequest,
+	opts ...grpc.CallOption,
+) (*supportv1.TicketMessageResponse, error) {
+	return c.sup.CreateTicketMessage(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetTicketStatistics(
+	ctx context.Context,
+	in *supportv1.GetTicketStatisticsRequest,
+	opts ...grpc.CallOption,
+) (*supportv1.TicketStatisticsResponse, error) {
+	return c.sup.GetTicketStatistics(ctx, in, opts...)
+}
 
 type updateProfileJSONRequest struct {
 	Birthdate string `json:"birthdate"`
@@ -82,7 +193,7 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 
 func User(
 	cfg Config,
-	userClient userv1.UserServiceClient,
+	userClient UserClient,
 ) []httpserver.Option {
 	return []httpserver.Option{
 		httpserver.WithRoute("GET /user/me", func(w http.ResponseWriter, r *http.Request) {
@@ -194,6 +305,165 @@ func User(
 			resp, err := userClient.AddMovieToFavorites(r.Context(), &userv1.AddMovieToFavoritesRequest{
 				MovieId: movieID,
 			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("POST /support/tickets", func(w http.ResponseWriter, r *http.Request) {
+			var req dto.SupportCreateTicketRequest
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.CreateTicket(r.Context(), &supportv1.CreateTicketRequest{
+				Category:          req.Category,
+				Title:             req.Title,
+				Description:       req.Description,
+				AttachmentFileKey: req.AttachmentFileKey,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusCreated, resp)
+		}),
+
+		httpserver.WithRoute("GET /support/tickets", func(w http.ResponseWriter, r *http.Request) {
+			var req dto.SupportGetTicketsRequest
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			role := strings.TrimSpace(req.Role)
+			if role == "" {
+				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid role")
+
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			request := &supportv1.GetTicketsRequest{
+				Status:      strings.TrimSpace(req.Status),
+				Category:    strings.TrimSpace(req.Category),
+				SupportLine: req.SupportLine,
+			}
+
+			switch role {
+			case "user", "support_l1", "support_l2", "admin":
+			default:
+				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid role")
+
+				return
+			}
+
+			resp, err := userClient.GetTickets(r.Context(), request)
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("PATCH /support/tickets/{id}", func(w http.ResponseWriter, r *http.Request) {
+			ticketID, ok := parsePathID(w, r, "invalid ticket id")
+			if !ok {
+				return
+			}
+
+			var req dto.SupportUpdateTicketRequest
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.UpdateTicket(r.Context(), &supportv1.UpdateTicketRequest{
+				TicketId:          ticketID,
+				Category:          req.Category,
+				Status:            req.Status,
+				SupportLine:       req.SupportLine,
+				Title:             req.Title,
+				Description:       req.Description,
+				AttachmentFileKey: req.AttachmentFileKey,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /support/tickets/{id}/messages", func(w http.ResponseWriter, r *http.Request) {
+			ticketID, ok := parsePathID(w, r, "invalid ticket id")
+			if !ok {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.GetTicketMessages(r.Context(), &supportv1.GetTicketMessagesRequest{
+				TicketId: ticketID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("POST /support/tickets/{id}/messages", func(w http.ResponseWriter, r *http.Request) {
+			ticketID, ok := parsePathID(w, r, "invalid ticket id")
+			if !ok {
+				return
+			}
+
+			var req dto.SupportCreateTicketMessageRequest
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.CreateTicketMessage(r.Context(), &supportv1.CreateTicketMessageRequest{
+				TicketId:       ticketID,
+				Content:        req.Content,
+				ContentFileKey: req.ContentFileKey,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusCreated, resp)
+		}),
+
+		httpserver.WithRoute("GET /support/statistics", func(w http.ResponseWriter, r *http.Request) {
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.GetTicketStatistics(r.Context(), &supportv1.GetTicketStatisticsRequest{})
 			if err != nil {
 				writeGRPCError(w, err)
 
