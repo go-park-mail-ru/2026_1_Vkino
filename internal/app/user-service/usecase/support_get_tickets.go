@@ -3,8 +3,10 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
+	validator "github.com/go-park-mail-ru/2026_1_VKino/pkg/validatex"
 )
 
 func (u *supportUsecase) GetTickets(
@@ -12,6 +14,10 @@ func (u *supportUsecase) GetTickets(
 	actorUserID int64,
 	req domain2.GetSupportTicketsRequest,
 ) ([]domain2.SupportTicketResponse, error) {
+	req.Status = strings.TrimSpace(req.Status)
+	req.Category = strings.TrimSpace(req.Category)
+	req.UserEmail = strings.TrimSpace(req.UserEmail)
+
 	role, err := u.userRepo.GetUserRole(ctx, actorUserID)
 	if err != nil {
 		return nil, domain2.ErrInvalidToken
@@ -20,8 +26,12 @@ func (u *supportUsecase) GetTickets(
 	userIDFilter := actorUserID
 	if isStaff(role) {
 		userIDFilter = 0
+		if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {
+			return nil, domain2.ErrInvalidEmail
+		}
 	} else {
 		req.SupportLine = 0
+		req.UserEmail = ""
 	}
 
 	tickets, err := u.supportRepo.GetTickets(ctx, userIDFilter, req)

@@ -20,6 +20,7 @@ service SupportService {
 message Ticket {
   int64 id = 1;
   int64 user_id = 2;
+  string user_email = 13;
   string category = 3;
   string status = 4;
   int64 support_line = 5;
@@ -46,12 +47,14 @@ message CreateTicketRequest {
   string title = 2;
   string description = 3;
   string attachment_file_key = 4;
+  string user_email = 5;
 }
 
 message GetTicketsRequest {
   string status = 1;
   string category = 2;
   int64 support_line = 3;
+  string user_email = 4;
 }
 
 message UpdateTicketRequest {
@@ -62,6 +65,7 @@ message UpdateTicketRequest {
   string title = 5;
   string description = 6;
   string attachment_file_key = 7;
+  string user_email = 8;
 }
 
 message GetTicketMessagesRequest {

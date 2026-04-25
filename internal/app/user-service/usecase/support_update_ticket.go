@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository/postgres"
+	validator "github.com/go-park-mail-ru/2026_1_VKino/pkg/validatex"
 )
 
 func (u *supportUsecase) UpdateTicket(
@@ -14,8 +16,18 @@ func (u *supportUsecase) UpdateTicket(
 	actorUserID int64,
 	req domain2.UpdateSupportTicketRequest,
 ) (domain2.SupportTicketResponse, error) {
+	req.Category = strings.TrimSpace(req.Category)
+	req.Status = strings.TrimSpace(req.Status)
+	req.Title = strings.TrimSpace(req.Title)
+	req.UserEmail = strings.TrimSpace(req.UserEmail)
+	req.Description = strings.TrimSpace(req.Description)
+
 	if req.TicketID <= 0 {
 		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketID
+	}
+
+	if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {
+		return domain2.SupportTicketResponse{}, domain2.ErrInvalidEmail
 	}
 
 	role, err := u.userRepo.GetUserRole(ctx, actorUserID)

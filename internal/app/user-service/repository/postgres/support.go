@@ -22,7 +22,9 @@ func NewSupportRepo(db *corepostgres.Client) *SupportRepo {
 }
 
 func scanTicket(
-	id, userID int64,
+	id int64,
+	userID *int64,
+	userEmail *string,
 	category, status string,
 	supportLine int64,
 	title, description string,
@@ -33,7 +35,6 @@ func scanTicket(
 ) domain2.SupportTicketResponse {
 	ticket := domain2.SupportTicketResponse{
 		ID:          id,
-		UserID:      userID,
 		Category:    category,
 		Status:      status,
 		SupportLine: supportLine,
@@ -41,6 +42,14 @@ func scanTicket(
 		Description: description,
 		CreatedAt:   createdAt.Format(time.RFC3339),
 		UpdatedAt:   updatedAt.Format(time.RFC3339),
+	}
+
+	if userID != nil {
+		ticket.UserID = *userID
+	}
+
+	if userEmail != nil {
+		ticket.UserEmail = *userEmail
 	}
 
 	if attachmentFileKey != nil {
@@ -61,7 +70,8 @@ func scanTicket(
 func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain2.SupportTicketResponse, error) {
 	var (
 		id                int64
-		userID            int64
+		userID            *int64
+		userEmail         *string
 		category          string
 		status            string
 		supportLine       int64
@@ -75,7 +85,7 @@ func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain2.SupportTicketResponse
 	)
 
 	err := row.Scan(
-		&id, &userID, &category, &status, &supportLine,
+		&id, &userID, &userEmail, &category, &status, &supportLine,
 		&title, &description, &attachmentFileKey, &rating,
 		&createdAt, &updatedAt, &closedAt,
 	)
@@ -83,7 +93,7 @@ func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain2.SupportTicketResponse
 		return nil, err
 	}
 
-	ticket := scanTicket(id, userID, category, status, supportLine, title, description,
+	ticket := scanTicket(id, userID, userEmail, category, status, supportLine, title, description,
 		attachmentFileKey, rating, createdAt, updatedAt, closedAt)
 
 	return &ticket, nil
@@ -94,8 +104,23 @@ func (r *SupportRepo) CreateTicket(
 	userID int64,
 	req domain2.CreateSupportTicketRequest,
 ) (*domain2.SupportTicketResponse, error) {
+	var userIDPtr *int64
+	if userID > 0 {
+		userIDPtr = &userID
+	}
+
+	var userEmailPtr *string
+	if req.UserEmail != "" {
+		userEmailPtr = &req.UserEmail
+	}
+
+	var attachmentFileKeyPtr *string
+	if req.AttachmentFileKey != "" {
+		attachmentFileKeyPtr = &req.AttachmentFileKey
+	}
+
 	row := r.db.QueryRow(ctx, sqlCreateSupportTicket,
-		userID, req.Category, req.Title, req.Description, req.AttachmentFileKey,
+		userIDPtr, userEmailPtr, req.Category, req.Title, req.Description, attachmentFileKeyPtr,
 	)
 
 	ticket, err := r.scanTicketRow(row)
@@ -126,7 +151,7 @@ func (r *SupportRepo) GetTickets(
 	userID int64,
 	req domain2.GetSupportTicketsRequest,
 ) ([]domain2.SupportTicketResponse, error) {
-	rows, err := r.db.Query(ctx, sqlGetSupportTickets, userID, req.Status, req.Category, req.SupportLine)
+	rows, err := r.db.Query(ctx, sqlGetSupportTickets, userID, req.UserEmail, req.Status, req.Category, req.SupportLine)
 	if err != nil {
 		return nil, fmt.Errorf("get support tickets: %w", err)
 	}
@@ -137,7 +162,8 @@ func (r *SupportRepo) GetTickets(
 	for rows.Next() {
 		var (
 			id                int64
-			uID               int64
+			uID               *int64
+			userEmail         *string
 			category          string
 			status            string
 			supportLine       int64
@@ -151,14 +177,14 @@ func (r *SupportRepo) GetTickets(
 		)
 
 		if err = rows.Scan(
-			&id, &uID, &category, &status, &supportLine,
+			&id, &uID, &userEmail, &category, &status, &supportLine,
 			&title, &description, &attachmentFileKey, &rating,
 			&createdAt, &updatedAt, &closedAt,
 		); err != nil {
 			return nil, fmt.Errorf("scan support ticket: %w", err)
 		}
 
-		tickets = append(tickets, scanTicket(id, uID, category, status, supportLine, title, description,
+		tickets = append(tickets, scanTicket(id, uID, userEmail, category, status, supportLine, title, description,
 			attachmentFileKey, rating, createdAt, updatedAt, closedAt))
 	}
 
@@ -175,7 +201,7 @@ func (r *SupportRepo) UpdateTicket(
 ) (*domain2.SupportTicketResponse, error) {
 	row := r.db.QueryRow(ctx, sqlUpdateSupportTicket,
 		req.TicketID, req.Category, req.Status, req.SupportLine,
-		req.Title, req.Description, req.AttachmentFileKey,
+		req.Title, req.Description, req.AttachmentFileKey, req.UserEmail,
 	)
 
 	ticket, err := r.scanTicketRow(row)

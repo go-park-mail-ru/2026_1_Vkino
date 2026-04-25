@@ -25,6 +25,7 @@ type Ticket struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	Id                int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	UserId            int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserEmail         string                 `protobuf:"bytes,13,opt,name=user_email,json=userEmail,proto3" json:"user_email,omitempty"`
 	Category          string                 `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
 	Status            string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
 	SupportLine       int64                  `protobuf:"varint,5,opt,name=support_line,json=supportLine,proto3" json:"support_line,omitempty"`
@@ -81,6 +82,13 @@ func (x *Ticket) GetUserId() int64 {
 		return x.UserId
 	}
 	return 0
+}
+
+func (x *Ticket) GetUserEmail() string {
+	if x != nil {
+		return x.UserEmail
+	}
+	return ""
 }
 
 func (x *Ticket) GetCategory() string {
@@ -243,6 +251,7 @@ type CreateTicketRequest struct {
 	Title             string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	Description       string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	AttachmentFileKey string                 `protobuf:"bytes,4,opt,name=attachment_file_key,json=attachmentFileKey,proto3" json:"attachment_file_key,omitempty"`
+	UserEmail         string                 `protobuf:"bytes,5,opt,name=user_email,json=userEmail,proto3" json:"user_email,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -305,11 +314,19 @@ func (x *CreateTicketRequest) GetAttachmentFileKey() string {
 	return ""
 }
 
+func (x *CreateTicketRequest) GetUserEmail() string {
+	if x != nil {
+		return x.UserEmail
+	}
+	return ""
+}
+
 type GetTicketsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
 	Category      string                 `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"`
 	SupportLine   int64                  `protobuf:"varint,3,opt,name=support_line,json=supportLine,proto3" json:"support_line,omitempty"`
+	UserEmail     string                 `protobuf:"bytes,4,opt,name=user_email,json=userEmail,proto3" json:"user_email,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -365,6 +382,13 @@ func (x *GetTicketsRequest) GetSupportLine() int64 {
 	return 0
 }
 
+func (x *GetTicketsRequest) GetUserEmail() string {
+	if x != nil {
+		return x.UserEmail
+	}
+	return ""
+}
+
 type UpdateTicketRequest struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	TicketId          int64                  `protobuf:"varint,1,opt,name=ticket_id,json=ticketId,proto3" json:"ticket_id,omitempty"`
@@ -374,6 +398,7 @@ type UpdateTicketRequest struct {
 	Title             string                 `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"`
 	Description       string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
 	AttachmentFileKey string                 `protobuf:"bytes,7,opt,name=attachment_file_key,json=attachmentFileKey,proto3" json:"attachment_file_key,omitempty"`
+	UserEmail         string                 `protobuf:"bytes,8,opt,name=user_email,json=userEmail,proto3" json:"user_email,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -453,6 +478,13 @@ func (x *UpdateTicketRequest) GetDescription() string {
 func (x *UpdateTicketRequest) GetAttachmentFileKey() string {
 	if x != nil {
 		return x.AttachmentFileKey
+	}
+	return ""
+}
+
+func (x *UpdateTicketRequest) GetUserEmail() string {
+	if x != nil {
+		return x.UserEmail
 	}
 	return ""
 }
@@ -974,10 +1006,12 @@ var File_support_v1_support_proto protoreflect.FileDescriptor
 const file_support_v1_support_proto_rawDesc = "" +
 	"\n" +
 	"\x18support/v1/support.proto\x12\n" +
-	"support.v1\"\xe3\x02\n" +
+	"support.v1\"\x82\x03\n" +
 	"\x06Ticket\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x1a\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x1d\n" +
+	"\n" +
+	"user_email\x18\r \x01(\tR\tuserEmail\x12\x1a\n" +
 	"\bcategory\x18\x03 \x01(\tR\bcategory\x12\x16\n" +
 	"\x06status\x18\x04 \x01(\tR\x06status\x12!\n" +
 	"\fsupport_line\x18\x05 \x01(\x03R\vsupportLine\x12\x14\n" +
@@ -998,16 +1032,20 @@ const file_support_v1_support_proto_rawDesc = "" +
 	"\acontent\x18\x04 \x01(\tR\acontent\x12(\n" +
 	"\x10content_file_key\x18\x05 \x01(\tR\x0econtentFileKey\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\tR\tcreatedAt\"\x99\x01\n" +
+	"created_at\x18\x06 \x01(\tR\tcreatedAt\"\xb8\x01\n" +
 	"\x13CreateTicketRequest\x12\x1a\n" +
 	"\bcategory\x18\x01 \x01(\tR\bcategory\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12.\n" +
-	"\x13attachment_file_key\x18\x04 \x01(\tR\x11attachmentFileKey\"j\n" +
+	"\x13attachment_file_key\x18\x04 \x01(\tR\x11attachmentFileKey\x12\x1d\n" +
+	"\n" +
+	"user_email\x18\x05 \x01(\tR\tuserEmail\"\x89\x01\n" +
 	"\x11GetTicketsRequest\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\tR\x06status\x12\x1a\n" +
 	"\bcategory\x18\x02 \x01(\tR\bcategory\x12!\n" +
-	"\fsupport_line\x18\x03 \x01(\x03R\vsupportLine\"\xf1\x01\n" +
+	"\fsupport_line\x18\x03 \x01(\x03R\vsupportLine\x12\x1d\n" +
+	"\n" +
+	"user_email\x18\x04 \x01(\tR\tuserEmail\"\x90\x02\n" +
 	"\x13UpdateTicketRequest\x12\x1b\n" +
 	"\tticket_id\x18\x01 \x01(\x03R\bticketId\x12\x1a\n" +
 	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x16\n" +
@@ -1015,7 +1053,9 @@ const file_support_v1_support_proto_rawDesc = "" +
 	"\fsupport_line\x18\x04 \x01(\x03R\vsupportLine\x12\x14\n" +
 	"\x05title\x18\x05 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x06 \x01(\tR\vdescription\x12.\n" +
-	"\x13attachment_file_key\x18\a \x01(\tR\x11attachmentFileKey\"7\n" +
+	"\x13attachment_file_key\x18\a \x01(\tR\x11attachmentFileKey\x12\x1d\n" +
+	"\n" +
+	"user_email\x18\b \x01(\tR\tuserEmail\"7\n" +
 	"\x18GetTicketMessagesRequest\x12\x1b\n" +
 	"\tticket_id\x18\x01 \x01(\x03R\bticketId\"}\n" +
 	"\x1aCreateTicketMessageRequest\x12\x1b\n" +
