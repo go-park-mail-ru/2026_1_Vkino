@@ -38,6 +38,7 @@ type SupportUpdateTicketRequest struct {
 	UserEmail         string `json:"user_email"`
 	Description       string `json:"description"`
 	AttachmentFileKey string `json:"attachment_file_key"`
+	Rating            int64  `json:"rating"`
 }
 
 type SupportCreateTicketMessageRequest struct {

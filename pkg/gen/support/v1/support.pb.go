@@ -399,6 +399,7 @@ type UpdateTicketRequest struct {
 	Description       string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
 	AttachmentFileKey string                 `protobuf:"bytes,7,opt,name=attachment_file_key,json=attachmentFileKey,proto3" json:"attachment_file_key,omitempty"`
 	UserEmail         string                 `protobuf:"bytes,8,opt,name=user_email,json=userEmail,proto3" json:"user_email,omitempty"`
+	Rating            int64                  `protobuf:"varint,9,opt,name=rating,proto3" json:"rating,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -487,6 +488,13 @@ func (x *UpdateTicketRequest) GetUserEmail() string {
 		return x.UserEmail
 	}
 	return ""
+}
+
+func (x *UpdateTicketRequest) GetRating() int64 {
+	if x != nil {
+		return x.Rating
+	}
+	return 0
 }
 
 type GetTicketMessagesRequest struct {
@@ -1045,7 +1053,7 @@ const file_support_v1_support_proto_rawDesc = "" +
 	"\bcategory\x18\x02 \x01(\tR\bcategory\x12!\n" +
 	"\fsupport_line\x18\x03 \x01(\x03R\vsupportLine\x12\x1d\n" +
 	"\n" +
-	"user_email\x18\x04 \x01(\tR\tuserEmail\"\x90\x02\n" +
+	"user_email\x18\x04 \x01(\tR\tuserEmail\"\xa8\x02\n" +
 	"\x13UpdateTicketRequest\x12\x1b\n" +
 	"\tticket_id\x18\x01 \x01(\x03R\bticketId\x12\x1a\n" +
 	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x16\n" +
@@ -1055,7 +1063,8 @@ const file_support_v1_support_proto_rawDesc = "" +
 	"\vdescription\x18\x06 \x01(\tR\vdescription\x12.\n" +
 	"\x13attachment_file_key\x18\a \x01(\tR\x11attachmentFileKey\x12\x1d\n" +
 	"\n" +
-	"user_email\x18\b \x01(\tR\tuserEmail\"7\n" +
+	"user_email\x18\b \x01(\tR\tuserEmail\x12\x16\n" +
+	"\x06rating\x18\t \x01(\x03R\x06rating\"7\n" +
 	"\x18GetTicketMessagesRequest\x12\x1b\n" +
 	"\tticket_id\x18\x01 \x01(\x03R\bticketId\"}\n" +
 	"\x1aCreateTicketMessageRequest\x12\x1b\n" +

@@ -66,6 +66,7 @@ message UpdateTicketRequest {
   string description = 6;
   string attachment_file_key = 7;
   string user_email = 8;
+  int64 rating = 9;
 }
 
 message GetTicketMessagesRequest {

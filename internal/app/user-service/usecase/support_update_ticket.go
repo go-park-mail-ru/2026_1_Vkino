@@ -43,6 +43,10 @@ func (u *supportUsecase) UpdateTicket(
 		return domain2.SupportTicketResponse{}, domain2.ErrInvalidEmail
 	}
 
+	if (req.Rating < 0) || (req.Rating > 5) {
+		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicket
+	}
+
 	role, err := u.userRepo.GetUserRole(ctx, actorUserID)
 	if err != nil {
 		return domain2.SupportTicketResponse{}, domain2.ErrInvalidToken
@@ -68,6 +72,8 @@ func (u *supportUsecase) UpdateTicket(
 		req.UserEmail = ""
 
 	case isStaff(role):
+		req.Rating = 0
+
 		if !canAccessCategory(role, ticketBeforeUpdate.Category) {
 			return domain2.SupportTicketResponse{}, domain2.ErrAccessDenied
 		}

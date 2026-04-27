@@ -113,6 +113,7 @@ func (s *SupportServer) UpdateTicket(
 		UserEmail:         req.GetUserEmail(),
 		Description:       req.GetDescription(),
 		AttachmentFileKey: req.GetAttachmentFileKey(),
+		Rating:            req.GetRating(),
 	})
 	if err != nil {
 		return nil, mapSupportError(err)

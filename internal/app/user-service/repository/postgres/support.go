@@ -220,7 +220,7 @@ func (r *SupportRepo) UpdateTicket(
 
 	row := r.db.QueryRow(ctx, sqlUpdateSupportTicket,
 		req.TicketID, req.Category, req.Status, req.SupportLine,
-		req.Title, req.Description, req.AttachmentFileKey, req.UserEmail,
+		req.Title, req.Description, req.AttachmentFileKey, req.UserEmail, req.Rating,
 	)
 
 	ticket, err := r.scanTicketRow(row)

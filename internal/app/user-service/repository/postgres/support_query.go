@@ -89,6 +89,10 @@ const (
 			closed_at = case
 				when $3 in ('resolved', 'closed') then now()
 				else closed_at
+			end,
+			rating = case
+				when $9 = 0 then rating
+				else $9
 			end
 		where id = $1
 		returning

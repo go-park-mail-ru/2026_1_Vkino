@@ -26,6 +26,7 @@ type UpdateSupportTicketRequest struct {
 	UserEmail         string
 	Description       string
 	AttachmentFileKey string
+	Rating            int64
 }
 
 type GetSupportTicketMessagesRequest struct {

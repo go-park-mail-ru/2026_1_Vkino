@@ -414,6 +414,7 @@ func User(
 				UserEmail:         strings.TrimSpace(req.UserEmail),
 				Description:       req.Description,
 				AttachmentFileKey: req.AttachmentFileKey,
+				Rating:            req.Rating,
 			})
 			if err != nil {
 				writeGRPCError(w, err)
