@@ -58,6 +58,22 @@ func (s *Server) GetActorByID(
 	}, nil
 }
 
+func (s *Server) GetGenreByID(
+	ctx context.Context,
+	req *moviev1.GetGenreByIDRequest,
+) (*moviev1.GetGenreByIDResponse, error) {
+	genre, err := s.usecase.GetGenreByID(ctx, req.GetGenreId())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &moviev1.GetGenreByIDResponse{
+		Id:     genre.ID,
+		Title:  genre.Title,
+		Movies: mapMovieCards(genre.Movies),
+	}, nil
+}
+
 func (s *Server) GetSelectionByTitle(
 	ctx context.Context,
 	req *moviev1.GetSelectionByTitleRequest,

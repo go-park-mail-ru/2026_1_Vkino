@@ -11,6 +11,7 @@ var movieGRPCErrorMapper = grpcx.New(
 	[]error{
 		domain.ErrInvalidMovieID,
 		domain.ErrInvalidActorID,
+		domain.ErrInvalidGenreID,
 		domain.ErrInvalidEpisodeID,
 		domain.ErrInvalidSelectionTitle,
 		domain.ErrInvalidSearchQuery,
@@ -21,6 +22,9 @@ var movieGRPCErrorMapper = grpcx.New(
 
 		domain.ErrActorNotFound,
 		postgresrepo.ErrActorNotFound,
+
+		domain.ErrGenreNotFound,
+		postgresrepo.ErrGenreNotFound,
 
 		domain.ErrSelectionNotFound,
 		postgresrepo.ErrSelectionNotFound,
@@ -33,6 +37,7 @@ var movieGRPCErrorMapper = grpcx.New(
 	map[error]grpcx.ErrResponse{
 		domain.ErrInvalidMovieID:        {Code: codes.InvalidArgument, Message: "invalid movie id"},
 		domain.ErrInvalidActorID:        {Code: codes.InvalidArgument, Message: "invalid actor id"},
+		domain.ErrInvalidGenreID:        {Code: codes.InvalidArgument, Message: "invalid genre id"},
 		domain.ErrInvalidEpisodeID:      {Code: codes.InvalidArgument, Message: "invalid episode id"},
 		domain.ErrInvalidSelectionTitle: {Code: codes.InvalidArgument, Message: "invalid selection title"},
 		domain.ErrInvalidSearchQuery:    {Code: codes.InvalidArgument, Message: "invalid search query"},
@@ -43,6 +48,9 @@ var movieGRPCErrorMapper = grpcx.New(
 
 		domain.ErrActorNotFound:       {Code: codes.NotFound, Message: "actor not found"},
 		postgresrepo.ErrActorNotFound: {Code: codes.NotFound, Message: "actor not found"},
+
+		domain.ErrGenreNotFound:       {Code: codes.NotFound, Message: "genre not found"},
+		postgresrepo.ErrGenreNotFound: {Code: codes.NotFound, Message: "genre not found"},
 
 		domain.ErrSelectionNotFound:       {Code: codes.NotFound, Message: "selection not found"},
 		postgresrepo.ErrSelectionNotFound: {Code: codes.NotFound, Message: "selection not found"},

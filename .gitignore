@@ -11,3 +11,5 @@ coverage*.out
 deployments/dev/.env
 deployments/prod/.env
 frontend-dist/
+*.md
+!README.md
