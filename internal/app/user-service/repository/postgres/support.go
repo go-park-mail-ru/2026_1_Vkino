@@ -31,15 +31,6 @@ func optionalStringPtr(value string) *string {
 	return &value
 }
 
-// func normalizedOptionalStringValue(value string) string {
-// 	value = strings.TrimSpace(value)
-// 	if value == "" {
-// 		return ""
-// 	}
-
-// 	return value
-// }
-
 func scanTicket(
 	id int64,
 	userID *int64,
@@ -139,7 +130,7 @@ func (r *SupportRepo) CreateTicket(
 	}
 
 	row := r.db.QueryRow(ctx, sqlCreateSupportTicket,
-		userIDPtr, userEmailPtr, req.Category, req.Title, req.Description, attachmentFileKeyPtr,
+		userIDPtr, userEmailPtr, req.SupportLine, req.Category, req.Title, req.Description, attachmentFileKeyPtr,
 	)
 
 	ticket, err := r.scanTicketRow(row)
@@ -170,7 +161,14 @@ func (r *SupportRepo) GetTickets(
 	userID int64,
 	req domain2.GetSupportTicketsRequest,
 ) ([]domain2.SupportTicketResponse, error) {
-	rows, err := r.db.Query(ctx, sqlGetSupportTickets, userID, req.UserEmail, req.Status, req.Category, req.SupportLine)
+	rows, err := r.db.Query(ctx, sqlGetSupportTickets,
+		userID,
+		req.UserEmail,
+		req.Status,
+		req.Category,
+		req.SupportLine,
+		req.AllowedCategories,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("get support tickets: %w", err)
 	}
@@ -330,10 +328,13 @@ func (r *SupportRepo) CreateTicketMessage(
 	return msg, nil
 }
 
-func (r *SupportRepo) GetTicketStatistics(ctx context.Context) (*domain2.SupportTicketStatisticsResponse, error) {
+func (r *SupportRepo) GetTicketStatistics(
+	ctx context.Context,
+	allowedCategories []string,
+) (*domain2.SupportTicketStatisticsResponse, error) {
 	var stats domain2.SupportTicketStatisticsResponse
 
-	err := r.db.QueryRow(ctx, sqlGetSupportStatistics).Scan(
+	err := r.db.QueryRow(ctx, sqlGetSupportStatistics, allowedCategories).Scan(
 		&stats.Total,
 		&stats.Open,
 		&stats.InProgress,

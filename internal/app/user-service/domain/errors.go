@@ -18,4 +18,6 @@ var (
 	ErrTicketNotFound  = errors.New("ticket not found")
 	ErrAccessDenied    = errors.New("access denied")
 	ErrInvalidTicketID = errors.New("invalid ticket id")
+	ErrInvalidTicket   = errors.New("invalid ticket payload")
+	ErrInvalidMessage  = errors.New("invalid message payload")
 )

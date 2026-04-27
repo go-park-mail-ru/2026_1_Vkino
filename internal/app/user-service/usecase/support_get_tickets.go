@@ -18,6 +18,22 @@ func (u *supportUsecase) GetTickets(
 	req.Category = strings.TrimSpace(req.Category)
 	req.UserEmail = strings.TrimSpace(req.UserEmail)
 
+	if req.Status != "" && !isValidTicketStatus(req.Status) {
+		return nil, domain2.ErrInvalidTicket
+	}
+
+	if req.Category != "" && !isValidTicketCategory(req.Category) {
+		return nil, domain2.ErrInvalidTicket
+	}
+
+	if req.SupportLine != 0 && !isValidSupportLine(req.SupportLine) {
+		return nil, domain2.ErrInvalidTicket
+	}
+
+	if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {
+		return nil, domain2.ErrInvalidEmail
+	}
+
 	role, err := u.userRepo.GetUserRole(ctx, actorUserID)
 	if err != nil {
 		return nil, domain2.ErrInvalidToken
@@ -26,12 +42,14 @@ func (u *supportUsecase) GetTickets(
 	userIDFilter := actorUserID
 	if isStaff(role) {
 		userIDFilter = 0
-		if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {
-			return nil, domain2.ErrInvalidEmail
-		}
+		req.AllowedCategories = allowedCategoriesForRole(role)
 	} else {
 		req.SupportLine = 0
 		req.UserEmail = ""
+	}
+
+	if req.Category != "" && !canAccessCategory(role, req.Category) {
+		return []domain2.SupportTicketResponse{}, nil
 	}
 
 	tickets, err := u.supportRepo.GetTickets(ctx, userIDFilter, req)

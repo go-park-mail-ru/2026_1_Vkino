@@ -25,7 +25,8 @@ cover-total:
 	@go tool cover -func=coverage.out | grep total | awk '{print $$3}'
 
 run-build:
-	docker compose -f deployments/dev/compose.yaml up --build
+	make proto-gen
+	docker compose -f deployments/dev/compose.yaml up --build -d
 
 run-stop:
 	docker compose -f deployments/dev/compose.yaml down -v

@@ -13,6 +13,7 @@ import (
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"google.golang.org/grpc"
 )
 
@@ -34,6 +35,8 @@ type supportRPC interface {
 		*supportv1.TicketMessageResponse, error)
 	GetTicketStatistics(ctx context.Context, in *supportv1.GetTicketStatisticsRequest, opts ...grpc.CallOption) (
 		*supportv1.TicketStatisticsResponse, error)
+	SubscribeTicket(ctx context.Context, in *supportv1.SubscribeTicketRequest, opts ...grpc.CallOption) (
+		grpc.ServerStreamingClient[supportv1.TicketEvent], error)
 }
 
 type grpcUserClient struct {
@@ -123,6 +126,14 @@ func (c grpcUserClient) GetTicketStatistics(
 	return c.sup.GetTicketStatistics(ctx, in, opts...)
 }
 
+func (c grpcUserClient) SubscribeTicket(
+	ctx context.Context,
+	in *supportv1.SubscribeTicketRequest,
+	opts ...grpc.CallOption,
+) (grpc.ServerStreamingClient[supportv1.TicketEvent], error) {
+	return c.sup.SubscribeTicket(ctx, in, opts...)
+}
+
 type updateProfileJSONRequest struct {
 	Birthdate string `json:"birthdate"`
 }
@@ -195,6 +206,7 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 func User(
 	cfg Config,
 	userClient UserClient,
+	supportFileStore storage.FileStorage,
 ) []httpserver.Option {
 	return []httpserver.Option{
 		httpserver.WithRoute("GET /user/me", func(w http.ResponseWriter, r *http.Request) {
@@ -340,6 +352,10 @@ func User(
 			httppkg.Response(w, http.StatusCreated, resp)
 		}),
 
+		httpserver.WithRoute("POST /support/files", newSupportFileUploadHandler(supportFileStore)),
+
+		httpserver.WithRoute("GET /support/files", newSupportFileURLHandler(supportFileStore)),
+
 		httpserver.WithRoute("GET /support/tickets", func(w http.ResponseWriter, r *http.Request) {
 			query := r.URL.Query()
 
@@ -355,13 +371,6 @@ func User(
 				supportLine = parsedSupportLine
 			}
 
-			role := strings.TrimSpace(query.Get("role"))
-			if role == "" {
-				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid role")
-
-				return
-			}
-
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
@@ -370,14 +379,6 @@ func User(
 				Category:    strings.TrimSpace(query.Get("category")),
 				UserEmail:   strings.TrimSpace(query.Get("user_email")),
 				SupportLine: supportLine,
-			}
-
-			switch role {
-			case "user", "support_l1", "support_l2", "admin":
-			default:
-				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid role")
-
-				return
 			}
 
 			resp, err := userClient.GetTickets(r.Context(), request)
@@ -443,6 +444,8 @@ func User(
 
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
+
+		httpserver.WithRoute("GET /support/tickets/{id}/subscribe", newSupportTicketSubscribeHandler(userClient)),
 
 		httpserver.WithRoute("POST /support/tickets/{id}/messages", func(w http.ResponseWriter, r *http.Request) {
 			ticketID, ok := parsePathID(w, r, "invalid ticket id")

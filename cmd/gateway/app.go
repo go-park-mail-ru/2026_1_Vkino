@@ -11,6 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"google.golang.org/grpc"
 )
 
@@ -54,10 +55,25 @@ func Run(configPath string) error {
 		_ = movieConn.Close()
 	}()
 
+	var supportFileStore storage.FileStorage
+	if cfg.S3.BucketSupport != "" {
+		s3Store, storageErr := storage.NewS3Storage(context.Background(), cfg.S3.Config().WithBucket(cfg.S3.BucketSupport))
+		if storageErr != nil {
+			return fmt.Errorf("init support file storage: %w", storageErr)
+		}
+
+		if storageErr = s3Store.EnsureBucket(context.Background(), cfg.S3.Region); storageErr != nil {
+			return fmt.Errorf("ensure support file bucket: %w", storageErr)
+		}
+
+		supportFileStore = s3Store
+	}
+
 	server := httpserver.New(append(serverOptions(cfg, appLogger), routes.Register(
 		cfg,
 		authv1.NewAuthServiceClient(authConn),
 		routes.NewUserClient(userConn),
+		supportFileStore,
 		moviev1.NewMovieServiceClient(movieConn),
 	)...)...)
 

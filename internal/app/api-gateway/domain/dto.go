@@ -24,7 +24,6 @@ type SupportCreateTicketRequest struct {
 }
 
 type SupportGetTicketsRequest struct {
-	Role        string `json:"role"`
 	Status      string `json:"status"`
 	Category    string `json:"category"`
 	UserEmail   string `json:"user_email"`

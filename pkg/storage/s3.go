@@ -115,6 +115,30 @@ func NewS3Storage(_ context.Context, cfg Config) (*S3Storage, error) {
 	}, nil
 }
 
+func (s *S3Storage) EnsureBucket(ctx context.Context, region string) error {
+	client, ok := s.client.(*minioClient)
+	if !ok {
+		return nil
+	}
+
+	exists, err := client.client.BucketExists(ctx, s.bucket)
+	if err != nil {
+		return fmt.Errorf("storage: check bucket %q: %w", s.bucket, err)
+	}
+
+	if exists {
+		return nil
+	}
+
+	if err = client.client.MakeBucket(ctx, s.bucket, minio.MakeBucketOptions{
+		Region: region,
+	}); err != nil {
+		return fmt.Errorf("storage: create bucket %q: %w", s.bucket, err)
+	}
+
+	return nil
+}
+
 func (s *S3Storage) PutObject(
 	ctx context.Context,
 	key string,

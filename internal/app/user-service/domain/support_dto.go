@@ -6,13 +6,15 @@ type CreateSupportTicketRequest struct {
 	Description       string
 	UserEmail         string
 	AttachmentFileKey string
+	SupportLine       int64
 }
 
 type GetSupportTicketsRequest struct {
-	Status      string
-	Category    string
-	UserEmail   string
-	SupportLine int64
+	Status            string
+	Category          string
+	UserEmail         string
+	SupportLine       int64
+	AllowedCategories []string
 }
 
 type UpdateSupportTicketRequest struct {

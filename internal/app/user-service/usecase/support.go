@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"slices"
 	"sync"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
@@ -65,4 +66,59 @@ func (b *ticketBroker) publish(ticketID int64, event domain.SupportTicketEventRe
 
 func isStaff(role string) bool {
 	return role == "support_l1" || role == "support_l2" || role == "admin"
+}
+
+func isAdmin(role string) bool {
+	return role == "admin"
+}
+
+func isValidTicketCategory(category string) bool {
+	_, ok := ticketCategoryToSupportLine[category]
+
+	return ok
+}
+
+func isValidTicketStatus(status string) bool {
+	switch status {
+	case "open", "in_progress", "waiting_user", "resolved", "closed":
+		return true
+	default:
+		return false
+	}
+}
+
+func isValidSupportLine(line int64) bool {
+	return line == 1 || line == 2
+}
+
+func supportLineForCategory(category string) int64 {
+	return ticketCategoryToSupportLine[category]
+}
+
+func allowedCategoriesForRole(role string) []string {
+	switch role {
+	case "support_l1":
+		return []string{"bug", "complaint", "question"}
+	case "support_l2":
+		return []string{"feature", "other"}
+	default:
+		return nil
+	}
+}
+
+func canAccessCategory(role, category string) bool {
+	allowedCategories := allowedCategoriesForRole(role)
+	if len(allowedCategories) == 0 {
+		return true
+	}
+
+	return slices.Contains(allowedCategories, category)
+}
+
+var ticketCategoryToSupportLine = map[string]int64{
+	"bug":       1,
+	"complaint": 1,
+	"question":  1,
+	"feature":   2,
+	"other":     2,
 }

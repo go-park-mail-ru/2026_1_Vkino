@@ -12,6 +12,7 @@ type S3Config struct {
 	BucketPosters    string        `mapstructure:"bucket_posters"`
 	BucketCards      string        `mapstructure:"bucket_cards"`
 	BucketAvatars    string        `mapstructure:"bucket_avatars"`
+	BucketSupport    string        `mapstructure:"bucket_support"`
 	BucketVideos     string        `mapstructure:"bucket_videos"`
 	UseSSL           bool          `mapstructure:"use_ssl"`
 	InternalUseSSL   *bool         `mapstructure:"internal_use_ssl"`

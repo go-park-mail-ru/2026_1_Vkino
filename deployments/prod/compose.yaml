@@ -165,11 +165,13 @@ services:
       /usr/bin/mc mb -p local/vkino-posters || true;
       /usr/bin/mc mb -p local/vkino-cards || true;
       /usr/bin/mc mb -p local/vkino-avatars || true;
+      /usr/bin/mc mb -p local/vkino-support || true;
       /usr/bin/mc mb -p local/vkino-videos || true;
       /usr/bin/mc anonymous set none local/vkino-actors || true;
       /usr/bin/mc anonymous set none local/vkino-posters || true;
       /usr/bin/mc anonymous set none local/vkino-cards || true;
       /usr/bin/mc anonymous set none local/vkino-avatars || true;
+      /usr/bin/mc anonymous set none local/vkino-support || true;
       /usr/bin/mc anonymous set none local/vkino-videos || true;
       exit 0;
       "

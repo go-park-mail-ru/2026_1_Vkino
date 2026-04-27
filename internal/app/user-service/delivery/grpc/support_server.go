@@ -31,6 +31,8 @@ var supportGRPCErrorMapper = grpcx.New(
 		postgresrepo.ErrTicketNotFound,
 		domain.ErrAccessDenied,
 		domain.ErrInvalidTicketID,
+		domain.ErrInvalidTicket,
+		domain.ErrInvalidMessage,
 		domain.ErrInternal,
 	},
 	map[error]grpcx.ErrResponse{
@@ -40,6 +42,8 @@ var supportGRPCErrorMapper = grpcx.New(
 		postgresrepo.ErrTicketNotFound: {Code: codes.NotFound, Message: "ticket not found"},
 		domain.ErrAccessDenied:         {Code: codes.PermissionDenied, Message: "access denied"},
 		domain.ErrInvalidTicketID:      {Code: codes.InvalidArgument, Message: "invalid ticket id"},
+		domain.ErrInvalidTicket:        {Code: codes.InvalidArgument, Message: "invalid ticket payload"},
+		domain.ErrInvalidMessage:       {Code: codes.InvalidArgument, Message: "invalid message payload"},
 		domain.ErrInternal:             {Code: codes.Internal, Message: "internal server error"},
 	},
 	codes.Internal,

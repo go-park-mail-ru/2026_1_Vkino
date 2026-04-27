@@ -5,12 +5,13 @@ const (
 		insert into support_ticket (
 			user_id,
 			user_email,
+			support_line,
 			category,
 			title,
 			description,
 			attachment_file_key
 		)
-		values ($1, $2, $3, $4, $5, $6)
+		values ($1, $2, $3, $4, $5, $6, $7)
 		returning
 			id,
 			user_id,
@@ -68,6 +69,7 @@ const (
 			and ($3 = '' or status = $3)
 			and ($4 = '' or category = $4)
 			and ($5 = 0 or support_line = $5)
+			and (coalesce(array_length($6::text[], 1), 0) = 0 or category = any($6::text[]))
 		order by created_at desc
 	`
 
@@ -172,6 +174,7 @@ const (
 			count(*) filter (where status = 'closed') as closed,
 			coalesce(avg(rating), 0) as average_rating
 		from support_ticket
+		where coalesce(array_length($1::text[], 1), 0) = 0 or category = any($1::text[])
 	`
 
 	sqlGetSupportStatisticsByCategory = `

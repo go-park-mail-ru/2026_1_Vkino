@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository/postgres"
@@ -35,12 +36,15 @@ func (u *supportUsecase) CreateTicketMessage(
 	actorUserID int64,
 	req domain2.CreateSupportTicketMessageRequest,
 ) (domain2.SupportTicketMessageResponse, error) {
+	req.Content = strings.TrimSpace(req.Content)
+	req.ContentFileKey = strings.TrimSpace(req.ContentFileKey)
+
 	if req.TicketID <= 0 {
 		return domain2.SupportTicketMessageResponse{}, domain2.ErrInvalidTicketID
 	}
 
 	if req.Content == "" && req.ContentFileKey == "" {
-		return domain2.SupportTicketMessageResponse{}, domain2.ErrInvalidTicketID
+		return domain2.SupportTicketMessageResponse{}, domain2.ErrInvalidMessage
 	}
 
 	if err := u.checkTicketAccess(ctx, actorUserID, req.TicketID); err != nil {
@@ -61,15 +65,6 @@ func (u *supportUsecase) CreateTicketMessage(
 }
 
 func (u *supportUsecase) checkTicketAccess(ctx context.Context, actorUserID, ticketID int64) error {
-	role, err := u.userRepo.GetUserRole(ctx, actorUserID)
-	if err != nil {
-		return domain2.ErrInvalidToken
-	}
-
-	if isStaff(role) {
-		return nil
-	}
-
 	ticket, err := u.supportRepo.GetTicketByID(ctx, ticketID)
 	if err != nil {
 		if errors.Is(err, postgresrepo.ErrTicketNotFound) {
@@ -77,6 +72,26 @@ func (u *supportUsecase) checkTicketAccess(ctx context.Context, actorUserID, tic
 		}
 
 		return fmt.Errorf("%w: %v", domain2.ErrInternal, err)
+	}
+
+	role, err := u.userRepo.GetUserRole(ctx, actorUserID)
+	if err != nil {
+		return domain2.ErrInvalidToken
+	}
+
+	switch {
+	case role == "user":
+		if ticket.UserID == actorUserID {
+			return nil
+		}
+
+	case isAdmin(role):
+		return nil
+
+	case isStaff(role):
+		if canAccessCategory(role, ticket.Category) {
+			return nil
+		}
 	}
 
 	if ticket.UserID != actorUserID {

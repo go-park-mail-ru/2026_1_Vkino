@@ -21,9 +21,22 @@ func (u *supportUsecase) UpdateTicket(
 	req.Title = strings.TrimSpace(req.Title)
 	req.UserEmail = strings.TrimSpace(req.UserEmail)
 	req.Description = strings.TrimSpace(req.Description)
+	req.AttachmentFileKey = strings.TrimSpace(req.AttachmentFileKey)
 
 	if req.TicketID <= 0 {
 		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketID
+	}
+
+	if req.Category != "" && !isValidTicketCategory(req.Category) {
+		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicket
+	}
+
+	if req.Status != "" && !isValidTicketStatus(req.Status) {
+		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicket
+	}
+
+	if req.SupportLine != 0 && !isValidSupportLine(req.SupportLine) {
+		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicket
 	}
 
 	if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {
@@ -35,8 +48,49 @@ func (u *supportUsecase) UpdateTicket(
 		return domain2.SupportTicketResponse{}, domain2.ErrInvalidToken
 	}
 
-	if !isStaff(role) {
+	ticketBeforeUpdate, err := u.supportRepo.GetTicketByID(ctx, req.TicketID)
+	if err != nil {
+		if errors.Is(err, postgresrepo.ErrTicketNotFound) {
+			return domain2.SupportTicketResponse{}, domain2.ErrTicketNotFound
+		}
+
+		return domain2.SupportTicketResponse{}, fmt.Errorf("%w: %v", domain2.ErrInternal, err)
+	}
+
+	switch {
+	case role == "user":
+		if ticketBeforeUpdate.UserID != actorUserID {
+			return domain2.SupportTicketResponse{}, domain2.ErrAccessDenied
+		}
+
+		req.Status = ""
+		req.SupportLine = 0
+		req.UserEmail = ""
+
+	case isStaff(role):
+		if !canAccessCategory(role, ticketBeforeUpdate.Category) {
+			return domain2.SupportTicketResponse{}, domain2.ErrAccessDenied
+		}
+
+		if req.Category != "" && !canAccessCategory(role, req.Category) {
+			return domain2.SupportTicketResponse{}, domain2.ErrAccessDenied
+		}
+
+		if !isAdmin(role) {
+			req.UserEmail = ""
+		}
+
+	default:
 		return domain2.SupportTicketResponse{}, domain2.ErrAccessDenied
+	}
+
+	if req.Category != "" {
+		derivedSupportLine := supportLineForCategory(req.Category)
+		if req.SupportLine != 0 && req.SupportLine != derivedSupportLine {
+			return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicket
+		}
+
+		req.SupportLine = derivedSupportLine
 	}
 
 	ticket, err := u.supportRepo.UpdateTicket(ctx, req)

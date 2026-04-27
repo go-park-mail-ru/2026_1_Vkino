@@ -50,6 +50,10 @@ func Run(configPath string) error {
 		return fmt.Errorf("init avatar storage: %w", err)
 	}
 
+	if err = avatarStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
+		return fmt.Errorf("ensure avatar bucket: %w", err)
+	}
+
 	userRepo := postgresrepo.NewUserRepo(pgDB)
 	supportRepo := postgresrepo.NewSupportRepo(pgDB)
 	clockService := clocksvc.New()
