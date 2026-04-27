@@ -27,6 +27,8 @@ const (
 	MovieService_GetEpisodePlayback_FullMethodName  = "/movie.v1.MovieService/GetEpisodePlayback"
 	MovieService_GetEpisodeProgress_FullMethodName  = "/movie.v1.MovieService/GetEpisodeProgress"
 	MovieService_SaveEpisodeProgress_FullMethodName = "/movie.v1.MovieService/SaveEpisodeProgress"
+	MovieService_GetContinueWatching_FullMethodName = "/movie.v1.MovieService/GetContinueWatching"
+	MovieService_GetWatchHistory_FullMethodName     = "/movie.v1.MovieService/GetWatchHistory"
 )
 
 // MovieServiceClient is the client API for MovieService service.
@@ -41,6 +43,8 @@ type MovieServiceClient interface {
 	GetEpisodePlayback(ctx context.Context, in *GetEpisodePlaybackRequest, opts ...grpc.CallOption) (*GetEpisodePlaybackResponse, error)
 	GetEpisodeProgress(ctx context.Context, in *GetEpisodeProgressRequest, opts ...grpc.CallOption) (*GetEpisodeProgressResponse, error)
 	SaveEpisodeProgress(ctx context.Context, in *SaveEpisodeProgressRequest, opts ...grpc.CallOption) (*SaveEpisodeProgressResponse, error)
+	GetContinueWatching(ctx context.Context, in *GetContinueWatchingRequest, opts ...grpc.CallOption) (*GetContinueWatchingResponse, error)
+	GetWatchHistory(ctx context.Context, in *GetWatchHistoryRequest, opts ...grpc.CallOption) (*GetWatchHistoryResponse, error)
 }
 
 type movieServiceClient struct {
@@ -131,6 +135,26 @@ func (c *movieServiceClient) SaveEpisodeProgress(ctx context.Context, in *SaveEp
 	return out, nil
 }
 
+func (c *movieServiceClient) GetContinueWatching(ctx context.Context, in *GetContinueWatchingRequest, opts ...grpc.CallOption) (*GetContinueWatchingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetContinueWatchingResponse)
+	err := c.cc.Invoke(ctx, MovieService_GetContinueWatching_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) GetWatchHistory(ctx context.Context, in *GetWatchHistoryRequest, opts ...grpc.CallOption) (*GetWatchHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetWatchHistoryResponse)
+	err := c.cc.Invoke(ctx, MovieService_GetWatchHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MovieServiceServer is the server API for MovieService service.
 // All implementations must embed UnimplementedMovieServiceServer
 // for forward compatibility.
@@ -143,6 +167,8 @@ type MovieServiceServer interface {
 	GetEpisodePlayback(context.Context, *GetEpisodePlaybackRequest) (*GetEpisodePlaybackResponse, error)
 	GetEpisodeProgress(context.Context, *GetEpisodeProgressRequest) (*GetEpisodeProgressResponse, error)
 	SaveEpisodeProgress(context.Context, *SaveEpisodeProgressRequest) (*SaveEpisodeProgressResponse, error)
+	GetContinueWatching(context.Context, *GetContinueWatchingRequest) (*GetContinueWatchingResponse, error)
+	GetWatchHistory(context.Context, *GetWatchHistoryRequest) (*GetWatchHistoryResponse, error)
 	mustEmbedUnimplementedMovieServiceServer()
 }
 
@@ -176,6 +202,12 @@ func (UnimplementedMovieServiceServer) GetEpisodeProgress(context.Context, *GetE
 }
 func (UnimplementedMovieServiceServer) SaveEpisodeProgress(context.Context, *SaveEpisodeProgressRequest) (*SaveEpisodeProgressResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SaveEpisodeProgress not implemented")
+}
+func (UnimplementedMovieServiceServer) GetContinueWatching(context.Context, *GetContinueWatchingRequest) (*GetContinueWatchingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetContinueWatching not implemented")
+}
+func (UnimplementedMovieServiceServer) GetWatchHistory(context.Context, *GetWatchHistoryRequest) (*GetWatchHistoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetWatchHistory not implemented")
 }
 func (UnimplementedMovieServiceServer) mustEmbedUnimplementedMovieServiceServer() {}
 func (UnimplementedMovieServiceServer) testEmbeddedByValue()                      {}
@@ -342,6 +374,42 @@ func _MovieService_SaveEpisodeProgress_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MovieService_GetContinueWatching_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetContinueWatchingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).GetContinueWatching(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_GetContinueWatching_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).GetContinueWatching(ctx, req.(*GetContinueWatchingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_GetWatchHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWatchHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).GetWatchHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_GetWatchHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).GetWatchHistory(ctx, req.(*GetWatchHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MovieService_ServiceDesc is the grpc.ServiceDesc for MovieService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -380,6 +448,14 @@ var MovieService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SaveEpisodeProgress",
 			Handler:    _MovieService_SaveEpisodeProgress_Handler,
+		},
+		{
+			MethodName: "GetContinueWatching",
+			Handler:    _MovieService_GetContinueWatching_Handler,
+		},
+		{
+			MethodName: "GetWatchHistory",
+			Handler:    _MovieService_GetWatchHistory_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

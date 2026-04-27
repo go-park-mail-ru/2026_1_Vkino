@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
@@ -268,6 +269,59 @@ func (r *MovieRepo) SaveEpisodeProgress(
 	}
 
 	return progress, nil
+}
+
+func (r *MovieRepo) IsFavorite(ctx context.Context, userID, movieID int64) (bool, error) {
+	var isFavorite bool
+	if err := r.db.QueryRow(ctx, sqlIsFavorite, userID, movieID).Scan(&isFavorite); err != nil {
+		return false, fmt.Errorf("is favorite: %w", err)
+	}
+	return isFavorite, nil
+}
+
+func (r *MovieRepo) GetContinueWatching(ctx context.Context, userID int64, limit int32) ([]domain.WatchProgressItem, error) {
+	return r.getWatchProgressItems(ctx, sqlGetContinueWatching, userID, limit, 0)
+}
+
+func (r *MovieRepo) GetWatchHistory(ctx context.Context, userID int64, limit int32, minProgress float64) ([]domain.WatchProgressItem, error) {
+	return r.getWatchProgressItems(ctx, sqlGetWatchHistory, userID, limit, minProgress)
+}
+
+func (r *MovieRepo) getWatchProgressItems(ctx context.Context, query string, userID int64, limit int32, minProgress float64) ([]domain.WatchProgressItem, error) {
+	rows, err := r.db.Query(ctx, query, userID, limit, minProgress)
+	if err != nil {
+		return nil, fmt.Errorf("get watch progress: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]domain.WatchProgressItem, 0, limit)
+	for rows.Next() {
+		var (
+			item      domain.WatchProgressItem
+			updatedAt time.Time
+		)
+		if err := rows.Scan(
+			&item.EpisodeID,
+			&item.MovieID,
+			&item.MovieTitle,
+			&item.PosterURL,
+			&item.ContentType,
+			&item.SeasonNumber,
+			&item.EpisodeNumber,
+			&item.EpisodeTitle,
+			&item.PositionSeconds,
+			&item.DurationSeconds,
+			&updatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan watch progress item: %w", err)
+		}
+		item.UpdatedAt = updatedAt.Format(time.RFC3339)
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate watch progress: %w", err)
+	}
+	return items, nil
 }
 
 func (r *MovieRepo) getMovieGenres(ctx context.Context, movieID int64) ([]string, error) {

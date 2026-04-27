@@ -19,12 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_GetProfile_FullMethodName          = "/user.v1.UserService/GetProfile"
-	UserService_UpdateProfile_FullMethodName       = "/user.v1.UserService/UpdateProfile"
-	UserService_SearchUsersByEmail_FullMethodName  = "/user.v1.UserService/SearchUsersByEmail"
-	UserService_AddFriend_FullMethodName           = "/user.v1.UserService/AddFriend"
-	UserService_DeleteFriend_FullMethodName        = "/user.v1.UserService/DeleteFriend"
-	UserService_AddMovieToFavorites_FullMethodName = "/user.v1.UserService/AddMovieToFavorites"
+	UserService_GetProfile_FullMethodName                  = "/user.v1.UserService/GetProfile"
+	UserService_UpdateProfile_FullMethodName               = "/user.v1.UserService/UpdateProfile"
+	UserService_SearchUsersByEmail_FullMethodName          = "/user.v1.UserService/SearchUsersByEmail"
+	UserService_AddFriend_FullMethodName                   = "/user.v1.UserService/AddFriend"
+	UserService_DeleteFriend_FullMethodName                = "/user.v1.UserService/DeleteFriend"
+	UserService_AddMovieToFavorites_FullMethodName         = "/user.v1.UserService/AddMovieToFavorites"
+	UserService_ToggleFavorite_FullMethodName              = "/user.v1.UserService/ToggleFavorite"
+	UserService_GetFavorites_FullMethodName                = "/user.v1.UserService/GetFavorites"
+	UserService_SearchUsers_FullMethodName                 = "/user.v1.UserService/SearchUsers"
+	UserService_SendFriendRequest_FullMethodName           = "/user.v1.UserService/SendFriendRequest"
+	UserService_RespondToFriendRequest_FullMethodName      = "/user.v1.UserService/RespondToFriendRequest"
+	UserService_DeleteOutgoingFriendRequest_FullMethodName = "/user.v1.UserService/DeleteOutgoingFriendRequest"
+	UserService_GetFriendRequests_FullMethodName           = "/user.v1.UserService/GetFriendRequests"
+	UserService_GetFriendsList_FullMethodName              = "/user.v1.UserService/GetFriendsList"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -37,6 +45,14 @@ type UserServiceClient interface {
 	AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*AddFriendResponse, error)
 	DeleteFriend(ctx context.Context, in *DeleteFriendRequest, opts ...grpc.CallOption) (*DeleteFriendResponse, error)
 	AddMovieToFavorites(ctx context.Context, in *AddMovieToFavoritesRequest, opts ...grpc.CallOption) (*AddMovieToFavoritesResponse, error)
+	ToggleFavorite(ctx context.Context, in *ToggleFavoriteRequest, opts ...grpc.CallOption) (*ToggleFavoriteResponse, error)
+	GetFavorites(ctx context.Context, in *GetFavoritesRequest, opts ...grpc.CallOption) (*GetFavoritesResponse, error)
+	SearchUsers(ctx context.Context, in *SearchUsersRequest, opts ...grpc.CallOption) (*SearchUsersResponse, error)
+	SendFriendRequest(ctx context.Context, in *SendFriendRequestRequest, opts ...grpc.CallOption) (*SendFriendRequestResponse, error)
+	RespondToFriendRequest(ctx context.Context, in *RespondToFriendRequestRequest, opts ...grpc.CallOption) (*RespondToFriendRequestResponse, error)
+	DeleteOutgoingFriendRequest(ctx context.Context, in *DeleteOutgoingFriendRequestRequest, opts ...grpc.CallOption) (*DeleteOutgoingFriendRequestResponse, error)
+	GetFriendRequests(ctx context.Context, in *GetFriendRequestsRequest, opts ...grpc.CallOption) (*GetFriendRequestsResponse, error)
+	GetFriendsList(ctx context.Context, in *GetFriendsListRequest, opts ...grpc.CallOption) (*GetFriendsListResponse, error)
 }
 
 type userServiceClient struct {
@@ -107,6 +123,86 @@ func (c *userServiceClient) AddMovieToFavorites(ctx context.Context, in *AddMovi
 	return out, nil
 }
 
+func (c *userServiceClient) ToggleFavorite(ctx context.Context, in *ToggleFavoriteRequest, opts ...grpc.CallOption) (*ToggleFavoriteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ToggleFavoriteResponse)
+	err := c.cc.Invoke(ctx, UserService_ToggleFavorite_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetFavorites(ctx context.Context, in *GetFavoritesRequest, opts ...grpc.CallOption) (*GetFavoritesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetFavoritesResponse)
+	err := c.cc.Invoke(ctx, UserService_GetFavorites_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) SearchUsers(ctx context.Context, in *SearchUsersRequest, opts ...grpc.CallOption) (*SearchUsersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchUsersResponse)
+	err := c.cc.Invoke(ctx, UserService_SearchUsers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) SendFriendRequest(ctx context.Context, in *SendFriendRequestRequest, opts ...grpc.CallOption) (*SendFriendRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendFriendRequestResponse)
+	err := c.cc.Invoke(ctx, UserService_SendFriendRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) RespondToFriendRequest(ctx context.Context, in *RespondToFriendRequestRequest, opts ...grpc.CallOption) (*RespondToFriendRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RespondToFriendRequestResponse)
+	err := c.cc.Invoke(ctx, UserService_RespondToFriendRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) DeleteOutgoingFriendRequest(ctx context.Context, in *DeleteOutgoingFriendRequestRequest, opts ...grpc.CallOption) (*DeleteOutgoingFriendRequestResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteOutgoingFriendRequestResponse)
+	err := c.cc.Invoke(ctx, UserService_DeleteOutgoingFriendRequest_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetFriendRequests(ctx context.Context, in *GetFriendRequestsRequest, opts ...grpc.CallOption) (*GetFriendRequestsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetFriendRequestsResponse)
+	err := c.cc.Invoke(ctx, UserService_GetFriendRequests_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetFriendsList(ctx context.Context, in *GetFriendsListRequest, opts ...grpc.CallOption) (*GetFriendsListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetFriendsListResponse)
+	err := c.cc.Invoke(ctx, UserService_GetFriendsList_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
@@ -117,6 +213,14 @@ type UserServiceServer interface {
 	AddFriend(context.Context, *AddFriendRequest) (*AddFriendResponse, error)
 	DeleteFriend(context.Context, *DeleteFriendRequest) (*DeleteFriendResponse, error)
 	AddMovieToFavorites(context.Context, *AddMovieToFavoritesRequest) (*AddMovieToFavoritesResponse, error)
+	ToggleFavorite(context.Context, *ToggleFavoriteRequest) (*ToggleFavoriteResponse, error)
+	GetFavorites(context.Context, *GetFavoritesRequest) (*GetFavoritesResponse, error)
+	SearchUsers(context.Context, *SearchUsersRequest) (*SearchUsersResponse, error)
+	SendFriendRequest(context.Context, *SendFriendRequestRequest) (*SendFriendRequestResponse, error)
+	RespondToFriendRequest(context.Context, *RespondToFriendRequestRequest) (*RespondToFriendRequestResponse, error)
+	DeleteOutgoingFriendRequest(context.Context, *DeleteOutgoingFriendRequestRequest) (*DeleteOutgoingFriendRequestResponse, error)
+	GetFriendRequests(context.Context, *GetFriendRequestsRequest) (*GetFriendRequestsResponse, error)
+	GetFriendsList(context.Context, *GetFriendsListRequest) (*GetFriendsListResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -144,6 +248,30 @@ func (UnimplementedUserServiceServer) DeleteFriend(context.Context, *DeleteFrien
 }
 func (UnimplementedUserServiceServer) AddMovieToFavorites(context.Context, *AddMovieToFavoritesRequest) (*AddMovieToFavoritesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AddMovieToFavorites not implemented")
+}
+func (UnimplementedUserServiceServer) ToggleFavorite(context.Context, *ToggleFavoriteRequest) (*ToggleFavoriteResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ToggleFavorite not implemented")
+}
+func (UnimplementedUserServiceServer) GetFavorites(context.Context, *GetFavoritesRequest) (*GetFavoritesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetFavorites not implemented")
+}
+func (UnimplementedUserServiceServer) SearchUsers(context.Context, *SearchUsersRequest) (*SearchUsersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SearchUsers not implemented")
+}
+func (UnimplementedUserServiceServer) SendFriendRequest(context.Context, *SendFriendRequestRequest) (*SendFriendRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SendFriendRequest not implemented")
+}
+func (UnimplementedUserServiceServer) RespondToFriendRequest(context.Context, *RespondToFriendRequestRequest) (*RespondToFriendRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RespondToFriendRequest not implemented")
+}
+func (UnimplementedUserServiceServer) DeleteOutgoingFriendRequest(context.Context, *DeleteOutgoingFriendRequestRequest) (*DeleteOutgoingFriendRequestResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteOutgoingFriendRequest not implemented")
+}
+func (UnimplementedUserServiceServer) GetFriendRequests(context.Context, *GetFriendRequestsRequest) (*GetFriendRequestsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetFriendRequests not implemented")
+}
+func (UnimplementedUserServiceServer) GetFriendsList(context.Context, *GetFriendsListRequest) (*GetFriendsListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetFriendsList not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -274,6 +402,150 @@ func _UserService_AddMovieToFavorites_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_ToggleFavorite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ToggleFavoriteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).ToggleFavorite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_ToggleFavorite_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).ToggleFavorite(ctx, req.(*ToggleFavoriteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetFavorites_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFavoritesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetFavorites(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetFavorites_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetFavorites(ctx, req.(*GetFavoritesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_SearchUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchUsersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).SearchUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_SearchUsers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).SearchUsers(ctx, req.(*SearchUsersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_SendFriendRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendFriendRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).SendFriendRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_SendFriendRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).SendFriendRequest(ctx, req.(*SendFriendRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_RespondToFriendRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RespondToFriendRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).RespondToFriendRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_RespondToFriendRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).RespondToFriendRequest(ctx, req.(*RespondToFriendRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_DeleteOutgoingFriendRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteOutgoingFriendRequestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).DeleteOutgoingFriendRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_DeleteOutgoingFriendRequest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).DeleteOutgoingFriendRequest(ctx, req.(*DeleteOutgoingFriendRequestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetFriendRequests_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFriendRequestsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetFriendRequests(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetFriendRequests_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetFriendRequests(ctx, req.(*GetFriendRequestsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetFriendsList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFriendsListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetFriendsList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetFriendsList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetFriendsList(ctx, req.(*GetFriendsListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +576,38 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddMovieToFavorites",
 			Handler:    _UserService_AddMovieToFavorites_Handler,
+		},
+		{
+			MethodName: "ToggleFavorite",
+			Handler:    _UserService_ToggleFavorite_Handler,
+		},
+		{
+			MethodName: "GetFavorites",
+			Handler:    _UserService_GetFavorites_Handler,
+		},
+		{
+			MethodName: "SearchUsers",
+			Handler:    _UserService_SearchUsers_Handler,
+		},
+		{
+			MethodName: "SendFriendRequest",
+			Handler:    _UserService_SendFriendRequest_Handler,
+		},
+		{
+			MethodName: "RespondToFriendRequest",
+			Handler:    _UserService_RespondToFriendRequest_Handler,
+		},
+		{
+			MethodName: "DeleteOutgoingFriendRequest",
+			Handler:    _UserService_DeleteOutgoingFriendRequest_Handler,
+		},
+		{
+			MethodName: "GetFriendRequests",
+			Handler:    _UserService_GetFriendRequests_Handler,
+		},
+		{
+			MethodName: "GetFriendsList",
+			Handler:    _UserService_GetFriendsList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

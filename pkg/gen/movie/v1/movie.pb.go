@@ -245,6 +245,7 @@ type GetMovieByIDResponse struct {
 	Genres             []string               `protobuf:"bytes,16,rep,name=genres,proto3" json:"genres,omitempty"`
 	Actors             []*ActorShort          `protobuf:"bytes,17,rep,name=actors,proto3" json:"actors,omitempty"`
 	Episodes           []*EpisodeShort        `protobuf:"bytes,18,rep,name=episodes,proto3" json:"episodes,omitempty"`
+	IsFavorite         *bool                  `protobuf:"varint,19,opt,name=is_favorite,json=isFavorite,proto3,oneof" json:"is_favorite,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -403,6 +404,13 @@ func (x *GetMovieByIDResponse) GetEpisodes() []*EpisodeShort {
 		return x.Episodes
 	}
 	return nil
+}
+
+func (x *GetMovieByIDResponse) GetIsFavorite() bool {
+	if x != nil && x.IsFavorite != nil {
+		return *x.IsFavorite
+	}
+	return false
 }
 
 type GetActorByIDRequest struct {
@@ -1269,6 +1277,315 @@ func (x *SaveEpisodeProgressResponse) GetPositionSeconds() int64 {
 	return 0
 }
 
+type WatchProgressItem struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	MovieId         int64                  `protobuf:"varint,1,opt,name=movie_id,json=movieId,proto3" json:"movie_id,omitempty"`
+	MovieTitle      string                 `protobuf:"bytes,2,opt,name=movie_title,json=movieTitle,proto3" json:"movie_title,omitempty"`
+	PosterUrl       string                 `protobuf:"bytes,3,opt,name=poster_url,json=posterUrl,proto3" json:"poster_url,omitempty"`
+	ContentType     string                 `protobuf:"bytes,4,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	SeasonNumber    int32                  `protobuf:"varint,5,opt,name=season_number,json=seasonNumber,proto3" json:"season_number,omitempty"`
+	EpisodeNumber   int32                  `protobuf:"varint,6,opt,name=episode_number,json=episodeNumber,proto3" json:"episode_number,omitempty"`
+	EpisodeTitle    string                 `protobuf:"bytes,7,opt,name=episode_title,json=episodeTitle,proto3" json:"episode_title,omitempty"`
+	PositionSeconds int64                  `protobuf:"varint,8,opt,name=position_seconds,json=positionSeconds,proto3" json:"position_seconds,omitempty"`
+	DurationSeconds int64                  `protobuf:"varint,9,opt,name=duration_seconds,json=durationSeconds,proto3" json:"duration_seconds,omitempty"`
+	UpdatedAt       string                 `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	EpisodeId       int64                  `protobuf:"varint,11,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *WatchProgressItem) Reset() {
+	*x = WatchProgressItem{}
+	mi := &file_movie_v1_movie_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchProgressItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchProgressItem) ProtoMessage() {}
+
+func (x *WatchProgressItem) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchProgressItem.ProtoReflect.Descriptor instead.
+func (*WatchProgressItem) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *WatchProgressItem) GetMovieId() int64 {
+	if x != nil {
+		return x.MovieId
+	}
+	return 0
+}
+
+func (x *WatchProgressItem) GetMovieTitle() string {
+	if x != nil {
+		return x.MovieTitle
+	}
+	return ""
+}
+
+func (x *WatchProgressItem) GetPosterUrl() string {
+	if x != nil {
+		return x.PosterUrl
+	}
+	return ""
+}
+
+func (x *WatchProgressItem) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *WatchProgressItem) GetSeasonNumber() int32 {
+	if x != nil {
+		return x.SeasonNumber
+	}
+	return 0
+}
+
+func (x *WatchProgressItem) GetEpisodeNumber() int32 {
+	if x != nil {
+		return x.EpisodeNumber
+	}
+	return 0
+}
+
+func (x *WatchProgressItem) GetEpisodeTitle() string {
+	if x != nil {
+		return x.EpisodeTitle
+	}
+	return ""
+}
+
+func (x *WatchProgressItem) GetPositionSeconds() int64 {
+	if x != nil {
+		return x.PositionSeconds
+	}
+	return 0
+}
+
+func (x *WatchProgressItem) GetDurationSeconds() int64 {
+	if x != nil {
+		return x.DurationSeconds
+	}
+	return 0
+}
+
+func (x *WatchProgressItem) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+func (x *WatchProgressItem) GetEpisodeId() int64 {
+	if x != nil {
+		return x.EpisodeId
+	}
+	return 0
+}
+
+type GetContinueWatchingRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetContinueWatchingRequest) Reset() {
+	*x = GetContinueWatchingRequest{}
+	mi := &file_movie_v1_movie_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetContinueWatchingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetContinueWatchingRequest) ProtoMessage() {}
+
+func (x *GetContinueWatchingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetContinueWatchingRequest.ProtoReflect.Descriptor instead.
+func (*GetContinueWatchingRequest) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *GetContinueWatchingRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type GetContinueWatchingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*WatchProgressItem   `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetContinueWatchingResponse) Reset() {
+	*x = GetContinueWatchingResponse{}
+	mi := &file_movie_v1_movie_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetContinueWatchingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetContinueWatchingResponse) ProtoMessage() {}
+
+func (x *GetContinueWatchingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetContinueWatchingResponse.ProtoReflect.Descriptor instead.
+func (*GetContinueWatchingResponse) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *GetContinueWatchingResponse) GetItems() []*WatchProgressItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type GetWatchHistoryRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Limit int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	// Доля длительности (0..1). 0 = без фильтра. Напр. 0.95 = не менее 95% просмотра.
+	MinProgress   float64 `protobuf:"fixed64,2,opt,name=min_progress,json=minProgress,proto3" json:"min_progress,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWatchHistoryRequest) Reset() {
+	*x = GetWatchHistoryRequest{}
+	mi := &file_movie_v1_movie_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWatchHistoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWatchHistoryRequest) ProtoMessage() {}
+
+func (x *GetWatchHistoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWatchHistoryRequest.ProtoReflect.Descriptor instead.
+func (*GetWatchHistoryRequest) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *GetWatchHistoryRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetWatchHistoryRequest) GetMinProgress() float64 {
+	if x != nil {
+		return x.MinProgress
+	}
+	return 0
+}
+
+type GetWatchHistoryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*WatchProgressItem   `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWatchHistoryResponse) Reset() {
+	*x = GetWatchHistoryResponse{}
+	mi := &file_movie_v1_movie_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWatchHistoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWatchHistoryResponse) ProtoMessage() {}
+
+func (x *GetWatchHistoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_movie_v1_movie_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWatchHistoryResponse.ProtoReflect.Descriptor instead.
+func (*GetWatchHistoryResponse) Descriptor() ([]byte, []int) {
+	return file_movie_v1_movie_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *GetWatchHistoryResponse) GetItems() []*WatchProgressItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
 var File_movie_v1_movie_proto protoreflect.FileDescriptor
 
 const file_movie_v1_movie_proto_rawDesc = "" +
@@ -1289,7 +1606,7 @@ const file_movie_v1_movie_proto_rawDesc = "" +
 	"\x05title\x18\x05 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x06 \x01(\tR\vdescription\x12)\n" +
 	"\x10duration_seconds\x18\a \x01(\x05R\x0fdurationSeconds\x12\x17\n" +
-	"\aimg_url\x18\b \x01(\tR\x06imgUrl\"\xf3\x04\n" +
+	"\aimg_url\x18\b \x01(\tR\x06imgUrl\"\xa9\x05\n" +
 	"\x14GetMovieByIDResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
@@ -1312,7 +1629,10 @@ const file_movie_v1_movie_proto_rawDesc = "" +
 	"poster_url\x18\x0f \x01(\tR\tposterUrl\x12\x16\n" +
 	"\x06genres\x18\x10 \x03(\tR\x06genres\x12,\n" +
 	"\x06actors\x18\x11 \x03(\v2\x14.movie.v1.ActorShortR\x06actors\x122\n" +
-	"\bepisodes\x18\x12 \x03(\v2\x16.movie.v1.EpisodeShortR\bepisodes\"0\n" +
+	"\bepisodes\x18\x12 \x03(\v2\x16.movie.v1.EpisodeShortR\bepisodes\x12$\n" +
+	"\vis_favorite\x18\x13 \x01(\bH\x00R\n" +
+	"isFavorite\x88\x01\x01B\x0e\n" +
+	"\f_is_favorite\"0\n" +
 	"\x13GetActorByIDRequest\x12\x19\n" +
 	"\bactor_id\x18\x01 \x01(\x03R\aactorId\"J\n" +
 	"\tMovieCard\x12\x0e\n" +
@@ -1373,7 +1693,33 @@ const file_movie_v1_movie_proto_rawDesc = "" +
 	"\x1bSaveEpisodeProgressResponse\x12\x1d\n" +
 	"\n" +
 	"episode_id\x18\x01 \x01(\x03R\tepisodeId\x12)\n" +
-	"\x10position_seconds\x18\x02 \x01(\x03R\x0fpositionSeconds2\xe0\x05\n" +
+	"\x10position_seconds\x18\x02 \x01(\x03R\x0fpositionSeconds\"\x96\x03\n" +
+	"\x11WatchProgressItem\x12\x19\n" +
+	"\bmovie_id\x18\x01 \x01(\x03R\amovieId\x12\x1f\n" +
+	"\vmovie_title\x18\x02 \x01(\tR\n" +
+	"movieTitle\x12\x1d\n" +
+	"\n" +
+	"poster_url\x18\x03 \x01(\tR\tposterUrl\x12!\n" +
+	"\fcontent_type\x18\x04 \x01(\tR\vcontentType\x12#\n" +
+	"\rseason_number\x18\x05 \x01(\x05R\fseasonNumber\x12%\n" +
+	"\x0eepisode_number\x18\x06 \x01(\x05R\repisodeNumber\x12#\n" +
+	"\repisode_title\x18\a \x01(\tR\fepisodeTitle\x12)\n" +
+	"\x10position_seconds\x18\b \x01(\x03R\x0fpositionSeconds\x12)\n" +
+	"\x10duration_seconds\x18\t \x01(\x03R\x0fdurationSeconds\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\n" +
+	" \x01(\tR\tupdatedAt\x12\x1d\n" +
+	"\n" +
+	"episode_id\x18\v \x01(\x03R\tepisodeId\"2\n" +
+	"\x1aGetContinueWatchingRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\"P\n" +
+	"\x1bGetContinueWatchingResponse\x121\n" +
+	"\x05items\x18\x01 \x03(\v2\x1b.movie.v1.WatchProgressItemR\x05items\"Q\n" +
+	"\x16GetWatchHistoryRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\x12!\n" +
+	"\fmin_progress\x18\x02 \x01(\x01R\vminProgress\"L\n" +
+	"\x17GetWatchHistoryResponse\x121\n" +
+	"\x05items\x18\x01 \x03(\v2\x1b.movie.v1.WatchProgressItemR\x05items2\x9c\a\n" +
 	"\fMovieService\x12M\n" +
 	"\fGetMovieByID\x12\x1d.movie.v1.GetMovieByIDRequest\x1a\x1e.movie.v1.GetMovieByIDResponse\x12M\n" +
 	"\fGetActorByID\x12\x1d.movie.v1.GetActorByIDRequest\x1a\x1e.movie.v1.GetActorByIDResponse\x12b\n" +
@@ -1382,7 +1728,9 @@ const file_movie_v1_movie_proto_rawDesc = "" +
 	"\fSearchMovies\x12\x1d.movie.v1.SearchMoviesRequest\x1a\x1e.movie.v1.SearchMoviesResponse\x12_\n" +
 	"\x12GetEpisodePlayback\x12#.movie.v1.GetEpisodePlaybackRequest\x1a$.movie.v1.GetEpisodePlaybackResponse\x12_\n" +
 	"\x12GetEpisodeProgress\x12#.movie.v1.GetEpisodeProgressRequest\x1a$.movie.v1.GetEpisodeProgressResponse\x12b\n" +
-	"\x13SaveEpisodeProgress\x12$.movie.v1.SaveEpisodeProgressRequest\x1a%.movie.v1.SaveEpisodeProgressResponseBBZ@github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1;moviev1b\x06proto3"
+	"\x13SaveEpisodeProgress\x12$.movie.v1.SaveEpisodeProgressRequest\x1a%.movie.v1.SaveEpisodeProgressResponse\x12b\n" +
+	"\x13GetContinueWatching\x12$.movie.v1.GetContinueWatchingRequest\x1a%.movie.v1.GetContinueWatchingResponse\x12V\n" +
+	"\x0fGetWatchHistory\x12 .movie.v1.GetWatchHistoryRequest\x1a!.movie.v1.GetWatchHistoryResponseBBZ@github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1;moviev1b\x06proto3"
 
 var (
 	file_movie_v1_movie_proto_rawDescOnce sync.Once
@@ -1396,7 +1744,7 @@ func file_movie_v1_movie_proto_rawDescGZIP() []byte {
 	return file_movie_v1_movie_proto_rawDescData
 }
 
-var file_movie_v1_movie_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_movie_v1_movie_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_movie_v1_movie_proto_goTypes = []any{
 	(*GetMovieByIDRequest)(nil),         // 0: movie.v1.GetMovieByIDRequest
 	(*ActorShort)(nil),                  // 1: movie.v1.ActorShort
@@ -1418,6 +1766,11 @@ var file_movie_v1_movie_proto_goTypes = []any{
 	(*GetEpisodeProgressResponse)(nil),  // 17: movie.v1.GetEpisodeProgressResponse
 	(*SaveEpisodeProgressRequest)(nil),  // 18: movie.v1.SaveEpisodeProgressRequest
 	(*SaveEpisodeProgressResponse)(nil), // 19: movie.v1.SaveEpisodeProgressResponse
+	(*WatchProgressItem)(nil),           // 20: movie.v1.WatchProgressItem
+	(*GetContinueWatchingRequest)(nil),  // 21: movie.v1.GetContinueWatchingRequest
+	(*GetContinueWatchingResponse)(nil), // 22: movie.v1.GetContinueWatchingResponse
+	(*GetWatchHistoryRequest)(nil),      // 23: movie.v1.GetWatchHistoryRequest
+	(*GetWatchHistoryResponse)(nil),     // 24: movie.v1.GetWatchHistoryResponse
 }
 var file_movie_v1_movie_proto_depIdxs = []int32{
 	1,  // 0: movie.v1.GetMovieByIDResponse.actors:type_name -> movie.v1.ActorShort
@@ -1427,27 +1780,33 @@ var file_movie_v1_movie_proto_depIdxs = []int32{
 	5,  // 4: movie.v1.GetSelectionByTitleResponse.movies:type_name -> movie.v1.MovieCard
 	8,  // 5: movie.v1.GetAllSelectionsResponse.selections:type_name -> movie.v1.Selection
 	5,  // 6: movie.v1.SearchMoviesResponse.movies:type_name -> movie.v1.MovieCard
-	0,  // 7: movie.v1.MovieService.GetMovieByID:input_type -> movie.v1.GetMovieByIDRequest
-	4,  // 8: movie.v1.MovieService.GetActorByID:input_type -> movie.v1.GetActorByIDRequest
-	7,  // 9: movie.v1.MovieService.GetSelectionByTitle:input_type -> movie.v1.GetSelectionByTitleRequest
-	10, // 10: movie.v1.MovieService.GetAllSelections:input_type -> movie.v1.GetAllSelectionsRequest
-	12, // 11: movie.v1.MovieService.SearchMovies:input_type -> movie.v1.SearchMoviesRequest
-	14, // 12: movie.v1.MovieService.GetEpisodePlayback:input_type -> movie.v1.GetEpisodePlaybackRequest
-	16, // 13: movie.v1.MovieService.GetEpisodeProgress:input_type -> movie.v1.GetEpisodeProgressRequest
-	18, // 14: movie.v1.MovieService.SaveEpisodeProgress:input_type -> movie.v1.SaveEpisodeProgressRequest
-	3,  // 15: movie.v1.MovieService.GetMovieByID:output_type -> movie.v1.GetMovieByIDResponse
-	6,  // 16: movie.v1.MovieService.GetActorByID:output_type -> movie.v1.GetActorByIDResponse
-	9,  // 17: movie.v1.MovieService.GetSelectionByTitle:output_type -> movie.v1.GetSelectionByTitleResponse
-	11, // 18: movie.v1.MovieService.GetAllSelections:output_type -> movie.v1.GetAllSelectionsResponse
-	13, // 19: movie.v1.MovieService.SearchMovies:output_type -> movie.v1.SearchMoviesResponse
-	15, // 20: movie.v1.MovieService.GetEpisodePlayback:output_type -> movie.v1.GetEpisodePlaybackResponse
-	17, // 21: movie.v1.MovieService.GetEpisodeProgress:output_type -> movie.v1.GetEpisodeProgressResponse
-	19, // 22: movie.v1.MovieService.SaveEpisodeProgress:output_type -> movie.v1.SaveEpisodeProgressResponse
-	15, // [15:23] is the sub-list for method output_type
-	7,  // [7:15] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	20, // 7: movie.v1.GetContinueWatchingResponse.items:type_name -> movie.v1.WatchProgressItem
+	20, // 8: movie.v1.GetWatchHistoryResponse.items:type_name -> movie.v1.WatchProgressItem
+	0,  // 9: movie.v1.MovieService.GetMovieByID:input_type -> movie.v1.GetMovieByIDRequest
+	4,  // 10: movie.v1.MovieService.GetActorByID:input_type -> movie.v1.GetActorByIDRequest
+	7,  // 11: movie.v1.MovieService.GetSelectionByTitle:input_type -> movie.v1.GetSelectionByTitleRequest
+	10, // 12: movie.v1.MovieService.GetAllSelections:input_type -> movie.v1.GetAllSelectionsRequest
+	12, // 13: movie.v1.MovieService.SearchMovies:input_type -> movie.v1.SearchMoviesRequest
+	14, // 14: movie.v1.MovieService.GetEpisodePlayback:input_type -> movie.v1.GetEpisodePlaybackRequest
+	16, // 15: movie.v1.MovieService.GetEpisodeProgress:input_type -> movie.v1.GetEpisodeProgressRequest
+	18, // 16: movie.v1.MovieService.SaveEpisodeProgress:input_type -> movie.v1.SaveEpisodeProgressRequest
+	21, // 17: movie.v1.MovieService.GetContinueWatching:input_type -> movie.v1.GetContinueWatchingRequest
+	23, // 18: movie.v1.MovieService.GetWatchHistory:input_type -> movie.v1.GetWatchHistoryRequest
+	3,  // 19: movie.v1.MovieService.GetMovieByID:output_type -> movie.v1.GetMovieByIDResponse
+	6,  // 20: movie.v1.MovieService.GetActorByID:output_type -> movie.v1.GetActorByIDResponse
+	9,  // 21: movie.v1.MovieService.GetSelectionByTitle:output_type -> movie.v1.GetSelectionByTitleResponse
+	11, // 22: movie.v1.MovieService.GetAllSelections:output_type -> movie.v1.GetAllSelectionsResponse
+	13, // 23: movie.v1.MovieService.SearchMovies:output_type -> movie.v1.SearchMoviesResponse
+	15, // 24: movie.v1.MovieService.GetEpisodePlayback:output_type -> movie.v1.GetEpisodePlaybackResponse
+	17, // 25: movie.v1.MovieService.GetEpisodeProgress:output_type -> movie.v1.GetEpisodeProgressResponse
+	19, // 26: movie.v1.MovieService.SaveEpisodeProgress:output_type -> movie.v1.SaveEpisodeProgressResponse
+	22, // 27: movie.v1.MovieService.GetContinueWatching:output_type -> movie.v1.GetContinueWatchingResponse
+	24, // 28: movie.v1.MovieService.GetWatchHistory:output_type -> movie.v1.GetWatchHistoryResponse
+	19, // [19:29] is the sub-list for method output_type
+	9,  // [9:19] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_movie_v1_movie_proto_init() }
@@ -1455,13 +1814,14 @@ func file_movie_v1_movie_proto_init() {
 	if File_movie_v1_movie_proto != nil {
 		return
 	}
+	file_movie_v1_movie_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_movie_v1_movie_proto_rawDesc), len(file_movie_v1_movie_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

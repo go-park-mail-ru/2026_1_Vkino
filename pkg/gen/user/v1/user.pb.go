@@ -7,6 +7,7 @@
 package userv1
 
 import (
+	v1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -721,11 +722,847 @@ func (x *AddMovieToFavoritesResponse) GetIsFavorite() bool {
 	return false
 }
 
+type ToggleFavoriteRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MovieId       int64                  `protobuf:"varint,1,opt,name=movie_id,json=movieId,proto3" json:"movie_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ToggleFavoriteRequest) Reset() {
+	*x = ToggleFavoriteRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ToggleFavoriteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ToggleFavoriteRequest) ProtoMessage() {}
+
+func (x *ToggleFavoriteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ToggleFavoriteRequest.ProtoReflect.Descriptor instead.
+func (*ToggleFavoriteRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ToggleFavoriteRequest) GetMovieId() int64 {
+	if x != nil {
+		return x.MovieId
+	}
+	return 0
+}
+
+type ToggleFavoriteResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MovieId       int64                  `protobuf:"varint,1,opt,name=movie_id,json=movieId,proto3" json:"movie_id,omitempty"`
+	IsFavorite    bool                   `protobuf:"varint,2,opt,name=is_favorite,json=isFavorite,proto3" json:"is_favorite,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ToggleFavoriteResponse) Reset() {
+	*x = ToggleFavoriteResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ToggleFavoriteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ToggleFavoriteResponse) ProtoMessage() {}
+
+func (x *ToggleFavoriteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ToggleFavoriteResponse.ProtoReflect.Descriptor instead.
+func (*ToggleFavoriteResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ToggleFavoriteResponse) GetMovieId() int64 {
+	if x != nil {
+		return x.MovieId
+	}
+	return 0
+}
+
+func (x *ToggleFavoriteResponse) GetIsFavorite() bool {
+	if x != nil {
+		return x.IsFavorite
+	}
+	return false
+}
+
+type GetFavoritesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFavoritesRequest) Reset() {
+	*x = GetFavoritesRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFavoritesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFavoritesRequest) ProtoMessage() {}
+
+func (x *GetFavoritesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFavoritesRequest.ProtoReflect.Descriptor instead.
+func (*GetFavoritesRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *GetFavoritesRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetFavoritesRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type GetFavoritesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Movies        []*v1.MovieCard        `protobuf:"bytes,1,rep,name=movies,proto3" json:"movies,omitempty"`
+	TotalCount    int32                  `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFavoritesResponse) Reset() {
+	*x = GetFavoritesResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFavoritesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFavoritesResponse) ProtoMessage() {}
+
+func (x *GetFavoritesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFavoritesResponse.ProtoReflect.Descriptor instead.
+func (*GetFavoritesResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetFavoritesResponse) GetMovies() []*v1.MovieCard {
+	if x != nil {
+		return x.Movies
+	}
+	return nil
+}
+
+func (x *GetFavoritesResponse) GetTotalCount() int32 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
+}
+
+type SearchUsersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Query         string                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchUsersRequest) Reset() {
+	*x = SearchUsersRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchUsersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchUsersRequest) ProtoMessage() {}
+
+func (x *SearchUsersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchUsersRequest.ProtoReflect.Descriptor instead.
+func (*SearchUsersRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *SearchUsersRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *SearchUsersRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type SearchUsersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Users         []*UserSearchResult    `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchUsersResponse) Reset() {
+	*x = SearchUsersResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchUsersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchUsersResponse) ProtoMessage() {}
+
+func (x *SearchUsersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchUsersResponse.ProtoReflect.Descriptor instead.
+func (*SearchUsersResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *SearchUsersResponse) GetUsers() []*UserSearchResult {
+	if x != nil {
+		return x.Users
+	}
+	return nil
+}
+
+type SendFriendRequestRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ToUserId      int64                  `protobuf:"varint,1,opt,name=to_user_id,json=toUserId,proto3" json:"to_user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendFriendRequestRequest) Reset() {
+	*x = SendFriendRequestRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendFriendRequestRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendFriendRequestRequest) ProtoMessage() {}
+
+func (x *SendFriendRequestRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendFriendRequestRequest.ProtoReflect.Descriptor instead.
+func (*SendFriendRequestRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *SendFriendRequestRequest) GetToUserId() int64 {
+	if x != nil {
+		return x.ToUserId
+	}
+	return 0
+}
+
+type SendFriendRequestResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RequestId     int64                  `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendFriendRequestResponse) Reset() {
+	*x = SendFriendRequestResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendFriendRequestResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendFriendRequestResponse) ProtoMessage() {}
+
+func (x *SendFriendRequestResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendFriendRequestResponse.ProtoReflect.Descriptor instead.
+func (*SendFriendRequestResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *SendFriendRequestResponse) GetRequestId() int64 {
+	if x != nil {
+		return x.RequestId
+	}
+	return 0
+}
+
+type RespondToFriendRequestRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RequestId     int64                  `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	Action        string                 `protobuf:"bytes,2,opt,name=action,proto3" json:"action,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RespondToFriendRequestRequest) Reset() {
+	*x = RespondToFriendRequestRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RespondToFriendRequestRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RespondToFriendRequestRequest) ProtoMessage() {}
+
+func (x *RespondToFriendRequestRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RespondToFriendRequestRequest.ProtoReflect.Descriptor instead.
+func (*RespondToFriendRequestRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *RespondToFriendRequestRequest) GetRequestId() int64 {
+	if x != nil {
+		return x.RequestId
+	}
+	return 0
+}
+
+func (x *RespondToFriendRequestRequest) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+type RespondToFriendRequestResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RespondToFriendRequestResponse) Reset() {
+	*x = RespondToFriendRequestResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RespondToFriendRequestResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RespondToFriendRequestResponse) ProtoMessage() {}
+
+func (x *RespondToFriendRequestResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RespondToFriendRequestResponse.ProtoReflect.Descriptor instead.
+func (*RespondToFriendRequestResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *RespondToFriendRequestResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type DeleteOutgoingFriendRequestRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RequestId     int64                  `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteOutgoingFriendRequestRequest) Reset() {
+	*x = DeleteOutgoingFriendRequestRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteOutgoingFriendRequestRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteOutgoingFriendRequestRequest) ProtoMessage() {}
+
+func (x *DeleteOutgoingFriendRequestRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteOutgoingFriendRequestRequest.ProtoReflect.Descriptor instead.
+func (*DeleteOutgoingFriendRequestRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *DeleteOutgoingFriendRequestRequest) GetRequestId() int64 {
+	if x != nil {
+		return x.RequestId
+	}
+	return 0
+}
+
+type DeleteOutgoingFriendRequestResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteOutgoingFriendRequestResponse) Reset() {
+	*x = DeleteOutgoingFriendRequestResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteOutgoingFriendRequestResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteOutgoingFriendRequestResponse) ProtoMessage() {}
+
+func (x *DeleteOutgoingFriendRequestResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteOutgoingFriendRequestResponse.ProtoReflect.Descriptor instead.
+func (*DeleteOutgoingFriendRequestResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *DeleteOutgoingFriendRequestResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type GetFriendRequestsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Direction     string                 `protobuf:"bytes,1,opt,name=direction,proto3" json:"direction,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFriendRequestsRequest) Reset() {
+	*x = GetFriendRequestsRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFriendRequestsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFriendRequestsRequest) ProtoMessage() {}
+
+func (x *GetFriendRequestsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFriendRequestsRequest.ProtoReflect.Descriptor instead.
+func (*GetFriendRequestsRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *GetFriendRequestsRequest) GetDirection() string {
+	if x != nil {
+		return x.Direction
+	}
+	return ""
+}
+
+func (x *GetFriendRequestsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type FriendRequestItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FriendRequestItem) Reset() {
+	*x = FriendRequestItem{}
+	mi := &file_user_v1_user_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FriendRequestItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FriendRequestItem) ProtoMessage() {}
+
+func (x *FriendRequestItem) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FriendRequestItem.ProtoReflect.Descriptor instead.
+func (*FriendRequestItem) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *FriendRequestItem) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *FriendRequestItem) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *FriendRequestItem) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *FriendRequestItem) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+type GetFriendRequestsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Requests      []*FriendRequestItem   `protobuf:"bytes,1,rep,name=requests,proto3" json:"requests,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFriendRequestsResponse) Reset() {
+	*x = GetFriendRequestsResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFriendRequestsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFriendRequestsResponse) ProtoMessage() {}
+
+func (x *GetFriendRequestsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFriendRequestsResponse.ProtoReflect.Descriptor instead.
+func (*GetFriendRequestsResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *GetFriendRequestsResponse) GetRequests() []*FriendRequestItem {
+	if x != nil {
+		return x.Requests
+	}
+	return nil
+}
+
+type GetFriendsListRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFriendsListRequest) Reset() {
+	*x = GetFriendsListRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFriendsListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFriendsListRequest) ProtoMessage() {}
+
+func (x *GetFriendsListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFriendsListRequest.ProtoReflect.Descriptor instead.
+func (*GetFriendsListRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *GetFriendsListRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetFriendsListRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type GetFriendsListResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Friends       []*UserSearchResult    `protobuf:"bytes,1,rep,name=friends,proto3" json:"friends,omitempty"`
+	TotalCount    int32                  `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFriendsListResponse) Reset() {
+	*x = GetFriendsListResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFriendsListResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFriendsListResponse) ProtoMessage() {}
+
+func (x *GetFriendsListResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFriendsListResponse.ProtoReflect.Descriptor instead.
+func (*GetFriendsListResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *GetFriendsListResponse) GetFriends() []*UserSearchResult {
+	if x != nil {
+		return x.Friends
+	}
+	return nil
+}
+
+func (x *GetFriendsListResponse) GetTotalCount() int32 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
+}
+
 var File_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_user_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12user/v1/user.proto\x12\auser.v1\",\n" +
+	"\x12user/v1/user.proto\x12\auser.v1\x1a\x14movie/v1/movie.proto\",\n" +
 	"\x11GetProfileRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\"{\n" +
 	"\x12GetProfileResponse\x12\x14\n" +
@@ -771,7 +1608,60 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x1bAddMovieToFavoritesResponse\x12\x19\n" +
 	"\bmovie_id\x18\x01 \x01(\x03R\amovieId\x12\x1f\n" +
 	"\vis_favorite\x18\x02 \x01(\bR\n" +
-	"isFavorite2\xf6\x03\n" +
+	"isFavorite\"2\n" +
+	"\x15ToggleFavoriteRequest\x12\x19\n" +
+	"\bmovie_id\x18\x01 \x01(\x03R\amovieId\"T\n" +
+	"\x16ToggleFavoriteResponse\x12\x19\n" +
+	"\bmovie_id\x18\x01 \x01(\x03R\amovieId\x12\x1f\n" +
+	"\vis_favorite\x18\x02 \x01(\bR\n" +
+	"isFavorite\"C\n" +
+	"\x13GetFavoritesRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x02 \x01(\x05R\x06offset\"d\n" +
+	"\x14GetFavoritesResponse\x12+\n" +
+	"\x06movies\x18\x01 \x03(\v2\x13.movie.v1.MovieCardR\x06movies\x12\x1f\n" +
+	"\vtotal_count\x18\x02 \x01(\x05R\n" +
+	"totalCount\"@\n" +
+	"\x12SearchUsersRequest\x12\x14\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"F\n" +
+	"\x13SearchUsersResponse\x12/\n" +
+	"\x05users\x18\x01 \x03(\v2\x19.user.v1.UserSearchResultR\x05users\"8\n" +
+	"\x18SendFriendRequestRequest\x12\x1c\n" +
+	"\n" +
+	"to_user_id\x18\x01 \x01(\x03R\btoUserId\":\n" +
+	"\x19SendFriendRequestResponse\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\x03R\trequestId\"V\n" +
+	"\x1dRespondToFriendRequestRequest\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\x03R\trequestId\x12\x16\n" +
+	"\x06action\x18\x02 \x01(\tR\x06action\":\n" +
+	"\x1eRespondToFriendRequestResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"C\n" +
+	"\"DeleteOutgoingFriendRequestRequest\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\x03R\trequestId\"?\n" +
+	"#DeleteOutgoingFriendRequestResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"N\n" +
+	"\x18GetFriendRequestsRequest\x12\x1c\n" +
+	"\tdirection\x18\x01 \x01(\tR\tdirection\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"q\n" +
+	"\x11FriendRequestItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x04 \x01(\tR\tcreatedAt\"S\n" +
+	"\x19GetFriendRequestsResponse\x126\n" +
+	"\brequests\x18\x01 \x03(\v2\x1a.user.v1.FriendRequestItemR\brequests\"E\n" +
+	"\x15GetFriendsListRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x02 \x01(\x05R\x06offset\"n\n" +
+	"\x16GetFriendsListResponse\x123\n" +
+	"\afriends\x18\x01 \x03(\v2\x19.user.v1.UserSearchResultR\afriends\x12\x1f\n" +
+	"\vtotal_count\x18\x02 \x01(\x05R\n" +
+	"totalCount2\xd0\t\n" +
 	"\vUserService\x12E\n" +
 	"\n" +
 	"GetProfile\x12\x1a.user.v1.GetProfileRequest\x1a\x1b.user.v1.GetProfileResponse\x12N\n" +
@@ -779,7 +1669,15 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x12SearchUsersByEmail\x12\".user.v1.SearchUsersByEmailRequest\x1a#.user.v1.SearchUsersByEmailResponse\x12B\n" +
 	"\tAddFriend\x12\x19.user.v1.AddFriendRequest\x1a\x1a.user.v1.AddFriendResponse\x12K\n" +
 	"\fDeleteFriend\x12\x1c.user.v1.DeleteFriendRequest\x1a\x1d.user.v1.DeleteFriendResponse\x12`\n" +
-	"\x13AddMovieToFavorites\x12#.user.v1.AddMovieToFavoritesRequest\x1a$.user.v1.AddMovieToFavoritesResponseB@Z>github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1;userv1b\x06proto3"
+	"\x13AddMovieToFavorites\x12#.user.v1.AddMovieToFavoritesRequest\x1a$.user.v1.AddMovieToFavoritesResponse\x12Q\n" +
+	"\x0eToggleFavorite\x12\x1e.user.v1.ToggleFavoriteRequest\x1a\x1f.user.v1.ToggleFavoriteResponse\x12K\n" +
+	"\fGetFavorites\x12\x1c.user.v1.GetFavoritesRequest\x1a\x1d.user.v1.GetFavoritesResponse\x12H\n" +
+	"\vSearchUsers\x12\x1b.user.v1.SearchUsersRequest\x1a\x1c.user.v1.SearchUsersResponse\x12Z\n" +
+	"\x11SendFriendRequest\x12!.user.v1.SendFriendRequestRequest\x1a\".user.v1.SendFriendRequestResponse\x12i\n" +
+	"\x16RespondToFriendRequest\x12&.user.v1.RespondToFriendRequestRequest\x1a'.user.v1.RespondToFriendRequestResponse\x12x\n" +
+	"\x1bDeleteOutgoingFriendRequest\x12+.user.v1.DeleteOutgoingFriendRequestRequest\x1a,.user.v1.DeleteOutgoingFriendRequestResponse\x12Z\n" +
+	"\x11GetFriendRequests\x12!.user.v1.GetFriendRequestsRequest\x1a\".user.v1.GetFriendRequestsResponse\x12Q\n" +
+	"\x0eGetFriendsList\x12\x1e.user.v1.GetFriendsListRequest\x1a\x1f.user.v1.GetFriendsListResponseB@Z>github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1;userv1b\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once
@@ -793,41 +1691,79 @@ func file_user_v1_user_proto_rawDescGZIP() []byte {
 	return file_user_v1_user_proto_rawDescData
 }
 
-var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
 var file_user_v1_user_proto_goTypes = []any{
-	(*GetProfileRequest)(nil),           // 0: user.v1.GetProfileRequest
-	(*GetProfileResponse)(nil),          // 1: user.v1.GetProfileResponse
-	(*UpdateProfileRequest)(nil),        // 2: user.v1.UpdateProfileRequest
-	(*UpdateProfileResponse)(nil),       // 3: user.v1.UpdateProfileResponse
-	(*SearchUsersByEmailRequest)(nil),   // 4: user.v1.SearchUsersByEmailRequest
-	(*UserSearchResult)(nil),            // 5: user.v1.UserSearchResult
-	(*SearchUsersByEmailResponse)(nil),  // 6: user.v1.SearchUsersByEmailResponse
-	(*AddFriendRequest)(nil),            // 7: user.v1.AddFriendRequest
-	(*AddFriendResponse)(nil),           // 8: user.v1.AddFriendResponse
-	(*DeleteFriendRequest)(nil),         // 9: user.v1.DeleteFriendRequest
-	(*DeleteFriendResponse)(nil),        // 10: user.v1.DeleteFriendResponse
-	(*AddMovieToFavoritesRequest)(nil),  // 11: user.v1.AddMovieToFavoritesRequest
-	(*AddMovieToFavoritesResponse)(nil), // 12: user.v1.AddMovieToFavoritesResponse
+	(*GetProfileRequest)(nil),                   // 0: user.v1.GetProfileRequest
+	(*GetProfileResponse)(nil),                  // 1: user.v1.GetProfileResponse
+	(*UpdateProfileRequest)(nil),                // 2: user.v1.UpdateProfileRequest
+	(*UpdateProfileResponse)(nil),               // 3: user.v1.UpdateProfileResponse
+	(*SearchUsersByEmailRequest)(nil),           // 4: user.v1.SearchUsersByEmailRequest
+	(*UserSearchResult)(nil),                    // 5: user.v1.UserSearchResult
+	(*SearchUsersByEmailResponse)(nil),          // 6: user.v1.SearchUsersByEmailResponse
+	(*AddFriendRequest)(nil),                    // 7: user.v1.AddFriendRequest
+	(*AddFriendResponse)(nil),                   // 8: user.v1.AddFriendResponse
+	(*DeleteFriendRequest)(nil),                 // 9: user.v1.DeleteFriendRequest
+	(*DeleteFriendResponse)(nil),                // 10: user.v1.DeleteFriendResponse
+	(*AddMovieToFavoritesRequest)(nil),          // 11: user.v1.AddMovieToFavoritesRequest
+	(*AddMovieToFavoritesResponse)(nil),         // 12: user.v1.AddMovieToFavoritesResponse
+	(*ToggleFavoriteRequest)(nil),               // 13: user.v1.ToggleFavoriteRequest
+	(*ToggleFavoriteResponse)(nil),              // 14: user.v1.ToggleFavoriteResponse
+	(*GetFavoritesRequest)(nil),                 // 15: user.v1.GetFavoritesRequest
+	(*GetFavoritesResponse)(nil),                // 16: user.v1.GetFavoritesResponse
+	(*SearchUsersRequest)(nil),                  // 17: user.v1.SearchUsersRequest
+	(*SearchUsersResponse)(nil),                 // 18: user.v1.SearchUsersResponse
+	(*SendFriendRequestRequest)(nil),            // 19: user.v1.SendFriendRequestRequest
+	(*SendFriendRequestResponse)(nil),           // 20: user.v1.SendFriendRequestResponse
+	(*RespondToFriendRequestRequest)(nil),       // 21: user.v1.RespondToFriendRequestRequest
+	(*RespondToFriendRequestResponse)(nil),      // 22: user.v1.RespondToFriendRequestResponse
+	(*DeleteOutgoingFriendRequestRequest)(nil),  // 23: user.v1.DeleteOutgoingFriendRequestRequest
+	(*DeleteOutgoingFriendRequestResponse)(nil), // 24: user.v1.DeleteOutgoingFriendRequestResponse
+	(*GetFriendRequestsRequest)(nil),            // 25: user.v1.GetFriendRequestsRequest
+	(*FriendRequestItem)(nil),                   // 26: user.v1.FriendRequestItem
+	(*GetFriendRequestsResponse)(nil),           // 27: user.v1.GetFriendRequestsResponse
+	(*GetFriendsListRequest)(nil),               // 28: user.v1.GetFriendsListRequest
+	(*GetFriendsListResponse)(nil),              // 29: user.v1.GetFriendsListResponse
+	(*v1.MovieCard)(nil),                        // 30: movie.v1.MovieCard
 }
 var file_user_v1_user_proto_depIdxs = []int32{
 	5,  // 0: user.v1.SearchUsersByEmailResponse.users:type_name -> user.v1.UserSearchResult
-	0,  // 1: user.v1.UserService.GetProfile:input_type -> user.v1.GetProfileRequest
-	2,  // 2: user.v1.UserService.UpdateProfile:input_type -> user.v1.UpdateProfileRequest
-	4,  // 3: user.v1.UserService.SearchUsersByEmail:input_type -> user.v1.SearchUsersByEmailRequest
-	7,  // 4: user.v1.UserService.AddFriend:input_type -> user.v1.AddFriendRequest
-	9,  // 5: user.v1.UserService.DeleteFriend:input_type -> user.v1.DeleteFriendRequest
-	11, // 6: user.v1.UserService.AddMovieToFavorites:input_type -> user.v1.AddMovieToFavoritesRequest
-	1,  // 7: user.v1.UserService.GetProfile:output_type -> user.v1.GetProfileResponse
-	3,  // 8: user.v1.UserService.UpdateProfile:output_type -> user.v1.UpdateProfileResponse
-	6,  // 9: user.v1.UserService.SearchUsersByEmail:output_type -> user.v1.SearchUsersByEmailResponse
-	8,  // 10: user.v1.UserService.AddFriend:output_type -> user.v1.AddFriendResponse
-	10, // 11: user.v1.UserService.DeleteFriend:output_type -> user.v1.DeleteFriendResponse
-	12, // 12: user.v1.UserService.AddMovieToFavorites:output_type -> user.v1.AddMovieToFavoritesResponse
-	7,  // [7:13] is the sub-list for method output_type
-	1,  // [1:7] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	30, // 1: user.v1.GetFavoritesResponse.movies:type_name -> movie.v1.MovieCard
+	5,  // 2: user.v1.SearchUsersResponse.users:type_name -> user.v1.UserSearchResult
+	26, // 3: user.v1.GetFriendRequestsResponse.requests:type_name -> user.v1.FriendRequestItem
+	5,  // 4: user.v1.GetFriendsListResponse.friends:type_name -> user.v1.UserSearchResult
+	0,  // 5: user.v1.UserService.GetProfile:input_type -> user.v1.GetProfileRequest
+	2,  // 6: user.v1.UserService.UpdateProfile:input_type -> user.v1.UpdateProfileRequest
+	4,  // 7: user.v1.UserService.SearchUsersByEmail:input_type -> user.v1.SearchUsersByEmailRequest
+	7,  // 8: user.v1.UserService.AddFriend:input_type -> user.v1.AddFriendRequest
+	9,  // 9: user.v1.UserService.DeleteFriend:input_type -> user.v1.DeleteFriendRequest
+	11, // 10: user.v1.UserService.AddMovieToFavorites:input_type -> user.v1.AddMovieToFavoritesRequest
+	13, // 11: user.v1.UserService.ToggleFavorite:input_type -> user.v1.ToggleFavoriteRequest
+	15, // 12: user.v1.UserService.GetFavorites:input_type -> user.v1.GetFavoritesRequest
+	17, // 13: user.v1.UserService.SearchUsers:input_type -> user.v1.SearchUsersRequest
+	19, // 14: user.v1.UserService.SendFriendRequest:input_type -> user.v1.SendFriendRequestRequest
+	21, // 15: user.v1.UserService.RespondToFriendRequest:input_type -> user.v1.RespondToFriendRequestRequest
+	23, // 16: user.v1.UserService.DeleteOutgoingFriendRequest:input_type -> user.v1.DeleteOutgoingFriendRequestRequest
+	25, // 17: user.v1.UserService.GetFriendRequests:input_type -> user.v1.GetFriendRequestsRequest
+	28, // 18: user.v1.UserService.GetFriendsList:input_type -> user.v1.GetFriendsListRequest
+	1,  // 19: user.v1.UserService.GetProfile:output_type -> user.v1.GetProfileResponse
+	3,  // 20: user.v1.UserService.UpdateProfile:output_type -> user.v1.UpdateProfileResponse
+	6,  // 21: user.v1.UserService.SearchUsersByEmail:output_type -> user.v1.SearchUsersByEmailResponse
+	8,  // 22: user.v1.UserService.AddFriend:output_type -> user.v1.AddFriendResponse
+	10, // 23: user.v1.UserService.DeleteFriend:output_type -> user.v1.DeleteFriendResponse
+	12, // 24: user.v1.UserService.AddMovieToFavorites:output_type -> user.v1.AddMovieToFavoritesResponse
+	14, // 25: user.v1.UserService.ToggleFavorite:output_type -> user.v1.ToggleFavoriteResponse
+	16, // 26: user.v1.UserService.GetFavorites:output_type -> user.v1.GetFavoritesResponse
+	18, // 27: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
+	20, // 28: user.v1.UserService.SendFriendRequest:output_type -> user.v1.SendFriendRequestResponse
+	22, // 29: user.v1.UserService.RespondToFriendRequest:output_type -> user.v1.RespondToFriendRequestResponse
+	24, // 30: user.v1.UserService.DeleteOutgoingFriendRequest:output_type -> user.v1.DeleteOutgoingFriendRequestResponse
+	27, // 31: user.v1.UserService.GetFriendRequests:output_type -> user.v1.GetFriendRequestsResponse
+	29, // 32: user.v1.UserService.GetFriendsList:output_type -> user.v1.GetFriendsListResponse
+	19, // [19:33] is the sub-list for method output_type
+	5,  // [5:19] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_user_v1_user_proto_init() }
@@ -841,7 +1777,7 @@ func file_user_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_v1_user_proto_rawDesc), len(file_user_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   30,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

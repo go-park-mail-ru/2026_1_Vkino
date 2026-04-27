@@ -14,6 +14,8 @@ service MovieService {
   rpc GetEpisodePlayback(GetEpisodePlaybackRequest) returns (GetEpisodePlaybackResponse);
   rpc GetEpisodeProgress(GetEpisodeProgressRequest) returns (GetEpisodeProgressResponse);
   rpc SaveEpisodeProgress(SaveEpisodeProgressRequest) returns (SaveEpisodeProgressResponse);
+  rpc GetContinueWatching(GetContinueWatchingRequest) returns (GetContinueWatchingResponse);
+  rpc GetWatchHistory(GetWatchHistoryRequest) returns (GetWatchHistoryResponse);
 }
 
 message GetMovieByIDRequest {
@@ -56,6 +58,7 @@ message GetMovieByIDResponse {
   repeated string genres = 16;
   repeated ActorShort actors = 17;
   repeated EpisodeShort episodes = 18;
+  optional bool is_favorite = 19;
 }
 
 message GetActorByIDRequest {
@@ -139,4 +142,35 @@ message SaveEpisodeProgressRequest {
 message SaveEpisodeProgressResponse {
   int64 episode_id = 1;
   int64 position_seconds = 2;
+}
+
+message WatchProgressItem {
+  int64 movie_id = 1;
+  string movie_title = 2;
+  string poster_url = 3;
+  string content_type = 4;
+  int32 season_number = 5;
+  int32 episode_number = 6;
+  string episode_title = 7;
+  int64 position_seconds = 8;
+  int64 duration_seconds = 9;
+  string updated_at = 10;
+  int64 episode_id = 11;
+}
+
+message GetContinueWatchingRequest {
+  int32 limit = 1;
+}
+
+message GetContinueWatchingResponse {
+  repeated WatchProgressItem items = 1;
+}
+
+message GetWatchHistoryRequest {
+  int32 limit = 1;
+  double min_progress = 2;
+}
+
+message GetWatchHistoryResponse {
+  repeated WatchProgressItem items = 1;
 }

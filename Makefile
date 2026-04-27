@@ -1,4 +1,7 @@
-PHONY: init
+.PHONY: init generate
+
+generate:
+	go generate ./internal/app/movie-service/repository/...
 
 PACKAGES_NO_MOCKS := $(shell go list ./... | grep -v '/mocks$$')
 

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	dto "github.com/go-park-mail-ru/2026_1_VKino/internal/app/api-gateway/domain"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
@@ -19,6 +20,7 @@ import (
 type UserClient interface {
 	userv1.UserServiceClient
 	supportRPC
+	movieRPC
 }
 
 type supportRPC interface {
@@ -36,15 +38,24 @@ type supportRPC interface {
 		*supportv1.TicketStatisticsResponse, error)
 }
 
-type grpcUserClient struct {
-	user userv1.UserServiceClient
-	sup  supportRPC
+type movieRPC interface {
+	GetContinueWatching(ctx context.Context, in *moviev1.GetContinueWatchingRequest, opts ...grpc.CallOption) (
+		*moviev1.GetContinueWatchingResponse, error)
+	GetWatchHistory(ctx context.Context, in *moviev1.GetWatchHistoryRequest, opts ...grpc.CallOption) (
+		*moviev1.GetWatchHistoryResponse, error)
 }
 
-func NewUserClient(conn grpc.ClientConnInterface) UserClient {
+type grpcUserClient struct {
+	user  userv1.UserServiceClient
+	sup   supportRPC
+	movie movieRPC
+}
+
+func NewUserClient(userConn grpc.ClientConnInterface, movieConn grpc.ClientConnInterface) UserClient {
 	return grpcUserClient{
-		user: userv1.NewUserServiceClient(conn),
-		sup:  supportv1.NewSupportServiceClient(conn),
+		user:  userv1.NewUserServiceClient(userConn),
+		sup:   supportv1.NewSupportServiceClient(userConn),
+		movie: moviev1.NewMovieServiceClient(movieConn),
 	}
 }
 
@@ -84,6 +95,70 @@ func (c grpcUserClient) AddMovieToFavorites(
 	return c.user.AddMovieToFavorites(ctx, in, opts...)
 }
 
+func (c grpcUserClient) ToggleFavorite(
+	ctx context.Context,
+	in *userv1.ToggleFavoriteRequest,
+	opts ...grpc.CallOption,
+) (*userv1.ToggleFavoriteResponse, error) {
+	return c.user.ToggleFavorite(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetFavorites(
+	ctx context.Context,
+	in *userv1.GetFavoritesRequest,
+	opts ...grpc.CallOption,
+) (*userv1.GetFavoritesResponse, error) {
+	return c.user.GetFavorites(ctx, in, opts...)
+}
+
+func (c grpcUserClient) SearchUsers(
+	ctx context.Context,
+	in *userv1.SearchUsersRequest,
+	opts ...grpc.CallOption,
+) (*userv1.SearchUsersResponse, error) {
+	return c.user.SearchUsers(ctx, in, opts...)
+}
+
+func (c grpcUserClient) SendFriendRequest(
+	ctx context.Context,
+	in *userv1.SendFriendRequestRequest,
+	opts ...grpc.CallOption,
+) (*userv1.SendFriendRequestResponse, error) {
+	return c.user.SendFriendRequest(ctx, in, opts...)
+}
+
+func (c grpcUserClient) RespondToFriendRequest(
+	ctx context.Context,
+	in *userv1.RespondToFriendRequestRequest,
+	opts ...grpc.CallOption,
+) (*userv1.RespondToFriendRequestResponse, error) {
+	return c.user.RespondToFriendRequest(ctx, in, opts...)
+}
+
+func (c grpcUserClient) DeleteOutgoingFriendRequest(
+	ctx context.Context,
+	in *userv1.DeleteOutgoingFriendRequestRequest,
+	opts ...grpc.CallOption,
+) (*userv1.DeleteOutgoingFriendRequestResponse, error) {
+	return c.user.DeleteOutgoingFriendRequest(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetFriendRequests(
+	ctx context.Context,
+	in *userv1.GetFriendRequestsRequest,
+	opts ...grpc.CallOption,
+) (*userv1.GetFriendRequestsResponse, error) {
+	return c.user.GetFriendRequests(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetFriendsList(
+	ctx context.Context,
+	in *userv1.GetFriendsListRequest,
+	opts ...grpc.CallOption,
+) (*userv1.GetFriendsListResponse, error) {
+	return c.user.GetFriendsList(ctx, in, opts...)
+}
+
 func (c grpcUserClient) CreateTicket(ctx context.Context, in *supportv1.CreateTicketRequest, opts ...grpc.CallOption) (
 	*supportv1.TicketResponse, error) {
 	return c.sup.CreateTicket(ctx, in, opts...)
@@ -121,6 +196,22 @@ func (c grpcUserClient) GetTicketStatistics(
 	opts ...grpc.CallOption,
 ) (*supportv1.TicketStatisticsResponse, error) {
 	return c.sup.GetTicketStatistics(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetContinueWatching(
+	ctx context.Context,
+	in *moviev1.GetContinueWatchingRequest,
+	opts ...grpc.CallOption,
+) (*moviev1.GetContinueWatchingResponse, error) {
+	return c.movie.GetContinueWatching(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetWatchHistory(
+	ctx context.Context,
+	in *moviev1.GetWatchHistoryRequest,
+	opts ...grpc.CallOption,
+) (*moviev1.GetWatchHistoryResponse, error) {
+	return c.movie.GetWatchHistory(ctx, in, opts...)
 }
 
 type updateProfileJSONRequest struct {
@@ -215,8 +306,9 @@ func User(
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
-			resp, err := userClient.SearchUsersByEmail(r.Context(), &userv1.SearchUsersByEmailRequest{
-				EmailQuery: r.URL.Query().Get("email"),
+			resp, err := userClient.SearchUsers(r.Context(), &userv1.SearchUsersRequest{
+				Query: r.URL.Query().Get("query"),
+				Limit: parseInt32Query(r, "limit", 10),
 			})
 			if err != nil {
 				writeGRPCError(w, err)
@@ -251,7 +343,7 @@ func User(
 		}),
 
 		httpserver.WithRoute("POST /user/friends/{id}", func(w http.ResponseWriter, r *http.Request) {
-			friendID, ok := parsePathID(w, r, "invalid friend id")
+			toUserID, ok := parsePathID(w, r, "invalid friend id")
 			if !ok {
 				return
 			}
@@ -259,8 +351,8 @@ func User(
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
-			resp, err := userClient.AddFriend(r.Context(), &userv1.AddFriendRequest{
-				FriendId: friendID,
+			resp, err := userClient.SendFriendRequest(r.Context(), &userv1.SendFriendRequestRequest{
+				ToUserId: toUserID,
 			})
 			if err != nil {
 				writeGRPCError(w, err)
@@ -303,12 +395,156 @@ func User(
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
-			resp, err := userClient.AddMovieToFavorites(r.Context(), &userv1.AddMovieToFavoritesRequest{
+			resp, err := userClient.ToggleFavorite(r.Context(), &userv1.ToggleFavoriteRequest{
 				MovieId: movieID,
 			})
 			if err != nil {
 				writeGRPCError(w, err)
 
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /user/favorites", func(w http.ResponseWriter, r *http.Request) {
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.GetFavorites(r.Context(), &userv1.GetFavoritesRequest{
+				Limit:  parseInt32Query(r, "limit", 10),
+				Offset: parseInt32Query(r, "offset", 0),
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /user/watch/continue", func(w http.ResponseWriter, r *http.Request) {
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.GetContinueWatching(r.Context(), &moviev1.GetContinueWatchingRequest{
+				Limit: parseInt32Query(r, "limit", 5),
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /user/watch/history", func(w http.ResponseWriter, r *http.Request) {
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.GetWatchHistory(r.Context(), &moviev1.GetWatchHistoryRequest{
+				Limit:       parseInt32Query(r, "limit", 10),
+				MinProgress: 0,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /user/watch/recent", func(w http.ResponseWriter, r *http.Request) {
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.GetWatchHistory(r.Context(), &moviev1.GetWatchHistoryRequest{
+				Limit:       parseInt32Query(r, "limit", 10),
+				MinProgress: 0.95,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("GET /user/friends/requests", func(w http.ResponseWriter, r *http.Request) {
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.GetFriendRequests(r.Context(), &userv1.GetFriendRequestsRequest{
+				Direction: r.URL.Query().Get("direction"),
+				Limit:     parseInt32Query(r, "limit", 50),
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("POST /user/friends/requests/{id}/respond", func(w http.ResponseWriter, r *http.Request) {
+			requestID, ok := parsePathID(w, r, "invalid request id")
+			if !ok {
+				return
+			}
+			var req struct {
+				Action string `json:"action"`
+			}
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.RespondToFriendRequest(r.Context(), &userv1.RespondToFriendRequestRequest{
+				RequestId: requestID,
+				Action:    req.Action,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		httpserver.WithRoute("DELETE /user/friends/requests/{id}", func(w http.ResponseWriter, r *http.Request) {
+			requestID, ok := parsePathID(w, r, "invalid request id")
+			if !ok {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			_, err := userClient.DeleteOutgoingFriendRequest(r.Context(), &userv1.DeleteOutgoingFriendRequestRequest{
+				RequestId: requestID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, map[string]bool{
+				"success": true,
+			})
+		}),
+
+		httpserver.WithRoute("GET /user/friends", func(w http.ResponseWriter, r *http.Request) {
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.GetFriendsList(r.Context(), &userv1.GetFriendsListRequest{
+				Limit:  parseInt32Query(r, "limit", 50),
+				Offset: parseInt32Query(r, "offset", 0),
+			})
+			if err != nil {
+				writeGRPCError(w, err)
 				return
 			}
 
@@ -486,4 +722,16 @@ func User(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 	}
+}
+
+func parseInt32Query(r *http.Request, key string, defaultValue int32) int32 {
+	value := strings.TrimSpace(r.URL.Query().Get(key))
+	if value == "" {
+		return defaultValue
+	}
+	parsed, err := strconv.ParseInt(value, 10, 32)
+	if err != nil {
+		return defaultValue
+	}
+	return int32(parsed)
 }

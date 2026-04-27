@@ -162,4 +162,49 @@ const (
 			updated_at = now()
 		returning episode_id, position_seconds
 	`
+
+	sqlIsFavorite = `
+		select exists(
+			select 1 from user_interaction
+			where user_id = $1 and movie_id = $2 and is_favorite = true
+		)
+	`
+
+	
+	sqlGetContinueWatching = `
+		select
+			wpe.episode_id, m.id, m.title, m.picture_file_key, m.content_type,
+			e.season_number, e.episode_number, coalesce(e.title, m.title),
+			wpe.position_seconds, e.duration_seconds, wpe.updated_at
+		from watch_progress_episode wpe
+		join episode e on e.id = wpe.episode_id
+		join movie m on m.id = e.movie_id
+		where wpe.user_id = $1
+			and wpe.position_seconds < (e.duration_seconds * 0.9)
+			and (CAST($3 AS double precision) <= 0)
+		order by wpe.updated_at desc
+		limit $2
+	`
+
+	sqlGetWatchHistory = `
+		select
+			wpe.episode_id, m.id, m.title, m.picture_file_key, m.content_type,
+			e.season_number, e.episode_number, coalesce(e.title, m.title),
+			wpe.position_seconds, e.duration_seconds, wpe.updated_at
+		from watch_progress_episode wpe
+		join episode e on e.id = wpe.episode_id
+		join movie m on m.id = e.movie_id
+		where wpe.user_id = $1
+			and (
+				CAST($3 AS double precision) <= 0
+				or (
+					e.duration_seconds > 0
+					and wpe.position_seconds >= (
+						e.duration_seconds * CAST($3 AS double precision)
+					)
+				)
+			)
+		order by wpe.updated_at desc
+		limit $2
+	`
 )

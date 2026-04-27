@@ -9,7 +9,7 @@ import (
 )
 
 type Usecase interface {
-	GetMovieByID(ctx context.Context, movieID int64) (domain.MovieResponse, error)
+	GetMovieByID(ctx context.Context, movieID int64, userID int64) (domain.MovieResponse, error)
 	GetActorByID(ctx context.Context, actorID int64) (domain.ActorResponse, error)
 	GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error)
 	GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error)
@@ -18,6 +18,8 @@ type Usecase interface {
 	GetEpisodePlayback(ctx context.Context, episodeID int64) (domain.EpisodePlaybackResponse, error)
 	GetEpisodeProgress(ctx context.Context, userID, episodeID int64) (domain.EpisodeProgressResponse, error)
 	SaveEpisodeProgress(ctx context.Context, userID, episodeID, positionSec int64) (domain.EpisodeProgressResponse, error)
+	GetContinueWatching(ctx context.Context, userID int64, limit int32) ([]domain.WatchProgressItemResponse, error)
+	GetWatchHistory(ctx context.Context, userID int64, limit int32, minProgress float64) ([]domain.WatchProgressItemResponse, error)
 }
 
 type MovieUsecase struct {

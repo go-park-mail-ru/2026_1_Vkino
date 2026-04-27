@@ -11,7 +11,12 @@ func (s *Server) GetMovieByID(
 	ctx context.Context,
 	req *moviev1.GetMovieByIDRequest,
 ) (*moviev1.GetMovieByIDResponse, error) {
-	movie, err := s.usecase.GetMovieByID(ctx, req.GetMovieId())
+	var userID int64
+	if authCtx, err := s.authorize(ctx); err == nil {
+		userID = authCtx.UserID
+	}
+
+	movie, err := s.usecase.GetMovieByID(ctx, req.GetMovieId(), userID)
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -35,6 +40,7 @@ func (s *Server) GetMovieByID(
 		Genres:             movie.Genres,
 		Actors:             mapActorShorts(movie.Actors),
 		Episodes:           mapEpisodeShorts(movie.Episodes),
+		IsFavorite:         movie.IsFavorite,
 	}, nil
 }
 
@@ -166,6 +172,44 @@ func (s *Server) SaveEpisodeProgress(
 	}, nil
 }
 
+func (s *Server) GetContinueWatching(
+	ctx context.Context,
+	req *moviev1.GetContinueWatchingRequest,
+) (*moviev1.GetContinueWatchingResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	items, err := s.usecase.GetContinueWatching(ctx, authCtx.UserID, req.GetLimit())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &moviev1.GetContinueWatchingResponse{
+		Items: mapWatchProgressItems(items),
+	}, nil
+}
+
+func (s *Server) GetWatchHistory(
+	ctx context.Context,
+	req *moviev1.GetWatchHistoryRequest,
+) (*moviev1.GetWatchHistoryResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	items, err := s.usecase.GetWatchHistory(ctx, authCtx.UserID, req.GetLimit(), req.GetMinProgress())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &moviev1.GetWatchHistoryResponse{
+		Items: mapWatchProgressItems(items),
+	}, nil
+}
+
 func mapActorShorts(actors []domain.ActorShortResponse) []*moviev1.ActorShort {
 	if len(actors) == 0 {
 		return []*moviev1.ActorShort{}
@@ -240,4 +284,24 @@ func mapSelections(selections []domain.SelectionResponse) []*moviev1.Selection {
 
 func i32(v int) int32 {
 	return int32(v)
+}
+
+func mapWatchProgressItems(items []domain.WatchProgressItemResponse) []*moviev1.WatchProgressItem {
+	result := make([]*moviev1.WatchProgressItem, 0, len(items))
+	for _, item := range items {
+		result = append(result, &moviev1.WatchProgressItem{
+			EpisodeId:       item.EpisodeID,
+			MovieId:         item.MovieID,
+			MovieTitle:      item.MovieTitle,
+			PosterUrl:       item.PosterURL,
+			ContentType:     item.ContentType,
+			SeasonNumber:    i32(item.SeasonNumber),
+			EpisodeNumber:   i32(item.EpisodeNumber),
+			EpisodeTitle:    item.EpisodeTitle,
+			PositionSeconds: item.PositionSeconds,
+			DurationSeconds: item.DurationSeconds,
+			UpdatedAt:       item.UpdatedAt,
+		})
+	}
+	return result
 }

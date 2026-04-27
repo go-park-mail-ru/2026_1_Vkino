@@ -57,7 +57,7 @@ func Run(configPath string) error {
 	server := httpserver.New(append(serverOptions(cfg, appLogger), routes.Register(
 		cfg,
 		authv1.NewAuthServiceClient(authConn),
-		routes.NewUserClient(userConn),
+		routes.NewUserClient(userConn, movieConn),
 		moviev1.NewMovieServiceClient(movieConn),
 	)...)...)
 

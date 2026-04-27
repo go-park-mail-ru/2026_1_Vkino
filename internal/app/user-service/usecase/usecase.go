@@ -13,11 +13,19 @@ import (
 type Usecase interface {
 	GetProfile(ctx context.Context, userID int64) (domain.ProfileResponse, error)
 	SearchUsersByEmail(ctx context.Context, userID int64, emailQuery string) ([]domain.UserSearchResult, error)
+	SearchUsers(ctx context.Context, userID int64, query string, limit int32) ([]domain.UserSearchResult, error)
 	AddFriend(ctx context.Context, userID int64, friendID int64) (domain.FriendResponse, error)
 	DeleteFriend(ctx context.Context, userID int64, friendID int64) error
 	UpdateProfile(ctx context.Context, userID int64, birthdate string, body io.Reader, size int64,
 		contentType string) (domain.ProfileResponse, error)
 	AddMovieToFavorites(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error)
+	ToggleFavorite(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error)
+	GetFavorites(ctx context.Context, userID int64, limit, offset int32) (domain.FavoritesResponse, error)
+	SendFriendRequest(ctx context.Context, userID, toUserID int64) (int64, error)
+	RespondToFriendRequest(ctx context.Context, userID, requestID int64, action string) error
+	DeleteOutgoingFriendRequest(ctx context.Context, userID, requestID int64) error
+	GetFriendRequests(ctx context.Context, userID int64, direction string, limit int32) ([]domain.FriendRequestItem, error)
+	GetFriendsList(ctx context.Context, userID int64, limit, offset int32) (domain.FriendsListResponse, error)
 }
 
 type SupportUsecase interface {
