@@ -54,12 +54,29 @@ func Run(configPath string) error {
 		return fmt.Errorf("ensure avatar bucket: %w", err)
 	}
 
+	var supportFileStore storage.FileStorage
+	if cfg.S3.BucketSupport != "" {
+		s3Store, storageErr := storage.NewS3Storage(
+			context.Background(),
+			cfg.S3.Config().WithBucket(cfg.S3.BucketSupport),
+		)
+		if storageErr != nil {
+			return fmt.Errorf("init support file storage: %w", storageErr)
+		}
+
+		if storageErr = s3Store.EnsureBucket(context.Background(), cfg.S3.Region); storageErr != nil {
+			return fmt.Errorf("ensure support file bucket: %w", storageErr)
+		}
+
+		supportFileStore = s3Store
+	}
+
 	userRepo := postgresrepo.NewUserRepo(pgDB)
 	supportRepo := postgresrepo.NewSupportRepo(pgDB)
 	clockService := clocksvc.New()
 
 	userUC := userusecase.NewUserUsecase(userRepo, avatarStore, clockService)
-	supportUC := userusecase.NewSupportUsecase(supportRepo, userRepo)
+	supportUC := userusecase.NewSupportUsecase(supportRepo, userRepo, supportFileStore, clockService)
 
 	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
 		Address:        cfg.AuthGRPC.Address,

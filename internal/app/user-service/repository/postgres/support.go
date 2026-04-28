@@ -35,6 +35,7 @@ func scanTicket(
 	id int64,
 	userID *int64,
 	userEmail *string,
+	senderEmail *string,
 	category, status string,
 	supportLine int64,
 	title, description string,
@@ -62,6 +63,12 @@ func scanTicket(
 		ticket.UserEmail = *userEmail
 	}
 
+	if senderEmail != nil {
+		ticket.SenderEmail = *senderEmail
+	} else if userEmail != nil {
+		ticket.SenderEmail = *userEmail
+	}
+
 	if attachmentFileKey != nil {
 		ticket.AttachmentFileKey = *attachmentFileKey
 	}
@@ -82,6 +89,7 @@ func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain2.SupportTicketResponse
 		id                int64
 		userID            *int64
 		userEmail         *string
+		senderEmail       *string
 		category          string
 		status            string
 		supportLine       int64
@@ -95,7 +103,7 @@ func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain2.SupportTicketResponse
 	)
 
 	err := row.Scan(
-		&id, &userID, &userEmail, &category, &status, &supportLine,
+		&id, &userID, &userEmail, &senderEmail, &category, &status, &supportLine,
 		&title, &description, &attachmentFileKey, &rating,
 		&createdAt, &updatedAt, &closedAt,
 	)
@@ -103,7 +111,7 @@ func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain2.SupportTicketResponse
 		return nil, err
 	}
 
-	ticket := scanTicket(id, userID, userEmail, category, status, supportLine, title, description,
+	ticket := scanTicket(id, userID, userEmail, senderEmail, category, status, supportLine, title, description,
 		attachmentFileKey, rating, createdAt, updatedAt, closedAt)
 
 	return &ticket, nil
@@ -181,6 +189,7 @@ func (r *SupportRepo) GetTickets(
 			id                int64
 			uID               *int64
 			userEmail         *string
+			senderEmail       *string
 			category          string
 			status            string
 			supportLine       int64
@@ -194,14 +203,14 @@ func (r *SupportRepo) GetTickets(
 		)
 
 		if err = rows.Scan(
-			&id, &uID, &userEmail, &category, &status, &supportLine,
+			&id, &uID, &userEmail, &senderEmail, &category, &status, &supportLine,
 			&title, &description, &attachmentFileKey, &rating,
 			&createdAt, &updatedAt, &closedAt,
 		); err != nil {
 			return nil, fmt.Errorf("scan support ticket: %w", err)
 		}
 
-		tickets = append(tickets, scanTicket(id, uID, userEmail, category, status, supportLine, title, description,
+		tickets = append(tickets, scanTicket(id, uID, userEmail, senderEmail, category, status, supportLine, title, description,
 			attachmentFileKey, rating, createdAt, updatedAt, closedAt))
 	}
 

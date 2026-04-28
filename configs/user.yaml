@@ -28,6 +28,7 @@ s3:
   access_key_id: ""
   secret_access_key: ""
   bucket_avatars: "vkino-avatars"
+  bucket_support: "vkino-support"
   use_ssl: false
   use_path_style: true
   presign_ttl: "15m"

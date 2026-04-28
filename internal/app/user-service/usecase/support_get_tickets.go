@@ -18,16 +18,16 @@ func (u *supportUsecase) GetTickets(
 	req.Category = strings.TrimSpace(req.Category)
 	req.UserEmail = strings.TrimSpace(req.UserEmail)
 
-	if req.Status != "" && !isValidTicketStatus(req.Status) {
-		return nil, domain2.ErrInvalidTicket
+	if !isValidTicketStatus(req.Status) {
+		return nil, domain2.ErrInvalidTicketPayload
 	}
 
-	if req.Category != "" && !isValidTicketCategory(req.Category) {
-		return nil, domain2.ErrInvalidTicket
+	if !isValidTicketCategory(req.Category) {
+		return nil, domain2.ErrInvalidTicketPayload
 	}
 
-	if req.SupportLine != 0 && !isValidSupportLine(req.SupportLine) {
-		return nil, domain2.ErrInvalidTicket
+	if !isValidSupportLine(req.SupportLine) {
+		return nil, domain2.ErrInvalidTicketPayload
 	}
 
 	if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {

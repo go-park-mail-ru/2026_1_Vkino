@@ -33,14 +33,3 @@ user_auth:
   refresh_cookie_name: "refresh_token"
   refresh_token_ttl: "336h"
   cookie_secure: false
-
-s3:
-  internal_endpoint: "minio:9000"
-  public_endpoint: "localhost:9000"
-  region: "ru-msk"
-  access_key_id: "minioadmin"
-  secret_access_key: "minioadmin"
-  bucket_support: "vkino-support"
-  use_ssl: false
-  use_path_style: true
-  presign_ttl: "15m"

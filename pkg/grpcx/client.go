@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+const defaultMaxMessageSize = 12 << 20
+
 type ClientConfig struct {
 	Address        string
 	RequestTimeout time.Duration
@@ -24,6 +26,10 @@ func Dial(ctx context.Context, cfg ClientConfig) (*grpc.ClientConn, error) {
 	conn, err := grpc.NewClient(
 		cfg.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(defaultMaxMessageSize),
+			grpc.MaxCallSendMsgSize(defaultMaxMessageSize),
+		),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("grpc dial %s: %w", cfg.Address, err)

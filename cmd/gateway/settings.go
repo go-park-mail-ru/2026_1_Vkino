@@ -6,7 +6,6 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/configenv"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
 type ServiceGRPCConfig struct {
@@ -27,7 +26,6 @@ type Config struct {
 	UserGRPC  ServiceGRPCConfig `mapstructure:"user_grpc"`
 	MovieGRPC ServiceGRPCConfig `mapstructure:"movie_grpc"`
 	UserAuth  UserAuthConfig    `mapstructure:"user_auth"`
-	S3        storage.S3Config  `mapstructure:"s3"`
 }
 
 func (c *Config) AuthRequestTimeout() time.Duration {

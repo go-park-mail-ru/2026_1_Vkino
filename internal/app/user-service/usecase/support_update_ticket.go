@@ -27,16 +27,16 @@ func (u *supportUsecase) UpdateTicket(
 		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketID
 	}
 
-	if req.Category != "" && !isValidTicketCategory(req.Category) {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicket
+	if !isValidTicketCategory(req.Category) {
+		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
 	}
 
-	if req.Status != "" && !isValidTicketStatus(req.Status) {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicket
+	if !isValidTicketStatus(req.Status) {
+		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
 	}
 
-	if req.SupportLine != 0 && !isValidSupportLine(req.SupportLine) {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicket
+	if !isValidSupportLine(req.SupportLine) {
+		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
 	}
 
 	if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {
@@ -44,7 +44,7 @@ func (u *supportUsecase) UpdateTicket(
 	}
 
 	if (req.Rating < 0) || (req.Rating > 5) {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicket
+		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
 	}
 
 	role, err := u.userRepo.GetUserRole(ctx, actorUserID)
@@ -93,7 +93,7 @@ func (u *supportUsecase) UpdateTicket(
 	if req.Category != "" {
 		derivedSupportLine := supportLineForCategory(req.Category)
 		if req.SupportLine != 0 && req.SupportLine != derivedSupportLine {
-			return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicket
+			return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
 		}
 
 		req.SupportLine = derivedSupportLine

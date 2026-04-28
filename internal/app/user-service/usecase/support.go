@@ -6,12 +6,16 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository"
+	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
 type supportUsecase struct {
-	supportRepo repository.SupportRepo
-	userRepo    repository.UserRepo
-	broker      *ticketBroker
+	supportRepo      repository.SupportRepo
+	userRepo         repository.UserRepo
+	supportFileStore storage.FileStorage
+	clockService     clocksvc.Service
+	broker           *ticketBroker
 }
 
 type ticketBroker struct {
@@ -73,12 +77,20 @@ func isAdmin(role string) bool {
 }
 
 func isValidTicketCategory(category string) bool {
+	if category == "" {
+		return true
+	}
+
 	_, ok := ticketCategoryToSupportLine[category]
 
 	return ok
 }
 
 func isValidTicketStatus(status string) bool {
+	if status == "" {
+		return true
+	}
+
 	switch status {
 	case "open", "in_progress", "waiting_user", "resolved", "closed":
 		return true
@@ -88,6 +100,10 @@ func isValidTicketStatus(status string) bool {
 }
 
 func isValidSupportLine(line int64) bool {
+	if line == 0 {
+		return true
+	}
+
 	return line == 1 || line == 2
 }
 

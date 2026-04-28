@@ -13,7 +13,6 @@ import (
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"google.golang.org/grpc"
 )
 
@@ -29,6 +28,10 @@ type supportRPC interface {
 		*supportv1.TicketsResponse, error)
 	UpdateTicket(ctx context.Context, in *supportv1.UpdateTicketRequest, opts ...grpc.CallOption) (
 		*supportv1.TicketResponse, error)
+	UploadSupportFile(ctx context.Context, in *supportv1.UploadSupportFileRequest, opts ...grpc.CallOption) (
+		*supportv1.UploadSupportFileResponse, error)
+	GetSupportFileURL(ctx context.Context, in *supportv1.GetSupportFileURLRequest, opts ...grpc.CallOption) (
+		*supportv1.GetSupportFileURLResponse, error)
 	GetTicketMessages(ctx context.Context, in *supportv1.GetTicketMessagesRequest, opts ...grpc.CallOption) (
 		*supportv1.TicketMessagesResponse, error)
 	CreateTicketMessage(ctx context.Context, in *supportv1.CreateTicketMessageRequest, opts ...grpc.CallOption) (
@@ -100,6 +103,22 @@ func (c grpcUserClient) GetTickets(ctx context.Context, in *supportv1.GetTickets
 func (c grpcUserClient) UpdateTicket(ctx context.Context, in *supportv1.UpdateTicketRequest, opts ...grpc.CallOption) (
 	*supportv1.TicketResponse, error) {
 	return c.sup.UpdateTicket(ctx, in, opts...)
+}
+
+func (c grpcUserClient) UploadSupportFile(
+	ctx context.Context,
+	in *supportv1.UploadSupportFileRequest,
+	opts ...grpc.CallOption,
+) (*supportv1.UploadSupportFileResponse, error) {
+	return c.sup.UploadSupportFile(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetSupportFileURL(
+	ctx context.Context,
+	in *supportv1.GetSupportFileURLRequest,
+	opts ...grpc.CallOption,
+) (*supportv1.GetSupportFileURLResponse, error) {
+	return c.sup.GetSupportFileURL(ctx, in, opts...)
 }
 
 func (c grpcUserClient) GetTicketMessages(
@@ -203,11 +222,7 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 	}
 }
 
-func User(
-	cfg Config,
-	userClient UserClient,
-	supportFileStore storage.FileStorage,
-) []httpserver.Option {
+func User(cfg Config, userClient UserClient) []httpserver.Option {
 	return []httpserver.Option{
 		httpserver.WithRoute("GET /user/me", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
@@ -352,9 +367,9 @@ func User(
 			httppkg.Response(w, http.StatusCreated, resp)
 		}),
 
-		httpserver.WithRoute("POST /support/files", newSupportFileUploadHandler(supportFileStore)),
+		httpserver.WithRoute("POST /support/files", newSupportFileUploadHandler(cfg, userClient)),
 
-		httpserver.WithRoute("GET /support/files", newSupportFileURLHandler(supportFileStore)),
+		httpserver.WithRoute("GET /support/files", newSupportFileURLHandler(cfg, userClient)),
 
 		httpserver.WithRoute("GET /support/tickets", func(w http.ResponseWriter, r *http.Request) {
 			query := r.URL.Query()

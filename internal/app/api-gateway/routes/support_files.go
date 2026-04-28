@@ -1,123 +1,55 @@
 package routes
 
 import (
-	"bytes"
-	"fmt"
+	"errors"
 	"io"
-	"mime"
 	"net/http"
 	"strings"
-	"time"
 
+	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
-const maxSupportFileSize = 10 << 20
+const (
+	maxSupportFileSize          = 10 << 20
+	maxSupportMultipartOverhead = 1 << 20
+)
 
-type supportFileResponse struct {
-	FileKey     string `json:"file_key"`
-	FileURL     string `json:"file_url"`
-	ContentType string `json:"content_type,omitempty"`
-	SizeBytes   int64  `json:"size_bytes,omitempty"`
+type supportFileUploadPayload struct {
+	Content     []byte
+	Filename    string
+	ContentType string
+	SizeBytes   int64
 }
 
-func newSupportFileUploadHandler(fileStore storage.FileStorage) http.HandlerFunc {
+func newSupportFileUploadHandler(cfg Config, userClient UserClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if fileStore == nil {
-			httppkg.ErrResponse(w, http.StatusServiceUnavailable, "support file storage is not configured")
-
-			return
-		}
-
-		r.Body = http.MaxBytesReader(w, r.Body, maxSupportFileSize)
-		if err := r.ParseMultipartForm(maxSupportFileSize); err != nil {
-			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid multipart form body")
-
-			return
-		}
-
-		file, header, err := r.FormFile("file")
-		if err != nil {
-			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid support file")
-
-			return
-		}
-		defer func() {
-			_ = file.Close()
-		}()
-
-		payload, err := io.ReadAll(file)
-		if err != nil || len(payload) == 0 {
-			httppkg.ErrResponse(w, http.StatusBadRequest, "failed to read support file")
-
-			return
-		}
-
-		contentType := normalizeSupportFileContentType("")
-		if header != nil {
-			contentType = normalizeSupportFileContentType(header.Header.Get("Content-Type"))
-		}
-		if contentType == "" {
-			contentType = normalizeSupportFileContentType(http.DetectContentType(payload))
-		}
-
-		extension, ok := supportFileExtensionByContentType(contentType)
+		payload, ok := readSupportFileUploadPayload(w, r)
 		if !ok {
-			httppkg.ErrResponse(w, http.StatusBadRequest, "unsupported support file type")
-
 			return
 		}
 
-		fileKey := fmt.Sprintf("support/%d%s", time.Now().UnixNano(), extension)
-		if err = fileStore.PutObject(
-			r.Context(),
-			fileKey,
-			bytes.NewReader(payload),
-			int64(len(payload)),
-			contentType,
-		); err != nil {
-			logger.FromContext(r.Context()).
-				WithField("file_key", fileKey).
-				WithField("content_type", contentType).
-				WithField("error", err).
-				Error("failed to upload support file")
+		cancel := grpcContext(r, cfg.UserRequestTimeout())
+		defer cancel()
 
-			httppkg.ErrResponse(w, http.StatusInternalServerError, "failed to upload support file")
-
-			return
-		}
-
-		fileURL, err := fileStore.PresignGetObject(r.Context(), fileKey, 0)
-		if err != nil {
-			logger.FromContext(r.Context()).
-				WithField("file_key", fileKey).
-				WithField("error", err).
-				Error("failed to presign support file")
-
-			httppkg.ErrResponse(w, http.StatusInternalServerError, "failed to create support file url")
-
-			return
-		}
-
-		httppkg.Response(w, http.StatusCreated, supportFileResponse{
-			FileKey:     fileKey,
-			FileURL:     fileURL,
-			ContentType: contentType,
-			SizeBytes:   int64(len(payload)),
+		resp, err := userClient.UploadSupportFile(r.Context(), &supportv1.UploadSupportFileRequest{
+			Content:     payload.Content,
+			Filename:    payload.Filename,
+			ContentType: payload.ContentType,
+			SizeBytes:   payload.SizeBytes,
 		})
+		if err != nil {
+			writeGRPCError(w, err)
+
+			return
+		}
+
+		httppkg.Response(w, http.StatusCreated, resp)
 	}
 }
 
-func newSupportFileURLHandler(fileStore storage.FileStorage) http.HandlerFunc {
+func newSupportFileURLHandler(cfg Config, userClient UserClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if fileStore == nil {
-			httppkg.ErrResponse(w, http.StatusServiceUnavailable, "support file storage is not configured")
-
-			return
-		}
-
 		fileKey := strings.TrimSpace(r.URL.Query().Get("key"))
 		if fileKey == "" {
 			httppkg.ErrResponse(w, http.StatusBadRequest, "file key is required")
@@ -125,54 +57,81 @@ func newSupportFileURLHandler(fileStore storage.FileStorage) http.HandlerFunc {
 			return
 		}
 
-		fileURL, err := fileStore.PresignGetObject(r.Context(), fileKey, 0)
-		if err != nil {
-			logger.FromContext(r.Context()).
-				WithField("file_key", fileKey).
-				WithField("error", err).
-				Error("failed to presign support file")
+		cancel := grpcContext(r, cfg.UserRequestTimeout())
+		defer cancel()
 
-			httppkg.ErrResponse(w, http.StatusInternalServerError, "failed to create support file url")
+		resp, err := userClient.GetSupportFileURL(r.Context(), &supportv1.GetSupportFileURLRequest{
+			FileKey: fileKey,
+		})
+		if err != nil {
+			writeGRPCError(w, err)
 
 			return
 		}
 
-		httppkg.Response(w, http.StatusOK, supportFileResponse{
-			FileKey: fileKey,
-			FileURL: fileURL,
-		})
+		httppkg.Response(w, http.StatusOK, resp)
 	}
 }
 
-func supportFileExtensionByContentType(contentType string) (string, bool) {
-	switch normalizeSupportFileContentType(contentType) {
-	case "image/png":
-		return ".png", true
-	case "image/jpeg":
-		return ".jpg", true
-	case "image/webp":
-		return ".webp", true
-	case "application/pdf":
-		return ".pdf", true
-	default:
-		return "", false
-	}
-}
+func readSupportFileUploadPayload(w http.ResponseWriter, r *http.Request) (supportFileUploadPayload, bool) {
+	r.Body = http.MaxBytesReader(w, r.Body, maxSupportFileSize+maxSupportMultipartOverhead)
+	if err := r.ParseMultipartForm(maxSupportFileSize); err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			httppkg.ErrResponse(w, http.StatusRequestEntityTooLarge, "support file exceeds the size limit")
 
-func normalizeSupportFileContentType(contentType string) string {
-	trimmed := strings.TrimSpace(strings.ToLower(contentType))
-	if trimmed == "" {
-		return ""
+			return supportFileUploadPayload{}, false
+		}
+
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid multipart form body")
+
+		return supportFileUploadPayload{}, false
 	}
 
-	mediaType, _, err := mime.ParseMediaType(trimmed)
+	if r.MultipartForm != nil {
+		defer func() {
+			_ = r.MultipartForm.RemoveAll()
+		}()
+	}
+
+	file, header, err := r.FormFile("file")
 	if err != nil {
-		mediaType = trimmed
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid support file")
+
+		return supportFileUploadPayload{}, false
+	}
+	defer func() {
+		_ = file.Close()
+	}()
+
+	content, err := io.ReadAll(io.LimitReader(file, maxSupportFileSize+1))
+	if err != nil {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "failed to read support file")
+
+		return supportFileUploadPayload{}, false
 	}
 
-	if mediaType == "image/jpg" {
-		return "image/jpeg"
+	if int64(len(content)) > maxSupportFileSize {
+		httppkg.ErrResponse(w, http.StatusRequestEntityTooLarge, "support file exceeds the size limit")
+
+		return supportFileUploadPayload{}, false
 	}
 
-	return mediaType
+	if len(content) == 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "failed to read support file")
+
+		return supportFileUploadPayload{}, false
+	}
+
+	payload := supportFileUploadPayload{
+		Content:   content,
+		SizeBytes: int64(len(content)),
+	}
+
+	if header != nil {
+		payload.Filename = header.Filename
+		payload.ContentType = header.Header.Get("Content-Type")
+	}
+
+	return payload, true
 }
