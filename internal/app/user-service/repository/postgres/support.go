@@ -226,7 +226,6 @@ func (r *SupportRepo) UpdateTicket(
 	req domain2.UpdateSupportTicketRequest,
 ) (*domain2.SupportTicketResponse, error) {
 	// attachmentFileKey := normalizedOptionalStringValue(req.AttachmentFileKey)
-
 	row := r.db.QueryRow(ctx, sqlUpdateSupportTicket,
 		req.TicketID, req.Category, req.Status, req.SupportLine,
 		req.Title, req.Description, req.AttachmentFileKey, req.UserEmail, req.Rating,
