@@ -28,12 +28,18 @@ type supportRPC interface {
 		*supportv1.TicketsResponse, error)
 	UpdateTicket(ctx context.Context, in *supportv1.UpdateTicketRequest, opts ...grpc.CallOption) (
 		*supportv1.TicketResponse, error)
+	UploadSupportFile(ctx context.Context, in *supportv1.UploadSupportFileRequest, opts ...grpc.CallOption) (
+		*supportv1.UploadSupportFileResponse, error)
+	GetSupportFileURL(ctx context.Context, in *supportv1.GetSupportFileURLRequest, opts ...grpc.CallOption) (
+		*supportv1.GetSupportFileURLResponse, error)
 	GetTicketMessages(ctx context.Context, in *supportv1.GetTicketMessagesRequest, opts ...grpc.CallOption) (
 		*supportv1.TicketMessagesResponse, error)
 	CreateTicketMessage(ctx context.Context, in *supportv1.CreateTicketMessageRequest, opts ...grpc.CallOption) (
 		*supportv1.TicketMessageResponse, error)
 	GetTicketStatistics(ctx context.Context, in *supportv1.GetTicketStatisticsRequest, opts ...grpc.CallOption) (
 		*supportv1.TicketStatisticsResponse, error)
+	SubscribeTicket(ctx context.Context, in *supportv1.SubscribeTicketRequest, opts ...grpc.CallOption) (
+		grpc.ServerStreamingClient[supportv1.TicketEvent], error)
 }
 
 type grpcUserClient struct {
@@ -99,6 +105,22 @@ func (c grpcUserClient) UpdateTicket(ctx context.Context, in *supportv1.UpdateTi
 	return c.sup.UpdateTicket(ctx, in, opts...)
 }
 
+func (c grpcUserClient) UploadSupportFile(
+	ctx context.Context,
+	in *supportv1.UploadSupportFileRequest,
+	opts ...grpc.CallOption,
+) (*supportv1.UploadSupportFileResponse, error) {
+	return c.sup.UploadSupportFile(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetSupportFileURL(
+	ctx context.Context,
+	in *supportv1.GetSupportFileURLRequest,
+	opts ...grpc.CallOption,
+) (*supportv1.GetSupportFileURLResponse, error) {
+	return c.sup.GetSupportFileURL(ctx, in, opts...)
+}
+
 func (c grpcUserClient) GetTicketMessages(
 	ctx context.Context,
 	in *supportv1.GetTicketMessagesRequest,
@@ -121,6 +143,14 @@ func (c grpcUserClient) GetTicketStatistics(
 	opts ...grpc.CallOption,
 ) (*supportv1.TicketStatisticsResponse, error) {
 	return c.sup.GetTicketStatistics(ctx, in, opts...)
+}
+
+func (c grpcUserClient) SubscribeTicket(
+	ctx context.Context,
+	in *supportv1.SubscribeTicketRequest,
+	opts ...grpc.CallOption,
+) (grpc.ServerStreamingClient[supportv1.TicketEvent], error) {
+	return c.sup.SubscribeTicket(ctx, in, opts...)
 }
 
 type updateProfileJSONRequest struct {
@@ -192,10 +222,7 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 	}
 }
 
-func User(
-	cfg Config,
-	userClient UserClient,
-) []httpserver.Option {
+func User(cfg Config, userClient UserClient) []httpserver.Option {
 	return []httpserver.Option{
 		httpserver.WithRoute("GET /user/me", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
@@ -340,6 +367,10 @@ func User(
 			httppkg.Response(w, http.StatusCreated, resp)
 		}),
 
+		httpserver.WithRoute("POST /support/files", newSupportFileUploadHandler(cfg, userClient)),
+
+		httpserver.WithRoute("GET /support/files", newSupportFileURLHandler(cfg, userClient)),
+
 		httpserver.WithRoute("GET /support/tickets", func(w http.ResponseWriter, r *http.Request) {
 			query := r.URL.Query()
 
@@ -356,13 +387,6 @@ func User(
 				supportLine = parsedSupportLine
 			}
 
-			role := strings.TrimSpace(query.Get("role"))
-			if role == "" {
-				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid role")
-
-				return
-			}
-
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
@@ -371,14 +395,6 @@ func User(
 				Category:    strings.TrimSpace(query.Get("category")),
 				UserEmail:   strings.TrimSpace(query.Get("user_email")),
 				SupportLine: supportLine,
-			}
-
-			switch role {
-			case "user", "support_l1", "support_l2", "admin":
-			default:
-				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid role")
-
-				return
 			}
 
 			resp, err := userClient.GetTickets(r.Context(), request)
@@ -414,6 +430,7 @@ func User(
 				UserEmail:         strings.TrimSpace(req.UserEmail),
 				Description:       req.Description,
 				AttachmentFileKey: req.AttachmentFileKey,
+				Rating:            req.Rating,
 			})
 			if err != nil {
 				writeGRPCError(w, err)
@@ -444,6 +461,8 @@ func User(
 
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
+
+		httpserver.WithRoute("GET /support/tickets/{id}/subscribe", newSupportTicketSubscribeHandler(userClient)),
 
 		httpserver.WithRoute("POST /support/tickets/{id}/messages", func(w http.ResponseWriter, r *http.Request) {
 			ticketID, ok := parsePathID(w, r, "invalid ticket id")

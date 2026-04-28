@@ -155,24 +155,9 @@ services:
       - ./.env
     depends_on:
       - minio
-    entrypoint: >
-      /bin/sh -c "
-      until /usr/bin/mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}; do
-        echo 'waiting for minio...';
-        sleep 2;
-      done;
-      /usr/bin/mc mb -p local/vkino-actors || true;
-      /usr/bin/mc mb -p local/vkino-posters || true;
-      /usr/bin/mc mb -p local/vkino-cards || true;
-      /usr/bin/mc mb -p local/vkino-avatars || true;
-      /usr/bin/mc mb -p local/vkino-videos || true;
-      /usr/bin/mc anonymous set none local/vkino-actors || true;
-      /usr/bin/mc anonymous set none local/vkino-posters || true;
-      /usr/bin/mc anonymous set none local/vkino-cards || true;
-      /usr/bin/mc anonymous set none local/vkino-avatars || true;
-      /usr/bin/mc anonymous set none local/vkino-videos || true;
-      exit 0;
-      "
+    volumes:
+      - ../scripts/init-minio-buckets.sh:/scripts/init-minio-buckets.sh:ro
+    entrypoint: ["/bin/sh", "/scripts/init-minio-buckets.sh"]
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}

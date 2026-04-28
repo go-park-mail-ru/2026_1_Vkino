@@ -21,7 +21,7 @@ func (u *supportUsecase) GetTicketStatistics(
 		return domain2.SupportTicketStatisticsResponse{}, domain2.ErrAccessDenied
 	}
 
-	stats, err := u.supportRepo.GetTicketStatistics(ctx)
+	stats, err := u.supportRepo.GetTicketStatistics(ctx, allowedCategoriesForRole(role))
 	if err != nil {
 		return domain2.SupportTicketStatisticsResponse{}, fmt.Errorf("%w: %v", domain2.ErrInternal, err)
 	}

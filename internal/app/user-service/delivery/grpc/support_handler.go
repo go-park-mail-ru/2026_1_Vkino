@@ -113,12 +113,63 @@ func (s *SupportServer) UpdateTicket(
 		UserEmail:         req.GetUserEmail(),
 		Description:       req.GetDescription(),
 		AttachmentFileKey: req.GetAttachmentFileKey(),
+		Rating:            req.GetRating(),
 	})
 	if err != nil {
 		return nil, mapSupportError(err)
 	}
 
 	return &supportv1.TicketResponse{Ticket: toProtoTicket(ticket)}, nil
+}
+
+func (s *SupportServer) UploadSupportFile(
+	ctx context.Context,
+	req *supportv1.UploadSupportFileRequest,
+) (*supportv1.UploadSupportFileResponse, error) {
+	userID, err := s.authorizeOptional(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	file, err := s.usecase.UploadSupportFile(ctx, userID, domain2.UploadSupportFileRequest{
+		Content:     req.GetContent(),
+		Filename:    req.GetFilename(),
+		ContentType: req.GetContentType(),
+		SizeBytes:   req.GetSizeBytes(),
+	})
+	if err != nil {
+		return nil, mapSupportError(err)
+	}
+
+	return &supportv1.UploadSupportFileResponse{
+		FileKey:     file.FileKey,
+		FileUrl:     file.FileURL,
+		ContentType: file.ContentType,
+		SizeBytes:   file.SizeBytes,
+	}, nil
+}
+
+func (s *SupportServer) GetSupportFileURL(
+	ctx context.Context,
+	req *supportv1.GetSupportFileURLRequest,
+) (*supportv1.GetSupportFileURLResponse, error) {
+	userID, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	file, err := s.usecase.GetSupportFileURL(ctx, userID, domain2.GetSupportFileURLRequest{
+		FileKey:  req.GetFileKey(),
+		TicketID: req.GetTicketId(),
+	})
+	if err != nil {
+		return nil, mapSupportError(err)
+	}
+
+	return &supportv1.GetSupportFileURLResponse{
+		FileKey: file.FileKey,
+		FileUrl: file.FileURL,
+	}, nil
 }
 
 func (s *SupportServer) GetTicketMessages(
@@ -245,6 +296,7 @@ func toProtoTicket(t domain2.SupportTicketResponse) *supportv1.Ticket {
 		Id:                t.ID,
 		UserId:            t.UserID,
 		UserEmail:         t.UserEmail,
+		SenderEmail:       t.SenderEmail,
 		Category:          t.Category,
 		Status:            t.Status,
 		SupportLine:       t.SupportLine,

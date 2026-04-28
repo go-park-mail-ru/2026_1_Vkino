@@ -71,13 +71,30 @@ func (c *Client) Send(payload []byte) error {
 func (c *Client) WriteLoop(ctx context.Context) error {
 	for {
 		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-c.done:
-			return nil
 		case payload := <-c.send:
 			if err := c.conn.Write(ctx, payload); err != nil {
 				return err
+			}
+
+			continue
+		default:
+		}
+
+		select {
+		case payload := <-c.send:
+			if err := c.conn.Write(ctx, payload); err != nil {
+				return err
+			}
+		case <-c.done:
+			return nil
+		case <-ctx.Done():
+			select {
+			case payload := <-c.send:
+				if err := c.conn.Write(ctx, payload); err != nil {
+					return err
+				}
+			default:
+				return ctx.Err()
 			}
 		}
 	}

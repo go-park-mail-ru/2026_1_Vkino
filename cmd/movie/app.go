@@ -47,20 +47,32 @@ func Run(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("init poster storage: %w", err)
 	}
+	if err = posterStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
+		return fmt.Errorf("ensure poster bucket: %w", err)
+	}
 
 	cardStore, err := storage.NewS3Storage(context.Background(), cfg.S3.Config().WithBucket(cfg.S3.BucketCards))
 	if err != nil {
 		return fmt.Errorf("init card storage: %w", err)
+	}
+	if err = cardStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
+		return fmt.Errorf("ensure card bucket: %w", err)
 	}
 
 	actorStore, err := storage.NewS3Storage(context.Background(), cfg.S3.Config().WithBucket(cfg.S3.BucketActors))
 	if err != nil {
 		return fmt.Errorf("init actor storage: %w", err)
 	}
+	if err = actorStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
+		return fmt.Errorf("ensure actor bucket: %w", err)
+	}
 
 	videoStore, err := storage.NewS3Storage(context.Background(), cfg.S3.Config().WithBucket(cfg.S3.BucketVideos))
 	if err != nil {
 		return fmt.Errorf("init video storage: %w", err)
+	}
+	if err = videoStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
+		return fmt.Errorf("ensure video bucket: %w", err)
 	}
 
 	movieRepo := postgresrepo.NewMovieRepo(pgDB)

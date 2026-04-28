@@ -22,6 +22,8 @@ const (
 	SupportService_CreateTicket_FullMethodName        = "/support.v1.SupportService/CreateTicket"
 	SupportService_GetTickets_FullMethodName          = "/support.v1.SupportService/GetTickets"
 	SupportService_UpdateTicket_FullMethodName        = "/support.v1.SupportService/UpdateTicket"
+	SupportService_UploadSupportFile_FullMethodName   = "/support.v1.SupportService/UploadSupportFile"
+	SupportService_GetSupportFileURL_FullMethodName   = "/support.v1.SupportService/GetSupportFileURL"
 	SupportService_GetTicketMessages_FullMethodName   = "/support.v1.SupportService/GetTicketMessages"
 	SupportService_CreateTicketMessage_FullMethodName = "/support.v1.SupportService/CreateTicketMessage"
 	SupportService_GetTicketStatistics_FullMethodName = "/support.v1.SupportService/GetTicketStatistics"
@@ -35,6 +37,8 @@ type SupportServiceClient interface {
 	CreateTicket(ctx context.Context, in *CreateTicketRequest, opts ...grpc.CallOption) (*TicketResponse, error)
 	GetTickets(ctx context.Context, in *GetTicketsRequest, opts ...grpc.CallOption) (*TicketsResponse, error)
 	UpdateTicket(ctx context.Context, in *UpdateTicketRequest, opts ...grpc.CallOption) (*TicketResponse, error)
+	UploadSupportFile(ctx context.Context, in *UploadSupportFileRequest, opts ...grpc.CallOption) (*UploadSupportFileResponse, error)
+	GetSupportFileURL(ctx context.Context, in *GetSupportFileURLRequest, opts ...grpc.CallOption) (*GetSupportFileURLResponse, error)
 	GetTicketMessages(ctx context.Context, in *GetTicketMessagesRequest, opts ...grpc.CallOption) (*TicketMessagesResponse, error)
 	CreateTicketMessage(ctx context.Context, in *CreateTicketMessageRequest, opts ...grpc.CallOption) (*TicketMessageResponse, error)
 	GetTicketStatistics(ctx context.Context, in *GetTicketStatisticsRequest, opts ...grpc.CallOption) (*TicketStatisticsResponse, error)
@@ -73,6 +77,26 @@ func (c *supportServiceClient) UpdateTicket(ctx context.Context, in *UpdateTicke
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TicketResponse)
 	err := c.cc.Invoke(ctx, SupportService_UpdateTicket_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *supportServiceClient) UploadSupportFile(ctx context.Context, in *UploadSupportFileRequest, opts ...grpc.CallOption) (*UploadSupportFileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UploadSupportFileResponse)
+	err := c.cc.Invoke(ctx, SupportService_UploadSupportFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *supportServiceClient) GetSupportFileURL(ctx context.Context, in *GetSupportFileURLRequest, opts ...grpc.CallOption) (*GetSupportFileURLResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSupportFileURLResponse)
+	err := c.cc.Invoke(ctx, SupportService_GetSupportFileURL_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -135,6 +159,8 @@ type SupportServiceServer interface {
 	CreateTicket(context.Context, *CreateTicketRequest) (*TicketResponse, error)
 	GetTickets(context.Context, *GetTicketsRequest) (*TicketsResponse, error)
 	UpdateTicket(context.Context, *UpdateTicketRequest) (*TicketResponse, error)
+	UploadSupportFile(context.Context, *UploadSupportFileRequest) (*UploadSupportFileResponse, error)
+	GetSupportFileURL(context.Context, *GetSupportFileURLRequest) (*GetSupportFileURLResponse, error)
 	GetTicketMessages(context.Context, *GetTicketMessagesRequest) (*TicketMessagesResponse, error)
 	CreateTicketMessage(context.Context, *CreateTicketMessageRequest) (*TicketMessageResponse, error)
 	GetTicketStatistics(context.Context, *GetTicketStatisticsRequest) (*TicketStatisticsResponse, error)
@@ -157,6 +183,12 @@ func (UnimplementedSupportServiceServer) GetTickets(context.Context, *GetTickets
 }
 func (UnimplementedSupportServiceServer) UpdateTicket(context.Context, *UpdateTicketRequest) (*TicketResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateTicket not implemented")
+}
+func (UnimplementedSupportServiceServer) UploadSupportFile(context.Context, *UploadSupportFileRequest) (*UploadSupportFileResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadSupportFile not implemented")
+}
+func (UnimplementedSupportServiceServer) GetSupportFileURL(context.Context, *GetSupportFileURLRequest) (*GetSupportFileURLResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSupportFileURL not implemented")
 }
 func (UnimplementedSupportServiceServer) GetTicketMessages(context.Context, *GetTicketMessagesRequest) (*TicketMessagesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTicketMessages not implemented")
@@ -245,6 +277,42 @@ func _SupportService_UpdateTicket_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SupportService_UploadSupportFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadSupportFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SupportServiceServer).UploadSupportFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SupportService_UploadSupportFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SupportServiceServer).UploadSupportFile(ctx, req.(*UploadSupportFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SupportService_GetSupportFileURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSupportFileURLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SupportServiceServer).GetSupportFileURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SupportService_GetSupportFileURL_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SupportServiceServer).GetSupportFileURL(ctx, req.(*GetSupportFileURLRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _SupportService_GetTicketMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetTicketMessagesRequest)
 	if err := dec(in); err != nil {
@@ -328,6 +396,14 @@ var SupportService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateTicket",
 			Handler:    _SupportService_UpdateTicket_Handler,
+		},
+		{
+			MethodName: "UploadSupportFile",
+			Handler:    _SupportService_UploadSupportFile_Handler,
+		},
+		{
+			MethodName: "GetSupportFileURL",
+			Handler:    _SupportService_GetSupportFileURL_Handler,
 		},
 		{
 			MethodName: "GetTicketMessages",

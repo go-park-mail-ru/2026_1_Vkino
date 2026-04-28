@@ -8,8 +8,12 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 )
 
-func Register(cfg Config, authClient authv1.AuthServiceClient, userClient UserClient,
-	movieClient moviev1.MovieServiceClient) []httpserver.Option {
+func Register(
+	cfg Config,
+	authClient authv1.AuthServiceClient,
+	userClient UserClient,
+	movieClient moviev1.MovieServiceClient,
+) []httpserver.Option {
 	result := make([]httpserver.Option, 0, 1+len(Auth(cfg, authClient))+len(User(cfg, userClient))+
 		len(Movie(cfg, movieClient)))
 	result = append(result,
