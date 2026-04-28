@@ -26,6 +26,7 @@ func (u *supportUsecase) GetTickets(
 	userIDFilter := actorUserID
 	if isStaff(role) {
 		userIDFilter = 0
+
 		if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {
 			return nil, domain2.ErrInvalidEmail
 		}
