@@ -1,4 +1,4 @@
-package routes
+package ws
 
 import (
 	"bufio"
@@ -13,8 +13,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	wspkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/ws"
 )
 
 const (
@@ -26,9 +24,9 @@ const (
 	maxWebSocketPayloadSize = 1 << 20
 )
 
-type supportWSUpgrader struct{}
+type HTTPUpgrader struct{}
 
-func (supportWSUpgrader) Upgrade(w http.ResponseWriter, r *http.Request) (wspkg.Conn, error) {
+func (HTTPUpgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error) {
 	if !headerContainsToken(r.Header, "Connection", "Upgrade") || !strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
 		http.Error(w, "websocket upgrade required", http.StatusUpgradeRequired)
 
@@ -79,14 +77,14 @@ func (supportWSUpgrader) Upgrade(w http.ResponseWriter, r *http.Request) (wspkg.
 		return nil, fmt.Errorf("flush websocket handshake: %w", err)
 	}
 
-	return &supportWSConn{
+	return &httpConn{
 		conn:   conn,
 		reader: rw.Reader,
 		writer: rw.Writer,
 	}, nil
 }
 
-type supportWSConn struct {
+type httpConn struct {
 	conn      net.Conn
 	reader    *bufio.Reader
 	writer    *bufio.Writer
@@ -94,7 +92,7 @@ type supportWSConn struct {
 	closeOnce sync.Once
 }
 
-func (c *supportWSConn) Read(ctx context.Context) ([]byte, error) {
+func (c *httpConn) Read(ctx context.Context) ([]byte, error) {
 	stopDeadline := watchConnDeadline(ctx, c.conn.SetReadDeadline)
 	defer stopDeadline()
 
@@ -107,27 +105,23 @@ func (c *supportWSConn) Read(ctx context.Context) ([]byte, error) {
 		switch opcode {
 		case websocketOpcodeText:
 			return payload, nil
-
 		case websocketOpcodePing:
 			if err = c.writeControlFrame(ctx, websocketOpcodePong, payload); err != nil {
 				return nil, err
 			}
-
 		case websocketOpcodePong:
 			continue
-
 		case websocketOpcodeClose:
 			_ = c.writeControlFrame(ctx, websocketOpcodeClose, nil)
 
 			return nil, io.EOF
-
 		default:
 			return nil, fmt.Errorf("unsupported websocket opcode %d", opcode)
 		}
 	}
 }
 
-func (c *supportWSConn) Write(ctx context.Context, payload []byte) error {
+func (c *httpConn) Write(ctx context.Context, payload []byte) error {
 	stopDeadline := watchConnDeadline(ctx, c.conn.SetWriteDeadline)
 	defer stopDeadline()
 
@@ -137,7 +131,7 @@ func (c *supportWSConn) Write(ctx context.Context, payload []byte) error {
 	return c.writeFrameLocked(websocketOpcodeText, payload)
 }
 
-func (c *supportWSConn) Close() error {
+func (c *httpConn) Close() error {
 	var err error
 
 	c.closeOnce.Do(func() {
@@ -147,7 +141,7 @@ func (c *supportWSConn) Close() error {
 	return err
 }
 
-func (c *supportWSConn) readFrame() (byte, []byte, error) {
+func (c *httpConn) readFrame() (byte, []byte, error) {
 	firstByte, err := c.reader.ReadByte()
 	if err != nil {
 		return 0, nil, err
@@ -194,7 +188,7 @@ func (c *supportWSConn) readFrame() (byte, []byte, error) {
 	return opcode, payload, nil
 }
 
-func (c *supportWSConn) writeControlFrame(ctx context.Context, opcode byte, payload []byte) error {
+func (c *httpConn) writeControlFrame(ctx context.Context, opcode byte, payload []byte) error {
 	stopDeadline := watchConnDeadline(ctx, c.conn.SetWriteDeadline)
 	defer stopDeadline()
 
@@ -204,7 +198,7 @@ func (c *supportWSConn) writeControlFrame(ctx context.Context, opcode byte, payl
 	return c.writeFrameLocked(opcode, payload)
 }
 
-func (c *supportWSConn) writeFrameLocked(opcode byte, payload []byte) error {
+func (c *httpConn) writeFrameLocked(opcode byte, payload []byte) error {
 	if err := c.writer.WriteByte(0x80 | opcode); err != nil {
 		return err
 	}
@@ -215,7 +209,6 @@ func (c *supportWSConn) writeFrameLocked(opcode byte, payload []byte) error {
 		if err := c.writer.WriteByte(byte(payloadLength)); err != nil {
 			return err
 		}
-
 	case payloadLength <= 65535:
 		if err := c.writer.WriteByte(126); err != nil {
 			return err
@@ -226,7 +219,6 @@ func (c *supportWSConn) writeFrameLocked(opcode byte, payload []byte) error {
 		if _, err := c.writer.Write(rawLength[:]); err != nil {
 			return err
 		}
-
 	default:
 		if err := c.writer.WriteByte(127); err != nil {
 			return err
@@ -273,7 +265,6 @@ func readWebSocketPayloadLength(reader *bufio.Reader, payloadLengthCode byte) (i
 		}
 
 		return int(binary.BigEndian.Uint16(rawLength[:])), nil
-
 	case 127:
 		var rawLength [8]byte
 		if _, err := io.ReadFull(reader, rawLength[:]); err != nil {
@@ -286,7 +277,6 @@ func readWebSocketPayloadLength(reader *bufio.Reader, payloadLengthCode byte) (i
 		}
 
 		return int(payloadLength), nil
-
 	default:
 		return int(payloadLengthCode), nil
 	}

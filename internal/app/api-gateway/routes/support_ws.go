@@ -67,7 +67,7 @@ func newSupportTicketSubscribeHandler(userClient UserClient) http.HandlerFunc {
 			}
 		}()
 
-		handler := wspkg.ServeWS(supportWSUpgrader{}, hub, wspkg.ServeOptions{
+		handler := wspkg.ServeWS(wspkg.HTTPUpgrader{}, hub, wspkg.ServeOptions{
 			SendBuffer: wspkg.DefaultSendBuffer,
 			ClientID: func(r *http.Request) (int64, error) {
 				clientID, ok := r.Context().Value(supportWSClientIDContextKey).(int64)

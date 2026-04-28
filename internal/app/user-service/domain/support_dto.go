@@ -47,7 +47,8 @@ type UploadSupportFileRequest struct {
 }
 
 type GetSupportFileURLRequest struct {
-	FileKey string
+	FileKey  string
+	TicketID int64
 }
 
 type GetSupportTicketStatisticsRequest struct{}

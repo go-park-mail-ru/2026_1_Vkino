@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
@@ -57,11 +58,19 @@ func newSupportFileURLHandler(cfg Config, userClient UserClient) http.HandlerFun
 			return
 		}
 
+		ticketID, err := strconv.ParseInt(strings.TrimSpace(r.URL.Query().Get("ticket_id")), 10, 64)
+		if err != nil || ticketID <= 0 {
+			httppkg.ErrResponse(w, http.StatusBadRequest, "ticket id is required")
+
+			return
+		}
+
 		cancel := grpcContext(r, cfg.UserRequestTimeout())
 		defer cancel()
 
 		resp, err := userClient.GetSupportFileURL(r.Context(), &supportv1.GetSupportFileURLRequest{
-			FileKey: fileKey,
+			FileKey:  fileKey,
+			TicketId: ticketID,
 		})
 		if err != nil {
 			writeGRPCError(w, err)

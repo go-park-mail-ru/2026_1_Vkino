@@ -131,6 +131,10 @@ func canAccessCategory(role, category string) bool {
 	return slices.Contains(allowedCategories, category)
 }
 
+func isTerminalTicketStatus(status string) bool {
+	return status == "resolved" || status == "closed"
+}
+
 var ticketCategoryToSupportLine = map[string]int64{
 	"bug":       1,
 	"complaint": 1,

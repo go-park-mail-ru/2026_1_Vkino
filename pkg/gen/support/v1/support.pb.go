@@ -644,6 +644,7 @@ func (x *UploadSupportFileResponse) GetSizeBytes() int64 {
 type GetSupportFileURLRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	FileKey       string                 `protobuf:"bytes,1,opt,name=file_key,json=fileKey,proto3" json:"file_key,omitempty"`
+	TicketId      int64                  `protobuf:"varint,2,opt,name=ticket_id,json=ticketId,proto3" json:"ticket_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -683,6 +684,13 @@ func (x *GetSupportFileURLRequest) GetFileKey() string {
 		return x.FileKey
 	}
 	return ""
+}
+
+func (x *GetSupportFileURLRequest) GetTicketId() int64 {
+	if x != nil {
+		return x.TicketId
+	}
+	return 0
 }
 
 type GetSupportFileURLResponse struct {
@@ -1317,9 +1325,10 @@ const file_support_v1_support_proto_rawDesc = "" +
 	"\bfile_url\x18\x02 \x01(\tR\afileUrl\x12!\n" +
 	"\fcontent_type\x18\x03 \x01(\tR\vcontentType\x12\x1d\n" +
 	"\n" +
-	"size_bytes\x18\x04 \x01(\x03R\tsizeBytes\"5\n" +
+	"size_bytes\x18\x04 \x01(\x03R\tsizeBytes\"R\n" +
 	"\x18GetSupportFileURLRequest\x12\x19\n" +
-	"\bfile_key\x18\x01 \x01(\tR\afileKey\"Q\n" +
+	"\bfile_key\x18\x01 \x01(\tR\afileKey\x12\x1b\n" +
+	"\tticket_id\x18\x02 \x01(\x03R\bticketId\"Q\n" +
 	"\x19GetSupportFileURLResponse\x12\x19\n" +
 	"\bfile_key\x18\x01 \x01(\tR\afileKey\x12\x19\n" +
 	"\bfile_url\x18\x02 \x01(\tR\afileUrl\"7\n" +

@@ -337,6 +337,17 @@ func (r *SupportRepo) CreateTicketMessage(
 	return msg, nil
 }
 
+func (r *SupportRepo) HasTicketFile(ctx context.Context, ticketID int64, fileKey string) (bool, error) {
+	var exists bool
+
+	err := r.db.QueryRow(ctx, sqlHasSupportTicketFile, ticketID, fileKey).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("check support ticket file: %w", err)
+	}
+
+	return exists, nil
+}
+
 func (r *SupportRepo) GetTicketStatistics(
 	ctx context.Context,
 	allowedCategories []string,

@@ -89,6 +89,7 @@ message UploadSupportFileResponse {
 
 message GetSupportFileURLRequest {
   string file_key = 1;
+  int64 ticket_id = 2;
 }
 
 message GetSupportFileURLResponse {

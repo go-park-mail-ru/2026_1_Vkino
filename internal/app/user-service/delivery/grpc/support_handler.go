@@ -153,13 +153,14 @@ func (s *SupportServer) GetSupportFileURL(
 	ctx context.Context,
 	req *supportv1.GetSupportFileURLRequest,
 ) (*supportv1.GetSupportFileURLResponse, error) {
-	userID, err := s.authorizeOptional(ctx)
+	userID, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	file, err := s.usecase.GetSupportFileURL(ctx, userID, domain2.GetSupportFileURLRequest{
-		FileKey: req.GetFileKey(),
+		FileKey:  req.GetFileKey(),
+		TicketID: req.GetTicketId(),
 	})
 	if err != nil {
 		return nil, mapSupportError(err)

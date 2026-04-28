@@ -71,7 +71,7 @@ func (u *supportUsecase) UploadSupportFile(
 
 func (u *supportUsecase) GetSupportFileURL(
 	ctx context.Context,
-	_ int64,
+	actorUserID int64,
 	req domain2.GetSupportFileURLRequest,
 ) (domain2.SupportFileResponse, error) {
 	if u.supportFileStore == nil {
@@ -79,8 +79,30 @@ func (u *supportUsecase) GetSupportFileURL(
 	}
 
 	req.FileKey = strings.TrimSpace(req.FileKey)
-	if req.FileKey == "" {
+	if req.TicketID <= 0 || req.FileKey == "" {
 		return domain2.SupportFileResponse{}, domain2.ErrInvalidSupportFilePayload
+	}
+
+	if actorUserID <= 0 {
+		return domain2.SupportFileResponse{}, domain2.ErrInvalidToken
+	}
+
+	if !strings.HasPrefix(req.FileKey, "support/") {
+		return domain2.SupportFileResponse{}, domain2.ErrInvalidSupportFilePayload
+	}
+
+	if err := u.checkTicketAccess(ctx, actorUserID, req.TicketID); err != nil {
+		return domain2.SupportFileResponse{}, err
+	}
+
+	hasFile, err := u.supportRepo.HasTicketFile(ctx, req.TicketID, req.FileKey)
+	if err != nil {
+		return domain2.SupportFileResponse{}, fmt.Errorf("%w: verify support file key=%q ticket_id=%d: %v",
+			domain2.ErrInternal, req.FileKey, req.TicketID, err)
+	}
+
+	if !hasFile {
+		return domain2.SupportFileResponse{}, domain2.ErrAccessDenied
 	}
 
 	fileURL, err := u.supportFileStore.PresignGetObject(ctx, req.FileKey, 0)

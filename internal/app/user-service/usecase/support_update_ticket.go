@@ -67,8 +67,16 @@ func (u *supportUsecase) UpdateTicket(
 			return domain2.SupportTicketResponse{}, domain2.ErrAccessDenied
 		}
 
+		if req.Rating > 0 && !isTerminalTicketStatus(ticketBeforeUpdate.Status) {
+			return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
+		}
+
+		req.Category = ""
 		req.Status = ""
 		req.SupportLine = 0
+		req.Title = ""
+		req.Description = ""
+		req.AttachmentFileKey = ""
 		req.UserEmail = ""
 
 	case isStaff(role):

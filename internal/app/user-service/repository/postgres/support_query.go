@@ -112,6 +112,7 @@ const (
 				user_email = coalesce(nullif($8, ''), user_email),
 				closed_at = case
 					when $3 in ('resolved', 'closed') then now()
+					when $3 in ('open', 'in_progress', 'waiting_user') then null
 					else closed_at
 				end,
 				rating = case
@@ -221,6 +222,22 @@ const (
 			coalesce(avg(rating), 0) as average_rating
 		from support_ticket
 		where coalesce(array_length($1::text[], 1), 0) = 0 or category = any($1::text[])
+	`
+
+	sqlHasSupportTicketFile = `
+		select exists(
+			select 1
+			from support_ticket t
+			where t.id = $1
+				and t.attachment_file_key = $2
+
+			union all
+
+			select 1
+			from support_ticket_message m
+			where m.ticket_id = $1
+				and m.content_file_key = $2
+		)
 	`
 
 	sqlGetSupportStatisticsByCategory = `
