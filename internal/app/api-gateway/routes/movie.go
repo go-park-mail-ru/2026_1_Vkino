@@ -74,6 +74,27 @@ func Movie(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
+		httpserver.WithRoute("GET /movie/genre/{id}", func(w http.ResponseWriter, r *http.Request) {
+			genreID, ok := parsePathID(w, r, "invalid genre id")
+			if !ok {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
+			defer cancel()
+
+			resp, err := movieClient.GetGenreByID(r.Context(), &moviev1.GetGenreByIDRequest{
+				GenreId: genreID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
 		httpserver.WithRoute("GET /movie/{id}", func(w http.ResponseWriter, r *http.Request) {
 			movieID, ok := parsePathID(w, r, "invalid movie id")
 			if !ok {

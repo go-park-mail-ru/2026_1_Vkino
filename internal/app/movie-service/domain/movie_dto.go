@@ -55,6 +55,12 @@ type MovieCardResponse struct {
 	PictureFileKey string `json:"img_url"`
 }
 
+type GenreResponse struct {
+	ID     int64               `json:"id"`
+	Title  string              `json:"title"`
+	Movies []MovieCardResponse `json:"movies"`
+}
+
 type SelectionResponse struct {
 	Title  string              `json:"title"`
 	Movies []MovieCardResponse `json:"movies"`

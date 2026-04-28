@@ -21,6 +21,7 @@ func NewMovieRepo(db *corepostgres.Client) *MovieRepo {
 var (
 	ErrMovieNotFound     = errors.New("movie not found")
 	ErrActorNotFound     = errors.New("actor not found")
+	ErrGenreNotFound     = errors.New("genre not found")
 	ErrSelectionNotFound = errors.New("selection not found")
 	ErrEpisodeNotFound   = errors.New("episode not found")
 )
@@ -96,6 +97,29 @@ func (r *MovieRepo) GetActorByID(ctx context.Context, actorID int64) (*domain.Ac
 	}
 
 	return &actor, nil
+}
+
+func (r *MovieRepo) GetGenreByID(ctx context.Context, genreID int64) (domain.Genre, error) {
+	var genre domain.Genre
+
+	err := r.db.QueryRow(ctx, sqlGetGenreBaseByID, genreID).Scan(
+		&genre.ID,
+		&genre.Title,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Genre{}, ErrGenreNotFound
+		}
+
+		return domain.Genre{}, fmt.Errorf("get genre by id: %w", err)
+	}
+
+	genre.Movies, err = r.getGenreMovies(ctx, genreID)
+	if err != nil {
+		return domain.Genre{}, err
+	}
+
+	return genre, nil
 }
 
 func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (domain.Selection, error) {
@@ -350,6 +374,31 @@ func (r *MovieRepo) getMovieEpisodes(ctx context.Context, movieID int64) ([]doma
 
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("iterate movie episodes: %w", err)
+	}
+
+	return result, nil
+}
+
+func (r *MovieRepo) getGenreMovies(ctx context.Context, genreID int64) ([]domain.MovieCard, error) {
+	rows, err := r.db.Query(ctx, sqlGetGenreMoviesByID, genreID)
+	if err != nil {
+		return nil, fmt.Errorf("get genre movies: %w", err)
+	}
+	defer rows.Close()
+
+	result := make([]domain.MovieCard, 0)
+
+	for rows.Next() {
+		var movie domain.MovieCard
+		if err = rows.Scan(&movie.ID, &movie.Title, &movie.PictureFileKey); err != nil {
+			return nil, fmt.Errorf("scan genre movie: %w", err)
+		}
+
+		result = append(result, movie)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate genre movies: %w", err)
 	}
 
 	return result, nil
