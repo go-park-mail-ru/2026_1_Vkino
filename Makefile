@@ -1,14 +1,14 @@
 .PHONY: init generate
 
-generate:
-	go generate ./internal/app/movie-service/repository/...
-
 PACKAGES_NO_MOCKS := $(shell go list ./... | grep -v '/mocks$$')
 
 init:
 	cp .github/hooks/* .git/hooks
 	chmod +x .git/hooks/*
 	migrate create -ext sql -dir ./migrations migration
+
+generate:
+	go generate ./...
 
 MIGRATIONS_DIR := ./migrations
 
@@ -44,3 +44,4 @@ proto-gen:
 	protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/movie/v1/movie.proto
 	protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/user/v1/user.proto
 	protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/auth/v1/auth.proto
+

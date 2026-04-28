@@ -6,6 +6,7 @@ option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1;mo
 
 service MovieService {
   rpc GetMovieByID(GetMovieByIDRequest) returns (GetMovieByIDResponse);
+  rpc GetMoviesByIDs(GetMoviesByIDsRequest) returns (GetMoviesByIDsResponse);
   rpc GetActorByID(GetActorByIDRequest) returns (GetActorByIDResponse);
   rpc GetSelectionByTitle(GetSelectionByTitleRequest) returns (GetSelectionByTitleResponse);
   rpc GetAllSelections(GetAllSelectionsRequest) returns (GetAllSelectionsResponse);
@@ -58,7 +59,15 @@ message GetMovieByIDResponse {
   repeated string genres = 16;
   repeated ActorShort actors = 17;
   repeated EpisodeShort episodes = 18;
-  optional bool is_favorite = 19;
+  bool is_favorite = 19;
+}
+
+message GetMoviesByIDsRequest {
+  repeated int64 movie_ids = 1;
+}
+
+message GetMoviesByIDsResponse {
+  repeated MovieCard movies = 1;
 }
 
 message GetActorByIDRequest {

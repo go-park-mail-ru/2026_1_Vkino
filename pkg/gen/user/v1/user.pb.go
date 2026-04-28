@@ -7,7 +7,6 @@
 package userv1
 
 import (
-	v1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -318,7 +317,8 @@ type UserSearchResult struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	IsFriend      bool                   `protobuf:"varint,3,opt,name=is_friend,json=isFriend,proto3" json:"is_friend,omitempty"`
+	AvatarUrl     string                 `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	IsFriend      bool                   `protobuf:"varint,4,opt,name=is_friend,json=isFriend,proto3" json:"is_friend,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -363,6 +363,13 @@ func (x *UserSearchResult) GetId() int64 {
 func (x *UserSearchResult) GetEmail() string {
 	if x != nil {
 		return x.Email
+	}
+	return ""
+}
+
+func (x *UserSearchResult) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
 	}
 	return ""
 }
@@ -474,6 +481,7 @@ type AddFriendResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	AvatarUrl     string                 `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -518,6 +526,13 @@ func (x *AddFriendResponse) GetId() int64 {
 func (x *AddFriendResponse) GetEmail() string {
 	if x != nil {
 		return x.Email
+	}
+	return ""
+}
+
+func (x *AddFriendResponse) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
 	}
 	return ""
 }
@@ -872,7 +887,7 @@ func (x *GetFavoritesRequest) GetOffset() int32 {
 
 type GetFavoritesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Movies        []*v1.MovieCard        `protobuf:"bytes,1,rep,name=movies,proto3" json:"movies,omitempty"`
+	MovieIds      []int64                `protobuf:"varint,1,rep,packed,name=movie_ids,json=movieIds,proto3" json:"movie_ids,omitempty"`
 	TotalCount    int32                  `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -908,9 +923,9 @@ func (*GetFavoritesResponse) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *GetFavoritesResponse) GetMovies() []*v1.MovieCard {
+func (x *GetFavoritesResponse) GetMovieIds() []int64 {
 	if x != nil {
-		return x.Movies
+		return x.MovieIds
 	}
 	return nil
 }
@@ -1562,7 +1577,7 @@ var File_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_user_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12user/v1/user.proto\x12\auser.v1\x1a\x14movie/v1/movie.proto\",\n" +
+	"\x12user/v1/user.proto\x12\auser.v1\",\n" +
 	"\x11GetProfileRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\"{\n" +
 	"\x12GetProfileResponse\x12\x14\n" +
@@ -1584,19 +1599,23 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x19SearchUsersByEmailRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1f\n" +
 	"\vemail_query\x18\x02 \x01(\tR\n" +
-	"emailQuery\"U\n" +
+	"emailQuery\"t\n" +
 	"\x10UserSearchResult\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
-	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1b\n" +
-	"\tis_friend\x18\x03 \x01(\bR\bisFriend\"M\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1d\n" +
+	"\n" +
+	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12\x1b\n" +
+	"\tis_friend\x18\x04 \x01(\bR\bisFriend\"M\n" +
 	"\x1aSearchUsersByEmailResponse\x12/\n" +
 	"\x05users\x18\x01 \x03(\v2\x19.user.v1.UserSearchResultR\x05users\"H\n" +
 	"\x10AddFriendRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1b\n" +
-	"\tfriend_id\x18\x02 \x01(\x03R\bfriendId\"9\n" +
+	"\tfriend_id\x18\x02 \x01(\x03R\bfriendId\"X\n" +
 	"\x11AddFriendResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
-	"\x05email\x18\x02 \x01(\tR\x05email\"K\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1d\n" +
+	"\n" +
+	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\"K\n" +
 	"\x13DeleteFriendRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1b\n" +
 	"\tfriend_id\x18\x02 \x01(\x03R\bfriendId\"0\n" +
@@ -1617,9 +1636,9 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"isFavorite\"C\n" +
 	"\x13GetFavoritesRequest\x12\x14\n" +
 	"\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n" +
-	"\x06offset\x18\x02 \x01(\x05R\x06offset\"d\n" +
-	"\x14GetFavoritesResponse\x12+\n" +
-	"\x06movies\x18\x01 \x03(\v2\x13.movie.v1.MovieCardR\x06movies\x12\x1f\n" +
+	"\x06offset\x18\x02 \x01(\x05R\x06offset\"T\n" +
+	"\x14GetFavoritesResponse\x12\x1b\n" +
+	"\tmovie_ids\x18\x01 \x03(\x03R\bmovieIds\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x05R\n" +
 	"totalCount\"@\n" +
 	"\x12SearchUsersRequest\x12\x14\n" +
@@ -1723,47 +1742,45 @@ var file_user_v1_user_proto_goTypes = []any{
 	(*GetFriendRequestsResponse)(nil),           // 27: user.v1.GetFriendRequestsResponse
 	(*GetFriendsListRequest)(nil),               // 28: user.v1.GetFriendsListRequest
 	(*GetFriendsListResponse)(nil),              // 29: user.v1.GetFriendsListResponse
-	(*v1.MovieCard)(nil),                        // 30: movie.v1.MovieCard
 }
 var file_user_v1_user_proto_depIdxs = []int32{
 	5,  // 0: user.v1.SearchUsersByEmailResponse.users:type_name -> user.v1.UserSearchResult
-	30, // 1: user.v1.GetFavoritesResponse.movies:type_name -> movie.v1.MovieCard
-	5,  // 2: user.v1.SearchUsersResponse.users:type_name -> user.v1.UserSearchResult
-	26, // 3: user.v1.GetFriendRequestsResponse.requests:type_name -> user.v1.FriendRequestItem
-	5,  // 4: user.v1.GetFriendsListResponse.friends:type_name -> user.v1.UserSearchResult
-	0,  // 5: user.v1.UserService.GetProfile:input_type -> user.v1.GetProfileRequest
-	2,  // 6: user.v1.UserService.UpdateProfile:input_type -> user.v1.UpdateProfileRequest
-	4,  // 7: user.v1.UserService.SearchUsersByEmail:input_type -> user.v1.SearchUsersByEmailRequest
-	7,  // 8: user.v1.UserService.AddFriend:input_type -> user.v1.AddFriendRequest
-	9,  // 9: user.v1.UserService.DeleteFriend:input_type -> user.v1.DeleteFriendRequest
-	11, // 10: user.v1.UserService.AddMovieToFavorites:input_type -> user.v1.AddMovieToFavoritesRequest
-	13, // 11: user.v1.UserService.ToggleFavorite:input_type -> user.v1.ToggleFavoriteRequest
-	15, // 12: user.v1.UserService.GetFavorites:input_type -> user.v1.GetFavoritesRequest
-	17, // 13: user.v1.UserService.SearchUsers:input_type -> user.v1.SearchUsersRequest
-	19, // 14: user.v1.UserService.SendFriendRequest:input_type -> user.v1.SendFriendRequestRequest
-	21, // 15: user.v1.UserService.RespondToFriendRequest:input_type -> user.v1.RespondToFriendRequestRequest
-	23, // 16: user.v1.UserService.DeleteOutgoingFriendRequest:input_type -> user.v1.DeleteOutgoingFriendRequestRequest
-	25, // 17: user.v1.UserService.GetFriendRequests:input_type -> user.v1.GetFriendRequestsRequest
-	28, // 18: user.v1.UserService.GetFriendsList:input_type -> user.v1.GetFriendsListRequest
-	1,  // 19: user.v1.UserService.GetProfile:output_type -> user.v1.GetProfileResponse
-	3,  // 20: user.v1.UserService.UpdateProfile:output_type -> user.v1.UpdateProfileResponse
-	6,  // 21: user.v1.UserService.SearchUsersByEmail:output_type -> user.v1.SearchUsersByEmailResponse
-	8,  // 22: user.v1.UserService.AddFriend:output_type -> user.v1.AddFriendResponse
-	10, // 23: user.v1.UserService.DeleteFriend:output_type -> user.v1.DeleteFriendResponse
-	12, // 24: user.v1.UserService.AddMovieToFavorites:output_type -> user.v1.AddMovieToFavoritesResponse
-	14, // 25: user.v1.UserService.ToggleFavorite:output_type -> user.v1.ToggleFavoriteResponse
-	16, // 26: user.v1.UserService.GetFavorites:output_type -> user.v1.GetFavoritesResponse
-	18, // 27: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
-	20, // 28: user.v1.UserService.SendFriendRequest:output_type -> user.v1.SendFriendRequestResponse
-	22, // 29: user.v1.UserService.RespondToFriendRequest:output_type -> user.v1.RespondToFriendRequestResponse
-	24, // 30: user.v1.UserService.DeleteOutgoingFriendRequest:output_type -> user.v1.DeleteOutgoingFriendRequestResponse
-	27, // 31: user.v1.UserService.GetFriendRequests:output_type -> user.v1.GetFriendRequestsResponse
-	29, // 32: user.v1.UserService.GetFriendsList:output_type -> user.v1.GetFriendsListResponse
-	19, // [19:33] is the sub-list for method output_type
-	5,  // [5:19] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	5,  // 1: user.v1.SearchUsersResponse.users:type_name -> user.v1.UserSearchResult
+	26, // 2: user.v1.GetFriendRequestsResponse.requests:type_name -> user.v1.FriendRequestItem
+	5,  // 3: user.v1.GetFriendsListResponse.friends:type_name -> user.v1.UserSearchResult
+	0,  // 4: user.v1.UserService.GetProfile:input_type -> user.v1.GetProfileRequest
+	2,  // 5: user.v1.UserService.UpdateProfile:input_type -> user.v1.UpdateProfileRequest
+	4,  // 6: user.v1.UserService.SearchUsersByEmail:input_type -> user.v1.SearchUsersByEmailRequest
+	7,  // 7: user.v1.UserService.AddFriend:input_type -> user.v1.AddFriendRequest
+	9,  // 8: user.v1.UserService.DeleteFriend:input_type -> user.v1.DeleteFriendRequest
+	11, // 9: user.v1.UserService.AddMovieToFavorites:input_type -> user.v1.AddMovieToFavoritesRequest
+	13, // 10: user.v1.UserService.ToggleFavorite:input_type -> user.v1.ToggleFavoriteRequest
+	15, // 11: user.v1.UserService.GetFavorites:input_type -> user.v1.GetFavoritesRequest
+	17, // 12: user.v1.UserService.SearchUsers:input_type -> user.v1.SearchUsersRequest
+	19, // 13: user.v1.UserService.SendFriendRequest:input_type -> user.v1.SendFriendRequestRequest
+	21, // 14: user.v1.UserService.RespondToFriendRequest:input_type -> user.v1.RespondToFriendRequestRequest
+	23, // 15: user.v1.UserService.DeleteOutgoingFriendRequest:input_type -> user.v1.DeleteOutgoingFriendRequestRequest
+	25, // 16: user.v1.UserService.GetFriendRequests:input_type -> user.v1.GetFriendRequestsRequest
+	28, // 17: user.v1.UserService.GetFriendsList:input_type -> user.v1.GetFriendsListRequest
+	1,  // 18: user.v1.UserService.GetProfile:output_type -> user.v1.GetProfileResponse
+	3,  // 19: user.v1.UserService.UpdateProfile:output_type -> user.v1.UpdateProfileResponse
+	6,  // 20: user.v1.UserService.SearchUsersByEmail:output_type -> user.v1.SearchUsersByEmailResponse
+	8,  // 21: user.v1.UserService.AddFriend:output_type -> user.v1.AddFriendResponse
+	10, // 22: user.v1.UserService.DeleteFriend:output_type -> user.v1.DeleteFriendResponse
+	12, // 23: user.v1.UserService.AddMovieToFavorites:output_type -> user.v1.AddMovieToFavoritesResponse
+	14, // 24: user.v1.UserService.ToggleFavorite:output_type -> user.v1.ToggleFavoriteResponse
+	16, // 25: user.v1.UserService.GetFavorites:output_type -> user.v1.GetFavoritesResponse
+	18, // 26: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
+	20, // 27: user.v1.UserService.SendFriendRequest:output_type -> user.v1.SendFriendRequestResponse
+	22, // 28: user.v1.UserService.RespondToFriendRequest:output_type -> user.v1.RespondToFriendRequestResponse
+	24, // 29: user.v1.UserService.DeleteOutgoingFriendRequest:output_type -> user.v1.DeleteOutgoingFriendRequestResponse
+	27, // 30: user.v1.UserService.GetFriendRequests:output_type -> user.v1.GetFriendRequestsResponse
+	29, // 31: user.v1.UserService.GetFriendsList:output_type -> user.v1.GetFriendsListResponse
+	18, // [18:32] is the sub-list for method output_type
+	4,  // [4:18] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_user_v1_user_proto_init() }

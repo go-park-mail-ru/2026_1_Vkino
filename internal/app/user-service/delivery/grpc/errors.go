@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
-	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository/postgres"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/errmap/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"google.golang.org/grpc/codes"
@@ -13,7 +12,6 @@ var userGRPCErrorMapper = grpcx.New(
 		domain.ErrInvalidToken,
 
 		domain.ErrUserNotFound,
-		postgresrepo.ErrUserNotFound,
 
 		domain.ErrInvalidSearchQuery,
 		domain.ErrInvalidMovieID,
@@ -31,8 +29,7 @@ var userGRPCErrorMapper = grpcx.New(
 	map[error]grpcx.ErrResponse{
 		domain.ErrInvalidToken: {Code: codes.Unauthenticated, Message: "unauthorized"},
 
-		domain.ErrUserNotFound:       {Code: codes.NotFound, Message: "user not found"},
-		postgresrepo.ErrUserNotFound: {Code: codes.NotFound, Message: "user not found"},
+		domain.ErrUserNotFound: {Code: codes.NotFound, Message: "user not found"},
 
 		domain.ErrInvalidSearchQuery: {Code: codes.InvalidArgument, Message: "invalid search query"},
 		domain.ErrInvalidMovieID:     {Code: codes.InvalidArgument, Message: "invalid movie id"},

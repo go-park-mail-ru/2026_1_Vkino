@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
+	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
@@ -51,7 +51,7 @@ func (s *SupportServer) CreateTicket(
 		return nil, err
 	}
 
-	ticket, err := s.usecase.CreateTicket(ctx, userID, domain2.CreateSupportTicketRequest{
+	ticket, err := s.usecase.CreateTicket(ctx, userID, domain.CreateSupportTicketRequest{
 		Category:          req.GetCategory(),
 		Title:             req.GetTitle(),
 		Description:       req.GetDescription(),
@@ -74,7 +74,7 @@ func (s *SupportServer) GetTickets(
 		return nil, err
 	}
 
-	tickets, err := s.usecase.GetTickets(ctx, userID, domain2.GetSupportTicketsRequest{
+	tickets, err := s.usecase.GetTickets(ctx, userID, domain.GetSupportTicketsRequest{
 		Status:      req.GetStatus(),
 		Category:    req.GetCategory(),
 		UserEmail:   req.GetUserEmail(),
@@ -104,7 +104,7 @@ func (s *SupportServer) UpdateTicket(
 		return nil, err
 	}
 
-	ticket, err := s.usecase.UpdateTicket(ctx, userID, domain2.UpdateSupportTicketRequest{
+	ticket, err := s.usecase.UpdateTicket(ctx, userID, domain.UpdateSupportTicketRequest{
 		TicketID:          req.GetTicketId(),
 		Category:          req.GetCategory(),
 		Status:            req.GetStatus(),
@@ -130,7 +130,7 @@ func (s *SupportServer) GetTicketMessages(
 		return nil, err
 	}
 
-	messages, err := s.usecase.GetTicketMessages(ctx, userID, domain2.GetSupportTicketMessagesRequest{
+	messages, err := s.usecase.GetTicketMessages(ctx, userID, domain.GetSupportTicketMessagesRequest{
 		TicketID: req.GetTicketId(),
 	})
 	if err != nil {
@@ -157,7 +157,7 @@ func (s *SupportServer) CreateTicketMessage(
 		return nil, err
 	}
 
-	msg, err := s.usecase.CreateTicketMessage(ctx, userID, domain2.CreateSupportTicketMessageRequest{
+	msg, err := s.usecase.CreateTicketMessage(ctx, userID, domain.CreateSupportTicketMessageRequest{
 		TicketID:       req.GetTicketId(),
 		Content:        req.GetContent(),
 		ContentFileKey: req.GetContentFileKey(),
@@ -178,7 +178,7 @@ func (s *SupportServer) GetTicketStatistics(
 		return nil, err
 	}
 
-	stats, err := s.usecase.GetTicketStatistics(ctx, userID, domain2.GetSupportTicketStatisticsRequest{})
+	stats, err := s.usecase.GetTicketStatistics(ctx, userID, domain.GetSupportTicketStatisticsRequest{})
 	if err != nil {
 		return nil, mapSupportError(err)
 	}
@@ -206,7 +206,7 @@ func (s *SupportServer) SubscribeTicket(
 	events, unsubscribe, err := s.usecase.SubscribeTicket(
 		stream.Context(),
 		userID,
-		domain2.SubscribeSupportTicketRequest{TicketID: req.GetTicketId()},
+		domain.SubscribeSupportTicketRequest{TicketID: req.GetTicketId()},
 	)
 	if err != nil {
 		return mapSupportError(err)
@@ -240,7 +240,7 @@ func (s *SupportServer) SubscribeTicket(
 	}
 }
 
-func toProtoTicket(t domain2.SupportTicketResponse) *supportv1.Ticket {
+func toProtoTicket(t domain.SupportTicketResponse) *supportv1.Ticket {
 	return &supportv1.Ticket{
 		Id:                t.ID,
 		UserId:            t.UserID,
@@ -258,7 +258,7 @@ func toProtoTicket(t domain2.SupportTicketResponse) *supportv1.Ticket {
 	}
 }
 
-func toProtoTicketMessage(m domain2.SupportTicketMessageResponse) *supportv1.TicketMessage {
+func toProtoTicketMessage(m domain.SupportTicketMessageResponse) *supportv1.TicketMessage {
 	return &supportv1.TicketMessage{
 		Id:             m.ID,
 		TicketId:       m.TicketID,

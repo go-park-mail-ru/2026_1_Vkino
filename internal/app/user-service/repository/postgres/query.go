@@ -21,6 +21,7 @@ const (
 		select
 			u.id,
 			u.email,
+			coalesce(u.avatar_file_key, '') as avatar_file_key,
 			exists(
 				select 1
 				from friend f
@@ -74,9 +75,8 @@ const (
 	`
 
 	sqlGetFavorites = `
-		select m.id, m.title, m.picture_file_key
+		select ui.movie_id
 		from user_interaction ui
-		join movie m on m.id = ui.movie_id
 		where ui.user_id = $1 and ui.is_favorite = true
 		order by ui.updated_at desc
 		limit $2 offset $3
@@ -145,33 +145,21 @@ const (
 		returning to_user_id
 	`
 
-	sqlAcceptFriendRequestAtomic = `
-		with updated as (
-			update friend_request
-			set status = 'accepted'
-			where id = $1 and to_user_id = $2 and status = 'pending'
-			returning from_user_id, to_user_id, id
-		),
-		inserted as (
-			insert into friend (user1_id, user2_id)
-			select
-				case
-					when from_user_id <= to_user_id then from_user_id
-					else to_user_id
-				end,
-				case
-					when from_user_id >= to_user_id then from_user_id
-					else to_user_id
-				end
-			from updated
-			on conflict do nothing
-		),
-		deleted as (
-			delete from friend_request fr
-			using updated u
-			where fr.id = u.id
-		)
-		select from_user_id from updated
+	sqlAcceptFriendRequestUpdate = `
+		update friend_request
+		set status = 'accepted'
+		where id = $1 and to_user_id = $2 and status = 'pending'
+		returning from_user_id, to_user_id
+	`
+
+	sqlAcceptFriendInsert = `
+		insert into friend (user1_id, user2_id)
+		values ($1, $2)
+		on conflict do nothing
+	`
+
+	sqlAcceptFriendDeleteRequest = `
+		delete from friend_request where id = $1
 	`
 
 	sqlGetIncomingRequests = `
@@ -195,7 +183,8 @@ const (
 	sqlGetFriends = `
 		select
 			case when f.user1_id = $1 then f.user2_id else f.user1_id end as friend_id,
-			u.email
+			u.email,
+			coalesce(u.avatar_file_key, '') as avatar_file_key
 		from friend f
 		join users u on u.id = case when f.user1_id = $1 then f.user2_id else f.user1_id end
 		where (f.user1_id = $1 or f.user2_id = $1) and u.is_active = true

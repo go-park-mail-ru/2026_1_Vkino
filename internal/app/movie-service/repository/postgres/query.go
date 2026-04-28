@@ -132,6 +132,16 @@ const (
 		limit 50
 	`
 
+	sqlGetMovieCardsByIDs = `
+		select
+			m.id,
+			m.title,
+			m.picture_file_key
+		from movie m
+		where m.id = any($1)
+		order by array_position($1, m.id)
+	`
+
 	sqlGetEpisodePlayback = `
 		select
 			e.id,
@@ -170,7 +180,6 @@ const (
 		)
 	`
 
-	
 	sqlGetContinueWatching = `
 		select
 			wpe.episode_id, m.id, m.title, m.picture_file_key, m.content_type,

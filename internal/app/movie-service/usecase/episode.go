@@ -4,26 +4,26 @@ import (
 	"context"
 	"fmt"
 
-	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
+	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
 )
 
 func (u *MovieUsecase) GetEpisodePlayback(ctx context.Context,
-	episodeID int64) (domain2.EpisodePlaybackResponse, error) {
+	episodeID int64) (domain.EpisodePlaybackResponse, error) {
 	if episodeID <= 0 {
-		return domain2.EpisodePlaybackResponse{}, domain2.ErrInvalidEpisodeID
+		return domain.EpisodePlaybackResponse{}, domain.ErrInvalidEpisodeID
 	}
 
 	episode, err := u.movieRepo.GetEpisodePlayback(ctx, episodeID)
 	if err != nil {
-		return domain2.EpisodePlaybackResponse{}, err
+		return domain.EpisodePlaybackResponse{}, err
 	}
 
 	playbackURL, err := u.presignVideo(ctx, episode.VideoFileKey)
 	if err != nil {
-		return domain2.EpisodePlaybackResponse{}, err
+		return domain.EpisodePlaybackResponse{}, err
 	}
 
-	return domain2.EpisodePlaybackResponse{
+	return domain.EpisodePlaybackResponse{
 		EpisodeID:       episode.ID,
 		MovieID:         episode.MovieID,
 		SeasonNumber:    episode.SeasonNumber,
@@ -37,43 +37,43 @@ func (u *MovieUsecase) GetEpisodePlayback(ctx context.Context,
 func (u *MovieUsecase) GetEpisodeProgress(
 	ctx context.Context,
 	userID, episodeID int64,
-) (domain2.EpisodeProgressResponse, error) {
+) (domain.EpisodeProgressResponse, error) {
 	if episodeID <= 0 {
-		return domain2.EpisodeProgressResponse{}, domain2.ErrInvalidEpisodeID
+		return domain.EpisodeProgressResponse{}, domain.ErrInvalidEpisodeID
 	}
 
 	if userID <= 0 {
-		return domain2.EpisodeProgressResponse{}, domain2.ErrInternal
+		return domain.EpisodeProgressResponse{}, domain.ErrInternal
 	}
 
 	progress, err := u.movieRepo.GetEpisodeProgress(ctx, userID, episodeID)
 	if err != nil {
-		return domain2.EpisodeProgressResponse{}, err
+		return domain.EpisodeProgressResponse{}, err
 	}
 
-	return domain2.EpisodeProgressResponse(progress), nil
+	return domain.EpisodeProgressResponse(progress), nil
 }
 
 func (u *MovieUsecase) SaveEpisodeProgress(
 	ctx context.Context,
 	userID, episodeID, positionSec int64,
-) (domain2.EpisodeProgressResponse, error) {
+) (domain.EpisodeProgressResponse, error) {
 	if episodeID <= 0 {
-		return domain2.EpisodeProgressResponse{}, domain2.ErrInvalidEpisodeID
+		return domain.EpisodeProgressResponse{}, domain.ErrInvalidEpisodeID
 	}
 
 	if userID <= 0 {
-		return domain2.EpisodeProgressResponse{}, domain2.ErrInternal
+		return domain.EpisodeProgressResponse{}, domain.ErrInternal
 	}
 
 	if positionSec < 0 {
-		return domain2.EpisodeProgressResponse{}, domain2.ErrInvalidWatchProgress
+		return domain.EpisodeProgressResponse{}, domain.ErrInvalidWatchProgress
 	}
 
 	progress, err := u.movieRepo.SaveEpisodeProgress(ctx, userID, episodeID, positionSec)
 	if err != nil {
-		return domain2.EpisodeProgressResponse{}, fmt.Errorf("%w: save episode progress: %v", domain2.ErrInternal, err)
+		return domain.EpisodeProgressResponse{}, fmt.Errorf("%w: save episode progress: %v", domain.ErrInternal, err)
 	}
 
-	return domain2.EpisodeProgressResponse(progress), nil
+	return domain.EpisodeProgressResponse(progress), nil
 }

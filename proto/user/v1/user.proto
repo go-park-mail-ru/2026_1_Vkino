@@ -3,7 +3,6 @@ syntax = "proto3";
 package user.v1;
 
 option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1;userv1";
-import "movie/v1/movie.proto";
 
 service UserService {
   rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
@@ -54,7 +53,8 @@ message SearchUsersByEmailRequest {
 message UserSearchResult {
   int64 id = 1;
   string email = 2;
-  bool is_friend = 3;
+  string avatar_url = 3;
+  bool is_friend = 4;
 }
 
 message SearchUsersByEmailResponse {
@@ -69,6 +69,7 @@ message AddFriendRequest {
 message AddFriendResponse {
   int64 id = 1;
   string email = 2;
+  string avatar_url = 3;
 }
 
 message DeleteFriendRequest {
@@ -105,7 +106,7 @@ message GetFavoritesRequest {
 }
 
 message GetFavoritesResponse {
-  repeated movie.v1.MovieCard movies = 1;
+  repeated int64 movie_ids = 1;
   int32 total_count = 2;
 }
 

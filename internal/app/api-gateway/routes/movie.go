@@ -165,7 +165,7 @@ func Movie(
 			}
 
 			var req struct {
-				PositionSec int64 `json:"position_sec"`
+				PositionSeconds int64 `json:"position_seconds"`
 			}
 			if !readJSON(w, r, &req) {
 				return
@@ -176,7 +176,7 @@ func Movie(
 
 			resp, err := movieClient.SaveEpisodeProgress(r.Context(), &moviev1.SaveEpisodeProgressRequest{
 				EpisodeId:       episodeID,
-				PositionSeconds: req.PositionSec,
+				PositionSeconds: req.PositionSeconds,
 			})
 			if err != nil {
 				writeGRPCError(w, err)

@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	MovieService_GetMovieByID_FullMethodName        = "/movie.v1.MovieService/GetMovieByID"
+	MovieService_GetMoviesByIDs_FullMethodName      = "/movie.v1.MovieService/GetMoviesByIDs"
 	MovieService_GetActorByID_FullMethodName        = "/movie.v1.MovieService/GetActorByID"
 	MovieService_GetSelectionByTitle_FullMethodName = "/movie.v1.MovieService/GetSelectionByTitle"
 	MovieService_GetAllSelections_FullMethodName    = "/movie.v1.MovieService/GetAllSelections"
@@ -36,6 +37,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MovieServiceClient interface {
 	GetMovieByID(ctx context.Context, in *GetMovieByIDRequest, opts ...grpc.CallOption) (*GetMovieByIDResponse, error)
+	GetMoviesByIDs(ctx context.Context, in *GetMoviesByIDsRequest, opts ...grpc.CallOption) (*GetMoviesByIDsResponse, error)
 	GetActorByID(ctx context.Context, in *GetActorByIDRequest, opts ...grpc.CallOption) (*GetActorByIDResponse, error)
 	GetSelectionByTitle(ctx context.Context, in *GetSelectionByTitleRequest, opts ...grpc.CallOption) (*GetSelectionByTitleResponse, error)
 	GetAllSelections(ctx context.Context, in *GetAllSelectionsRequest, opts ...grpc.CallOption) (*GetAllSelectionsResponse, error)
@@ -59,6 +61,16 @@ func (c *movieServiceClient) GetMovieByID(ctx context.Context, in *GetMovieByIDR
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetMovieByIDResponse)
 	err := c.cc.Invoke(ctx, MovieService_GetMovieByID_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieServiceClient) GetMoviesByIDs(ctx context.Context, in *GetMoviesByIDsRequest, opts ...grpc.CallOption) (*GetMoviesByIDsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMoviesByIDsResponse)
+	err := c.cc.Invoke(ctx, MovieService_GetMoviesByIDs_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -160,6 +172,7 @@ func (c *movieServiceClient) GetWatchHistory(ctx context.Context, in *GetWatchHi
 // for forward compatibility.
 type MovieServiceServer interface {
 	GetMovieByID(context.Context, *GetMovieByIDRequest) (*GetMovieByIDResponse, error)
+	GetMoviesByIDs(context.Context, *GetMoviesByIDsRequest) (*GetMoviesByIDsResponse, error)
 	GetActorByID(context.Context, *GetActorByIDRequest) (*GetActorByIDResponse, error)
 	GetSelectionByTitle(context.Context, *GetSelectionByTitleRequest) (*GetSelectionByTitleResponse, error)
 	GetAllSelections(context.Context, *GetAllSelectionsRequest) (*GetAllSelectionsResponse, error)
@@ -181,6 +194,9 @@ type UnimplementedMovieServiceServer struct{}
 
 func (UnimplementedMovieServiceServer) GetMovieByID(context.Context, *GetMovieByIDRequest) (*GetMovieByIDResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetMovieByID not implemented")
+}
+func (UnimplementedMovieServiceServer) GetMoviesByIDs(context.Context, *GetMoviesByIDsRequest) (*GetMoviesByIDsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMoviesByIDs not implemented")
 }
 func (UnimplementedMovieServiceServer) GetActorByID(context.Context, *GetActorByIDRequest) (*GetActorByIDResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetActorByID not implemented")
@@ -244,6 +260,24 @@ func _MovieService_GetMovieByID_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MovieServiceServer).GetMovieByID(ctx, req.(*GetMovieByIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MovieService_GetMoviesByIDs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMoviesByIDsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServiceServer).GetMoviesByIDs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MovieService_GetMoviesByIDs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServiceServer).GetMoviesByIDs(ctx, req.(*GetMoviesByIDsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -420,6 +454,10 @@ var MovieService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMovieByID",
 			Handler:    _MovieService_GetMovieByID_Handler,
+		},
+		{
+			MethodName: "GetMoviesByIDs",
+			Handler:    _MovieService_GetMoviesByIDs_Handler,
 		},
 		{
 			MethodName: "GetActorByID",

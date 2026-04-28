@@ -19,7 +19,7 @@ type MovieResponse struct {
 	Genres             []string             `json:"genres"`
 	Actors             []ActorShortResponse `json:"actors"`
 	Episodes           []EpisodeResponse    `json:"episodes"`
-	IsFavorite         *bool                `json:"is_favorite,omitempty"`
+	IsFavorite         bool                 `json:"is_favorite"`
 }
 
 type ActorResponse struct {

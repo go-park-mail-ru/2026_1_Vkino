@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
+	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/jackc/pgx/v5"
 )
@@ -51,8 +51,8 @@ func scanTicket(
 	rating *int64,
 	createdAt, updatedAt time.Time,
 	closedAt *time.Time,
-) domain2.SupportTicketResponse {
-	ticket := domain2.SupportTicketResponse{
+) domain.SupportTicketResponse {
+	ticket := domain.SupportTicketResponse{
 		ID:          id,
 		Category:    category,
 		Status:      status,
@@ -86,7 +86,7 @@ func scanTicket(
 	return ticket
 }
 
-func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain2.SupportTicketResponse, error) {
+func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain.SupportTicketResponse, error) {
 	var (
 		id                int64
 		userID            *int64
@@ -121,8 +121,8 @@ func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain2.SupportTicketResponse
 func (r *SupportRepo) CreateTicket(
 	ctx context.Context,
 	userID int64,
-	req domain2.CreateSupportTicketRequest,
-) (*domain2.SupportTicketResponse, error) {
+	req domain.CreateSupportTicketRequest,
+) (*domain.SupportTicketResponse, error) {
 	var userIDPtr *int64
 	if userID > 0 {
 		userIDPtr = &userID
@@ -150,7 +150,7 @@ func (r *SupportRepo) CreateTicket(
 	return ticket, nil
 }
 
-func (r *SupportRepo) GetTicketByID(ctx context.Context, ticketID int64) (*domain2.SupportTicketResponse, error) {
+func (r *SupportRepo) GetTicketByID(ctx context.Context, ticketID int64) (*domain.SupportTicketResponse, error) {
 	row := r.db.QueryRow(ctx, sqlGetSupportTicketByID, ticketID)
 
 	ticket, err := r.scanTicketRow(row)
@@ -168,15 +168,15 @@ func (r *SupportRepo) GetTicketByID(ctx context.Context, ticketID int64) (*domai
 func (r *SupportRepo) GetTickets(
 	ctx context.Context,
 	userID int64,
-	req domain2.GetSupportTicketsRequest,
-) ([]domain2.SupportTicketResponse, error) {
+	req domain.GetSupportTicketsRequest,
+) ([]domain.SupportTicketResponse, error) {
 	rows, err := r.db.Query(ctx, sqlGetSupportTickets, userID, req.UserEmail, req.Status, req.Category, req.SupportLine)
 	if err != nil {
 		return nil, fmt.Errorf("get support tickets: %w", err)
 	}
 	defer rows.Close()
 
-	tickets := make([]domain2.SupportTicketResponse, 0)
+	tickets := make([]domain.SupportTicketResponse, 0)
 
 	for rows.Next() {
 		var (
@@ -216,8 +216,8 @@ func (r *SupportRepo) GetTickets(
 
 func (r *SupportRepo) UpdateTicket(
 	ctx context.Context,
-	req domain2.UpdateSupportTicketRequest,
-) (*domain2.SupportTicketResponse, error) {
+	req domain.UpdateSupportTicketRequest,
+) (*domain.SupportTicketResponse, error) {
 	// attachmentFileKey := normalizedOptionalStringValue(req.AttachmentFileKey)
 
 	row := r.db.QueryRow(ctx, sqlUpdateSupportTicket,
@@ -240,14 +240,14 @@ func (r *SupportRepo) UpdateTicket(
 func (r *SupportRepo) GetTicketMessages(
 	ctx context.Context,
 	ticketID int64,
-) ([]domain2.SupportTicketMessageResponse, error) {
+) ([]domain.SupportTicketMessageResponse, error) {
 	rows, err := r.db.Query(ctx, sqlGetSupportTicketMessages, ticketID)
 	if err != nil {
 		return nil, fmt.Errorf("get support ticket messages: %w", err)
 	}
 	defer rows.Close()
 
-	messages := make([]domain2.SupportTicketMessageResponse, 0)
+	messages := make([]domain.SupportTicketMessageResponse, 0)
 
 	for rows.Next() {
 		var (
@@ -263,7 +263,7 @@ func (r *SupportRepo) GetTicketMessages(
 			return nil, fmt.Errorf("scan support ticket message: %w", err)
 		}
 
-		msg := domain2.SupportTicketMessageResponse{
+		msg := domain.SupportTicketMessageResponse{
 			ID:        id,
 			TicketID:  tID,
 			SenderID:  senderID,
@@ -291,8 +291,8 @@ func (r *SupportRepo) GetTicketMessages(
 func (r *SupportRepo) CreateTicketMessage(
 	ctx context.Context,
 	senderID int64,
-	req domain2.CreateSupportTicketMessageRequest,
-) (*domain2.SupportTicketMessageResponse, error) {
+	req domain.CreateSupportTicketMessageRequest,
+) (*domain.SupportTicketMessageResponse, error) {
 	contentPtr := optionalStringPtr(req.Content)
 	contentFileKeyPtr := optionalStringPtr(req.ContentFileKey)
 
@@ -312,7 +312,7 @@ func (r *SupportRepo) CreateTicketMessage(
 		return nil, fmt.Errorf("create support ticket message: %w", err)
 	}
 
-	msg := &domain2.SupportTicketMessageResponse{
+	msg := &domain.SupportTicketMessageResponse{
 		ID:        id,
 		TicketID:  tID,
 		SenderID:  sndrID,
@@ -330,8 +330,8 @@ func (r *SupportRepo) CreateTicketMessage(
 	return msg, nil
 }
 
-func (r *SupportRepo) GetTicketStatistics(ctx context.Context) (*domain2.SupportTicketStatisticsResponse, error) {
-	var stats domain2.SupportTicketStatisticsResponse
+func (r *SupportRepo) GetTicketStatistics(ctx context.Context) (*domain.SupportTicketStatisticsResponse, error) {
+	var stats domain.SupportTicketStatisticsResponse
 
 	err := r.db.QueryRow(ctx, sqlGetSupportStatistics).Scan(
 		&stats.Total,

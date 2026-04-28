@@ -13,6 +13,7 @@ type MovieRepo interface {
 	GetActorByID(ctx context.Context, actorID int64) (*domain.Actor, error)
 	GetSelectionByTitle(ctx context.Context, title string) (domain.Selection, error)
 	GetAllSelections(ctx context.Context) ([]domain.Selection, error)
+	GetMovieCardsByIDs(ctx context.Context, movieIDs []int64) ([]domain.MovieCard, error)
 
 	SearchMovies(ctx context.Context, query string) ([]domain.MovieCard, error)
 	GetEpisodePlayback(ctx context.Context, episodeID int64) (*domain.Episode, error)

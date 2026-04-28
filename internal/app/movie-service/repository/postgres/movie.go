@@ -185,6 +185,32 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, e
 	return result, nil
 }
 
+func (r *MovieRepo) GetMovieCardsByIDs(ctx context.Context, movieIDs []int64) ([]domain.MovieCard, error) {
+	if len(movieIDs) == 0 {
+		return []domain.MovieCard{}, nil
+	}
+
+	rows, err := r.db.Query(ctx, sqlGetMovieCardsByIDs, movieIDs)
+	if err != nil {
+		return nil, fmt.Errorf("get movie cards by ids: %w", err)
+	}
+	defer rows.Close()
+
+	result := make([]domain.MovieCard, 0, len(movieIDs))
+	for rows.Next() {
+		var movie domain.MovieCard
+		if err = rows.Scan(&movie.ID, &movie.Title, &movie.PictureFileKey); err != nil {
+			return nil, fmt.Errorf("scan movie card: %w", err)
+		}
+		result = append(result, movie)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate movie cards: %w", err)
+	}
+
+	return result, nil
+}
+
 func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]domain.MovieCard, error) {
 	rows, err := r.db.Query(ctx, sqlSearchMovies, query)
 	if err != nil {

@@ -5,18 +5,18 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
 )
 
 func (s *Server) GetMovieByID(
 	ctx context.Context,
 	req *moviev1.GetMovieByIDRequest,
 ) (*moviev1.GetMovieByIDResponse, error) {
-	var userID int64
 	if authCtx, err := s.authorize(ctx); err == nil {
-		userID = authCtx.UserID
+		ctx = authctx.WithContext(ctx, authCtx)
 	}
 
-	movie, err := s.usecase.GetMovieByID(ctx, req.GetMovieId(), userID)
+	movie, err := s.usecase.GetMovieByID(ctx, req.GetMovieId())
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -41,6 +41,20 @@ func (s *Server) GetMovieByID(
 		Actors:             mapActorShorts(movie.Actors),
 		Episodes:           mapEpisodeShorts(movie.Episodes),
 		IsFavorite:         movie.IsFavorite,
+	}, nil
+}
+
+func (s *Server) GetMoviesByIDs(
+	ctx context.Context,
+	req *moviev1.GetMoviesByIDsRequest,
+) (*moviev1.GetMoviesByIDsResponse, error) {
+	movies, err := s.usecase.GetMoviesByIDs(ctx, req.GetMovieIds())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &moviev1.GetMoviesByIDsResponse{
+		Movies: mapMovieCards(movies),
 	}, nil
 }
 

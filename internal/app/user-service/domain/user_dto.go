@@ -1,14 +1,8 @@
 package domain
 
 type FavoritesResponse struct {
-	Movies     []MovieCardResponse `json:"movies"`
-	TotalCount int32               `json:"total_count"`
-}
-
-type MovieCardResponse struct {
-	ID             int64  `json:"id"`
-	Title          string `json:"title"`
-	PictureFileKey string `json:"img_url"`
+	MovieIDs   []int64 `json:"movie_ids"`
+	TotalCount int32   `json:"total_count"`
 }
 
 type FavoriteMovieResponse struct {
@@ -24,14 +18,16 @@ type ProfileResponse struct {
 }
 
 type FriendResponse struct {
-	ID    int64  `json:"id"`
-	Email string `json:"email"`
+	ID        int64  `json:"id"`
+	Email     string `json:"email"`
+	AvatarURL string `json:"avatar_url,omitempty"`
 }
 
 type UserSearchResult struct {
-	ID       int64  `json:"id"`
-	Email    string `json:"email"`
-	IsFriend bool   `json:"is_friend"`
+	ID        int64  `json:"id"`
+	Email     string `json:"email"`
+	AvatarURL string `json:"avatar_url,omitempty"`
+	IsFriend  bool   `json:"is_friend"`
 }
 
 type FriendRequestItem struct {

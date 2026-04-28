@@ -4,13 +4,13 @@ import (
 	"context"
 	"strings"
 
-	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
+	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
 )
 
-func (u *MovieUsecase) SearchMovies(ctx context.Context, query string) ([]domain2.MovieCardResponse, error) {
+func (u *MovieUsecase) SearchMovies(ctx context.Context, query string) ([]domain.MovieCardResponse, error) {
 	normalized := strings.TrimSpace(query)
-	if !domain2.ValidateSearchQuery(normalized) {
-		return nil, domain2.ErrInvalidSearchQuery
+	if !domain.ValidateSearchQuery(normalized) {
+		return nil, domain.ErrInvalidSearchQuery
 	}
 
 	movies, err := u.movieRepo.SearchMovies(ctx, normalized)
@@ -18,7 +18,7 @@ func (u *MovieUsecase) SearchMovies(ctx context.Context, query string) ([]domain
 		return nil, err
 	}
 
-	result := make([]domain2.MovieCardResponse, 0, len(movies))
+	result := make([]domain.MovieCardResponse, 0, len(movies))
 	for _, movie := range movies {
 		card, buildErr := u.buildMovieCardResponse(ctx, movie)
 		if buildErr != nil {

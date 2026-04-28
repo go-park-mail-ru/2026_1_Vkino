@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 
-	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 )
 
@@ -92,9 +91,10 @@ func (s *Server) SearchUsersByEmail(
 
 	for _, user := range users {
 		resp.Users = append(resp.Users, &userv1.UserSearchResult{
-			Id:       user.ID,
-			Email:    user.Email,
-			IsFriend: user.IsFriend,
+			Id:        user.ID,
+			Email:     user.Email,
+			AvatarUrl: user.AvatarURL,
+			IsFriend:  user.IsFriend,
 		})
 	}
 
@@ -113,8 +113,9 @@ func (s *Server) AddFriend(ctx context.Context, req *userv1.AddFriendRequest) (*
 	}
 
 	return &userv1.AddFriendResponse{
-		Id:    friend.ID,
-		Email: friend.Email,
+		Id:        friend.ID,
+		Email:     friend.Email,
+		AvatarUrl: friend.AvatarURL,
 	}, nil
 }
 
@@ -186,17 +187,8 @@ func (s *Server) GetFavorites(
 		return nil, mapError(err)
 	}
 
-	movies := make([]*moviev1.MovieCard, 0, len(favorites.Movies))
-	for _, movie := range favorites.Movies {
-		movies = append(movies, &moviev1.MovieCard{
-			Id:    movie.ID,
-			Title: movie.Title,
-			ImgUrl: movie.PictureFileKey,
-		})
-	}
-
 	return &userv1.GetFavoritesResponse{
-		Movies:     movies,
+		MovieIds:   favorites.MovieIDs,
 		TotalCount: favorites.TotalCount,
 	}, nil
 }
@@ -213,9 +205,10 @@ func (s *Server) SearchUsers(ctx context.Context, req *userv1.SearchUsersRequest
 	resp := &userv1.SearchUsersResponse{Users: make([]*userv1.UserSearchResult, 0, len(users))}
 	for _, user := range users {
 		resp.Users = append(resp.Users, &userv1.UserSearchResult{
-			Id:       user.ID,
-			Email:    user.Email,
-			IsFriend: user.IsFriend,
+			Id:        user.ID,
+			Email:     user.Email,
+			AvatarUrl: user.AvatarURL,
+			IsFriend:  user.IsFriend,
 		})
 	}
 	return resp, nil
@@ -303,9 +296,10 @@ func (s *Server) GetFriendsList(
 	friends := make([]*userv1.UserSearchResult, 0, len(friendsResp.Friends))
 	for _, friend := range friendsResp.Friends {
 		friends = append(friends, &userv1.UserSearchResult{
-			Id:       friend.ID,
-			Email:    friend.Email,
-			IsFriend: true,
+			Id:        friend.ID,
+			Email:     friend.Email,
+			AvatarUrl: friend.AvatarURL,
+			IsFriend:  true,
 		})
 	}
 	return &userv1.GetFriendsListResponse{

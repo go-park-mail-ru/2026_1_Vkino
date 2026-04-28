@@ -105,11 +105,6 @@ const (
 			closed_at
 	`
 
-	sqlDeleteSupportTicket = `
-		delete from support_ticket
-		where id = $1
-	`
-
 	sqlCreateSupportTicketMessage = `
 		insert into support_ticket_message (
 			ticket_id,

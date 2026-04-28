@@ -23,6 +23,15 @@ type UserClient interface {
 	movieRPC
 }
 
+type movieRPC interface {
+	GetContinueWatching(ctx context.Context, in *moviev1.GetContinueWatchingRequest, opts ...grpc.CallOption) (
+		*moviev1.GetContinueWatchingResponse, error)
+	GetWatchHistory(ctx context.Context, in *moviev1.GetWatchHistoryRequest, opts ...grpc.CallOption) (
+		*moviev1.GetWatchHistoryResponse, error)
+	GetMoviesByIDs(ctx context.Context, in *moviev1.GetMoviesByIDsRequest, opts ...grpc.CallOption) (
+		*moviev1.GetMoviesByIDsResponse, error)
+}
+
 type supportRPC interface {
 	CreateTicket(ctx context.Context, in *supportv1.CreateTicketRequest, opts ...grpc.CallOption) (
 		*supportv1.TicketResponse, error)
@@ -38,24 +47,17 @@ type supportRPC interface {
 		*supportv1.TicketStatisticsResponse, error)
 }
 
-type movieRPC interface {
-	GetContinueWatching(ctx context.Context, in *moviev1.GetContinueWatchingRequest, opts ...grpc.CallOption) (
-		*moviev1.GetContinueWatchingResponse, error)
-	GetWatchHistory(ctx context.Context, in *moviev1.GetWatchHistoryRequest, opts ...grpc.CallOption) (
-		*moviev1.GetWatchHistoryResponse, error)
-}
-
 type grpcUserClient struct {
-	user  userv1.UserServiceClient
-	sup   supportRPC
-	movie movieRPC
+	user userv1.UserServiceClient
+	sup  supportRPC
+	moviev1.MovieServiceClient
 }
 
-func NewUserClient(userConn grpc.ClientConnInterface, movieConn grpc.ClientConnInterface) UserClient {
+func NewUserClient(userConn, movieConn grpc.ClientConnInterface) UserClient {
 	return grpcUserClient{
-		user:  userv1.NewUserServiceClient(userConn),
-		sup:   supportv1.NewSupportServiceClient(userConn),
-		movie: moviev1.NewMovieServiceClient(movieConn),
+		user:               userv1.NewUserServiceClient(userConn),
+		sup:                supportv1.NewSupportServiceClient(userConn),
+		MovieServiceClient: moviev1.NewMovieServiceClient(movieConn),
 	}
 }
 
@@ -196,22 +198,6 @@ func (c grpcUserClient) GetTicketStatistics(
 	opts ...grpc.CallOption,
 ) (*supportv1.TicketStatisticsResponse, error) {
 	return c.sup.GetTicketStatistics(ctx, in, opts...)
-}
-
-func (c grpcUserClient) GetContinueWatching(
-	ctx context.Context,
-	in *moviev1.GetContinueWatchingRequest,
-	opts ...grpc.CallOption,
-) (*moviev1.GetContinueWatchingResponse, error) {
-	return c.movie.GetContinueWatching(ctx, in, opts...)
-}
-
-func (c grpcUserClient) GetWatchHistory(
-	ctx context.Context,
-	in *moviev1.GetWatchHistoryRequest,
-	opts ...grpc.CallOption,
-) (*moviev1.GetWatchHistoryResponse, error) {
-	return c.movie.GetWatchHistory(ctx, in, opts...)
 }
 
 type updateProfileJSONRequest struct {
@@ -408,19 +394,46 @@ func User(
 		}),
 
 		httpserver.WithRoute("GET /user/favorites", func(w http.ResponseWriter, r *http.Request) {
-			cancel := grpcContext(r, cfg.UserRequestTimeout())
-			defer cancel()
+			cancelUser := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancelUser()
 
-			resp, err := userClient.GetFavorites(r.Context(), &userv1.GetFavoritesRequest{
+			favResp, err := userClient.GetFavorites(r.Context(), &userv1.GetFavoritesRequest{
 				Limit:  parseInt32Query(r, "limit", 10),
 				Offset: parseInt32Query(r, "offset", 0),
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
-			httppkg.Response(w, http.StatusOK, resp)
+			movieIDs := favResp.GetMovieIds()
+			out := favoritesHTTPResponse{
+				MovieIDs:   movieIDs,
+				TotalCount: favResp.GetTotalCount(),
+				Movies:     []*moviev1.MovieCard{},
+			}
+
+			if len(movieIDs) == 0 {
+				httppkg.Response(w, http.StatusOK, out)
+
+				return
+			}
+
+			cancelMovie := grpcContext(r, cfg.MovieRequestTimeout())
+			defer cancelMovie()
+
+			moviesResp, err := userClient.GetMoviesByIDs(r.Context(), &moviev1.GetMoviesByIDsRequest{
+				MovieIds: movieIDs,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			out.Movies = orderMovieCardsByIDOrder(movieIDs, moviesResp.GetMovies())
+			httppkg.Response(w, http.StatusOK, out)
 		}),
 
 		httpserver.WithRoute("GET /user/watch/continue", func(w http.ResponseWriter, r *http.Request) {
@@ -722,6 +735,32 @@ func User(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 	}
+}
+
+type favoritesHTTPResponse struct {
+	MovieIDs   []int64                `json:"movie_ids"`
+	TotalCount int32                  `json:"total_count"`
+	Movies     []*moviev1.MovieCard   `json:"movies"`
+}
+
+func orderMovieCardsByIDOrder(movieIDs []int64, movies []*moviev1.MovieCard) []*moviev1.MovieCard {
+	byID := make(map[int64]*moviev1.MovieCard, len(movies))
+	for _, m := range movies {
+		if m == nil {
+			continue
+		}
+
+		byID[m.GetId()] = m
+	}
+
+	out := make([]*moviev1.MovieCard, 0, len(movieIDs))
+	for _, id := range movieIDs {
+		if m, ok := byID[id]; ok {
+			out = append(out, m)
+		}
+	}
+
+	return out
 }
 
 func parseInt32Query(r *http.Request, key string, defaultValue int32) int32 {

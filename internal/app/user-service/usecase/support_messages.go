@@ -5,17 +5,17 @@ import (
 	"errors"
 	"fmt"
 
-	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
+	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository/postgres"
 )
 
 func (u *supportUsecase) GetTicketMessages(
 	ctx context.Context,
 	actorUserID int64,
-	req domain2.GetSupportTicketMessagesRequest,
-) ([]domain2.SupportTicketMessageResponse, error) {
+	req domain.GetSupportTicketMessagesRequest,
+) ([]domain.SupportTicketMessageResponse, error) {
 	if req.TicketID <= 0 {
-		return nil, domain2.ErrInvalidTicketID
+		return nil, domain.ErrInvalidTicketID
 	}
 
 	if err := u.checkTicketAccess(ctx, actorUserID, req.TicketID); err != nil {
@@ -24,7 +24,7 @@ func (u *supportUsecase) GetTicketMessages(
 
 	messages, err := u.supportRepo.GetTicketMessages(ctx, req.TicketID)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", domain2.ErrInternal, err)
+		return nil, fmt.Errorf("%w: %v", domain.ErrInternal, err)
 	}
 
 	return messages, nil
@@ -33,26 +33,26 @@ func (u *supportUsecase) GetTicketMessages(
 func (u *supportUsecase) CreateTicketMessage(
 	ctx context.Context,
 	actorUserID int64,
-	req domain2.CreateSupportTicketMessageRequest,
-) (domain2.SupportTicketMessageResponse, error) {
+	req domain.CreateSupportTicketMessageRequest,
+) (domain.SupportTicketMessageResponse, error) {
 	if req.TicketID <= 0 {
-		return domain2.SupportTicketMessageResponse{}, domain2.ErrInvalidTicketID
+		return domain.SupportTicketMessageResponse{}, domain.ErrInvalidTicketID
 	}
 
 	if req.Content == "" && req.ContentFileKey == "" {
-		return domain2.SupportTicketMessageResponse{}, domain2.ErrInvalidTicketID
+		return domain.SupportTicketMessageResponse{}, domain.ErrInvalidTicketID
 	}
 
 	if err := u.checkTicketAccess(ctx, actorUserID, req.TicketID); err != nil {
-		return domain2.SupportTicketMessageResponse{}, err
+		return domain.SupportTicketMessageResponse{}, err
 	}
 
 	msg, err := u.supportRepo.CreateTicketMessage(ctx, actorUserID, req)
 	if err != nil {
-		return domain2.SupportTicketMessageResponse{}, fmt.Errorf("%w: %v", domain2.ErrInternal, err)
+		return domain.SupportTicketMessageResponse{}, fmt.Errorf("%w: %v", domain.ErrInternal, err)
 	}
 
-	u.broker.publish(req.TicketID, domain2.SupportTicketEventResponse{
+	u.broker.publish(req.TicketID, domain.SupportTicketEventResponse{
 		Type:    "message_created",
 		Message: msg,
 	})
@@ -63,7 +63,7 @@ func (u *supportUsecase) CreateTicketMessage(
 func (u *supportUsecase) checkTicketAccess(ctx context.Context, actorUserID, ticketID int64) error {
 	role, err := u.userRepo.GetUserRole(ctx, actorUserID)
 	if err != nil {
-		return domain2.ErrInvalidToken
+		return domain.ErrInvalidToken
 	}
 
 	if isStaff(role) {
@@ -73,14 +73,14 @@ func (u *supportUsecase) checkTicketAccess(ctx context.Context, actorUserID, tic
 	ticket, err := u.supportRepo.GetTicketByID(ctx, ticketID)
 	if err != nil {
 		if errors.Is(err, postgresrepo.ErrTicketNotFound) {
-			return domain2.ErrTicketNotFound
+			return domain.ErrTicketNotFound
 		}
 
-		return fmt.Errorf("%w: %v", domain2.ErrInternal, err)
+		return fmt.Errorf("%w: %v", domain.ErrInternal, err)
 	}
 
 	if ticket.UserID != actorUserID {
-		return domain2.ErrAccessDenied
+		return domain.ErrAccessDenied
 	}
 
 	return nil
