@@ -344,6 +344,7 @@ func User(
 			query := r.URL.Query()
 
 			supportLine := int64(0)
+
 			if rawSupportLine := strings.TrimSpace(query.Get("support_line")); rawSupportLine != "" {
 				parsedSupportLine, err := strconv.ParseInt(rawSupportLine, 10, 64)
 				if err != nil {
