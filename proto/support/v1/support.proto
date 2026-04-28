@@ -9,6 +9,9 @@ service SupportService {
   rpc GetTickets(GetTicketsRequest) returns (TicketsResponse);
   rpc UpdateTicket(UpdateTicketRequest) returns (TicketResponse);
 
+  rpc UploadSupportFile(UploadSupportFileRequest) returns (UploadSupportFileResponse);
+  rpc GetSupportFileURL(GetSupportFileURLRequest) returns (GetSupportFileURLResponse);
+
   rpc GetTicketMessages(GetTicketMessagesRequest) returns (TicketMessagesResponse);
   rpc CreateTicketMessage(CreateTicketMessageRequest) returns (TicketMessageResponse);
 
@@ -21,6 +24,7 @@ message Ticket {
   int64 id = 1;
   int64 user_id = 2;
   string user_email = 13;
+  string sender_email = 14;
   string category = 3;
   string status = 4;
   int64 support_line = 5;
@@ -66,6 +70,31 @@ message UpdateTicketRequest {
   string description = 6;
   string attachment_file_key = 7;
   string user_email = 8;
+  int64 rating = 9;
+}
+
+message UploadSupportFileRequest {
+  bytes content = 1;
+  string filename = 2;
+  string content_type = 3;
+  int64 size_bytes = 4;
+}
+
+message UploadSupportFileResponse {
+  string file_key = 1;
+  string file_url = 2;
+  string content_type = 3;
+  int64 size_bytes = 4;
+}
+
+message GetSupportFileURLRequest {
+  string file_key = 1;
+  int64 ticket_id = 2;
+}
+
+message GetSupportFileURLResponse {
+  string file_key = 1;
+  string file_url = 2;
 }
 
 message GetTicketMessagesRequest {

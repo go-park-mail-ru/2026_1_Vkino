@@ -59,6 +59,12 @@ type MovieCard struct {
 	PictureFileKey string
 }
 
+type Genre struct {
+	ID     int64
+	Title  string
+	Movies []MovieCard
+}
+
 type Selection struct {
 	Title  string
 	Movies []MovieCard

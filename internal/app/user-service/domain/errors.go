@@ -16,7 +16,10 @@ var (
 	ErrInvalidRequestStatus = errors.New("invalid friend request status")
 	ErrInternal             = errors.New("internal error")
 
-	ErrTicketNotFound  = errors.New("ticket not found")
-	ErrAccessDenied    = errors.New("access denied")
-	ErrInvalidTicketID = errors.New("invalid ticket id")
+	ErrTicketNotFound            = errors.New("ticket not found")
+	ErrAccessDenied              = errors.New("access denied")
+	ErrInvalidTicketID           = errors.New("invalid ticket id")
+	ErrInvalidTicketPayload      = errors.New("invalid ticket payload")
+	ErrInvalidMessage            = errors.New("invalid message payload")
+	ErrInvalidSupportFilePayload = errors.New("invalid support file payload")
 )

@@ -8,6 +8,7 @@ service MovieService {
   rpc GetMovieByID(GetMovieByIDRequest) returns (GetMovieByIDResponse);
   rpc GetMoviesByIDs(GetMoviesByIDsRequest) returns (GetMoviesByIDsResponse);
   rpc GetActorByID(GetActorByIDRequest) returns (GetActorByIDResponse);
+  rpc GetGenreByID(GetGenreByIDRequest) returns (GetGenreByIDResponse);
   rpc GetSelectionByTitle(GetSelectionByTitleRequest) returns (GetSelectionByTitleResponse);
   rpc GetAllSelections(GetAllSelectionsRequest) returns (GetAllSelectionsResponse);
 
@@ -88,6 +89,16 @@ message GetActorByIDResponse {
   int64 country_id = 5;
   string img_url = 6;
   repeated MovieCard movies = 7;
+}
+
+message GetGenreByIDRequest {
+  int64 genre_id = 1;
+}
+
+message GetGenreByIDResponse {
+  int64 id = 1;
+  string title = 2;
+  repeated MovieCard movies = 3;
 }
 
 message GetSelectionByTitleRequest {

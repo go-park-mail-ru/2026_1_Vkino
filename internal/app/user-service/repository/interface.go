@@ -35,5 +35,6 @@ type SupportRepo interface {
 	UpdateTicket(ctx context.Context, req domain.UpdateSupportTicketRequest) (*domain.SupportTicketResponse, error)
 	GetTicketMessages(ctx context.Context, ticketID int64) ([]domain.SupportTicketMessageResponse, error)
 	CreateTicketMessage(ctx context.Context, senderID int64, req domain.CreateSupportTicketMessageRequest) (*domain.SupportTicketMessageResponse, error)
-	GetTicketStatistics(ctx context.Context) (*domain.SupportTicketStatisticsResponse, error)
+	HasTicketFile(ctx context.Context, ticketID int64, fileKey string) (bool, error)
+	GetTicketStatistics(ctx context.Context, allowedCategories []string) (*domain.SupportTicketStatisticsResponse, error)
 }

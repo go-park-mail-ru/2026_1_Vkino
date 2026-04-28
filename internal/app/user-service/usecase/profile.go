@@ -5,14 +5,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"mime"
-	"net/http"
 	"strings"
 	"time"
 
-	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
-	storagepkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/sanitize"
 )
 
 func (u *UserUsecase) GetProfile(ctx context.Context, userID int64) (domain.ProfileResponse, error) {
@@ -74,15 +72,6 @@ func (u *UserUsecase) updateBirthdateIfProvided(
 	return updatedUser, nil
 }
 
-func parseBirthdate(rawBirthdate string) (*time.Time, error) {
-	parsed, err := time.Parse("2006-01-02", rawBirthdate)
-	if err != nil || parsed.After(time.Now()) {
-		return nil, domain.ErrInvalidBirthdate
-	}
-
-	return &parsed, nil
-}
-
 func (u *UserUsecase) updateAvatarIfProvided(
 	ctx context.Context,
 	userID int64,
@@ -117,27 +106,29 @@ func (u *UserUsecase) updateAvatarIfProvided(
 		return nil, domain.ErrInvalidAvatar
 	}
 
-	normalizedContentType := normalizeAvatarContentType(contentType)
-	if normalizedContentType == "" {
-		normalizedContentType = normalizeAvatarContentType(http.DetectContentType(avatarBytes))
-	}
-
-	ext, ok := avatarExtensionByContentType(normalizedContentType)
-	if !ok {
+	requestedContentType := sanitize.NormalizeAvatarContentType(contentType)
+	detectedContentType := sanitize.DetectAvatarContentType(avatarBytes)
+	sanitizedAvatarBytes, normalizedContentType, ext, err := sanitize.SanitizeAvatarUpload(avatarBytes, requestedContentType)
+	if err != nil {
 		requestLogger.
 			WithField("original_content_type", contentType).
-			WithField("normalized_content_type", normalizedContentType).
-			Error("unsupported avatar content type")
-
-		return nil, storagepkg.ErrInvalidFileType
+			WithField("requested_content_type", requestedContentType).
+			WithField("detected_content_type", detectedContentType).
+			WithField("error", err).
+			Error("invalid avatar payload")
+		return nil, err
 	}
 
-	avatarKey := fmt.Sprintf("users/%d/avatar/%d%s", userID, u.clockService.Now().UnixNano(), ext)
+	avatarKey, err := sanitize.NewAvatarObjectKey(userID, ext)
+	if err != nil {
+		return nil, fmt.Errorf("%w: generate avatar object key: %v", domain.ErrInternal, err)
+	}
+
 	if err := u.avatarStore.PutObject(
 		ctx,
 		avatarKey,
-		bytes.NewReader(avatarBytes),
-		int64(len(avatarBytes)),
+		bytes.NewReader(sanitizedAvatarBytes),
+		int64(len(sanitizedAvatarBytes)),
 		normalizedContentType,
 	); err != nil {
 		return nil, fmt.Errorf("%w: upload avatar object key=%q: %v", domain.ErrInternal, avatarKey, err)
@@ -156,35 +147,11 @@ func (u *UserUsecase) updateAvatarIfProvided(
 	return updatedUser, nil
 }
 
-func avatarExtensionByContentType(contentType string) (string, bool) {
-	normalizedType := normalizeAvatarContentType(contentType)
-
-	switch normalizedType {
-	case "image/png":
-		return ".png", true
-	case "image/jpeg":
-		return ".jpg", true
-	case "image/webp":
-		return ".webp", true
-	default:
-		return "", false
-	}
-}
-
-func normalizeAvatarContentType(contentType string) string {
-	trimmed := strings.TrimSpace(strings.ToLower(contentType))
-	if trimmed == "" {
-		return ""
+func parseBirthdate(rawBirthdate string) (*time.Time, error) {
+	parsed, err := time.Parse("2006-01-02", rawBirthdate)
+	if err != nil || parsed.After(time.Now()) {
+		return nil, domain.ErrInvalidBirthdate
 	}
 
-	mediaType, _, err := mime.ParseMediaType(trimmed)
-	if err != nil {
-		mediaType = trimmed
-	}
-
-	if mediaType == "image/jpg" {
-		return "image/jpeg"
-	}
-
-	return mediaType
+	return &parsed, nil
 }

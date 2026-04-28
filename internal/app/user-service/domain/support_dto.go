@@ -6,13 +6,15 @@ type CreateSupportTicketRequest struct {
 	Description       string
 	UserEmail         string
 	AttachmentFileKey string
+	SupportLine       int64
 }
 
 type GetSupportTicketsRequest struct {
-	Status      string
-	Category    string
-	UserEmail   string
-	SupportLine int64
+	Status            string
+	Category          string
+	UserEmail         string
+	SupportLine       int64
+	AllowedCategories []string
 }
 
 type UpdateSupportTicketRequest struct {
@@ -24,6 +26,7 @@ type UpdateSupportTicketRequest struct {
 	UserEmail         string
 	Description       string
 	AttachmentFileKey string
+	Rating            int64
 }
 
 type GetSupportTicketMessagesRequest struct {
@@ -36,6 +39,18 @@ type CreateSupportTicketMessageRequest struct {
 	ContentFileKey string
 }
 
+type UploadSupportFileRequest struct {
+	Content     []byte
+	Filename    string
+	ContentType string
+	SizeBytes   int64
+}
+
+type GetSupportFileURLRequest struct {
+	FileKey  string
+	TicketID int64
+}
+
 type GetSupportTicketStatisticsRequest struct{}
 
 type SubscribeSupportTicketRequest struct {
@@ -46,6 +61,7 @@ type SupportTicketResponse struct {
 	ID                int64
 	UserID            int64
 	UserEmail         string
+	SenderEmail       string
 	Category          string
 	Status            string
 	SupportLine       int64
@@ -75,6 +91,13 @@ type SupportTicketStatisticsResponse struct {
 	Resolved      int64
 	Closed        int64
 	AverageRating float64
+}
+
+type SupportFileResponse struct {
+	FileKey     string
+	FileURL     string
+	ContentType string
+	SizeBytes   int64
 }
 
 type SupportTicketEventResponse struct {

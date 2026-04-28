@@ -130,6 +130,28 @@ func (u *MovieUsecase) buildSelectionResponse(
 	return resp, nil
 }
 
+func (u *MovieUsecase) buildGenreResponse(
+	ctx context.Context,
+	genre domain2.Genre,
+) (domain2.GenreResponse, error) {
+	resp := domain2.GenreResponse{
+		ID:     genre.ID,
+		Title:  genre.Title,
+		Movies: make([]domain2.MovieCardResponse, 0, len(genre.Movies)),
+	}
+
+	for _, movie := range genre.Movies {
+		card, err := u.buildMovieCardResponse(ctx, movie)
+		if err != nil {
+			return domain2.GenreResponse{}, err
+		}
+
+		resp.Movies = append(resp.Movies, card)
+	}
+
+	return resp, nil
+}
+
 func (u *MovieUsecase) buildMovieCardResponse(
 	ctx context.Context,
 	movie domain.MovieCard,

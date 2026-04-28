@@ -36,6 +36,16 @@ type SupportUsecase interface {
 		req domain.GetSupportTicketsRequest,
 	) ([]domain.SupportTicketResponse, error)
 	UpdateTicket(ctx context.Context, actorUserID int64, req domain.UpdateSupportTicketRequest) (domain.SupportTicketResponse, error)
+	UploadSupportFile(
+		ctx context.Context,
+		actorUserID int64,
+		req domain.UploadSupportFileRequest,
+	) (domain.SupportFileResponse, error)
+	GetSupportFileURL(
+		ctx context.Context,
+		actorUserID int64,
+		req domain.GetSupportFileURLRequest,
+	) (domain.SupportFileResponse, error)
 	GetTicketMessages(
 		ctx context.Context,
 		actorUserID int64,

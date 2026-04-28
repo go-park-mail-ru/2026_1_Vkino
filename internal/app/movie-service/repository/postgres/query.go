@@ -82,6 +82,25 @@ const (
 		order by m.release_year desc, m.title
 	`
 
+	sqlGetGenreBaseByID = `
+		select
+			g.id,
+			g.title
+		from genre g
+		where g.id = $1
+	`
+
+	sqlGetGenreMoviesByID = `
+		select
+			m.id,
+			m.title,
+			m.picture_file_key
+		from genre_to_movie gm
+		join movie m on m.id = gm.movie_id
+		where gm.genre_id = $1
+		order by m.release_year desc, m.title
+	`
+
 	sqlGetSelectionMoviesByTitle = `
 		select
 			s.title,

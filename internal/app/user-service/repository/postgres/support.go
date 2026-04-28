@@ -31,19 +31,11 @@ func optionalStringPtr(value string) *string {
 	return &value
 }
 
-// func normalizedOptionalStringValue(value string) string {
-// 	value = strings.TrimSpace(value)
-// 	if value == "" {
-// 		return ""
-// 	}
-
-// 	return value
-// }
-
 func scanTicket(
 	id int64,
 	userID *int64,
 	userEmail *string,
+	senderEmail *string,
 	category, status string,
 	supportLine int64,
 	title, description string,
@@ -71,6 +63,12 @@ func scanTicket(
 		ticket.UserEmail = *userEmail
 	}
 
+	if senderEmail != nil {
+		ticket.SenderEmail = *senderEmail
+	} else if userEmail != nil {
+		ticket.SenderEmail = *userEmail
+	}
+
 	if attachmentFileKey != nil {
 		ticket.AttachmentFileKey = *attachmentFileKey
 	}
@@ -91,6 +89,7 @@ func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain.SupportTicketResponse,
 		id                int64
 		userID            *int64
 		userEmail         *string
+		senderEmail       *string
 		category          string
 		status            string
 		supportLine       int64
@@ -104,7 +103,7 @@ func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain.SupportTicketResponse,
 	)
 
 	err := row.Scan(
-		&id, &userID, &userEmail, &category, &status, &supportLine,
+		&id, &userID, &userEmail, &senderEmail, &category, &status, &supportLine,
 		&title, &description, &attachmentFileKey, &rating,
 		&createdAt, &updatedAt, &closedAt,
 	)
@@ -112,7 +111,7 @@ func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain.SupportTicketResponse,
 		return nil, err
 	}
 
-	ticket := scanTicket(id, userID, userEmail, category, status, supportLine, title, description,
+	ticket := scanTicket(id, userID, userEmail, senderEmail, category, status, supportLine, title, description,
 		attachmentFileKey, rating, createdAt, updatedAt, closedAt)
 
 	return &ticket, nil
@@ -139,7 +138,7 @@ func (r *SupportRepo) CreateTicket(
 	}
 
 	row := r.db.QueryRow(ctx, sqlCreateSupportTicket,
-		userIDPtr, userEmailPtr, req.Category, req.Title, req.Description, attachmentFileKeyPtr,
+		userIDPtr, userEmailPtr, req.SupportLine, req.Category, req.Title, req.Description, attachmentFileKeyPtr,
 	)
 
 	ticket, err := r.scanTicketRow(row)
@@ -170,7 +169,14 @@ func (r *SupportRepo) GetTickets(
 	userID int64,
 	req domain.GetSupportTicketsRequest,
 ) ([]domain.SupportTicketResponse, error) {
-	rows, err := r.db.Query(ctx, sqlGetSupportTickets, userID, req.UserEmail, req.Status, req.Category, req.SupportLine)
+	rows, err := r.db.Query(ctx, sqlGetSupportTickets,
+		userID,
+		req.UserEmail,
+		req.Status,
+		req.Category,
+		req.SupportLine,
+		req.AllowedCategories,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("get support tickets: %w", err)
 	}
@@ -183,6 +189,7 @@ func (r *SupportRepo) GetTickets(
 			id                int64
 			uID               *int64
 			userEmail         *string
+			senderEmail       *string
 			category          string
 			status            string
 			supportLine       int64
@@ -196,14 +203,14 @@ func (r *SupportRepo) GetTickets(
 		)
 
 		if err = rows.Scan(
-			&id, &uID, &userEmail, &category, &status, &supportLine,
+			&id, &uID, &userEmail, &senderEmail, &category, &status, &supportLine,
 			&title, &description, &attachmentFileKey, &rating,
 			&createdAt, &updatedAt, &closedAt,
 		); err != nil {
 			return nil, fmt.Errorf("scan support ticket: %w", err)
 		}
 
-		tickets = append(tickets, scanTicket(id, uID, userEmail, category, status, supportLine, title, description,
+		tickets = append(tickets, scanTicket(id, uID, userEmail, senderEmail, category, status, supportLine, title, description,
 			attachmentFileKey, rating, createdAt, updatedAt, closedAt))
 	}
 
@@ -221,7 +228,7 @@ func (r *SupportRepo) UpdateTicket(
 	// attachmentFileKey := normalizedOptionalStringValue(req.AttachmentFileKey)
 	row := r.db.QueryRow(ctx, sqlUpdateSupportTicket,
 		req.TicketID, req.Category, req.Status, req.SupportLine,
-		req.Title, req.Description, req.AttachmentFileKey, req.UserEmail,
+		req.Title, req.Description, req.AttachmentFileKey, req.UserEmail, req.Rating,
 	)
 
 	ticket, err := r.scanTicketRow(row)
@@ -329,10 +336,24 @@ func (r *SupportRepo) CreateTicketMessage(
 	return msg, nil
 }
 
-func (r *SupportRepo) GetTicketStatistics(ctx context.Context) (*domain.SupportTicketStatisticsResponse, error) {
+func (r *SupportRepo) HasTicketFile(ctx context.Context, ticketID int64, fileKey string) (bool, error) {
+	var exists bool
+
+	err := r.db.QueryRow(ctx, sqlHasSupportTicketFile, ticketID, fileKey).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("check support ticket file: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (r *SupportRepo) GetTicketStatistics(
+	ctx context.Context,
+	allowedCategories []string,
+) (*domain.SupportTicketStatisticsResponse, error) {
 	var stats domain.SupportTicketStatisticsResponse
 
-	err := r.db.QueryRow(ctx, sqlGetSupportStatistics).Scan(
+	err := r.db.QueryRow(ctx, sqlGetSupportStatistics, allowedCategories).Scan(
 		&stats.Total,
 		&stats.Open,
 		&stats.InProgress,

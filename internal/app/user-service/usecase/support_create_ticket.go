@@ -18,16 +18,28 @@ func (u *supportUsecase) CreateTicket(
 	req.Title = strings.TrimSpace(req.Title)
 	req.Description = strings.TrimSpace(req.Description)
 	req.UserEmail = strings.TrimSpace(req.UserEmail)
+	req.AttachmentFileKey = strings.TrimSpace(req.AttachmentFileKey)
 
-	if req.Title == "" || req.Description == "" || req.Category == "" {
-		return domain.SupportTicketResponse{}, domain.ErrInvalidTicketID
+	if req.Title == "" || req.Description == "" || req.Category == "" || !isValidTicketCategory(req.Category) {
+		return domain.SupportTicketResponse{}, domain.ErrInvalidTicketPayload
 	}
 
 	if actorUserID > 0 {
+		role, err := u.userRepo.GetUserRole(ctx, actorUserID)
+		if err != nil {
+			return domain.SupportTicketResponse{}, domain.ErrInvalidToken
+		}
+
+		if isStaff(role) {
+			return domain.SupportTicketResponse{}, domain.ErrAccessDenied
+		}
+
 		req.UserEmail = ""
 	} else if !validator.ValidateEmail(req.UserEmail) {
 		return domain.SupportTicketResponse{}, domain.ErrInvalidEmail
 	}
+
+	req.SupportLine = supportLineForCategory(req.Category)
 
 	ticket, err := u.supportRepo.CreateTicket(ctx, actorUserID, req)
 	if err != nil {

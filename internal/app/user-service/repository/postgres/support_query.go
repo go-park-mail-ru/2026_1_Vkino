@@ -2,107 +2,156 @@ package postgres
 
 const (
 	sqlCreateSupportTicket = `
-		insert into support_ticket (
-			user_id,
-			user_email,
-			category,
-			title,
-			description,
-			attachment_file_key
+		with created_ticket as (
+			insert into support_ticket (
+				user_id,
+				user_email,
+				support_line,
+				category,
+				title,
+				description,
+				attachment_file_key
+			)
+			values ($1, $2, $3, $4, $5, $6, $7)
+			returning
+				id,
+				user_id,
+				user_email,
+				category,
+				status,
+				support_line,
+				title,
+				description,
+				attachment_file_key,
+				rating,
+				created_at,
+				updated_at,
+				closed_at
 		)
-		values ($1, $2, $3, $4, $5, $6)
-		returning
-			id,
-			user_id,
-			user_email,
-			category,
-			status,
-			support_line,
-			title,
-			description,
-			attachment_file_key,
-			rating,
-			created_at,
-			updated_at,
-			closed_at
+		select
+			t.id,
+			t.user_id,
+			t.user_email,
+			coalesce(u.email, t.user_email) as sender_email,
+			t.category,
+			t.status,
+			t.support_line,
+			t.title,
+			t.description,
+			t.attachment_file_key,
+			t.rating,
+			t.created_at,
+			t.updated_at,
+			t.closed_at
+		from created_ticket t
+		left join users u on u.id = t.user_id
 	`
 
 	sqlGetSupportTicketByID = `
 		select
-			id,
-			user_id,
-			user_email,
-			category,
-			status,
-			support_line,
-			title,
-			description,
-			attachment_file_key,
-			rating,
-			created_at,
-			updated_at,
-			closed_at
-		from support_ticket
-		where id = $1
+			t.id,
+			t.user_id,
+			t.user_email,
+			coalesce(u.email, t.user_email) as sender_email,
+			t.category,
+			t.status,
+			t.support_line,
+			t.title,
+			t.description,
+			t.attachment_file_key,
+			t.rating,
+			t.created_at,
+			t.updated_at,
+			t.closed_at
+		from support_ticket t
+		left join users u on u.id = t.user_id
+		where t.id = $1
 	`
 
 	sqlGetSupportTickets = `
 		select
-			id,
-			user_id,
-			user_email,
-			category,
-			status,
-			support_line,
-			title,
-			description,
-			attachment_file_key,
-			rating,
-			created_at,
-			updated_at,
-			closed_at
-		from support_ticket
+			t.id,
+			t.user_id,
+			t.user_email,
+			coalesce(u.email, t.user_email) as sender_email,
+			t.category,
+			t.status,
+			t.support_line,
+			t.title,
+			t.description,
+			t.attachment_file_key,
+			t.rating,
+			t.created_at,
+			t.updated_at,
+			t.closed_at
+		from support_ticket t
+		left join users u on u.id = t.user_id
 		where
-			($1 = 0 or user_id = $1)
-			and ($2 = '' or user_email = $2)
-			and ($3 = '' or status = $3)
-			and ($4 = '' or category = $4)
-			and ($5 = 0 or support_line = $5)
-		order by created_at desc
+			($1 = 0 or t.user_id = $1)
+			and ($2 = '' or coalesce(u.email, t.user_email) = $2)
+			and ($3 = '' or t.status = $3)
+			and ($4 = '' or t.category = $4)
+			and ($5 = 0 or t.support_line = $5)
+			and (coalesce(array_length($6::text[], 1), 0) = 0 or t.category = any($6::text[]))
+		order by t.created_at desc
 	`
 
 	sqlUpdateSupportTicket = `
-		update support_ticket
-		set
-			category = coalesce(nullif($2, ''), category),
-			status = coalesce(nullif($3, ''), status),
-			support_line = case
-				when $4 = 0 then support_line
-				else $4
-			end,
-			title = coalesce(nullif($5, ''), title),
-			description = coalesce(nullif($6, ''), description),
-			attachment_file_key = coalesce(nullif($7, ''), attachment_file_key),
-			user_email = coalesce(nullif($8, ''), user_email),
-			closed_at = case
-				when $3 in ('resolved', 'closed') then now()
-				else closed_at
-			end
-		where id = $1
-		returning
-			id,
-			user_id,
-			user_email,
-			category,
-			status,
-			support_line,
-			title,
-			description,
-			attachment_file_key,
-			rating,
-			created_at,
-			updated_at,
-			closed_at
+		with updated_ticket as (
+			update support_ticket
+			set
+				category = coalesce(nullif($2, ''), category),
+				status = coalesce(nullif($3, ''), status),
+				support_line = case
+					when $4 = 0 then support_line
+					else $4
+				end,
+				title = coalesce(nullif($5, ''), title),
+				description = coalesce(nullif($6, ''), description),
+				attachment_file_key = coalesce(nullif($7, ''), attachment_file_key),
+				user_email = coalesce(nullif($8, ''), user_email),
+				closed_at = case
+					when $3 in ('resolved', 'closed') then now()
+					when $3 in ('open', 'in_progress', 'waiting_user') then null
+					else closed_at
+				end,
+				rating = case
+					when $9 = 0 then rating
+					else $9
+				end
+			where id = $1
+			returning
+				id,
+				user_id,
+				user_email,
+				category,
+				status,
+				support_line,
+				title,
+				description,
+				attachment_file_key,
+				rating,
+				created_at,
+				updated_at,
+				closed_at
+		)
+		select
+			t.id,
+			t.user_id,
+			t.user_email,
+			coalesce(u.email, t.user_email) as sender_email,
+			t.category,
+			t.status,
+			t.support_line,
+			t.title,
+			t.description,
+			t.attachment_file_key,
+			t.rating,
+			t.created_at,
+			t.updated_at,
+			t.closed_at
+		from updated_ticket t
+		left join users u on u.id = t.user_id
 	`
 
 	sqlCreateSupportTicketMessage = `
@@ -167,6 +216,23 @@ const (
 			count(*) filter (where status = 'closed') as closed,
 			coalesce(avg(rating), 0) as average_rating
 		from support_ticket
+		where coalesce(array_length($1::text[], 1), 0) = 0 or category = any($1::text[])
+	`
+
+	sqlHasSupportTicketFile = `
+		select exists(
+			select 1
+			from support_ticket t
+			where t.id = $1
+				and t.attachment_file_key = $2
+
+			union all
+
+			select 1
+			from support_ticket_message m
+			where m.ticket_id = $1
+				and m.content_file_key = $2
+		)
 	`
 
 	sqlGetSupportStatisticsByCategory = `

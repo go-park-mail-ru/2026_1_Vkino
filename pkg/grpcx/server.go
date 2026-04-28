@@ -25,6 +25,8 @@ func Listen(port int) (net.Listener, error) {
 func NewServer(log *logger.Logger, register func(*grpc.Server), opts ...grpc.ServerOption) *grpc.Server {
 	baseOpts := make([]grpc.ServerOption, 0, 1+len(opts))
 	baseOpts = append(baseOpts,
+		grpc.MaxRecvMsgSize(defaultMaxMessageSize),
+		grpc.MaxSendMsgSize(defaultMaxMessageSize),
 		grpc.ChainUnaryInterceptor(
 			interceptor.UnaryRequestID(),
 			interceptor.UnaryRecovery(log),
