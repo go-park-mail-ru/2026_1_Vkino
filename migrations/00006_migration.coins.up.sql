@@ -11,7 +11,7 @@ create table if not exists vkino_coins_history (
 
     vkino_coins_count int not null
         constraint vkino_coins_history_vkino_coins_count_check
-            check (vkino_coins_count > 0),
+            check (vkino_coins_count > 0 and vkino_coins_count < 100000),
 
     -- ежедневная, выигрыш, проигрыш, покупка
     operation_type text not null default 'daily'
@@ -195,7 +195,7 @@ create table if not exists subscription_tariff (
 
     duration_days int not null
         constraint subscription_tariff_duration_days_check
-            check (duration_days > 0),
+            check (duration_days > 0 and duration_days < 366),
 
     is_active boolean not null default true,
 
