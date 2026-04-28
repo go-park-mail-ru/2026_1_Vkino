@@ -164,10 +164,12 @@ func (s *Server) ToggleFavorite(
 	if err != nil {
 		return nil, err
 	}
+
 	favorite, err := s.usecase.ToggleFavorite(ctx, authCtx.UserID, req.GetMovieId())
 	if err != nil {
 		return nil, mapError(err)
 	}
+
 	return &userv1.ToggleFavoriteResponse{
 		MovieId:    favorite.MovieID,
 		IsFavorite: favorite.IsFavorite,
@@ -182,6 +184,7 @@ func (s *Server) GetFavorites(
 	if err != nil {
 		return nil, err
 	}
+
 	favorites, err := s.usecase.GetFavorites(ctx, authCtx.UserID, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		return nil, mapError(err)
@@ -198,10 +201,12 @@ func (s *Server) SearchUsers(ctx context.Context, req *userv1.SearchUsersRequest
 	if err != nil {
 		return nil, err
 	}
+
 	users, err := s.usecase.SearchUsers(ctx, authCtx.UserID, req.GetQuery(), req.GetLimit())
 	if err != nil {
 		return nil, mapError(err)
 	}
+
 	resp := &userv1.SearchUsersResponse{Users: make([]*userv1.UserSearchResult, 0, len(users))}
 	for _, user := range users {
 		resp.Users = append(resp.Users, &userv1.UserSearchResult{
@@ -211,6 +216,7 @@ func (s *Server) SearchUsers(ctx context.Context, req *userv1.SearchUsersRequest
 			IsFriend:  user.IsFriend,
 		})
 	}
+
 	return resp, nil
 }
 
@@ -222,10 +228,12 @@ func (s *Server) SendFriendRequest(
 	if err != nil {
 		return nil, err
 	}
+
 	requestID, err := s.usecase.SendFriendRequest(ctx, authCtx.UserID, req.GetToUserId())
 	if err != nil {
 		return nil, mapError(err)
 	}
+
 	return &userv1.SendFriendRequestResponse{RequestId: requestID}, nil
 }
 
@@ -237,9 +245,11 @@ func (s *Server) RespondToFriendRequest(
 	if err != nil {
 		return nil, err
 	}
+
 	if err := s.usecase.RespondToFriendRequest(ctx, authCtx.UserID, req.GetRequestId(), req.GetAction()); err != nil {
 		return nil, mapError(err)
 	}
+
 	return &userv1.RespondToFriendRequestResponse{Success: true}, nil
 }
 
@@ -251,9 +261,11 @@ func (s *Server) DeleteOutgoingFriendRequest(
 	if err != nil {
 		return nil, err
 	}
+
 	if err := s.usecase.DeleteOutgoingFriendRequest(ctx, authCtx.UserID, req.GetRequestId()); err != nil {
 		return nil, mapError(err)
 	}
+
 	return &userv1.DeleteOutgoingFriendRequestResponse{Success: true}, nil
 }
 
@@ -265,10 +277,12 @@ func (s *Server) GetFriendRequests(
 	if err != nil {
 		return nil, err
 	}
+
 	items, err := s.usecase.GetFriendRequests(ctx, authCtx.UserID, req.GetDirection(), req.GetLimit())
 	if err != nil {
 		return nil, mapError(err)
 	}
+
 	resp := &userv1.GetFriendRequestsResponse{Requests: make([]*userv1.FriendRequestItem, 0, len(items))}
 	for _, item := range items {
 		resp.Requests = append(resp.Requests, &userv1.FriendRequestItem{
@@ -278,6 +292,7 @@ func (s *Server) GetFriendRequests(
 			CreatedAt: item.CreatedAt,
 		})
 	}
+
 	return resp, nil
 }
 
@@ -289,10 +304,12 @@ func (s *Server) GetFriendsList(
 	if err != nil {
 		return nil, err
 	}
+
 	friendsResp, err := s.usecase.GetFriendsList(ctx, authCtx.UserID, req.GetLimit(), req.GetOffset())
 	if err != nil {
 		return nil, mapError(err)
 	}
+
 	friends := make([]*userv1.UserSearchResult, 0, len(friendsResp.Friends))
 	for _, friend := range friendsResp.Friends {
 		friends = append(friends, &userv1.UserSearchResult{
@@ -302,6 +319,7 @@ func (s *Server) GetFriendsList(
 			IsFriend:  true,
 		})
 	}
+
 	return &userv1.GetFriendsListResponse{
 		Friends:    friends,
 		TotalCount: friendsResp.TotalCount,

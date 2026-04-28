@@ -1,5 +1,7 @@
 package domain
 
+import moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+
 type SignInRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -44,4 +46,10 @@ type SupportUpdateTicketRequest struct {
 type SupportCreateTicketMessageRequest struct {
 	Content        string `json:"content"`
 	ContentFileKey string `json:"content_file_key"`
+}
+
+type FavoritesHTTPResponse struct {
+	MovieIDs   []int64              `json:"movie_ids"`
+	TotalCount int32                `json:"total_count"`
+	Movies     []*moviev1.MovieCard `json:"movies"`
 }

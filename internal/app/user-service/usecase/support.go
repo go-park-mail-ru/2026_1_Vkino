@@ -39,6 +39,7 @@ func (b *ticketBroker) subscribe(ticketID int64) (<-chan domain.SupportTicketEve
 		for i, sub := range subs {
 			if sub == ch {
 				b.subscribers[ticketID] = append(subs[:i], subs[i+1:]...)
+
 				break
 			}
 		}

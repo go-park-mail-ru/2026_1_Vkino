@@ -18,6 +18,7 @@ func (u *UserUsecase) SearchUsersByEmail(
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return nil, domain.ErrUserNotFound
 		}
+
 		return nil, fmt.Errorf("get user by id: %w", err)
 	}
 
@@ -28,7 +29,7 @@ func (u *UserUsecase) SearchUsersByEmail(
 
 	users, err := u.userRepo.SearchUsersByEmail(ctx, userID, normalizedQuery)
 	if err != nil {
-		return nil, fmt.Errorf("%w: search users by email: %v", domain.ErrInternal, err)
+		return nil, fmt.Errorf("%w: search users by email: %w", domain.ErrInternal, err)
 	}
 
 	if err := u.enrichUserSearchAvatarKeys(ctx, users); err != nil {
@@ -47,13 +48,16 @@ func (u *UserUsecase) SearchUsers(
 	if limit <= 0 {
 		limit = 10
 	}
+
 	users, err := u.SearchUsersByEmail(ctx, userID, query)
 	if err != nil {
 		return nil, err
 	}
+
 	if int32(len(users)) <= limit {
 		return users, nil
 	}
+
 	return users[:limit], nil
 }
 
@@ -62,6 +66,7 @@ func (u *UserUsecase) AddFriend(ctx context.Context, userID int64, friendID int6
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return domain.FriendResponse{}, domain.ErrUserNotFound
 		}
+
 		return domain.FriendResponse{}, fmt.Errorf("get user by id: %w", err)
 	}
 
@@ -74,6 +79,7 @@ func (u *UserUsecase) AddFriend(ctx context.Context, userID int64, friendID int6
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return domain.FriendResponse{}, domain.ErrUserNotFound
 		}
+
 		return domain.FriendResponse{}, fmt.Errorf("get friend by id: %w", err)
 	}
 
@@ -102,6 +108,7 @@ func (u *UserUsecase) DeleteFriend(ctx context.Context, userID int64, friendID i
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return domain.ErrUserNotFound
 		}
+
 		return fmt.Errorf("get user by id: %w", err)
 	}
 
@@ -125,18 +132,23 @@ func (u *UserUsecase) SendFriendRequest(ctx context.Context, userID, toUserID in
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return 0, domain.ErrUserNotFound
 		}
+
 		return 0, fmt.Errorf("get user by id: %w", err)
 	}
+
 	if userID == toUserID {
 		return 0, domain.ErrSelfFriendship
 	}
+
 	requestID, err := u.userRepo.SendFriendRequest(ctx, userID, toUserID)
 	if err != nil {
 		if errors.Is(err, domain.ErrAlreadyFriends) {
 			return 0, domain.ErrAlreadyFriends
 		}
+
 		return 0, fmt.Errorf("send friend request: %w", err)
 	}
+
 	return requestID, nil
 }
 
@@ -145,17 +157,22 @@ func (u *UserUsecase) RespondToFriendRequest(ctx context.Context, userID, reques
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return domain.ErrUserNotFound
 		}
+
 		return fmt.Errorf("get user by id: %w", err)
 	}
+
 	if action != "accept" && action != "decline" && action != "cancel" {
 		return domain.ErrInvalidSearchQuery
 	}
+
 	if err := u.userRepo.RespondToFriendRequest(ctx, requestID, userID, action); err != nil {
 		if errors.Is(err, domain.ErrFriendNotFound) {
 			return err
 		}
+
 		return fmt.Errorf("respond to friend request: %w", err)
 	}
+
 	return nil
 }
 
@@ -164,14 +181,18 @@ func (u *UserUsecase) DeleteOutgoingFriendRequest(ctx context.Context, userID, r
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return domain.ErrUserNotFound
 		}
+
 		return fmt.Errorf("get user by id: %w", err)
 	}
+
 	if err := u.userRepo.DeleteOutgoingFriendRequest(ctx, requestID, userID); err != nil {
 		if errors.Is(err, domain.ErrFriendNotFound) {
 			return err
 		}
+
 		return fmt.Errorf("delete outgoing friend request: %w", err)
 	}
+
 	return nil
 }
 
@@ -180,18 +201,23 @@ func (u *UserUsecase) GetFriendRequests(ctx context.Context, userID int64, direc
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return nil, domain.ErrUserNotFound
 		}
+
 		return nil, fmt.Errorf("get user by id: %w", err)
 	}
+
 	if direction != "incoming" && direction != "outgoing" {
 		direction = "incoming"
 	}
+
 	if limit <= 0 {
 		limit = 50
 	}
+
 	items, err := u.userRepo.GetFriendRequests(ctx, userID, direction, limit)
 	if err != nil {
 		return nil, fmt.Errorf("get friend requests: %w", err)
 	}
+
 	return items, nil
 }
 
@@ -200,21 +226,27 @@ func (u *UserUsecase) GetFriendsList(ctx context.Context, userID int64, limit, o
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return domain.FriendsListResponse{}, domain.ErrUserNotFound
 		}
+
 		return domain.FriendsListResponse{}, fmt.Errorf("get user by id: %w", err)
 	}
+
 	if limit <= 0 {
 		limit = 50
 	}
+
 	if offset < 0 {
 		offset = 0
 	}
+
 	friends, total, err := u.userRepo.GetFriendsList(ctx, userID, limit, offset)
 	if err != nil {
 		return domain.FriendsListResponse{}, fmt.Errorf("get friends list: %w", err)
 	}
+
 	if err := u.enrichUserSearchAvatarKeys(ctx, friends); err != nil {
 		return domain.FriendsListResponse{}, err
 	}
+
 	return domain.FriendsListResponse{
 		Friends:    friends,
 		TotalCount: total,

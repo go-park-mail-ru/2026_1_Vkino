@@ -408,7 +408,8 @@ func User(
 			}
 
 			movieIDs := favResp.GetMovieIds()
-			out := favoritesHTTPResponse{
+
+			out := dto.FavoritesHTTPResponse{
 				MovieIDs:   movieIDs,
 				TotalCount: favResp.GetTotalCount(),
 				Movies:     []*moviev1.MovieCard{},
@@ -445,6 +446,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -461,6 +463,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -477,6 +480,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -493,6 +497,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -504,6 +509,7 @@ func User(
 			if !ok {
 				return
 			}
+
 			var req struct {
 				Action string `json:"action"`
 			}
@@ -520,6 +526,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -540,6 +547,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -558,6 +566,7 @@ func User(
 			})
 			if err != nil {
 				writeGRPCError(w, err)
+
 				return
 			}
 
@@ -593,6 +602,7 @@ func User(
 			query := r.URL.Query()
 
 			supportLine := int64(0)
+
 			if rawSupportLine := strings.TrimSpace(query.Get("support_line")); rawSupportLine != "" {
 				parsedSupportLine, err := strconv.ParseInt(rawSupportLine, 10, 64)
 				if err != nil {
@@ -735,42 +745,4 @@ func User(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 	}
-}
-
-type favoritesHTTPResponse struct {
-	MovieIDs   []int64                `json:"movie_ids"`
-	TotalCount int32                  `json:"total_count"`
-	Movies     []*moviev1.MovieCard   `json:"movies"`
-}
-
-func orderMovieCardsByIDOrder(movieIDs []int64, movies []*moviev1.MovieCard) []*moviev1.MovieCard {
-	byID := make(map[int64]*moviev1.MovieCard, len(movies))
-	for _, m := range movies {
-		if m == nil {
-			continue
-		}
-
-		byID[m.GetId()] = m
-	}
-
-	out := make([]*moviev1.MovieCard, 0, len(movieIDs))
-	for _, id := range movieIDs {
-		if m, ok := byID[id]; ok {
-			out = append(out, m)
-		}
-	}
-
-	return out
-}
-
-func parseInt32Query(r *http.Request, key string, defaultValue int32) int32 {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
-	if value == "" {
-		return defaultValue
-	}
-	parsed, err := strconv.ParseInt(value, 10, 32)
-	if err != nil {
-		return defaultValue
-	}
-	return int32(parsed)
 }

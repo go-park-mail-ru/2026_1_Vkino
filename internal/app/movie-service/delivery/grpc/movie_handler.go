@@ -317,5 +317,6 @@ func mapWatchProgressItems(items []domain.WatchProgressItemResponse) []*moviev1.
 			UpdatedAt:       item.UpdatedAt,
 		})
 	}
+
 	return result
 }

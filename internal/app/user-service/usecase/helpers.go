@@ -35,17 +35,21 @@ func (u *UserUsecase) enrichUserSearchAvatarKeys(ctx context.Context, users []do
 	if u.avatarStore == nil {
 		return nil
 	}
+
 	for i := range users {
 		key := users[i].AvatarURL
 		if key == "" {
 			continue
 		}
+
 		url, err := u.avatarStore.PresignGetObject(ctx, key, 0)
 		if err != nil {
 			continue
 		}
+
 		users[i].AvatarURL = url
 	}
+
 	return nil
 }
 
@@ -54,10 +58,12 @@ func (u *UserUsecase) friendAvatarPresignedURL(ctx context.Context, friend *doma
 	if key == "" || u.avatarStore == nil {
 		return "", nil
 	}
+
 	url, err := u.avatarStore.PresignGetObject(ctx, key, 0)
 	if err != nil {
 		return "", nil
 	}
+
 	return url, nil
 }
 

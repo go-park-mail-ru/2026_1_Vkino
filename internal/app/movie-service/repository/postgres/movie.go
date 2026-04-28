@@ -197,13 +197,16 @@ func (r *MovieRepo) GetMovieCardsByIDs(ctx context.Context, movieIDs []int64) ([
 	defer rows.Close()
 
 	result := make([]domain.MovieCard, 0, len(movieIDs))
+
 	for rows.Next() {
 		var movie domain.MovieCard
 		if err = rows.Scan(&movie.ID, &movie.Title, &movie.PictureFileKey); err != nil {
 			return nil, fmt.Errorf("scan movie card: %w", err)
 		}
+
 		result = append(result, movie)
 	}
+
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("iterate movie cards: %w", err)
 	}
@@ -302,6 +305,7 @@ func (r *MovieRepo) IsFavorite(ctx context.Context, userID, movieID int64) (bool
 	if err := r.db.QueryRow(ctx, sqlIsFavorite, userID, movieID).Scan(&isFavorite); err != nil {
 		return false, fmt.Errorf("is favorite: %w", err)
 	}
+
 	return isFavorite, nil
 }
 
@@ -321,6 +325,7 @@ func (r *MovieRepo) getWatchProgressItems(ctx context.Context, query string, use
 	defer rows.Close()
 
 	items := make([]domain.WatchProgressItem, 0, limit)
+
 	for rows.Next() {
 		var (
 			item      domain.WatchProgressItem
@@ -341,12 +346,15 @@ func (r *MovieRepo) getWatchProgressItems(ctx context.Context, query string, use
 		); err != nil {
 			return nil, fmt.Errorf("scan watch progress item: %w", err)
 		}
+
 		item.UpdatedAt = updatedAt.Format(time.RFC3339)
 		items = append(items, item)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("iterate watch progress: %w", err)
 	}
+
 	return items, nil
 }
 

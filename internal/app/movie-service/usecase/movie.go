@@ -44,6 +44,7 @@ func (u *MovieUsecase) GetMoviesByIDs(ctx context.Context, movieIDs []int64) ([]
 		if err != nil {
 			return nil, err
 		}
+
 		result = append(result, card)
 	}
 

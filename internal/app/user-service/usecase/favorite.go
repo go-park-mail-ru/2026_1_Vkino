@@ -35,6 +35,7 @@ func (u *UserUsecase) ToggleFavorite(
 	if movieID <= 0 {
 		return domain.FavoriteMovieResponse{}, domain.ErrInvalidMovieID
 	}
+
 	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
 		return domain.FavoriteMovieResponse{}, domain.ErrInvalidToken
 	}
@@ -62,6 +63,7 @@ func (u *UserUsecase) GetFavorites(
 	if limit <= 0 {
 		limit = 10
 	}
+
 	if offset < 0 {
 		offset = 0
 	}
