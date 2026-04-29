@@ -74,3 +74,17 @@ type EpisodeProgress struct {
 	EpisodeID       int64
 	PositionSeconds int64
 }
+
+type WatchProgressItem struct {
+	EpisodeID       int64
+	MovieID         int64
+	MovieTitle      string
+	PosterURL       string
+	ContentType     string
+	SeasonNumber    int
+	EpisodeNumber   int
+	EpisodeTitle    string
+	PositionSeconds int64
+	DurationSeconds int64
+	UpdatedAt       string
+}

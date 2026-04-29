@@ -19,6 +19,7 @@ type MovieResponse struct {
 	Genres             []string             `json:"genres"`
 	Actors             []ActorShortResponse `json:"actors"`
 	Episodes           []EpisodeResponse    `json:"episodes"`
+	IsFavorite         bool                 `json:"is_favorite"`
 }
 
 type ActorResponse struct {
@@ -80,4 +81,18 @@ type EpisodePlaybackResponse struct {
 type EpisodeProgressResponse struct {
 	EpisodeID       int64 `json:"episode_id"`
 	PositionSeconds int64 `json:"position_seconds"`
+}
+
+type WatchProgressItemResponse struct {
+	EpisodeID       int64  `json:"episode_id"`
+	MovieID         int64  `json:"movie_id"`
+	MovieTitle      string `json:"movie_title"`
+	PosterURL       string `json:"poster_url"`
+	ContentType     string `json:"content_type"`
+	SeasonNumber    int    `json:"season_number"`
+	EpisodeNumber   int    `json:"episode_number"`
+	EpisodeTitle    string `json:"episode_title"`
+	PositionSeconds int64  `json:"position_seconds"`
+	DurationSeconds int64  `json:"duration_seconds"`
+	UpdatedAt       string `json:"updated_at"`
 }

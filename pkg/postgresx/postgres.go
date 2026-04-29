@@ -76,6 +76,16 @@ func (p *Client) Close() {
 	p.Pool.Close()
 }
 
+// Begin starts a transaction. Supported only when Pool is backed by pgxpool.Pool.
+func (p *Client) Begin(ctx context.Context) (pgx.Tx, error) {
+	pool, ok := p.Pool.(*pgxPool)
+	if !ok {
+		return nil, fmt.Errorf("postgres: begin is not supported for this pool implementation")
+	}
+
+	return pool.pool.Begin(ctx)
+}
+
 func (p *Client) Ping(ctx context.Context) error {
 	startedAt := time.Now()
 	err := p.Pool.Ping(ctx)

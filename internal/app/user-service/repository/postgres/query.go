@@ -21,10 +21,13 @@ const (
 		select
 			u.id,
 			u.email,
+			coalesce(u.avatar_file_key, '') as avatar_file_key,
 			exists(
 				select 1
 				from friend f
-				where f.user1_id = least($1, u.id) and f.user2_id = greatest($1, u.id)
+				where
+					(f.user1_id = $1 and f.user2_id = u.id)
+					or (f.user1_id = u.id and f.user2_id = $1)
 			) as is_friend
 		from users u
 		where u.id <> $1
@@ -55,17 +58,144 @@ const (
 		where m.id = $2
 		on conflict (movie_id, user_id)
 		do update set
-			is_favorite = excluded.is_favorite,
-			updated_at = now()
+			is_favorite = excluded.is_favorite
+	`
+
+	sqlToggleFavorite = `
+		with current as (
+			select is_favorite from user_interaction
+			where user_id = $1 and movie_id = $2
+		)
+		insert into user_interaction (user_id, movie_id, is_favorite)
+		values ($1, $2, not coalesce((select is_favorite from current), false))
+		on conflict (movie_id, user_id)
+		do update set
+			is_favorite = not user_interaction.is_favorite
+		returning is_favorite
+	`
+
+	sqlGetFavorites = `
+		select ui.movie_id
+		from user_interaction ui
+		where ui.user_id = $1 and ui.is_favorite = true
+		order by ui.updated_at desc
+		limit $2 offset $3
+	`
+
+	sqlCountFavorites = `
+		select count(*)
+		from user_interaction
+		where user_id = $1 and is_favorite = true
 	`
 
 	sqlAddFriend = `
 		insert into friend (user1_id, user2_id)
-		values (least($1, $2), greatest($1, $2))
+		values ($1, $2)
 	`
 
 	sqlDeleteFriend = `
 		delete from friend
-		where user1_id = least($1, $2) and user2_id = greatest($1, $2)
+		where user1_id = $1 and user2_id = $2
+	`
+
+	sqlDeleteFriendRequestsBetweenUsers = `
+		delete from friend_request
+		where (from_user_id = $1 and to_user_id = $2)
+			or (from_user_id = $2 and to_user_id = $1)
+	`
+
+	sqlAreFriends = `
+		select exists(
+			select 1
+			from friend
+			where user1_id = $1 and user2_id = $2
+		)
+	`
+
+	sqlGetFriendRequestStatus = `
+		select status
+		from friend_request
+		where from_user_id = $1 and to_user_id = $2
+	`
+
+	sqlDeleteFriendRequestPair = `
+		delete from friend_request
+		where from_user_id = $1 and to_user_id = $2
+	`
+
+	sqlSendFriendRequest = `
+		insert into friend_request (from_user_id, to_user_id, status)
+		values ($1, $2, 'pending')
+		on conflict (from_user_id, to_user_id)
+		do update set
+			status = case when friend_request.status = 'declined' then 'pending' else friend_request.status end
+		returning id
+	`
+
+	sqlRespondToRequest = `
+		update friend_request
+		set status = $1
+		where id = $2 and to_user_id = $3 and status = 'pending'
+		returning from_user_id
+	`
+
+	sqlDeleteOutgoingRequest = `
+		delete from friend_request
+		where id = $1 and from_user_id = $2 and status = 'pending'
+		returning to_user_id
+	`
+
+	sqlAcceptFriendRequestUpdate = `
+		update friend_request
+		set status = 'accepted'
+		where id = $1 and to_user_id = $2 and status = 'pending'
+		returning from_user_id, to_user_id
+	`
+
+	sqlAcceptFriendInsert = `
+		insert into friend (user1_id, user2_id)
+		values ($1, $2)
+		on conflict do nothing
+	`
+
+	sqlAcceptFriendDeleteRequest = `
+		delete from friend_request where id = $1
+	`
+
+	sqlGetIncomingRequests = `
+		select fr.id, fr.from_user_id, u.email, fr.created_at
+		from friend_request fr
+		join users u on u.id = fr.from_user_id
+		where fr.to_user_id = $1 and fr.status = 'pending'
+		order by fr.created_at desc
+		limit $2
+	`
+
+	sqlGetOutgoingRequests = `
+		select fr.id, fr.to_user_id, u.email, fr.created_at
+		from friend_request fr
+		join users u on u.id = fr.to_user_id
+		where fr.from_user_id = $1 and fr.status = 'pending'
+		order by fr.created_at desc
+		limit $2
+	`
+
+	sqlGetFriends = `
+		select
+			case when f.user1_id = $1 then f.user2_id else f.user1_id end as friend_id,
+			u.email,
+			coalesce(u.avatar_file_key, '') as avatar_file_key
+		from friend f
+		join users u on u.id = case when f.user1_id = $1 then f.user2_id else f.user1_id end
+		where (f.user1_id = $1 or f.user2_id = $1) and u.is_active = true
+		order by u.email
+		limit $2 offset $3
+	`
+
+	sqlCountFriends = `
+		select count(*)
+		from friend f
+		join users u on u.id = case when f.user1_id = $1 then f.user2_id else f.user1_id end
+		where (f.user1_id = $1 or f.user2_id = $1) and u.is_active = true
 	`
 )

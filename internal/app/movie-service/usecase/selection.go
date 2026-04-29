@@ -4,30 +4,30 @@ import (
 	"context"
 	"strings"
 
-	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
+	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
 )
 
-func (u *MovieUsecase) GetSelectionByTitle(ctx context.Context, title string) (domain2.SelectionResponse, error) {
+func (u *MovieUsecase) GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error) {
 	normalizedTitle := strings.TrimSpace(title)
-	if !domain2.ValidateSelectionTitle(normalizedTitle) {
-		return domain2.SelectionResponse{}, domain2.ErrInvalidSelectionTitle
+	if !domain.ValidateSelectionTitle(normalizedTitle) {
+		return domain.SelectionResponse{}, domain.ErrInvalidSelectionTitle
 	}
 
 	selection, err := u.movieRepo.GetSelectionByTitle(ctx, normalizedTitle)
 	if err != nil {
-		return domain2.SelectionResponse{}, err
+		return domain.SelectionResponse{}, err
 	}
 
 	return u.buildSelectionResponse(ctx, selection)
 }
 
-func (u *MovieUsecase) GetAllSelections(ctx context.Context) ([]domain2.SelectionResponse, error) {
+func (u *MovieUsecase) GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error) {
 	selections, err := u.movieRepo.GetAllSelections(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]domain2.SelectionResponse, 0, len(selections))
+	result := make([]domain.SelectionResponse, 0, len(selections))
 	for _, selection := range selections {
 		item, buildErr := u.buildSelectionResponse(ctx, selection)
 		if buildErr != nil {

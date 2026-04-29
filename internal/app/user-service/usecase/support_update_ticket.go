@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	domain2 "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
+	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository/postgres"
 	validator "github.com/go-park-mail-ru/2026_1_VKino/pkg/validatex"
 )
@@ -14,8 +14,8 @@ import (
 func (u *supportUsecase) UpdateTicket(
 	ctx context.Context,
 	actorUserID int64,
-	req domain2.UpdateSupportTicketRequest,
-) (domain2.SupportTicketResponse, error) {
+	req domain.UpdateSupportTicketRequest,
+) (domain.SupportTicketResponse, error) {
 	req.Category = strings.TrimSpace(req.Category)
 	req.Status = strings.TrimSpace(req.Status)
 	req.Title = strings.TrimSpace(req.Title)
@@ -24,51 +24,51 @@ func (u *supportUsecase) UpdateTicket(
 	req.AttachmentFileKey = strings.TrimSpace(req.AttachmentFileKey)
 
 	if req.TicketID <= 0 {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketID
+		return domain.SupportTicketResponse{}, domain.ErrInvalidTicketID
 	}
 
 	if !isValidTicketCategory(req.Category) {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
+		return domain.SupportTicketResponse{}, domain.ErrInvalidTicketPayload
 	}
 
 	if !isValidTicketStatus(req.Status) {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
+		return domain.SupportTicketResponse{}, domain.ErrInvalidTicketPayload
 	}
 
 	if !isValidSupportLine(req.SupportLine) {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
+		return domain.SupportTicketResponse{}, domain.ErrInvalidTicketPayload
 	}
 
 	if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidEmail
+		return domain.SupportTicketResponse{}, domain.ErrInvalidEmail
 	}
 
 	if (req.Rating < 0) || (req.Rating > 5) {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
+		return domain.SupportTicketResponse{}, domain.ErrInvalidTicketPayload
 	}
 
 	role, err := u.userRepo.GetUserRole(ctx, actorUserID)
 	if err != nil {
-		return domain2.SupportTicketResponse{}, domain2.ErrInvalidToken
+		return domain.SupportTicketResponse{}, domain.ErrInvalidToken
 	}
 
 	ticketBeforeUpdate, err := u.supportRepo.GetTicketByID(ctx, req.TicketID)
 	if err != nil {
 		if errors.Is(err, postgresrepo.ErrTicketNotFound) {
-			return domain2.SupportTicketResponse{}, domain2.ErrTicketNotFound
+			return domain.SupportTicketResponse{}, domain.ErrTicketNotFound
 		}
 
-		return domain2.SupportTicketResponse{}, fmt.Errorf("%w: %v", domain2.ErrInternal, err)
+		return domain.SupportTicketResponse{}, fmt.Errorf("%w: %v", domain.ErrInternal, err)
 	}
 
 	switch {
 	case role == "user":
 		if ticketBeforeUpdate.UserID != actorUserID {
-			return domain2.SupportTicketResponse{}, domain2.ErrAccessDenied
+			return domain.SupportTicketResponse{}, domain.ErrAccessDenied
 		}
 
 		if req.Rating > 0 && !isTerminalTicketStatus(ticketBeforeUpdate.Status) {
-			return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
+			return domain.SupportTicketResponse{}, domain.ErrInvalidTicketPayload
 		}
 
 		req.Category = ""
@@ -83,11 +83,11 @@ func (u *supportUsecase) UpdateTicket(
 		req.Rating = 0
 
 		if !canAccessCategory(role, ticketBeforeUpdate.Category) {
-			return domain2.SupportTicketResponse{}, domain2.ErrAccessDenied
+			return domain.SupportTicketResponse{}, domain.ErrAccessDenied
 		}
 
 		if req.Category != "" && !canAccessCategory(role, req.Category) {
-			return domain2.SupportTicketResponse{}, domain2.ErrAccessDenied
+			return domain.SupportTicketResponse{}, domain.ErrAccessDenied
 		}
 
 		if !isAdmin(role) {
@@ -95,13 +95,13 @@ func (u *supportUsecase) UpdateTicket(
 		}
 
 	default:
-		return domain2.SupportTicketResponse{}, domain2.ErrAccessDenied
+		return domain.SupportTicketResponse{}, domain.ErrAccessDenied
 	}
 
 	if req.Category != "" {
 		derivedSupportLine := supportLineForCategory(req.Category)
 		if req.SupportLine != 0 && req.SupportLine != derivedSupportLine {
-			return domain2.SupportTicketResponse{}, domain2.ErrInvalidTicketPayload
+			return domain.SupportTicketResponse{}, domain.ErrInvalidTicketPayload
 		}
 
 		req.SupportLine = derivedSupportLine
@@ -110,13 +110,13 @@ func (u *supportUsecase) UpdateTicket(
 	ticket, err := u.supportRepo.UpdateTicket(ctx, req)
 	if err != nil {
 		if errors.Is(err, postgresrepo.ErrTicketNotFound) {
-			return domain2.SupportTicketResponse{}, domain2.ErrTicketNotFound
+			return domain.SupportTicketResponse{}, domain.ErrTicketNotFound
 		}
 
-		return domain2.SupportTicketResponse{}, fmt.Errorf("%w: %v", domain2.ErrInternal, err)
+		return domain.SupportTicketResponse{}, fmt.Errorf("%w: %v", domain.ErrInternal, err)
 	}
 
-	u.broker.publish(req.TicketID, domain2.SupportTicketEventResponse{
+	u.broker.publish(req.TicketID, domain.SupportTicketEventResponse{
 		Type:   "ticket_updated",
 		Ticket: ticket,
 	})

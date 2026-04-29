@@ -11,6 +11,14 @@ service UserService {
   rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
   rpc DeleteFriend(DeleteFriendRequest) returns (DeleteFriendResponse);
   rpc AddMovieToFavorites(AddMovieToFavoritesRequest) returns (AddMovieToFavoritesResponse);
+  rpc ToggleFavorite(ToggleFavoriteRequest) returns (ToggleFavoriteResponse);
+  rpc GetFavorites(GetFavoritesRequest) returns (GetFavoritesResponse);
+  rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse);
+  rpc SendFriendRequest(SendFriendRequestRequest) returns (SendFriendRequestResponse);
+  rpc RespondToFriendRequest(RespondToFriendRequestRequest) returns (RespondToFriendRequestResponse);
+  rpc DeleteOutgoingFriendRequest(DeleteOutgoingFriendRequestRequest) returns (DeleteOutgoingFriendRequestResponse);
+  rpc GetFriendRequests(GetFriendRequestsRequest) returns (GetFriendRequestsResponse);
+  rpc GetFriendsList(GetFriendsListRequest) returns (GetFriendsListResponse);
 }
 
 message GetProfileRequest {
@@ -45,7 +53,8 @@ message SearchUsersByEmailRequest {
 message UserSearchResult {
   int64 id = 1;
   string email = 2;
-  bool is_friend = 3;
+  string avatar_url = 3;
+  bool is_friend = 4;
 }
 
 message SearchUsersByEmailResponse {
@@ -60,6 +69,7 @@ message AddFriendRequest {
 message AddFriendResponse {
   int64 id = 1;
   string email = 2;
+  string avatar_url = 3;
 }
 
 message DeleteFriendRequest {
@@ -79,4 +89,83 @@ message AddMovieToFavoritesRequest {
 message AddMovieToFavoritesResponse {
   int64 movie_id = 1;
   bool is_favorite = 2;
+}
+
+message ToggleFavoriteRequest {
+  int64 movie_id = 1;
+}
+
+message ToggleFavoriteResponse {
+  int64 movie_id = 1;
+  bool is_favorite = 2;
+}
+
+message GetFavoritesRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message GetFavoritesResponse {
+  repeated int64 movie_ids = 1;
+  int32 total_count = 2;
+}
+
+message SearchUsersRequest {
+  string query = 1;
+  int32 limit = 2;
+}
+
+message SearchUsersResponse {
+  repeated UserSearchResult users = 1;
+}
+
+message SendFriendRequestRequest {
+  int64 to_user_id = 1;
+}
+
+message SendFriendRequestResponse {
+  int64 request_id = 1;
+}
+
+message RespondToFriendRequestRequest {
+  int64 request_id = 1;
+  string action = 2;
+}
+
+message RespondToFriendRequestResponse {
+  bool success = 1;
+}
+
+message DeleteOutgoingFriendRequestRequest {
+  int64 request_id = 1;
+}
+
+message DeleteOutgoingFriendRequestResponse {
+  bool success = 1;
+}
+
+message GetFriendRequestsRequest {
+  string direction = 1;
+  int32 limit = 2;
+}
+
+message FriendRequestItem {
+  int64 id = 1;
+  int64 user_id = 2;
+  string email = 3;
+  string created_at = 4;
+}
+
+message GetFriendRequestsResponse {
+  repeated FriendRequestItem requests = 1;
+}
+
+message GetFriendsListRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message GetFriendsListResponse {
+  repeated UserSearchResult friends = 1;
+  int32 total_count = 2;
 }

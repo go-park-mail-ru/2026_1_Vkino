@@ -1,4 +1,4 @@
-PHONY: init
+.PHONY: init generate
 
 PACKAGES_NO_MOCKS := $(shell go list ./... | grep -v '/mocks$$')
 PROTOC_PLUGIN_PATH := $(shell go env GOPATH)/bin
@@ -7,6 +7,9 @@ init:
 	cp .github/hooks/* .git/hooks
 	chmod +x .git/hooks/*
 	migrate create -ext sql -dir ./migrations migration
+
+generate:
+	go generate ./...
 
 MIGRATIONS_DIR := ./migrations
 
@@ -27,7 +30,7 @@ cover-total:
 
 run-build:
 	make proto-gen
-	docker compose -f deployments/dev/compose.yaml up --build -d
+	docker compose -f deployments/dev/compose.yaml up --build
 
 run-stop:
 	docker compose -f deployments/dev/compose.yaml down -v

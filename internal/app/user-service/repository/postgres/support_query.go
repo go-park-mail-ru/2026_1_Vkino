@@ -154,11 +154,6 @@ const (
 		left join users u on u.id = t.user_id
 	`
 
-	sqlDeleteSupportTicket = `
-		delete from support_ticket
-		where id = $1
-	`
-
 	sqlCreateSupportTicketMessage = `
 		insert into support_ticket_message (
 			ticket_id,
