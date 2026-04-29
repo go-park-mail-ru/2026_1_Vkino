@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
@@ -131,7 +131,7 @@ func (s *SupportServer) UploadSupportFile(
 		return nil, err
 	}
 
-	file, err := s.usecase.UploadSupportFile(ctx, userID, domain2.UploadSupportFileRequest{
+	file, err := s.usecase.UploadSupportFile(ctx, userID, domain.UploadSupportFileRequest{
 		Content:     req.GetContent(),
 		Filename:    req.GetFilename(),
 		ContentType: req.GetContentType(),
@@ -158,7 +158,7 @@ func (s *SupportServer) GetSupportFileURL(
 		return nil, err
 	}
 
-	file, err := s.usecase.GetSupportFileURL(ctx, userID, domain2.GetSupportFileURLRequest{
+	file, err := s.usecase.GetSupportFileURL(ctx, userID, domain.GetSupportFileURLRequest{
 		FileKey:  req.GetFileKey(),
 		TicketID: req.GetTicketId(),
 	})

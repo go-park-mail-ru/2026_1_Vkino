@@ -30,7 +30,7 @@ cover-total:
 
 run-build:
 	make proto-gen
-	docker compose -f deployments/dev/compose.yaml up --build -d
+	docker compose -f deployments/dev/compose.yaml up --build
 
 run-stop:
 	docker compose -f deployments/dev/compose.yaml down -v

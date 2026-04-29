@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
 )
 
 func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Movie) (domain.MovieResponse, error) {
@@ -132,18 +132,18 @@ func (u *MovieUsecase) buildSelectionResponse(
 
 func (u *MovieUsecase) buildGenreResponse(
 	ctx context.Context,
-	genre domain2.Genre,
-) (domain2.GenreResponse, error) {
-	resp := domain2.GenreResponse{
+	genre domain.Genre,
+) (domain.GenreResponse, error) {
+	resp := domain.GenreResponse{
 		ID:     genre.ID,
 		Title:  genre.Title,
-		Movies: make([]domain2.MovieCardResponse, 0, len(genre.Movies)),
+		Movies: make([]domain.MovieCardResponse, 0, len(genre.Movies)),
 	}
 
 	for _, movie := range genre.Movies {
 		card, err := u.buildMovieCardResponse(ctx, movie)
 		if err != nil {
-			return domain2.GenreResponse{}, err
+			return domain.GenreResponse{}, err
 		}
 
 		resp.Movies = append(resp.Movies, card)
