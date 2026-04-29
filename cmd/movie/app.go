@@ -14,6 +14,7 @@ import (
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 
@@ -32,6 +33,12 @@ func Run(configPath string) error {
 	}
 
 	appLogger := baseLogger.WithField("component", "movie")
+	runCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err = metrics.StartServer(runCtx, "movie-service", cfg.Metrics, appLogger); err != nil {
+		return fmt.Errorf("start metrics server: %w", err)
+	}
 
 	options := corepostgres.BuildPostgresOptions(&cfg.Postgres)
 
@@ -104,7 +111,7 @@ func Run(configPath string) error {
 		return err
 	}
 
-	grpcServer := grpcx.NewServer(appLogger, func(server *grpc.Server) {
+	grpcServer := grpcx.NewServer(appLogger, "movie-service", func(server *grpc.Server) {
 		moviev1.RegisterMovieServiceServer(server, deliverygrpc.NewServer(movieUC, authClient))
 	})
 
@@ -121,10 +128,12 @@ func Run(configPath string) error {
 
 	select {
 	case err = <-errCh:
+		cancel()
 		if err != nil {
 			return fmt.Errorf("grpc server stopped with error: %w", err)
 		}
 	case sig := <-stopCh:
+		cancel()
 		appLogger.WithField("signal", sig.String()).Info("shutting down grpc server")
 		grpcServer.GracefulStop()
 	}

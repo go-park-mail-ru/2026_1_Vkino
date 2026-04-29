@@ -2,7 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/api-gateway/routes"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
@@ -11,6 +17,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
 	"google.golang.org/grpc"
 )
 
@@ -26,6 +33,12 @@ func Run(configPath string) error {
 	}
 
 	appLogger := baseLogger.WithField("component", "api-gateway")
+	runCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err = metrics.StartServer(runCtx, "api-gateway", cfg.Metrics, appLogger); err != nil {
+		return fmt.Errorf("start metrics server: %w", err)
+	}
 
 	authConn, err := newGRPCConn(cfg.AuthGRPC)
 	if err != nil {
@@ -63,7 +76,39 @@ func Run(configPath string) error {
 
 	appLogger.WithField("port", cfg.Server.Port).Info("starting api gateway")
 
-	return server.Run()
+	errCh := make(chan error, 1)
+
+	go func() {
+		errCh <- server.Run()
+	}()
+
+	stopCh := make(chan os.Signal, 1)
+	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case err = <-errCh:
+		cancel()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("http server stopped with error: %w", err)
+		}
+	case sig := <-stopCh:
+		cancel()
+		appLogger.WithField("signal", sig.String()).Info("shutting down api gateway")
+
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shutdownCancel()
+
+		if shutdownErr := server.Shutdown(shutdownCtx); shutdownErr != nil {
+			return fmt.Errorf("shutdown api gateway: %w", shutdownErr)
+		}
+
+		err = <-errCh
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("http server stopped with error: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func newGRPCConn(cfg ServiceGRPCConfig) (*grpc.ClientConn, error) {

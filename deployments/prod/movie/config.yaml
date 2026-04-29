@@ -10,6 +10,10 @@ logger:
   format: "json"
   output_path: "logs/app/movie.log"
 
+metrics:
+  enabled: true
+  address: ":9203"
+
 postgres:
   host: "db"
   port: 5432

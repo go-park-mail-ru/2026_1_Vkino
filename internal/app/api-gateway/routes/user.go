@@ -301,7 +301,7 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 
 func User(cfg Config, userClient UserClient) []httpserver.Option {
 	return []httpserver.Option{
-		httpserver.WithRoute("GET /user/me", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /user/me", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
@@ -315,7 +315,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /user/search", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /user/search", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
@@ -332,7 +332,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("PUT /user/profile", func(w http.ResponseWriter, r *http.Request) {
+		route("PUT /user/profile", func(w http.ResponseWriter, r *http.Request) {
 			req, ok := readUpdateProfilePayload(w, r)
 			if !ok {
 				return
@@ -355,7 +355,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("POST /user/friends/{id}", func(w http.ResponseWriter, r *http.Request) {
+		route("POST /user/friends/{id}", func(w http.ResponseWriter, r *http.Request) {
 			toUserID, ok := parsePathID(w, r, "invalid friend id")
 			if !ok {
 				return
@@ -376,7 +376,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("DELETE /user/friends/{id}", func(w http.ResponseWriter, r *http.Request) {
+		route("DELETE /user/friends/{id}", func(w http.ResponseWriter, r *http.Request) {
 			friendID, ok := parsePathID(w, r, "invalid friend id")
 			if !ok {
 				return
@@ -399,7 +399,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			})
 		}),
 
-		httpserver.WithRoute("PUT /user/favorites/{id}", func(w http.ResponseWriter, r *http.Request) {
+		route("PUT /user/favorites/{id}", func(w http.ResponseWriter, r *http.Request) {
 			movieID, ok := parsePathID(w, r, "invalid movie id")
 			if !ok {
 				return
@@ -420,7 +420,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /user/favorites", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /user/favorites", func(w http.ResponseWriter, r *http.Request) {
 			cancelUser := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancelUser()
 
@@ -464,7 +464,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, out)
 		}),
 
-		httpserver.WithRoute("GET /user/watch/continue", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /user/watch/continue", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
@@ -480,7 +480,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /user/watch/history", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /user/watch/history", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
@@ -497,7 +497,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /user/watch/recent", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /user/watch/recent", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
@@ -514,7 +514,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /user/friends/requests", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /user/friends/requests", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
@@ -531,7 +531,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("POST /user/friends/requests/{id}/respond", func(w http.ResponseWriter, r *http.Request) {
+		route("POST /user/friends/requests/{id}/respond", func(w http.ResponseWriter, r *http.Request) {
 			requestID, ok := parsePathID(w, r, "invalid request id")
 			if !ok {
 				return
@@ -560,7 +560,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("DELETE /user/friends/requests/{id}", func(w http.ResponseWriter, r *http.Request) {
+		route("DELETE /user/friends/requests/{id}", func(w http.ResponseWriter, r *http.Request) {
 			requestID, ok := parsePathID(w, r, "invalid request id")
 			if !ok {
 				return
@@ -583,7 +583,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			})
 		}),
 
-		httpserver.WithRoute("GET /user/friends", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /user/friends", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 
@@ -600,7 +600,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("POST /support/tickets", func(w http.ResponseWriter, r *http.Request) {
+		route("POST /support/tickets", func(w http.ResponseWriter, r *http.Request) {
 			var req dto.SupportCreateTicketRequest
 			if !readJSON(w, r, &req) {
 				return
@@ -625,11 +625,11 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusCreated, resp)
 		}),
 
-		httpserver.WithRoute("POST /support/files", newSupportFileUploadHandler(cfg, userClient)),
+		route("POST /support/files", newSupportFileUploadHandler(cfg, userClient)),
 
-		httpserver.WithRoute("GET /support/files", newSupportFileURLHandler(cfg, userClient)),
+		route("GET /support/files", newSupportFileURLHandler(cfg, userClient)),
 
-		httpserver.WithRoute("GET /support/tickets", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /support/tickets", func(w http.ResponseWriter, r *http.Request) {
 			query := r.URL.Query()
 
 			supportLine := int64(0)
@@ -665,7 +665,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("PATCH /support/tickets/{id}", func(w http.ResponseWriter, r *http.Request) {
+		route("PATCH /support/tickets/{id}", func(w http.ResponseWriter, r *http.Request) {
 			ticketID, ok := parsePathID(w, r, "invalid ticket id")
 			if !ok {
 				return
@@ -699,7 +699,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /support/tickets/{id}/messages", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /support/tickets/{id}/messages", func(w http.ResponseWriter, r *http.Request) {
 			ticketID, ok := parsePathID(w, r, "invalid ticket id")
 			if !ok {
 				return
@@ -722,7 +722,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 
 		httpserver.WithRoute("GET /support/tickets/{id}/subscribe", newSupportTicketSubscribeHandler(userClient)),
 
-		httpserver.WithRoute("POST /support/tickets/{id}/messages", func(w http.ResponseWriter, r *http.Request) {
+		route("POST /support/tickets/{id}/messages", func(w http.ResponseWriter, r *http.Request) {
 			ticketID, ok := parsePathID(w, r, "invalid ticket id")
 			if !ok {
 				return
@@ -750,7 +750,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			httppkg.Response(w, http.StatusCreated, resp)
 		}),
 
-		httpserver.WithRoute("GET /support/statistics", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /support/statistics", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.UserRequestTimeout())
 			defer cancel()
 

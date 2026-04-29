@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx/interceptor"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -22,15 +23,24 @@ func Listen(port int) (net.Listener, error) {
 	return lis, nil
 }
 
-func NewServer(log *logger.Logger, register func(*grpc.Server), opts ...grpc.ServerOption) *grpc.Server {
+func NewServer(
+	log *logger.Logger,
+	serviceName string,
+	register func(*grpc.Server),
+	opts ...grpc.ServerOption,
+) *grpc.Server {
 	baseOpts := make([]grpc.ServerOption, 0, 1+len(opts))
 	baseOpts = append(baseOpts,
 		grpc.MaxRecvMsgSize(defaultMaxMessageSize),
 		grpc.MaxSendMsgSize(defaultMaxMessageSize),
 		grpc.ChainUnaryInterceptor(
 			interceptor.UnaryRequestID(),
-			interceptor.UnaryRecovery(log),
 			interceptor.UnaryLogging(log),
+			metrics.UnaryServerInterceptor(serviceName),
+			interceptor.UnaryRecovery(log),
+		),
+		grpc.ChainStreamInterceptor(
+			metrics.StreamServerInterceptor(serviceName),
 		),
 	)
 

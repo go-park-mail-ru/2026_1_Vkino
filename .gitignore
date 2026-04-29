@@ -13,3 +13,4 @@ deployments/prod/.env
 frontend-dist/
 *.md
 !README.md
+!docs/*.md

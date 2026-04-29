@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/configenv"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
@@ -22,6 +23,7 @@ type Config struct {
 	GRPC     GRPCConfig          `mapstructure:"grpc"`
 	AuthGRPC ServiceGRPCConfig   `mapstructure:"auth_grpc"`
 	Logger   logger.Config       `mapstructure:"logger"`
+	Metrics  metrics.Config      `mapstructure:"metrics"`
 	Postgres corepostgres.Config `mapstructure:"postgres"`
 	S3       storage.S3Config    `mapstructure:"s3"`
 }

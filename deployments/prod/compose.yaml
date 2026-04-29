@@ -24,6 +24,8 @@ services:
     volumes:
       - ./gateway/config.yaml:/etc/vkino/gateway.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
+    expose:
+      - "9200"
     networks:
       - app-network
 
@@ -45,6 +47,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    expose:
+      - "9090"
+      - "9201"
     networks:
       - app-network
 
@@ -67,6 +72,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    expose:
+      - "9091"
+      - "9202"
     networks:
       - app-network
 
@@ -89,6 +97,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    expose:
+      - "9092"
+      - "9203"
     networks:
       - app-network
 
@@ -164,9 +175,80 @@ services:
     networks:
       - app-network
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prod-prometheus-1
+    restart: unless-stopped
+    ports:
+      - 9090:9090
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - api-gateway
+      - auth-service
+      - user-service
+      - movie-service
+      - node-exporter
+      - cadvisor
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: prod-grafana-1
+    restart: unless-stopped
+    ports:
+      - 3001:3000
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: prod-node-exporter-1
+    command:
+      - "--path.rootfs=/host"
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /:/host:ro,rslave
+    expose:
+      - "9100"
+    networks:
+      - app-network
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: prod-cadvisor-1
+    privileged: true
+    restart: unless-stopped
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    expose:
+      - "8080"
+    networks:
+      - app-network
+
 networks:
   app-network:
 
 volumes:
   db-data:
   minio_data:
+  prometheus_data:
+  grafana_data:

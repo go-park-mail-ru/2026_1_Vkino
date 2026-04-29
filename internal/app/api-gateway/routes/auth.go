@@ -14,7 +14,7 @@ func Auth(
 	authClient authv1.AuthServiceClient,
 ) []httpserver.Option {
 	return []httpserver.Option{
-		httpserver.WithRoute("POST /user/sign-up", func(w http.ResponseWriter, r *http.Request) {
+		route("POST /user/sign-up", func(w http.ResponseWriter, r *http.Request) {
 			var req dto.SignUpRequest
 			if !readJSON(w, r, &req) {
 				return
@@ -47,7 +47,7 @@ func Auth(
 			})
 		}),
 
-		httpserver.WithRoute("POST /user/sign-in", func(w http.ResponseWriter, r *http.Request) {
+		route("POST /user/sign-in", func(w http.ResponseWriter, r *http.Request) {
 			var req dto.SignInRequest
 			if !readJSON(w, r, &req) {
 				return
@@ -80,7 +80,7 @@ func Auth(
 			})
 		}),
 
-		httpserver.WithRoute("POST /user/refresh", func(w http.ResponseWriter, r *http.Request) {
+		route("POST /user/refresh", func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie(cfg.RefreshCookieName())
 			if err != nil {
 				httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
@@ -114,7 +114,7 @@ func Auth(
 			})
 		}),
 
-		httpserver.WithRoute("POST /user/logout", func(w http.ResponseWriter, r *http.Request) {
+		route("POST /user/logout", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.AuthRequestTimeout())
 			defer cancel()
 
@@ -140,7 +140,7 @@ func Auth(
 			})
 		}),
 
-		httpserver.WithRoute("POST /user/change-password", func(w http.ResponseWriter, r *http.Request) {
+		route("POST /user/change-password", func(w http.ResponseWriter, r *http.Request) {
 			var req dto.ChangePasswordRequest
 			if !readJSON(w, r, &req) {
 				return

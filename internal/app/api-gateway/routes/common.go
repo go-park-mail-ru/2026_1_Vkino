@@ -8,7 +8,9 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/respond"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
 )
 
@@ -22,6 +24,28 @@ func grpcContext(r *http.Request, timeout time.Duration) (contextDone func()) {
 	*r = *r.WithContext(ctx)
 
 	return cancel
+}
+
+func route(pattern string, handler http.HandlerFunc) httpserver.Option {
+	return httpserver.WithRoute(
+		pattern,
+		metrics.InstrumentHTTPHandlerFunc("api-gateway", routeLabel(pattern), handler),
+	)
+}
+
+func routeLabel(pattern string) string {
+	pattern = strings.TrimSpace(pattern)
+	_, route, found := strings.Cut(pattern, " ")
+	if !found {
+		return pattern
+	}
+
+	route = strings.TrimSpace(route)
+	if route == "" {
+		return pattern
+	}
+
+	return route
 }
 
 func parsePathID(w http.ResponseWriter, r *http.Request, message string) (int64, bool) {

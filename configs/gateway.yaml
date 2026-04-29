@@ -17,6 +17,10 @@ logger:
   format: "json"
   output_path: "logs/app/gateway.log"
 
+metrics:
+  enabled: true
+  address: ":9200"
+
 auth_grpc:
   address: "auth-service:9090"
   request_timeout: 5s

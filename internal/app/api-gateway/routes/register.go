@@ -17,7 +17,7 @@ func Register(
 	result := make([]httpserver.Option, 0, 1+len(Auth(cfg, authClient))+len(User(cfg, userClient))+
 		len(Movie(cfg, movieClient)))
 	result = append(result,
-		httpserver.WithRoute("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte("ok"))
 		}),
