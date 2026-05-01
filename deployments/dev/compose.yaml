@@ -44,7 +44,7 @@ services:
     command: ./auth -config /etc/vkino/auth.yaml
     expose:
       - "9090"
-      - "9201"
+      - "9200"
 
   user-service:
     env_file:
@@ -62,7 +62,7 @@ services:
     command: ./user -config /etc/vkino/user.yaml
     expose:
       - "9091"
-      - "9202"
+      - "9200"
 
   movie-service:
     env_file:
@@ -80,7 +80,7 @@ services:
     command: ./movie -config /etc/vkino/movie.yaml
     expose:
       - "9092"
-      - "9203"
+      - "9200"
 
   db:
     image: postgres:18.3

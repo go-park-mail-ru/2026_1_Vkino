@@ -8,6 +8,7 @@ services:
       - 443:443
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
       - ./frontend-dist:/usr/share/nginx/html:ro
       - ./logs/nginx:/var/log/nginx
       - /etc/letsencrypt:/etc/letsencrypt:ro
@@ -49,7 +50,7 @@ services:
         condition: service_healthy
     expose:
       - "9090"
-      - "9201"
+      - "9200"
     networks:
       - app-network
 
@@ -74,7 +75,7 @@ services:
         condition: service_healthy
     expose:
       - "9091"
-      - "9202"
+      - "9200"
     networks:
       - app-network
 
@@ -99,7 +100,7 @@ services:
         condition: service_healthy
     expose:
       - "9092"
-      - "9203"
+      - "9200"
     networks:
       - app-network
 
@@ -176,11 +177,10 @@ services:
       - app-network
 
   prometheus:
-    image: prom/prometheus:latest
-    container_name: prod-prometheus-1
-    restart: unless-stopped
-    ports:
-      - 9090:9090
+    image: prom/prometheus:v3.6.0
+    restart: always
+    expose:
+      - "9090"
     volumes:
       - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -195,14 +195,13 @@ services:
       - app-network
 
   grafana:
-    image: grafana/grafana:latest
-    container_name: prod-grafana-1
-    restart: unless-stopped
-    ports:
-      - 3001:3000
+    image: grafana/grafana:12.2.0
+    restart: always
+    expose:
+      - "3000"
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - grafana_data:/var/lib/grafana
@@ -214,12 +213,11 @@ services:
       - app-network
 
   node-exporter:
-    image: prom/node-exporter:latest
-    container_name: prod-node-exporter-1
+    image: prom/node-exporter:v1.9.1
     command:
       - "--path.rootfs=/host"
     pid: host
-    restart: unless-stopped
+    restart: always
     volumes:
       - /:/host:ro,rslave
     expose:
@@ -228,10 +226,9 @@ services:
       - app-network
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    container_name: prod-cadvisor-1
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
     privileged: true
-    restart: unless-stopped
+    restart: always
     devices:
       - /dev/kmsg
     volumes:

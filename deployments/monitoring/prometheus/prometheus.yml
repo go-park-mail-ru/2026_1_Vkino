@@ -9,15 +9,15 @@ scrape_configs:
 
   - job_name: "auth-service"
     static_configs:
-      - targets: ["auth-service:9201"]
+      - targets: ["auth-service:9200"]
 
   - job_name: "user-service"
     static_configs:
-      - targets: ["user-service:9202"]
+      - targets: ["user-service:9200"]
 
   - job_name: "movie-service"
     static_configs:
-      - targets: ["movie-service:9203"]
+      - targets: ["movie-service:9200"]
 
   - job_name: "node-exporter"
     static_configs:

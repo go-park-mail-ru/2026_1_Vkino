@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
 
 	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/delivery/grpc"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/repository/postgres"
@@ -15,11 +12,17 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serverrunner"
 	clocksvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/clock"
 	jwtsvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/jwt"
 	passwordsvc "github.com/go-park-mail-ru/2026_1_VKino/pkg/service/password"
 
 	"google.golang.org/grpc"
+)
+
+const (
+	serviceName   = "auth-service"
+	componentName = "auth"
 )
 
 func Run(configPath string) error {
@@ -33,11 +36,11 @@ func Run(configPath string) error {
 		return fmt.Errorf("init logger: %w", err)
 	}
 
-	appLogger := baseLogger.WithField("component", "auth")
+	appLogger := baseLogger.WithField("component", componentName)
 	runCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err = metrics.StartServer(runCtx, "auth-service", cfg.Metrics, appLogger); err != nil {
+	if err = metrics.StartServer(runCtx, serviceName, cfg.Metrics, appLogger); err != nil {
 		return fmt.Errorf("start metrics server: %w", err)
 	}
 
@@ -75,32 +78,20 @@ func Run(configPath string) error {
 		return err
 	}
 
-	grpcServer := grpcx.NewServer(appLogger, "auth-service", func(server *grpc.Server) {
+	grpcServer := grpcx.NewServer(appLogger, serviceName, func(server *grpc.Server) {
 		authv1.RegisterAuthServiceServer(server, deliverygrpc.NewServer(authUC))
 	})
 
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")
 
-	errCh := make(chan error, 1)
-
-	go func() {
-		errCh <- grpcServer.Serve(lis)
-	}()
-
-	stopCh := make(chan os.Signal, 1)
-	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
-
-	select {
-	case err = <-errCh:
-		cancel()
-		if err != nil {
-			return fmt.Errorf("grpc server stopped with error: %w", err)
-		}
-	case sig := <-stopCh:
-		cancel()
-		appLogger.WithField("signal", sig.String()).Info("shutting down grpc server")
-		grpcServer.GracefulStop()
-	}
-
-	return nil
+	return serverrunner.RunGRPC(
+		runCtx,
+		appLogger,
+		serviceName,
+		func() error {
+			return grpcServer.Serve(lis)
+		},
+		grpcServer.GracefulStop,
+		grpcServer.Stop,
+	)
 }

@@ -8,7 +8,7 @@ logger:
 
 metrics:
   enabled: true
-  address: ":9201"
+  address: ":9200"
 
 auth:
   jwt_secret: ""

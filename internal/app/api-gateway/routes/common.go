@@ -14,6 +14,8 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
 )
 
+const gatewayServiceName = "api-gateway"
+
 func grpcContext(r *http.Request, timeout time.Duration) (contextDone func()) {
 	ctx, cancel := grpcx.WithTimeout(r.Context(), timeout)
 
@@ -29,7 +31,7 @@ func grpcContext(r *http.Request, timeout time.Duration) (contextDone func()) {
 func route(pattern string, handler http.HandlerFunc) httpserver.Option {
 	return httpserver.WithRoute(
 		pattern,
-		metrics.InstrumentHTTPHandlerFunc("api-gateway", routeLabel(pattern), handler),
+		metrics.InstrumentHTTPHandlerFunc(gatewayServiceName, routeLabel(pattern), handler),
 	)
 }
 

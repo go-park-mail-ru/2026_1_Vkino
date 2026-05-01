@@ -12,7 +12,7 @@ logger:
 
 metrics:
   enabled: true
-  address: ":9202"
+  address: ":9200"
 
 postgres:
   host: "db"

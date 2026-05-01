@@ -7,9 +7,9 @@ import (
 	"net"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serverrunner"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -61,7 +61,7 @@ func StartServer(ctx context.Context, service string, cfg Config, log *logger.Lo
 	go func() {
 		<-ctx.Done()
 
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), serverrunner.DefaultShutdownTimeout)
 		defer cancel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil && !errors.Is(err, http.ErrServerClosed) {
