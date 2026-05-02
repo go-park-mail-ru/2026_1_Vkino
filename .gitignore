@@ -10,6 +10,8 @@ coverage*.out
 .env
 deployments/dev/.env
 deployments/prod/.env
+deployments/prod/nginx/.htpasswd
 frontend-dist/
 *.md
 !README.md
+!docs/*.md

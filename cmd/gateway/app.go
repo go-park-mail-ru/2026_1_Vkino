@@ -11,8 +11,12 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serverrunner"
 	"google.golang.org/grpc"
 )
+
+const serviceName = "api-gateway"
 
 func Run(configPath string) error {
 	cfg := &Config{}
@@ -25,7 +29,13 @@ func Run(configPath string) error {
 		return fmt.Errorf("init logger: %w", err)
 	}
 
-	appLogger := baseLogger.WithField("component", "api-gateway")
+	appLogger := baseLogger.WithField("component", serviceName)
+	runCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err = metrics.StartServer(runCtx, serviceName, cfg.Metrics, appLogger); err != nil {
+		return fmt.Errorf("start metrics server: %w", err)
+	}
 
 	authConn, err := newGRPCConn(cfg.AuthGRPC)
 	if err != nil {
@@ -63,7 +73,13 @@ func Run(configPath string) error {
 
 	appLogger.WithField("port", cfg.Server.Port).Info("starting api gateway")
 
-	return server.Run()
+	return serverrunner.RunHTTP(
+		runCtx,
+		appLogger,
+		serviceName,
+		server.Run,
+		server.Shutdown,
+	)
 }
 
 func newGRPCConn(cfg ServiceGRPCConfig) (*grpc.ClientConn, error) {

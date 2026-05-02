@@ -20,6 +20,8 @@ services:
         BINARY_NAME: gateway
     ports:
       - 8080:8080
+    expose:
+      - "9200"
     restart: always
     volumes:
       - ../../configs/gateway.yaml:/etc/vkino/gateway.yaml:ro
@@ -42,6 +44,7 @@ services:
     command: ./auth -config /etc/vkino/auth.yaml
     expose:
       - "9090"
+      - "9200"
 
   user-service:
     env_file:
@@ -59,6 +62,7 @@ services:
     command: ./user -config /etc/vkino/user.yaml
     expose:
       - "9091"
+      - "9200"
 
   movie-service:
     env_file:
@@ -76,6 +80,7 @@ services:
     command: ./movie -config /etc/vkino/movie.yaml
     expose:
       - "9092"
+      - "9200"
 
   db:
     image: postgres:18.3
@@ -141,6 +146,67 @@ services:
       - ../scripts/init-minio-buckets.sh:/scripts/init-minio-buckets.sh:ro
     entrypoint: ["/bin/sh", "/scripts/init-minio-buckets.sh"]
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: dev-prometheus-1
+    restart: unless-stopped
+    ports:
+      - 9090:9090
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - api-gateway
+      - auth-service
+      - user-service
+      - movie-service
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: dev-grafana-1
+    restart: unless-stopped
+    ports:
+      - 3001:3000
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: dev-node-exporter-1
+    command:
+      - "--path.rootfs=/host"
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /:/host:ro
+    expose:
+      - "9100"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: dev-cadvisor-1
+    privileged: true
+    restart: unless-stopped
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    expose:
+      - "8080"
+
 volumes:
   db-data:
   minio_data:
+  prometheus_data:
+  grafana_data:

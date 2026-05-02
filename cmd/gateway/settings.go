@@ -6,6 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/configenv"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
 )
 
 type ServiceGRPCConfig struct {
@@ -22,6 +23,7 @@ type UserAuthConfig struct {
 type Config struct {
 	Server    httpserver.Config `mapstructure:"server"`
 	Logger    logger.Config     `mapstructure:"logger"`
+	Metrics   metrics.Config    `mapstructure:"metrics"`
 	AuthGRPC  ServiceGRPCConfig `mapstructure:"auth_grpc"`
 	UserGRPC  ServiceGRPCConfig `mapstructure:"user_grpc"`
 	MovieGRPC ServiceGRPCConfig `mapstructure:"movie_grpc"`

@@ -14,7 +14,7 @@ func Movie(
 	movieClient moviev1.MovieServiceClient,
 ) []httpserver.Option {
 	return []httpserver.Option{
-		httpserver.WithRoute("GET /movie/selection/all", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /movie/selection/all", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
@@ -28,7 +28,7 @@ func Movie(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /movie/selection/{selection}", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /movie/selection/{selection}", func(w http.ResponseWriter, r *http.Request) {
 			title := strings.TrimSpace(r.PathValue("selection"))
 			if title == "" {
 				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid selection title")
@@ -51,7 +51,7 @@ func Movie(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /movie/search", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /movie/search", func(w http.ResponseWriter, r *http.Request) {
 			query := strings.TrimSpace(r.URL.Query().Get("query"))
 			if query == "" {
 				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid search query")
@@ -74,7 +74,7 @@ func Movie(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /movie/genre/{id}", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /movie/genre/{id}", func(w http.ResponseWriter, r *http.Request) {
 			genreID, ok := parsePathID(w, r, "invalid genre id")
 			if !ok {
 				return
@@ -95,7 +95,7 @@ func Movie(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /movie/{id}", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /movie/{id}", func(w http.ResponseWriter, r *http.Request) {
 			movieID, ok := parsePathID(w, r, "invalid movie id")
 			if !ok {
 				return
@@ -116,7 +116,7 @@ func Movie(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /movie/actor/{id}", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /movie/actor/{id}", func(w http.ResponseWriter, r *http.Request) {
 			actorID, ok := parsePathID(w, r, "invalid actor id")
 			if !ok {
 				return
@@ -137,7 +137,7 @@ func Movie(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /episode/{id}/playback", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /episode/{id}/playback", func(w http.ResponseWriter, r *http.Request) {
 			episodeID, ok := parsePathID(w, r, "invalid episode id")
 			if !ok {
 				return
@@ -158,7 +158,7 @@ func Movie(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("GET /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
 			episodeID, ok := parsePathID(w, r, "invalid episode id")
 			if !ok {
 				return
@@ -179,7 +179,7 @@ func Movie(
 			httppkg.Response(w, http.StatusOK, resp)
 		}),
 
-		httpserver.WithRoute("PUT /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
+		route("PUT /episode/{id}/progress", func(w http.ResponseWriter, r *http.Request) {
 			episodeID, ok := parsePathID(w, r, "invalid episode id")
 			if !ok {
 				return

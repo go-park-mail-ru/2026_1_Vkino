@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -55,6 +56,10 @@ func New(opts ...Option) *Server {
 
 func (s *Server) Run() error {
 	return s.server.ListenAndServe()
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.server.Shutdown(ctx)
 }
 
 func (s *Server) applyMiddlewares(h http.Handler) http.Handler {

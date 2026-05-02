@@ -6,6 +6,10 @@ logger:
   format: "json"
   output_path: "logs/app/auth.log"
 
+metrics:
+  enabled: true
+  address: ":9200"
+
 auth:
   jwt_secret: ""
   access_token_ttl: "15m"

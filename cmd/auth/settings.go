@@ -4,6 +4,7 @@ import (
 	authusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/configenv"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 )
 
@@ -14,6 +15,7 @@ type GRPCConfig struct {
 type Config struct {
 	GRPC     GRPCConfig          `mapstructure:"grpc"`
 	Logger   logger.Config       `mapstructure:"logger"`
+	Metrics  metrics.Config      `mapstructure:"metrics"`
 	Auth     authusecase.Config  `mapstructure:"auth"`
 	Postgres corepostgres.Config `mapstructure:"postgres"`
 }
