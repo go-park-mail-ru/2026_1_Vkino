@@ -8,6 +8,7 @@ logs/
 .gomodcache/
 coverage*.out
 .env
+.htpasswd
 deployments/dev/.env
 deployments/prod/.env
 deployments/prod/nginx/.htpasswd
