@@ -151,6 +151,28 @@ const (
 		limit 50
 	`
 
+	sqlSearchActors = `
+		select
+			a.id,
+			a.full_name,
+			a.picture_file_key
+		from actor a
+		where (
+			setweight(to_tsvector('simple', coalesce(a.full_name, '')), 'A') ||
+			setweight(to_tsvector('simple', coalesce(a.biography, '')), 'B')
+		) @@ plainto_tsquery('simple', $1)
+		order by
+			ts_rank(
+				(
+					setweight(to_tsvector('simple', coalesce(a.full_name, '')), 'A') ||
+					setweight(to_tsvector('simple', coalesce(a.biography, '')), 'B')
+				),
+				plainto_tsquery('simple', $1)
+			) desc,
+			a.full_name
+		limit 50
+	`
+
 	sqlGetMovieCardsByIDs = `
 		select
 			m.id,

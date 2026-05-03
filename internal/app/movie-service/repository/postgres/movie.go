@@ -263,6 +263,31 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]domain.Mo
 	return result, nil
 }
 
+func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]domain.ActorShort, error) {
+	rows, err := r.db.Query(ctx, sqlSearchActors, query)
+	if err != nil {
+		return nil, fmt.Errorf("search actors: %w", err)
+	}
+	defer rows.Close()
+
+	result := make([]domain.ActorShort, 0)
+
+	for rows.Next() {
+		var actor domain.ActorShort
+		if err = rows.Scan(&actor.ID, &actor.FullName, &actor.PictureFileKey); err != nil {
+			return nil, fmt.Errorf("scan searched actor: %w", err)
+		}
+
+		result = append(result, actor)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate searched actors: %w", err)
+	}
+
+	return result, nil
+}
+
 func (r *MovieRepo) GetEpisodePlayback(ctx context.Context, episodeID int64) (*domain.Episode, error) {
 	var episode domain.Episode
 
