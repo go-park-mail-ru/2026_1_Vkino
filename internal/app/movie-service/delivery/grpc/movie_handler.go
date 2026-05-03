@@ -127,13 +127,14 @@ func (s *Server) SearchMovies(
 	ctx context.Context,
 	req *moviev1.SearchMoviesRequest,
 ) (*moviev1.SearchMoviesResponse, error) {
-	movies, err := s.usecase.SearchMovies(ctx, req.GetQuery())
+	result, err := s.usecase.SearchMovies(ctx, req.GetQuery())
 	if err != nil {
 		return nil, mapError(err)
 	}
 
 	return &moviev1.SearchMoviesResponse{
-		Movies: mapMovieCards(movies),
+		Movies: mapMovieCards(result.Movies),
+		Actors: mapActorShorts(result.Actors),
 	}, nil
 }
 

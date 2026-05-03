@@ -168,6 +168,22 @@ func (u *MovieUsecase) buildMovieCardResponse(
 	}, nil
 }
 
+func (u *MovieUsecase) buildActorShortResponse(
+	ctx context.Context,
+	actor domain.ActorShort,
+) (domain.ActorShortResponse, error) {
+	imageURL, err := u.presignActor(ctx, actor.PictureFileKey)
+	if err != nil {
+		return domain.ActorShortResponse{}, err
+	}
+
+	return domain.ActorShortResponse{
+		ID:             actor.ID,
+		FullName:       actor.FullName,
+		PictureFileKey: imageURL,
+	}, nil
+}
+
 func (u *MovieUsecase) presignPoster(ctx context.Context, key string) (string, error) {
 	return presignIfExists(ctx, u.posterStore, key)
 }

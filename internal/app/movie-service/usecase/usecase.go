@@ -16,7 +16,7 @@ type Usecase interface {
 	GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error)
 	GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error)
 
-	SearchMovies(ctx context.Context, query string) ([]domain.MovieCardResponse, error)
+	SearchMovies(ctx context.Context, query string) (domain.SearchResponse, error)
 	GetEpisodePlayback(ctx context.Context, episodeID int64) (domain.EpisodePlaybackResponse, error)
 	GetEpisodeProgress(ctx context.Context, userID, episodeID int64) (domain.EpisodeProgressResponse, error)
 	SaveEpisodeProgress(ctx context.Context, userID, episodeID, positionSec int64) (domain.EpisodeProgressResponse, error)

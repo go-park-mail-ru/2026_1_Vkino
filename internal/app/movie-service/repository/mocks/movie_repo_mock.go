@@ -116,6 +116,21 @@ func (mr *MockMovieRepoMockRecorder) GetEpisodeProgress(ctx, userID, episodeID a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEpisodeProgress", reflect.TypeOf((*MockMovieRepo)(nil).GetEpisodeProgress), ctx, userID, episodeID)
 }
 
+// GetGenreByID mocks base method.
+func (m *MockMovieRepo) GetGenreByID(ctx context.Context, genreID int64) (domain.Genre, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGenreByID", ctx, genreID)
+	ret0, _ := ret[0].(domain.Genre)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGenreByID indicates an expected call of GetGenreByID.
+func (mr *MockMovieRepoMockRecorder) GetGenreByID(ctx, genreID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGenreByID", reflect.TypeOf((*MockMovieRepo)(nil).GetGenreByID), ctx, genreID)
+}
+
 // GetMovieByID mocks base method.
 func (m *MockMovieRepo) GetMovieByID(ctx context.Context, movieID int64) (*domain.Movie, error) {
 	m.ctrl.T.Helper()
@@ -219,4 +234,19 @@ func (m *MockMovieRepo) SearchMovies(ctx context.Context, query string) ([]domai
 func (mr *MockMovieRepoMockRecorder) SearchMovies(ctx, query any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchMovies", reflect.TypeOf((*MockMovieRepo)(nil).SearchMovies), ctx, query)
+}
+
+// SearchActors mocks base method.
+func (m *MockMovieRepo) SearchActors(ctx context.Context, query string) ([]domain.ActorShort, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchActors", ctx, query)
+	ret0, _ := ret[0].([]domain.ActorShort)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchActors indicates an expected call of SearchActors.
+func (mr *MockMovieRepoMockRecorder) SearchActors(ctx, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchActors", reflect.TypeOf((*MockMovieRepo)(nil).SearchActors), ctx, query)
 }

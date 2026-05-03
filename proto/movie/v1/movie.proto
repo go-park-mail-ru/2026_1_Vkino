@@ -127,6 +127,7 @@ message SearchMoviesRequest {
 
 message SearchMoviesResponse {
   repeated MovieCard movies = 1;
+  repeated ActorShort actors = 2;
 }
 
 message GetEpisodePlaybackRequest {
