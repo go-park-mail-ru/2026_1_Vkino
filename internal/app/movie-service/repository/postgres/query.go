@@ -90,6 +90,14 @@ const (
 		where g.id = $1
 	`
 
+	sqlGetAllGenres = `
+		select
+			g.id,
+			g.title
+		from genre g
+		order by g.title, g.id
+	`
+
 	sqlGetGenreMoviesByID = `
 		select
 			m.id,

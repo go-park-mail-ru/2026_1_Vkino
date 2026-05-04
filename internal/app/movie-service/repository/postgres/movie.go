@@ -123,6 +123,30 @@ func (r *MovieRepo) GetGenreByID(ctx context.Context, genreID int64) (domain.Gen
 	return genre, nil
 }
 
+func (r *MovieRepo) GetAllGenres(ctx context.Context) ([]domain.GenreShort, error) {
+	rows, err := r.db.Query(ctx, sqlGetAllGenres)
+	if err != nil {
+		return nil, fmt.Errorf("get all genres: %w", err)
+	}
+	defer rows.Close()
+
+	genres := make([]domain.GenreShort, 0)
+	for rows.Next() {
+		var genre domain.GenreShort
+		if err = rows.Scan(&genre.ID, &genre.Title); err != nil {
+			return nil, fmt.Errorf("scan genre: %w", err)
+		}
+
+		genres = append(genres, genre)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate genres: %w", err)
+	}
+
+	return genres, nil
+}
+
 func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (domain.Selection, error) {
 	rows, err := r.db.Query(ctx, sqlGetSelectionMoviesByTitle, title)
 	if err != nil {

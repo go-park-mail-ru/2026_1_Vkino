@@ -62,6 +62,11 @@ type GenreResponse struct {
 	Movies []MovieCardResponse `json:"movies"`
 }
 
+type GenreShortResponse struct {
+	ID    int64  `json:"id"`
+	Title string `json:"title"`
+}
+
 type SelectionResponse struct {
 	Title  string              `json:"title"`
 	Movies []MovieCardResponse `json:"movies"`

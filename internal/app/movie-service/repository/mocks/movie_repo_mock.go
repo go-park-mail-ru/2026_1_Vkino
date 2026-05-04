@@ -71,6 +71,21 @@ func (mr *MockMovieRepoMockRecorder) GetAllSelections(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllSelections", reflect.TypeOf((*MockMovieRepo)(nil).GetAllSelections), ctx)
 }
 
+// GetAllGenres mocks base method.
+func (m *MockMovieRepo) GetAllGenres(ctx context.Context) ([]domain.GenreShort, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllGenres", ctx)
+	ret0, _ := ret[0].([]domain.GenreShort)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllGenres indicates an expected call of GetAllGenres.
+func (mr *MockMovieRepoMockRecorder) GetAllGenres(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllGenres", reflect.TypeOf((*MockMovieRepo)(nil).GetAllGenres), ctx)
+}
+
 // GetContinueWatching mocks base method.
 func (m *MockMovieRepo) GetContinueWatching(ctx context.Context, userID int64, limit int32) ([]domain.WatchProgressItem, error) {
 	m.ctrl.T.Helper()
@@ -114,6 +129,21 @@ func (m *MockMovieRepo) GetEpisodeProgress(ctx context.Context, userID, episodeI
 func (mr *MockMovieRepoMockRecorder) GetEpisodeProgress(ctx, userID, episodeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEpisodeProgress", reflect.TypeOf((*MockMovieRepo)(nil).GetEpisodeProgress), ctx, userID, episodeID)
+}
+
+// GetGenreByID mocks base method.
+func (m *MockMovieRepo) GetGenreByID(ctx context.Context, genreID int64) (domain.Genre, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGenreByID", ctx, genreID)
+	ret0, _ := ret[0].(domain.Genre)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGenreByID indicates an expected call of GetGenreByID.
+func (mr *MockMovieRepoMockRecorder) GetGenreByID(ctx, genreID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGenreByID", reflect.TypeOf((*MockMovieRepo)(nil).GetGenreByID), ctx, genreID)
 }
 
 // GetMovieByID mocks base method.

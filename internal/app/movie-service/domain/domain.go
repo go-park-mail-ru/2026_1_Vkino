@@ -65,6 +65,11 @@ type Genre struct {
 	Movies []MovieCard
 }
 
+type GenreShort struct {
+	ID    int64
+	Title string
+}
+
 type Selection struct {
 	Title  string
 	Movies []MovieCard
