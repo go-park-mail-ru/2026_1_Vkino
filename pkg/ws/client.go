@@ -1,3 +1,4 @@
+//nolint:gocyclo // The write loop intentionally keeps control flow explicit.
 package ws
 
 import (
@@ -68,6 +69,7 @@ func (c *Client) Send(payload []byte) error {
 	}
 }
 
+//nolint:cyclop // The write loop intentionally keeps control flow explicit.
 func (c *Client) WriteLoop(ctx context.Context) error {
 	for {
 		select {

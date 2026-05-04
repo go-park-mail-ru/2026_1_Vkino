@@ -8,9 +8,7 @@ import (
 	"net/http"
 )
 
-var (
-	ErrInvalidJson = errors.New("invalid json body")
-)
+var ErrInvalidJson = errors.New("invalid json body")
 
 type errorResponse struct {
 	Error string

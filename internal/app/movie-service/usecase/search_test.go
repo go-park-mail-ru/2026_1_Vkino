@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"io"
 	"testing"
 	"time"
@@ -13,7 +14,15 @@ import (
 
 type stubFileStorage struct{}
 
-func (stubFileStorage) PutObject(ctx context.Context, key string, body io.Reader, size int64, contentType string) error {
+var errStubGetObjectUnsupported = errors.New("get object is not supported in tests")
+
+func (stubFileStorage) PutObject(
+	ctx context.Context,
+	key string,
+	body io.Reader,
+	size int64,
+	contentType string,
+) error {
 	return nil
 }
 
@@ -26,7 +35,7 @@ func (stubFileStorage) PresignGetObject(ctx context.Context, key string, ttl tim
 }
 
 func (stubFileStorage) GetObject(ctx context.Context, key string) (io.ReadCloser, error) {
-	return nil, nil
+	return nil, errStubGetObjectUnsupported
 }
 
 func TestSearchMovies_ReturnsMoviesAndActors(t *testing.T) {
@@ -69,7 +78,7 @@ func TestSearchMovies_InvalidQuery(t *testing.T) {
 	u := NewMovieUsecase(mr, nil, nil, nil, nil)
 
 	_, err := u.SearchMovies(context.Background(), "   ")
-	if err != domain.ErrInvalidSearchQuery {
+	if !errors.Is(err, domain.ErrInvalidSearchQuery) {
 		t.Fatalf("SearchMovies error = %v, want %v", err, domain.ErrInvalidSearchQuery)
 	}
 }

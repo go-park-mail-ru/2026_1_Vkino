@@ -21,9 +21,7 @@ type Mapper struct {
 
 func New(order []error, rules map[error]ErrResponse, defaultCode codes.Code, defaultMsg string) *Mapper {
 	return &Mapper{
-		mapper: errmap.New(order, rules, func(subject error, key error) bool {
-			return errors.Is(subject, key)
-		}),
+		mapper:      errmap.New(order, rules, errors.Is),
 		defaultCode: defaultCode,
 		defaultMsg:  defaultMsg,
 	}

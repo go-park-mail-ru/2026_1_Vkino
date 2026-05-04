@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"math"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
@@ -343,7 +344,12 @@ func mapSelections(selections []domain.SelectionResponse) []*moviev1.Selection {
 	return result
 }
 
+//nolint:gosec // Values are bounded to int32 range before conversion.
 func i32(v int) int32 {
+	if v > math.MaxInt32 {
+		return math.MaxInt32
+	}
+
 	return int32(v)
 }
 

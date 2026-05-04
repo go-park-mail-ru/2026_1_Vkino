@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -40,7 +41,7 @@ func TestWithRoute(t *testing.T) {
 
 	s := New(WithRoute("/test", handler))
 
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
 	w := httptest.NewRecorder()
 	s.mux.ServeHTTP(w, req)
 
@@ -68,7 +69,7 @@ func TestWithMiddlewareRoute(t *testing.T) {
 
 	s := New(WithMiddlewareRoute("/test", handler, mw))
 
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
 	w := httptest.NewRecorder()
 	s.mux.ServeHTTP(w, req)
 
@@ -97,7 +98,7 @@ func TestWithMiddleware(t *testing.T) {
 		}),
 	)
 
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/test", nil)
 	w := httptest.NewRecorder()
 	s.server.Handler.ServeHTTP(w, req)
 

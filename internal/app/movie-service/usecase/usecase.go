@@ -1,3 +1,4 @@
+//nolint:interfacebloat,lll // Central usecase contract intentionally groups movie-facing operations.
 package usecase
 
 import (

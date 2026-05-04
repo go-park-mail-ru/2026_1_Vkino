@@ -184,28 +184,6 @@ const (
 		order by created_at asc
 	`
 
-	sqlRateSupportTicket = `
-		update support_ticket
-		set rating = $2
-		where id = $1
-			and user_id = $3
-		and status in ('resolved', 'closed')
-		returning
-			id,
-			user_id,
-			user_email,
-			category,
-			status,
-			support_line,
-			title,
-			description,
-			attachment_file_key,
-			rating,
-			created_at,
-			updated_at,
-			closed_at
-	`
-
 	sqlGetSupportStatistics = `
 		select
 			count(*) as total,
@@ -233,23 +211,5 @@ const (
 			where m.ticket_id = $1
 				and m.content_file_key = $2
 		)
-	`
-
-	sqlGetSupportStatisticsByCategory = `
-		select
-			category,
-			count(*)
-		from support_ticket
-		group by category
-		order by category
-	`
-
-	sqlGetSupportStatisticsByLine = `
-		select
-			support_line,
-			count(*)
-		from support_ticket
-		group by support_line
-		order by support_line
 	`
 )

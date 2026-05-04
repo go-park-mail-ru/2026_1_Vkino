@@ -24,6 +24,7 @@ const (
 	componentName = "movie"
 )
 
+//nolint:gocyclo,cyclop // Service wiring intentionally stays explicit in the entrypoint.
 func Run(configPath string) error {
 	cfg := Config{}
 	if err := Load(configPath, &cfg); err != nil {
@@ -36,6 +37,7 @@ func Run(configPath string) error {
 	}
 
 	appLogger := baseLogger.WithField("component", componentName)
+
 	runCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -57,6 +59,7 @@ func Run(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("init poster storage: %w", err)
 	}
+
 	if err = posterStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
 		return fmt.Errorf("ensure poster bucket: %w", err)
 	}
@@ -65,6 +68,7 @@ func Run(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("init card storage: %w", err)
 	}
+
 	if err = cardStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
 		return fmt.Errorf("ensure card bucket: %w", err)
 	}
@@ -73,6 +77,7 @@ func Run(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("init actor storage: %w", err)
 	}
+
 	if err = actorStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
 		return fmt.Errorf("ensure actor bucket: %w", err)
 	}
@@ -81,6 +86,7 @@ func Run(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("init video storage: %w", err)
 	}
+
 	if err = videoStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
 		return fmt.Errorf("ensure video bucket: %w", err)
 	}

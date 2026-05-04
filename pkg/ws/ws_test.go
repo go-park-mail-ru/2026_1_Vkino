@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var errClosedByPeer = errors.New("closed by peer")
+
 func TestHubSubscribeBroadcastAndUnsubscribe(t *testing.T) {
 	hub := NewHub()
 
@@ -46,7 +48,7 @@ func TestServeWSLifecycle(t *testing.T) {
 	hub := NewHub()
 	conn := newStubConn()
 	conn.reads = [][]byte{[]byte("msg-1")}
-	conn.readErr = errors.New("closed by peer")
+	conn.readErr = errClosedByPeer
 
 	upgrader := &stubUpgrader{conn: conn}
 
@@ -76,7 +78,7 @@ func TestServeWSLifecycle(t *testing.T) {
 		},
 	})
 
-	req := httptest.NewRequest(http.MethodGet, "/ws", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/ws", nil)
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 
@@ -93,7 +95,7 @@ func TestServeWSRequiresClientIDResolver(t *testing.T) {
 	hub := NewHub()
 	handler := ServeWS(&stubUpgrader{conn: newStubConn()}, hub, ServeOptions{})
 
-	req := httptest.NewRequest(http.MethodGet, "/ws", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/ws", nil)
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 

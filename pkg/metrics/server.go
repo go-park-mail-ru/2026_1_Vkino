@@ -1,3 +1,4 @@
+//nolint:gocyclo // Startup and shutdown orchestration stays explicit.
 package metrics
 
 import (
@@ -18,6 +19,8 @@ type Config struct {
 	Address string `mapstructure:"address"`
 }
 
+var errMetricsContextRequired = errors.New("metrics context is required")
+
 func StartServer(ctx context.Context, service string, cfg Config, log *logger.Logger) error {
 	if !cfg.Enabled {
 		return nil
@@ -29,7 +32,7 @@ func StartServer(ctx context.Context, service string, cfg Config, log *logger.Lo
 	}
 
 	if ctx == nil {
-		ctx = context.Background()
+		return errMetricsContextRequired
 	}
 
 	Register()
@@ -40,7 +43,9 @@ func StartServer(ctx context.Context, service string, cfg Config, log *logger.Lo
 		baseLog = logger.FromContext(ctx)
 	}
 
-	lis, err := net.Listen("tcp", addr)
+	var listenConfig net.ListenConfig
+
+	lis, err := listenConfig.Listen(ctx, "tcp", addr)
 	if err != nil {
 		return fmt.Errorf("listen metrics on %s: %w", addr, err)
 	}
@@ -49,19 +54,23 @@ func StartServer(ctx context.Context, service string, cfg Config, log *logger.Lo
 	mux.Handle("/metrics", promhttp.Handler())
 
 	server := &http.Server{
-		Addr:    addr,
-		Handler: mux,
+		Addr:              addr,
+		Handler:           mux,
+		ReadHeaderTimeout: serverrunner.DefaultShutdownTimeout,
 	}
 
 	metricsLog := baseLog.
 		WithField("component", "metrics").
-		WithField("service", labelValue(service, "unknown")).
+		WithField("service", labelValue(service)).
 		WithField("address", addr)
 
 	go func() {
 		<-ctx.Done()
 
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), serverrunner.DefaultShutdownTimeout)
+		shutdownCtx, cancel := context.WithTimeout(
+			context.WithoutCancel(ctx),
+			serverrunner.DefaultShutdownTimeout,
+		)
 		defer cancel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil && !errors.Is(err, http.ErrServerClosed) {

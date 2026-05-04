@@ -22,7 +22,7 @@ func (u *UserUsecase) profileResponse(ctx context.Context, user *domain.User) (d
 	if u.avatarStore != nil && avatarKey != "" {
 		url, err := u.avatarStore.PresignGetObject(ctx, avatarKey, 0)
 		if err != nil {
-			return domain.ProfileResponse{}, fmt.Errorf("%w: presign avatar key=%q: %v", domain.ErrInternal, avatarKey, err)
+			return domain.ProfileResponse{}, fmt.Errorf("%w: presign avatar key=%q: %w", domain.ErrInternal, avatarKey, err)
 		}
 
 		resp.AvatarURL = url
@@ -31,9 +31,9 @@ func (u *UserUsecase) profileResponse(ctx context.Context, user *domain.User) (d
 	return resp, nil
 }
 
-func (u *UserUsecase) enrichUserSearchAvatarKeys(ctx context.Context, users []domain.UserSearchResult) error {
+func (u *UserUsecase) enrichUserSearchAvatarKeys(ctx context.Context, users []domain.UserSearchResult) {
 	if u.avatarStore == nil {
-		return nil
+		return
 	}
 
 	for i := range users {
@@ -49,22 +49,20 @@ func (u *UserUsecase) enrichUserSearchAvatarKeys(ctx context.Context, users []do
 
 		users[i].AvatarURL = url
 	}
-
-	return nil
 }
 
-func (u *UserUsecase) friendAvatarPresignedURL(ctx context.Context, friend *domain.User) (string, error) {
+func (u *UserUsecase) friendAvatarPresignedURL(ctx context.Context, friend *domain.User) string {
 	key := stringValue(friend.AvatarFileKey)
 	if key == "" || u.avatarStore == nil {
-		return "", nil
+		return ""
 	}
 
 	url, err := u.avatarStore.PresignGetObject(ctx, key, 0)
 	if err != nil {
-		return "", nil
+		return ""
 	}
 
-	return url, nil
+	return url
 }
 
 func stringValue(v *string) string {

@@ -23,6 +23,7 @@ type Config struct {
 func Load(path string, cfg any) error {
 	const defaultConfigPath = "configs/auth.yaml"
 
+	//nolint:gosec // These are environment variable names, not hardcoded secrets.
 	return configenv.Load(path, defaultConfigPath, cfg, map[string]string{
 		"auth.jwt_secret":   "AUTH_JWT_SECRET",
 		"postgres.user":     "POSTGRES_USER",

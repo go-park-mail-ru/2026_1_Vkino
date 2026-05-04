@@ -1,3 +1,4 @@
+//nolint:gocyclo // WS lifecycle orchestration stays explicit for readability.
 package ws
 
 import (

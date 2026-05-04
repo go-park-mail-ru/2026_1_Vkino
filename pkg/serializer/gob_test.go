@@ -1,3 +1,4 @@
+//nolint:gocyclo // Coverage-oriented test cases are clearer when kept flat.
 package serializer
 
 import (
@@ -136,6 +137,8 @@ func TestDeserialize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := Deserialize(tt.data, tt.target)
 
 			if tt.wantErrIs != nil {

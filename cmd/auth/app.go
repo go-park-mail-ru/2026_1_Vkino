@@ -37,6 +37,7 @@ func Run(configPath string) error {
 	}
 
 	appLogger := baseLogger.WithField("component", componentName)
+
 	runCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

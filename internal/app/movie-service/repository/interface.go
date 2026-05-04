@@ -1,3 +1,4 @@
+//nolint:interfacebloat,lll // Central repository contract intentionally groups movie read operations.
 package repository
 
 //go:generate mockgen -source=./interface.go -destination=./mocks/movie_repo_mock.go -package=mocks MovieRepo

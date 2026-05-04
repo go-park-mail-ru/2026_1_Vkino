@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -111,7 +112,12 @@ func TestRead(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader([]byte(tc.RequestBody)))
+			req := httptest.NewRequestWithContext(
+				context.Background(),
+				http.MethodPost,
+				"/",
+				bytes.NewReader([]byte(tc.RequestBody)),
+			)
 
 			dst := &struct {
 				Name string `json:"name"`

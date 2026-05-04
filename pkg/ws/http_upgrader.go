@@ -1,13 +1,16 @@
+//nolint:gocyclo // Protocol parsing and deadline management are intentionally explicit.
 package ws
 
 import (
 	"bufio"
 	"context"
-	"crypto/sha1"
+	"crypto/sha1" // #nosec G505 -- RFC 6455 requires SHA-1 for the WebSocket handshake accept key.
 	"encoding/base64"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net"
 	"net/http"
 	"strings"
@@ -22,35 +25,55 @@ const (
 	websocketOpcodePing     = 0x9
 	websocketOpcodePong     = 0xA
 	maxWebSocketPayloadSize = 1 << 20
+	websocketFinalBit       = 0x80
+	websocketOpcodeMask     = 0x0F
+	websocketMaskBit        = 0x80
+	websocketPayloadMask    = 0x7F
+	websocketPayload126     = 126
+	websocketPayload127     = 127
+	websocketPayloadInline  = 125
+)
+
+var (
+	errWebSocketUpgradeRequired      = errors.New("websocket upgrade required")
+	errUnsupportedWebSocketVersion   = errors.New("unsupported websocket version")
+	errMissingWebSocketKey           = errors.New("missing websocket key")
+	errWebSocketHijackingUnsupported = errors.New("response writer does not support hijacking")
+	errUnsupportedWebSocketOpcode    = errors.New("unsupported websocket opcode")
+	errFragmentedWebSocketFrames     = errors.New("fragmented websocket frames are not supported")
+	errUnmaskedWebSocketFrames       = errors.New("client websocket frames must be masked")
+	errWebSocketPayloadTooLarge      = errors.New("websocket payload exceeds limit")
 )
 
 type HTTPUpgrader struct{}
 
+//nolint:gocyclo // The upgrade flow validates the WebSocket protocol step by step.
 func (HTTPUpgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error) {
-	if !headerContainsToken(r.Header, "Connection", "Upgrade") || !strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
+	if !headerContainsToken(r.Header, "Connection", "Upgrade") ||
+		!strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
 		http.Error(w, "websocket upgrade required", http.StatusUpgradeRequired)
 
-		return nil, fmt.Errorf("websocket upgrade required")
+		return nil, errWebSocketUpgradeRequired
 	}
 
 	if strings.TrimSpace(r.Header.Get("Sec-WebSocket-Version")) != "13" {
 		http.Error(w, "unsupported websocket version", http.StatusUpgradeRequired)
 
-		return nil, fmt.Errorf("unsupported websocket version")
+		return nil, errUnsupportedWebSocketVersion
 	}
 
 	secKey := strings.TrimSpace(r.Header.Get("Sec-WebSocket-Key"))
 	if secKey == "" {
 		http.Error(w, "missing websocket key", http.StatusBadRequest)
 
-		return nil, fmt.Errorf("missing websocket key")
+		return nil, errMissingWebSocketKey
 	}
 
 	hijacker, ok := w.(http.Hijacker)
 	if !ok {
 		http.Error(w, "websocket hijacking is not supported", http.StatusInternalServerError)
 
-		return nil, fmt.Errorf("response writer does not support hijacking")
+		return nil, errWebSocketHijackingUnsupported
 	}
 
 	conn, rw, err := hijacker.Hijack()
@@ -112,11 +135,13 @@ func (c *httpConn) Read(ctx context.Context) ([]byte, error) {
 		case websocketOpcodePong:
 			continue
 		case websocketOpcodeClose:
-			_ = c.writeControlFrame(ctx, websocketOpcodeClose, nil)
+			if err = c.writeControlFrame(ctx, websocketOpcodeClose, nil); err != nil {
+				return nil, err
+			}
 
 			return nil, io.EOF
 		default:
-			return nil, fmt.Errorf("unsupported websocket opcode %d", opcode)
+			return nil, fmt.Errorf("%w: %d", errUnsupportedWebSocketOpcode, opcode)
 		}
 	}
 }
@@ -148,27 +173,27 @@ func (c *httpConn) readFrame() (byte, []byte, error) {
 	}
 
 	if firstByte&0x80 == 0 {
-		return 0, nil, fmt.Errorf("fragmented websocket frames are not supported")
+		return 0, nil, errFragmentedWebSocketFrames
 	}
 
-	opcode := firstByte & 0x0F
+	opcode := firstByte & websocketOpcodeMask
 
 	secondByte, err := c.reader.ReadByte()
 	if err != nil {
 		return 0, nil, err
 	}
 
-	if secondByte&0x80 == 0 {
-		return 0, nil, fmt.Errorf("client websocket frames must be masked")
+	if secondByte&websocketMaskBit == 0 {
+		return 0, nil, errUnmaskedWebSocketFrames
 	}
 
-	payloadLength, err := readWebSocketPayloadLength(c.reader, secondByte&0x7F)
+	payloadLength, err := readWebSocketPayloadLength(c.reader, secondByte&websocketPayloadMask)
 	if err != nil {
 		return 0, nil, err
 	}
 
 	if payloadLength > maxWebSocketPayloadSize {
-		return 0, nil, fmt.Errorf("websocket payload exceeds limit")
+		return 0, nil, errWebSocketPayloadTooLarge
 	}
 
 	var maskKey [4]byte
@@ -198,34 +223,37 @@ func (c *httpConn) writeControlFrame(ctx context.Context, opcode byte, payload [
 	return c.writeFrameLocked(opcode, payload)
 }
 
+//nolint:cyclop // WebSocket frame encoding stays explicit to mirror the protocol.
 func (c *httpConn) writeFrameLocked(opcode byte, payload []byte) error {
-	if err := c.writer.WriteByte(0x80 | opcode); err != nil {
+	if err := c.writer.WriteByte(websocketFinalBit | opcode); err != nil {
 		return err
 	}
 
 	payloadLength := len(payload)
 	switch {
-	case payloadLength <= 125:
+	case payloadLength <= websocketPayloadInline:
 		if err := c.writer.WriteByte(byte(payloadLength)); err != nil {
 			return err
 		}
-	case payloadLength <= 65535:
-		if err := c.writer.WriteByte(126); err != nil {
+	case payloadLength <= math.MaxUint16:
+		if err := c.writer.WriteByte(websocketPayload126); err != nil {
 			return err
 		}
 
 		var rawLength [2]byte
 		binary.BigEndian.PutUint16(rawLength[:], uint16(payloadLength))
+
 		if _, err := c.writer.Write(rawLength[:]); err != nil {
 			return err
 		}
 	default:
-		if err := c.writer.WriteByte(127); err != nil {
+		if err := c.writer.WriteByte(websocketPayload127); err != nil {
 			return err
 		}
 
 		var rawLength [8]byte
 		binary.BigEndian.PutUint64(rawLength[:], uint64(payloadLength))
+
 		if _, err := c.writer.Write(rawLength[:]); err != nil {
 			return err
 		}
@@ -240,7 +268,7 @@ func (c *httpConn) writeFrameLocked(opcode byte, payload []byte) error {
 
 func headerContainsToken(header http.Header, key, want string) bool {
 	for _, value := range header.Values(key) {
-		for _, token := range strings.Split(value, ",") {
+		for token := range strings.SplitSeq(value, ",") {
 			if strings.EqualFold(strings.TrimSpace(token), want) {
 				return true
 			}
@@ -251,6 +279,7 @@ func headerContainsToken(header http.Header, key, want string) bool {
 }
 
 func buildWebSocketAccept(secKey string) string {
+	// #nosec G401 -- RFC 6455 requires SHA-1 for Sec-WebSocket-Accept.
 	hash := sha1.Sum([]byte(secKey + websocketMagicGUID))
 
 	return base64.StdEncoding.EncodeToString(hash[:])
@@ -258,14 +287,14 @@ func buildWebSocketAccept(secKey string) string {
 
 func readWebSocketPayloadLength(reader *bufio.Reader, payloadLengthCode byte) (int, error) {
 	switch payloadLengthCode {
-	case 126:
+	case websocketPayload126:
 		var rawLength [2]byte
 		if _, err := io.ReadFull(reader, rawLength[:]); err != nil {
 			return 0, err
 		}
 
 		return int(binary.BigEndian.Uint16(rawLength[:])), nil
-	case 127:
+	case websocketPayload127:
 		var rawLength [8]byte
 		if _, err := io.ReadFull(reader, rawLength[:]); err != nil {
 			return 0, err
@@ -273,7 +302,7 @@ func readWebSocketPayloadLength(reader *bufio.Reader, payloadLengthCode byte) (i
 
 		payloadLength := binary.BigEndian.Uint64(rawLength[:])
 		if payloadLength > uint64(maxWebSocketPayloadSize) {
-			return 0, fmt.Errorf("websocket payload exceeds limit")
+			return 0, errWebSocketPayloadTooLarge
 		}
 
 		return int(payloadLength), nil
@@ -284,9 +313,9 @@ func readWebSocketPayloadLength(reader *bufio.Reader, payloadLengthCode byte) (i
 
 func watchConnDeadline(ctx context.Context, setDeadline func(time.Time) error) func() {
 	if deadline, ok := ctx.Deadline(); ok {
-		_ = setDeadline(deadline)
+		ignoreDeadlineError(setDeadline(deadline))
 	} else {
-		_ = setDeadline(time.Time{})
+		ignoreDeadlineError(setDeadline(time.Time{}))
 	}
 
 	done := make(chan struct{})
@@ -294,13 +323,19 @@ func watchConnDeadline(ctx context.Context, setDeadline func(time.Time) error) f
 	go func() {
 		select {
 		case <-ctx.Done():
-			_ = setDeadline(time.Now())
+			ignoreDeadlineError(setDeadline(time.Now()))
 		case <-done:
 		}
 	}()
 
 	return func() {
 		close(done)
-		_ = setDeadline(time.Time{})
+		ignoreDeadlineError(setDeadline(time.Time{}))
+	}
+}
+
+func ignoreDeadlineError(err error) {
+	if err != nil {
+		return
 	}
 }

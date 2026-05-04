@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -20,6 +21,8 @@ type Client struct {
 	connAttempts int
 	connTimeout  time.Duration
 }
+
+var errBeginUnsupported = errors.New("postgres: begin is not supported for this pool implementation")
 
 func New(cfg Config, opts ...Option) (*Client, error) {
 	cfg.SetDefaults()
@@ -40,7 +43,7 @@ func New(cfg Config, opts ...Option) (*Client, error) {
 		return nil, fmt.Errorf("pgxpool.ParseConfig failes: %w", err)
 	}
 
-	poolCfg.MaxConns = int32(client.maxPoolSize)
+	poolCfg.MaxConns = clampToInt32(client.maxPoolSize)
 
 	rawPool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 	if err != nil {
@@ -80,7 +83,7 @@ func (p *Client) Close() {
 func (p *Client) Begin(ctx context.Context) (pgx.Tx, error) {
 	pool, ok := p.Pool.(*pgxPool)
 	if !ok {
-		return nil, fmt.Errorf("postgres: begin is not supported for this pool implementation")
+		return nil, errBeginUnsupported
 	}
 
 	return pool.pool.Begin(ctx)
@@ -176,4 +179,16 @@ func (p *Client) logCall(
 
 func compactQuery(query string) string {
 	return strings.Join(strings.Fields(query), " ")
+}
+
+func clampToInt32(value int) int32 {
+	if value > math.MaxInt32 {
+		return math.MaxInt32
+	}
+
+	if value < math.MinInt32 {
+		return math.MinInt32
+	}
+
+	return int32(value)
 }

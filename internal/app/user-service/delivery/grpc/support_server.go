@@ -13,6 +13,7 @@ import (
 
 type SupportServer struct {
 	supportv1.UnimplementedSupportServiceServer
+
 	usecase    usecase.SupportUsecase
 	authClient authv1.AuthServiceClient
 }
@@ -24,7 +25,7 @@ func NewSupportServer(u usecase.SupportUsecase, authClient authv1.AuthServiceCli
 	}
 }
 
-var supportGRPCErrorMapper = grpcx.New(
+var supportGRPCErrorMapper = newGRPCErrorMapper(
 	[]error{
 		domain.ErrInvalidToken,
 		domain.ErrInvalidEmail,
@@ -40,8 +41,7 @@ var supportGRPCErrorMapper = grpcx.New(
 		storage.ErrStorageUnavailable,
 		domain.ErrInternal,
 	},
-	map[error]grpcx.ErrResponse{
-		domain.ErrInvalidToken:              {Code: codes.Unauthenticated, Message: "unauthorized"},
+	mergeGRPCErrorRules(commonGRPCErrorRules, map[error]grpcx.ErrResponse{
 		domain.ErrInvalidEmail:              {Code: codes.InvalidArgument, Message: "invalid email"},
 		domain.ErrTicketNotFound:            {Code: codes.NotFound, Message: "ticket not found"},
 		postgresrepo.ErrTicketNotFound:      {Code: codes.NotFound, Message: "ticket not found"},
@@ -50,13 +50,8 @@ var supportGRPCErrorMapper = grpcx.New(
 		domain.ErrInvalidTicketPayload:      {Code: codes.InvalidArgument, Message: "invalid ticket payload"},
 		domain.ErrInvalidMessage:            {Code: codes.InvalidArgument, Message: "invalid message payload"},
 		domain.ErrInvalidSupportFilePayload: {Code: codes.InvalidArgument, Message: "invalid support file payload"},
-		storage.ErrInvalidFileType:          {Code: codes.InvalidArgument, Message: "unsupported file extension"},
-		storage.ErrFileTooLarge:             {Code: codes.ResourceExhausted, Message: "file size exceeds the limit"},
 		storage.ErrStorageUnavailable:       {Code: codes.Unavailable, Message: "support file storage is unavailable"},
-		domain.ErrInternal:                  {Code: codes.Internal, Message: "internal server error"},
-	},
-	codes.Internal,
-	"internal server error",
+	}),
 )
 
 func mapSupportError(err error) error {

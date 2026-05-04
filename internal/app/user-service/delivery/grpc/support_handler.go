@@ -1,3 +1,4 @@
+//nolint:gocyclo // Stream handling stays explicit for readability.
 package grpc
 
 import (

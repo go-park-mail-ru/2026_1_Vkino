@@ -1,3 +1,4 @@
+//nolint:gocyclo // Validation flow is intentionally explicit for support files.
 package usecase
 
 import (
@@ -53,12 +54,22 @@ func (u *supportUsecase) UploadSupportFile(
 		req.SizeBytes,
 		normalizedContentType,
 	); err != nil {
-		return domain2.SupportFileResponse{}, fmt.Errorf("%w: upload support file key=%q: %v", domain2.ErrInternal, fileKey, err)
+		return domain2.SupportFileResponse{}, fmt.Errorf(
+			"%w: upload support file key=%q: %w",
+			domain2.ErrInternal,
+			fileKey,
+			err,
+		)
 	}
 
 	fileURL, err := u.supportFileStore.PresignGetObject(ctx, fileKey, 0)
 	if err != nil {
-		return domain2.SupportFileResponse{}, fmt.Errorf("%w: presign support file key=%q: %v", domain2.ErrInternal, fileKey, err)
+		return domain2.SupportFileResponse{}, fmt.Errorf(
+			"%w: presign support file key=%q: %w",
+			domain2.ErrInternal,
+			fileKey,
+			err,
+		)
 	}
 
 	return domain2.SupportFileResponse{
@@ -97,7 +108,7 @@ func (u *supportUsecase) GetSupportFileURL(
 
 	hasFile, err := u.supportRepo.HasTicketFile(ctx, req.TicketID, req.FileKey)
 	if err != nil {
-		return domain2.SupportFileResponse{}, fmt.Errorf("%w: verify support file key=%q ticket_id=%d: %v",
+		return domain2.SupportFileResponse{}, fmt.Errorf("%w: verify support file key=%q ticket_id=%d: %w",
 			domain2.ErrInternal, req.FileKey, req.TicketID, err)
 	}
 
@@ -107,7 +118,12 @@ func (u *supportUsecase) GetSupportFileURL(
 
 	fileURL, err := u.supportFileStore.PresignGetObject(ctx, req.FileKey, 0)
 	if err != nil {
-		return domain2.SupportFileResponse{}, fmt.Errorf("%w: presign support file key=%q: %v", domain2.ErrInternal, req.FileKey, err)
+		return domain2.SupportFileResponse{}, fmt.Errorf(
+			"%w: presign support file key=%q: %w",
+			domain2.ErrInternal,
+			req.FileKey,
+			err,
+		)
 	}
 
 	return domain2.SupportFileResponse{

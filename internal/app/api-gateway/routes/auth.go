@@ -1,3 +1,4 @@
+//nolint:gocyclo // HTTP route registration remains intentionally flat for readability.
 package routes
 
 import (

@@ -1,3 +1,4 @@
+//nolint:gocyclo // Table-style adapter checks are clearer when kept flat.
 package storage
 
 import (

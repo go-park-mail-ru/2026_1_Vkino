@@ -1,3 +1,4 @@
+//nolint:gocyclo // Graceful shutdown flows stay explicit for readability.
 package serverrunner
 
 import (
@@ -15,6 +16,8 @@ import (
 
 const DefaultShutdownTimeout = 5 * time.Second
 
+var errRunnerContextRequired = errors.New("runner context is required")
+
 func RunHTTP(
 	ctx context.Context,
 	log *logger.Logger,
@@ -23,7 +26,7 @@ func RunHTTP(
 	shutdown func(context.Context) error,
 ) error {
 	if ctx == nil {
-		ctx = context.Background()
+		return errRunnerContextRequired
 	}
 
 	runLog := runnerLogger(ctx, log, name)
@@ -34,6 +37,7 @@ func RunHTTP(
 	}()
 
 	stopCh := make(chan os.Signal, 1)
+
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(stopCh)
 
@@ -50,7 +54,7 @@ func RunHTTP(
 		runLog.Info("shutting down http server")
 	}
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), DefaultShutdownTimeout)
+	shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), DefaultShutdownTimeout)
 	defer cancel()
 
 	if err := shutdown(shutdownCtx); err != nil {
@@ -65,6 +69,7 @@ func RunHTTP(
 	return nil
 }
 
+//nolint:cyclop // Graceful shutdown flow intentionally stays explicit.
 func RunGRPC(
 	ctx context.Context,
 	log *logger.Logger,
@@ -74,7 +79,7 @@ func RunGRPC(
 	stop func(),
 ) error {
 	if ctx == nil {
-		ctx = context.Background()
+		return errRunnerContextRequired
 	}
 
 	runLog := runnerLogger(ctx, log, name)
@@ -85,6 +90,7 @@ func RunGRPC(
 	}()
 
 	stopCh := make(chan os.Signal, 1)
+
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(stopCh)
 

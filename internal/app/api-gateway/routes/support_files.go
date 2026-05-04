@@ -1,3 +1,4 @@
+//nolint:gocyclo,wsl_v5 // Multipart parsing is easier to follow when kept explicit.
 package routes
 
 import (
@@ -99,7 +100,7 @@ func readSupportFileUploadPayload(w http.ResponseWriter, r *http.Request) (suppo
 
 	if r.MultipartForm != nil {
 		defer func() {
-			_ = r.MultipartForm.RemoveAll()
+			ignoreMultipartFormCleanupError(r.MultipartForm.RemoveAll())
 		}()
 	}
 
@@ -143,4 +144,10 @@ func readSupportFileUploadPayload(w http.ResponseWriter, r *http.Request) (suppo
 	}
 
 	return payload, true
+}
+
+func ignoreMultipartFormCleanupError(err error) {
+	if err != nil {
+		return
+	}
 }

@@ -26,6 +26,7 @@ const (
 	componentName = "user"
 )
 
+//nolint:gocyclo,cyclop // Service wiring intentionally stays explicit in the entrypoint.
 func Run(configPath string) error {
 	cfg := Config{}
 	if err := Load(configPath, &cfg); err != nil {
@@ -38,6 +39,7 @@ func Run(configPath string) error {
 	}
 
 	appLogger := baseLogger.WithField("component", componentName)
+
 	runCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -65,6 +67,7 @@ func Run(configPath string) error {
 	}
 
 	var supportFileStore storage.FileStorage
+
 	if cfg.S3.BucketSupport != "" {
 		s3Store, storageErr := storage.NewS3Storage(
 			context.Background(),

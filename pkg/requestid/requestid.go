@@ -8,15 +8,16 @@ import (
 )
 
 const (
-	HeaderName   = "X-Request-ID"
-	MetadataKey  = "x-request-id"
-	contextKeyID = contextKey("request_id")
+	HeaderName    = "X-Request-ID"
+	MetadataKey   = "x-request-id"
+	contextKeyID  = contextKey("request_id")
+	requestIDSize = 16
 )
 
 type contextKey string
 
 func Generate() string {
-	buf := make([]byte, 16)
+	buf := make([]byte, requestIDSize)
 
 	_, err := rand.Read(buf)
 	if err != nil {

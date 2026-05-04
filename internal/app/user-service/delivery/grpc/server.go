@@ -8,6 +8,7 @@ import (
 
 type Server struct {
 	userv1.UnimplementedUserServiceServer
+
 	usecase    usecase.Usecase
 	authClient authv1.AuthServiceClient
 }

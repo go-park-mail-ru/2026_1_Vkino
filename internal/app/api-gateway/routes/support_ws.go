@@ -1,3 +1,4 @@
+//nolint:gocognit // WS subscription flow is intentionally explicit.
 package routes
 
 import (
@@ -22,6 +23,7 @@ type supportWSContextKey string
 
 const supportWSClientIDContextKey supportWSContextKey = "support_ws_client_id"
 
+//nolint:gocyclo,cyclop // Subscription wiring intentionally keeps the control flow explicit.
 func newSupportTicketSubscribeHandler(userClient UserClient) http.HandlerFunc {
 	var nextClientID atomic.Int64
 
@@ -61,6 +63,7 @@ func newSupportTicketSubscribeHandler(userClient UserClient) http.HandlerFunc {
 		*r = *r.WithContext(ctx)
 
 		connected := false
+
 		defer func() {
 			if !connected {
 				cancelStream()
@@ -79,6 +82,7 @@ func newSupportTicketSubscribeHandler(userClient UserClient) http.HandlerFunc {
 			},
 			OnConnect: func(ctx context.Context, client *wspkg.Client) error {
 				connected = true
+
 				streamCancels.Store(client.ID(), cancelStream)
 
 				go func() {
@@ -101,6 +105,7 @@ func newSupportTicketSubscribeHandler(userClient UserClient) http.HandlerFunc {
 						payload, marshalErr := json.Marshal(event)
 						if marshalErr != nil {
 							requestLogger.WithField("error", marshalErr).Error("failed to marshal support websocket event")
+
 							_ = client.Close()
 
 							return
@@ -108,6 +113,7 @@ func newSupportTicketSubscribeHandler(userClient UserClient) http.HandlerFunc {
 
 						if sendErr := client.Send(payload); sendErr != nil {
 							requestLogger.WithField("error", sendErr).Error("failed to send support websocket event")
+
 							_ = client.Close()
 
 							return
@@ -118,8 +124,11 @@ func newSupportTicketSubscribeHandler(userClient UserClient) http.HandlerFunc {
 				return nil
 			},
 			OnClose: func(ctx context.Context, client *wspkg.Client, err error) {
-				if cancel, ok := streamCancels.LoadAndDelete(client.ID()); ok {
-					cancel.(context.CancelFunc)()
+				if cancelValue, ok := streamCancels.LoadAndDelete(client.ID()); ok {
+					cancelFn, castOK := cancelValue.(context.CancelFunc)
+					if castOK {
+						cancelFn()
+					}
 				}
 
 				if err != nil {

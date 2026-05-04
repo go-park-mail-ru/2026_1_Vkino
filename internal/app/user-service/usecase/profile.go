@@ -1,3 +1,4 @@
+//nolint:gocyclo,lll // Profile update flow stays explicit for validation clarity.
 package usecase
 
 import (
@@ -66,12 +67,13 @@ func (u *UserUsecase) updateBirthdateIfProvided(
 
 	updatedUser, err := u.userRepo.UpdateBirthdate(ctx, userID, parsedBirthdate)
 	if err != nil {
-		return nil, fmt.Errorf("%w: update birthdate in repository: %v", domain.ErrInternal, err)
+		return nil, fmt.Errorf("%w: update birthdate in repository: %w", domain.ErrInternal, err)
 	}
 
 	return updatedUser, nil
 }
 
+//nolint:cyclop // Avatar update validation intentionally stays explicit.
 func (u *UserUsecase) updateAvatarIfProvided(
 	ctx context.Context,
 	userID int64,
@@ -108,6 +110,7 @@ func (u *UserUsecase) updateAvatarIfProvided(
 
 	requestedContentType := sanitize.NormalizeAvatarContentType(contentType)
 	detectedContentType := sanitize.DetectAvatarContentType(avatarBytes)
+
 	sanitizedAvatarBytes, normalizedContentType, ext, err := sanitize.SanitizeAvatarUpload(avatarBytes, requestedContentType)
 	if err != nil {
 		requestLogger.
@@ -116,32 +119,39 @@ func (u *UserUsecase) updateAvatarIfProvided(
 			WithField("detected_content_type", detectedContentType).
 			WithField("error", err).
 			Error("invalid avatar payload")
+
 		return nil, err
 	}
 
 	avatarKey, err := sanitize.NewAvatarObjectKey(userID, ext)
 	if err != nil {
-		return nil, fmt.Errorf("%w: generate avatar object key: %v", domain.ErrInternal, err)
+		return nil, fmt.Errorf("%w: generate avatar object key: %w", domain.ErrInternal, err)
 	}
 
-	if err := u.avatarStore.PutObject(
+	err = u.avatarStore.PutObject(
 		ctx,
 		avatarKey,
 		bytes.NewReader(sanitizedAvatarBytes),
 		int64(len(sanitizedAvatarBytes)),
 		normalizedContentType,
-	); err != nil {
-		return nil, fmt.Errorf("%w: upload avatar object key=%q: %v", domain.ErrInternal, avatarKey, err)
+	)
+	if err != nil {
+		return nil, fmt.Errorf("%w: upload avatar object key=%q: %w", domain.ErrInternal, avatarKey, err)
 	}
 
 	updatedUser, err := u.userRepo.UpdateAvatarFileKey(ctx, userID, &avatarKey)
 	if err != nil {
-		return nil, fmt.Errorf("%w: update avatar key in repository key=%q: %v", domain.ErrInternal, avatarKey, err)
+		return nil, fmt.Errorf("%w: update avatar key in repository key=%q: %w", domain.ErrInternal, avatarKey, err)
 	}
 
 	oldAvatarKey := stringValue(user.AvatarFileKey)
 	if oldAvatarKey != "" {
-		_ = u.avatarStore.DeleteObject(ctx, oldAvatarKey)
+		if err = u.avatarStore.DeleteObject(ctx, oldAvatarKey); err != nil {
+			requestLogger.
+				WithField("avatar_key", oldAvatarKey).
+				WithField("error", err).
+				Warn("failed to delete previous avatar")
+		}
 	}
 
 	return updatedUser, nil

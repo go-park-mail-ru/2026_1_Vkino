@@ -5,6 +5,7 @@ import (
 	"unicode"
 )
 
+//nolint:gocyclo // The password rules are intentionally spelled out.
 func ValidatePassword(password string) bool {
 	if len(password) < 6 || len(password) >= 255 {
 		return false
@@ -14,9 +15,10 @@ func ValidatePassword(password string) bool {
 		return false
 	}
 
-	var hasLetter bool
-	
-	var hasDigit bool
+	var (
+		hasLetter bool
+		hasDigit  bool
+	)
 
 	for _, char := range password {
 		switch {

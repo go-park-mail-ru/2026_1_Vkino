@@ -23,6 +23,8 @@ type ticketBroker struct {
 	subscribers map[int64][]chan domain.SupportTicketEventResponse
 }
 
+const supportTicketEventBufferSize = 16
+
 func newTicketBroker() *ticketBroker {
 	return &ticketBroker{
 		subscribers: make(map[int64][]chan domain.SupportTicketEventResponse),
@@ -30,7 +32,7 @@ func newTicketBroker() *ticketBroker {
 }
 
 func (b *ticketBroker) subscribe(ticketID int64) (<-chan domain.SupportTicketEventResponse, func()) {
-	ch := make(chan domain.SupportTicketEventResponse, 16)
+	ch := make(chan domain.SupportTicketEventResponse, supportTicketEventBufferSize)
 
 	b.mu.Lock()
 	b.subscribers[ticketID] = append(b.subscribers[ticketID], ch)

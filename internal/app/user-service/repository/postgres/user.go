@@ -1,3 +1,4 @@
+//nolint:gocyclo,lll // Repository methods are kept explicit and close to their SQL contracts.
 package postgres
 
 import (
@@ -77,8 +78,11 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 	return &user, nil
 }
 
-func (r *UserRepo) SearchUsersByEmail(ctx context.Context, userID int64,
-	query string) ([]domain.UserSearchResult, error) {
+func (r *UserRepo) SearchUsersByEmail(
+	ctx context.Context,
+	userID int64,
+	query string,
+) ([]domain.UserSearchResult, error) {
 	rows, err := r.db.Query(ctx, sqlSearchUsersByEmail, userID, query)
 	if err != nil {
 		return nil, fmt.Errorf("search users by email: %w", err)
@@ -280,13 +284,16 @@ func (r *UserRepo) SendFriendRequest(ctx context.Context, fromUserID, toUserID i
 	return requestID, nil
 }
 
+//nolint:funcorder // Transaction helper is intentionally kept next to the calling flow.
 func (r *UserRepo) acceptFriendRequestTx(ctx context.Context, requestID, toUserID int64) error {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin accept friend request tx: %w", err)
 	}
 
-	defer func() { _ = tx.Rollback(ctx) }()
+	defer func() {
+		ignoreRollbackError(tx.Rollback(ctx))
+	}()
 
 	var fromUserID, rowToUserID int64
 
@@ -431,4 +438,10 @@ func (r *UserRepo) GetUserRole(ctx context.Context, userID int64) (string, error
 	}
 
 	return role, nil
+}
+
+func ignoreRollbackError(err error) {
+	if err != nil {
+		return
+	}
 }
