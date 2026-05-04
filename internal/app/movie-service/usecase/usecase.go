@@ -13,6 +13,7 @@ type Usecase interface {
 	GetMoviesByIDs(ctx context.Context, movieIDs []int64) ([]domain.MovieCardResponse, error)
 	GetActorByID(ctx context.Context, actorID int64) (domain.ActorResponse, error)
 	GetGenreByID(ctx context.Context, genreID int64) (domain.GenreResponse, error)
+	GetAllGenres(ctx context.Context) ([]domain.GenreShortResponse, error)
 	GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error)
 	GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error)
 

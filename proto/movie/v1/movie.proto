@@ -9,6 +9,7 @@ service MovieService {
   rpc GetMoviesByIDs(GetMoviesByIDsRequest) returns (GetMoviesByIDsResponse);
   rpc GetActorByID(GetActorByIDRequest) returns (GetActorByIDResponse);
   rpc GetGenreByID(GetGenreByIDRequest) returns (GetGenreByIDResponse);
+  rpc GetAllGenres(GetAllGenresRequest) returns (GetAllGenresResponse);
   rpc GetSelectionByTitle(GetSelectionByTitleRequest) returns (GetSelectionByTitleResponse);
   rpc GetAllSelections(GetAllSelectionsRequest) returns (GetAllSelectionsResponse);
 
@@ -99,6 +100,17 @@ message GetGenreByIDResponse {
   int64 id = 1;
   string title = 2;
   repeated MovieCard movies = 3;
+}
+
+message GenreShort {
+  int64 id = 1;
+  string title = 2;
+}
+
+message GetAllGenresRequest {}
+
+message GetAllGenresResponse {
+  repeated GenreShort genres = 1;
 }
 
 message GetSelectionByTitleRequest {

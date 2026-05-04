@@ -152,6 +152,22 @@ func (u *MovieUsecase) buildGenreResponse(
 	return resp, nil
 }
 
+func (u *MovieUsecase) buildGenreShortResponses(genres []domain.GenreShort) []domain.GenreShortResponse {
+	if len(genres) == 0 {
+		return []domain.GenreShortResponse{}
+	}
+
+	result := make([]domain.GenreShortResponse, 0, len(genres))
+	for _, genre := range genres {
+		result = append(result, domain.GenreShortResponse{
+			ID:    genre.ID,
+			Title: genre.Title,
+		})
+	}
+
+	return result
+}
+
 func (u *MovieUsecase) buildMovieCardResponse(
 	ctx context.Context,
 	movie domain.MovieCard,

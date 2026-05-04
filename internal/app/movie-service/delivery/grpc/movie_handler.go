@@ -94,6 +94,20 @@ func (s *Server) GetGenreByID(
 	}, nil
 }
 
+func (s *Server) GetAllGenres(
+	ctx context.Context,
+	_ *moviev1.GetAllGenresRequest,
+) (*moviev1.GetAllGenresResponse, error) {
+	genres, err := s.usecase.GetAllGenres(ctx)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &moviev1.GetAllGenresResponse{
+		Genres: mapGenreShorts(genres),
+	}, nil
+}
+
 func (s *Server) GetSelectionByTitle(
 	ctx context.Context,
 	req *moviev1.GetSelectionByTitleRequest,
@@ -274,6 +288,22 @@ func mapEpisodeShorts(episodes []domain.EpisodeResponse) []*moviev1.EpisodeShort
 			Description:     episode.Description,
 			DurationSeconds: i32(episode.DurationSeconds),
 			ImgUrl:          episode.PictureFileKey,
+		})
+	}
+
+	return result
+}
+
+func mapGenreShorts(genres []domain.GenreShortResponse) []*moviev1.GenreShort {
+	if len(genres) == 0 {
+		return []*moviev1.GenreShort{}
+	}
+
+	result := make([]*moviev1.GenreShort, 0, len(genres))
+	for _, genre := range genres {
+		result = append(result, &moviev1.GenreShort{
+			Id:    genre.ID,
+			Title: genre.Title,
 		})
 	}
 
