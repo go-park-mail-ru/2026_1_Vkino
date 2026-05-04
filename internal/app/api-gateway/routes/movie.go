@@ -14,7 +14,7 @@ func Movie(
 	movieClient moviev1.MovieServiceClient,
 ) []httpserver.Option {
 	return []httpserver.Option{
-		route("GET /genres", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /movie/genres", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 
