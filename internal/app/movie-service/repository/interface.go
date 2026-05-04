@@ -18,6 +18,7 @@ type MovieRepo interface {
 	GetMovieCardsByIDs(ctx context.Context, movieIDs []int64) ([]domain.MovieCard, error)
 
 	SearchMovies(ctx context.Context, query string) ([]domain.MovieCard, error)
+	SearchActors(ctx context.Context, query string) ([]domain.ActorShort, error)
 	GetEpisodePlayback(ctx context.Context, episodeID int64) (*domain.Episode, error)
 	GetEpisodeProgress(ctx context.Context, userID, episodeID int64) (domain.EpisodeProgress, error)
 	SaveEpisodeProgress(ctx context.Context, userID, episodeID, positionSec int64) (domain.EpisodeProgress, error)

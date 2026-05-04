@@ -250,3 +250,18 @@ func (mr *MockMovieRepoMockRecorder) SearchMovies(ctx, query any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchMovies", reflect.TypeOf((*MockMovieRepo)(nil).SearchMovies), ctx, query)
 }
+
+// SearchActors mocks base method.
+func (m *MockMovieRepo) SearchActors(ctx context.Context, query string) ([]domain.ActorShort, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchActors", ctx, query)
+	ret0, _ := ret[0].([]domain.ActorShort)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchActors indicates an expected call of SearchActors.
+func (mr *MockMovieRepoMockRecorder) SearchActors(ctx, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchActors", reflect.TypeOf((*MockMovieRepo)(nil).SearchActors), ctx, query)
+}
