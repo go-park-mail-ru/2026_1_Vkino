@@ -1,3 +1,4 @@
+//nolint:gocyclo // Validation flow is intentionally explicit for support tickets.
 package usecase
 
 import (
@@ -43,7 +44,7 @@ func (u *supportUsecase) CreateTicket(
 
 	ticket, err := u.supportRepo.CreateTicket(ctx, actorUserID, req)
 	if err != nil {
-		return domain.SupportTicketResponse{}, fmt.Errorf("%w: %v", domain.ErrInternal, err)
+		return domain.SupportTicketResponse{}, fmt.Errorf("%w: %w", domain.ErrInternal, err)
 	}
 
 	return *ticket, nil

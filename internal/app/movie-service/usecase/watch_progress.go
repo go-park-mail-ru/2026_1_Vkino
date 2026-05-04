@@ -1,3 +1,4 @@
+//nolint:lll // Verbose signatures mirror the domain types directly.
 package usecase
 
 import (

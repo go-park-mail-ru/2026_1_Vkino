@@ -1,3 +1,4 @@
+//nolint:gocognit // HTTP route registration remains intentionally flat for readability.
 package routes
 
 import (
@@ -9,12 +10,13 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 )
 
+//nolint:gocyclo,cyclop // Route registration intentionally stays flat for readability.
 func Movie(
 	cfg Config,
 	movieClient moviev1.MovieServiceClient,
 ) []httpserver.Option {
 	return []httpserver.Option{
-		route("GET /genres", func(w http.ResponseWriter, r *http.Request) {
+		route("GET /movie/genres", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.MovieRequestTimeout())
 			defer cancel()
 

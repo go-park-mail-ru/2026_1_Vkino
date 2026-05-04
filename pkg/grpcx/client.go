@@ -2,6 +2,7 @@ package grpcx
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -13,6 +14,10 @@ import (
 
 const defaultMaxMessageSize = 12 << 20
 
+const defaultRequestTimeout = 5 * time.Second
+
+var errEmptyGRPCAddress = errors.New("grpc address is empty")
+
 type ClientConfig struct {
 	Address        string
 	RequestTimeout time.Duration
@@ -20,7 +25,7 @@ type ClientConfig struct {
 
 func Dial(ctx context.Context, cfg ClientConfig) (*grpc.ClientConn, error) {
 	if cfg.Address == "" {
-		return nil, fmt.Errorf("grpc address is empty")
+		return nil, errEmptyGRPCAddress
 	}
 
 	conn, err := grpc.NewClient(
@@ -40,7 +45,7 @@ func Dial(ctx context.Context, cfg ClientConfig) (*grpc.ClientConn, error) {
 
 func WithTimeout(ctx context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
 	if timeout <= 0 {
-		timeout = 5 * time.Second
+		timeout = defaultRequestTimeout
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)

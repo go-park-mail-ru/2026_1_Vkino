@@ -8,6 +8,7 @@ import (
 
 type Server struct {
 	moviev1.UnimplementedMovieServiceServer
+
 	usecase    usecase.Usecase
 	authClient authv1.AuthServiceClient
 }

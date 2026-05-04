@@ -1,3 +1,4 @@
+//nolint:lll // SQL column lists are kept aligned with scan targets for readability.
 package postgres
 
 const (

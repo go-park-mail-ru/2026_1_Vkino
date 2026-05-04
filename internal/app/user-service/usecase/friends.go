@@ -1,3 +1,4 @@
+//nolint:gocyclo,lll // Friend flows stay explicit to keep branching readable.
 package usecase
 
 import (
@@ -32,9 +33,7 @@ func (u *UserUsecase) SearchUsersByEmail(
 		return nil, fmt.Errorf("%w: search users by email: %w", domain.ErrInternal, err)
 	}
 
-	if err := u.enrichUserSearchAvatarKeys(ctx, users); err != nil {
-		return nil, err
-	}
+	u.enrichUserSearchAvatarKeys(ctx, users)
 
 	return users, nil
 }
@@ -54,7 +53,7 @@ func (u *UserUsecase) SearchUsers(
 		return nil, err
 	}
 
-	if int32(len(users)) <= limit {
+	if len(users) <= int(limit) {
 		return users, nil
 	}
 
@@ -91,15 +90,10 @@ func (u *UserUsecase) AddFriend(ctx context.Context, userID int64, friendID int6
 		return domain.FriendResponse{}, fmt.Errorf("add friend: %w", err)
 	}
 
-	avatarURL, err := u.friendAvatarPresignedURL(ctx, friend)
-	if err != nil {
-		return domain.FriendResponse{}, err
-	}
-
 	return domain.FriendResponse{
 		ID:        friend.ID,
 		Email:     friend.Email,
-		AvatarURL: avatarURL,
+		AvatarURL: u.friendAvatarPresignedURL(ctx, friend),
 	}, nil
 }
 
@@ -243,9 +237,7 @@ func (u *UserUsecase) GetFriendsList(ctx context.Context, userID int64, limit, o
 		return domain.FriendsListResponse{}, fmt.Errorf("get friends list: %w", err)
 	}
 
-	if err := u.enrichUserSearchAvatarKeys(ctx, friends); err != nil {
-		return domain.FriendsListResponse{}, err
-	}
+	u.enrichUserSearchAvatarKeys(ctx, friends)
 
 	return domain.FriendsListResponse{
 		Friends:    friends,

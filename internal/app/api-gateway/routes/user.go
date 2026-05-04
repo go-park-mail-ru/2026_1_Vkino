@@ -1,3 +1,4 @@
+//nolint:gocognit,gocyclo // HTTP route registration remains intentionally flat for readability.
 package routes
 
 import (
@@ -15,6 +16,14 @@ import (
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	"google.golang.org/grpc"
+)
+
+const (
+	maxProfileMultipartSize       = 10 << 20
+	defaultSearchLimit            = 10
+	defaultContinueWatchingLimit  = 5
+	defaultCollectionLimit        = 50
+	recentWatchHistoryMinProgress = 0.95
 )
 
 type UserClient interface {
@@ -54,9 +63,10 @@ type supportRPC interface {
 }
 
 type grpcUserClient struct {
+	moviev1.MovieServiceClient
+
 	user userv1.UserServiceClient
 	sup  supportRPC
-	moviev1.MovieServiceClient
 }
 
 func NewUserClient(userConn, movieConn grpc.ClientConnInterface) UserClient {
@@ -67,8 +77,11 @@ func NewUserClient(userConn, movieConn grpc.ClientConnInterface) UserClient {
 	}
 }
 
-func (c grpcUserClient) GetProfile(ctx context.Context, in *userv1.GetProfileRequest, opts ...grpc.CallOption) (
-	*userv1.GetProfileResponse, error) {
+func (c grpcUserClient) GetProfile(
+	ctx context.Context,
+	in *userv1.GetProfileRequest,
+	opts ...grpc.CallOption,
+) (*userv1.GetProfileResponse, error) {
 	return c.user.GetProfile(ctx, in, opts...)
 }
 
@@ -80,18 +93,27 @@ func (c grpcUserClient) SearchUsersByEmail(
 	return c.user.SearchUsersByEmail(ctx, in, opts...)
 }
 
-func (c grpcUserClient) UpdateProfile(ctx context.Context, in *userv1.UpdateProfileRequest, opts ...grpc.CallOption) (
-	*userv1.UpdateProfileResponse, error) {
+func (c grpcUserClient) UpdateProfile(
+	ctx context.Context,
+	in *userv1.UpdateProfileRequest,
+	opts ...grpc.CallOption,
+) (*userv1.UpdateProfileResponse, error) {
 	return c.user.UpdateProfile(ctx, in, opts...)
 }
 
-func (c grpcUserClient) AddFriend(ctx context.Context, in *userv1.AddFriendRequest, opts ...grpc.CallOption) (
-	*userv1.AddFriendResponse, error) {
+func (c grpcUserClient) AddFriend(
+	ctx context.Context,
+	in *userv1.AddFriendRequest,
+	opts ...grpc.CallOption,
+) (*userv1.AddFriendResponse, error) {
 	return c.user.AddFriend(ctx, in, opts...)
 }
 
-func (c grpcUserClient) DeleteFriend(ctx context.Context, in *userv1.DeleteFriendRequest, opts ...grpc.CallOption) (
-	*userv1.DeleteFriendResponse, error) {
+func (c grpcUserClient) DeleteFriend(
+	ctx context.Context,
+	in *userv1.DeleteFriendRequest,
+	opts ...grpc.CallOption,
+) (*userv1.DeleteFriendResponse, error) {
 	return c.user.DeleteFriend(ctx, in, opts...)
 }
 
@@ -167,18 +189,27 @@ func (c grpcUserClient) GetFriendsList(
 	return c.user.GetFriendsList(ctx, in, opts...)
 }
 
-func (c grpcUserClient) CreateTicket(ctx context.Context, in *supportv1.CreateTicketRequest, opts ...grpc.CallOption) (
-	*supportv1.TicketResponse, error) {
+func (c grpcUserClient) CreateTicket(
+	ctx context.Context,
+	in *supportv1.CreateTicketRequest,
+	opts ...grpc.CallOption,
+) (*supportv1.TicketResponse, error) {
 	return c.sup.CreateTicket(ctx, in, opts...)
 }
 
-func (c grpcUserClient) GetTickets(ctx context.Context, in *supportv1.GetTicketsRequest, opts ...grpc.CallOption) (
-	*supportv1.TicketsResponse, error) {
+func (c grpcUserClient) GetTickets(
+	ctx context.Context,
+	in *supportv1.GetTicketsRequest,
+	opts ...grpc.CallOption,
+) (*supportv1.TicketsResponse, error) {
 	return c.sup.GetTickets(ctx, in, opts...)
 }
 
-func (c grpcUserClient) UpdateTicket(ctx context.Context, in *supportv1.UpdateTicketRequest, opts ...grpc.CallOption) (
-	*supportv1.TicketResponse, error) {
+func (c grpcUserClient) UpdateTicket(
+	ctx context.Context,
+	in *supportv1.UpdateTicketRequest,
+	opts ...grpc.CallOption,
+) (*supportv1.TicketResponse, error) {
 	return c.sup.UpdateTicket(ctx, in, opts...)
 }
 
@@ -246,9 +277,9 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 	switch {
 	case strings.HasPrefix(contentType, "multipart/form-data"):
 		// лимит тела запроса, чтобы не тащить бесконечный файл в память
-		r.Body = http.MaxBytesReader(w, r.Body, 10<<20) // 10 MB
+		r.Body = http.MaxBytesReader(w, r.Body, maxProfileMultipartSize)
 
-		if err := r.ParseMultipartForm(10 << 20); err != nil {
+		if err := r.ParseMultipartForm(maxProfileMultipartSize); err != nil {
 			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid multipart form body")
 
 			return updateProfilePayload{}, false
@@ -299,6 +330,7 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 	}
 }
 
+//nolint:cyclop,maintidx // Route registration intentionally stays flat for readability.
 func User(cfg Config, userClient UserClient) []httpserver.Option {
 	return []httpserver.Option{
 		route("GET /user/me", func(w http.ResponseWriter, r *http.Request) {
@@ -321,7 +353,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 
 			resp, err := userClient.SearchUsers(r.Context(), &userv1.SearchUsersRequest{
 				Query: r.URL.Query().Get("query"),
-				Limit: parseInt32Query(r, "limit", 10),
+				Limit: parseInt32Query(r, "limit", defaultSearchLimit),
 			})
 			if err != nil {
 				writeGRPCError(w, err)
@@ -425,7 +457,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			defer cancelUser()
 
 			favResp, err := userClient.GetFavorites(r.Context(), &userv1.GetFavoritesRequest{
-				Limit:  parseInt32Query(r, "limit", 10),
+				Limit:  parseInt32Query(r, "limit", defaultSearchLimit),
 				Offset: parseInt32Query(r, "offset", 0),
 			})
 			if err != nil {
@@ -469,7 +501,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			defer cancel()
 
 			resp, err := userClient.GetContinueWatching(r.Context(), &moviev1.GetContinueWatchingRequest{
-				Limit: parseInt32Query(r, "limit", 5),
+				Limit: parseInt32Query(r, "limit", defaultContinueWatchingLimit),
 			})
 			if err != nil {
 				writeGRPCError(w, err)
@@ -485,7 +517,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			defer cancel()
 
 			resp, err := userClient.GetWatchHistory(r.Context(), &moviev1.GetWatchHistoryRequest{
-				Limit:       parseInt32Query(r, "limit", 10),
+				Limit:       parseInt32Query(r, "limit", defaultSearchLimit),
 				MinProgress: 0,
 			})
 			if err != nil {
@@ -502,8 +534,8 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			defer cancel()
 
 			resp, err := userClient.GetWatchHistory(r.Context(), &moviev1.GetWatchHistoryRequest{
-				Limit:       parseInt32Query(r, "limit", 10),
-				MinProgress: 0.95,
+				Limit:       parseInt32Query(r, "limit", defaultSearchLimit),
+				MinProgress: recentWatchHistoryMinProgress,
 			})
 			if err != nil {
 				writeGRPCError(w, err)
@@ -520,7 +552,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 
 			resp, err := userClient.GetFriendRequests(r.Context(), &userv1.GetFriendRequestsRequest{
 				Direction: r.URL.Query().Get("direction"),
-				Limit:     parseInt32Query(r, "limit", 50),
+				Limit:     parseInt32Query(r, "limit", defaultCollectionLimit),
 			})
 			if err != nil {
 				writeGRPCError(w, err)
@@ -588,7 +620,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			defer cancel()
 
 			resp, err := userClient.GetFriendsList(r.Context(), &userv1.GetFriendsListRequest{
-				Limit:  parseInt32Query(r, "limit", 50),
+				Limit:  parseInt32Query(r, "limit", defaultCollectionLimit),
 				Offset: parseInt32Query(r, "offset", 0),
 			})
 			if err != nil {

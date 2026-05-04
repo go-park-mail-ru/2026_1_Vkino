@@ -43,7 +43,7 @@ func (s *SessionRepo) GetSession(ctx context.Context, userID int64) (string, err
 	}
 
 	if time.Now().After(expiresAt) {
-		_ = s.DeleteSession(ctx, userID)
+		ignoreSessionCleanupError(s.DeleteSession(ctx, userID))
 
 		return "", domain.ErrNoSession
 	}
@@ -58,4 +58,10 @@ func (s *SessionRepo) DeleteSession(ctx context.Context, userID int64) error {
 	}
 
 	return nil
+}
+
+func ignoreSessionCleanupError(err error) {
+	if err != nil {
+		return
+	}
 }

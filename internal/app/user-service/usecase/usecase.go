@@ -1,3 +1,4 @@
+//nolint:interfacebloat,lll // Central usecase contracts intentionally group related user/support operations.
 package usecase
 
 import (

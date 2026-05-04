@@ -2,6 +2,7 @@ package domain
 
 import (
 	"time"
+
 	validator "github.com/go-park-mail-ru/2026_1_VKino/pkg/validatex"
 )
 

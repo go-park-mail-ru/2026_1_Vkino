@@ -23,7 +23,7 @@ func (u *supportUsecase) GetTicketStatistics(
 
 	stats, err := u.supportRepo.GetTicketStatistics(ctx, allowedCategoriesForRole(role))
 	if err != nil {
-		return domain.SupportTicketStatisticsResponse{}, fmt.Errorf("%w: %v", domain.ErrInternal, err)
+		return domain.SupportTicketStatisticsResponse{}, fmt.Errorf("%w: %w", domain.ErrInternal, err)
 	}
 
 	return *stats, nil

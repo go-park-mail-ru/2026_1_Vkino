@@ -1,3 +1,4 @@
+//nolint:gocyclo,lll,wsl_v5 // Table-style storage tests stay flatter and clearer this way.
 package storage
 
 import (
@@ -12,6 +13,8 @@ import (
 	"github.com/minio/minio-go/v7"
 	"go.uber.org/mock/gomock"
 )
+
+var errUploadFailed = errors.New("upload failed")
 
 func testS3Config() Config {
 	return Config{
@@ -117,6 +120,8 @@ func TestNewS3Storage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := NewS3Storage(context.Background(), tt.cfg)
 
 			if tt.wantErr != "" {
@@ -166,7 +171,7 @@ func TestS3Storage_PutObject(t *testing.T) {
 			PutObject(gomock.Any(), "avatars", "avatars/1.png", gomock.Any(), int64(4), minio.PutObjectOptions{
 				ContentType: "image/png",
 			}).
-			Return(minio.UploadInfo{}, errors.New("upload failed"))
+			Return(minio.UploadInfo{}, errUploadFailed)
 
 		store := &S3Storage{bucket: "avatars", client: client}
 
@@ -250,7 +255,11 @@ func TestS3Storage_PresignGetObject(t *testing.T) {
 		defer ctrl.Finish()
 
 		client := NewMockMinioClient(ctrl)
-		wantURL, _ := url.Parse("https://cdn.example/avatars/1.png")
+		wantURL, err := url.Parse("https://cdn.example/avatars/1.png")
+		if err != nil {
+			t.Fatalf("parse expected url: %v", err)
+		}
+
 		client.EXPECT().
 			PresignedGetObject(gomock.Any(), "avatars", "avatars/1.png", 5*time.Minute, nil).
 			Return(wantURL, nil)

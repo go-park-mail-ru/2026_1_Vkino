@@ -1,3 +1,4 @@
+//nolint:gocyclo // Access checks stay explicit for support messaging.
 package usecase
 
 import (
@@ -25,7 +26,7 @@ func (u *supportUsecase) GetTicketMessages(
 
 	messages, err := u.supportRepo.GetTicketMessages(ctx, req.TicketID)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", domain.ErrInternal, err)
+		return nil, fmt.Errorf("%w: %w", domain.ErrInternal, err)
 	}
 
 	return messages, nil
@@ -53,7 +54,7 @@ func (u *supportUsecase) CreateTicketMessage(
 
 	msg, err := u.supportRepo.CreateTicketMessage(ctx, actorUserID, req)
 	if err != nil {
-		return domain.SupportTicketMessageResponse{}, fmt.Errorf("%w: %v", domain.ErrInternal, err)
+		return domain.SupportTicketMessageResponse{}, fmt.Errorf("%w: %w", domain.ErrInternal, err)
 	}
 
 	u.broker.publish(req.TicketID, domain.SupportTicketEventResponse{
@@ -71,7 +72,7 @@ func (u *supportUsecase) checkTicketAccess(ctx context.Context, actorUserID, tic
 			return domain.ErrTicketNotFound
 		}
 
-		return fmt.Errorf("%w: %v", domain.ErrInternal, err)
+		return fmt.Errorf("%w: %w", domain.ErrInternal, err)
 	}
 
 	role, err := u.userRepo.GetUserRole(ctx, actorUserID)

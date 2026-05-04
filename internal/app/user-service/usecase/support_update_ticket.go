@@ -1,3 +1,4 @@
+//nolint:gocognit // Permission and validation matrix is intentionally explicit.
 package usecase
 
 import (
@@ -11,6 +12,9 @@ import (
 	validator "github.com/go-park-mail-ru/2026_1_VKino/pkg/validatex"
 )
 
+const maxSupportTicketRating = 5
+
+//nolint:gocyclo,cyclop // Permission and validation matrix is intentionally explicit.
 func (u *supportUsecase) UpdateTicket(
 	ctx context.Context,
 	actorUserID int64,
@@ -43,7 +47,7 @@ func (u *supportUsecase) UpdateTicket(
 		return domain.SupportTicketResponse{}, domain.ErrInvalidEmail
 	}
 
-	if (req.Rating < 0) || (req.Rating > 5) {
+	if req.Rating < 0 || req.Rating > maxSupportTicketRating {
 		return domain.SupportTicketResponse{}, domain.ErrInvalidTicketPayload
 	}
 
@@ -58,7 +62,7 @@ func (u *supportUsecase) UpdateTicket(
 			return domain.SupportTicketResponse{}, domain.ErrTicketNotFound
 		}
 
-		return domain.SupportTicketResponse{}, fmt.Errorf("%w: %v", domain.ErrInternal, err)
+		return domain.SupportTicketResponse{}, fmt.Errorf("%w: %w", domain.ErrInternal, err)
 	}
 
 	switch {
@@ -113,7 +117,7 @@ func (u *supportUsecase) UpdateTicket(
 			return domain.SupportTicketResponse{}, domain.ErrTicketNotFound
 		}
 
-		return domain.SupportTicketResponse{}, fmt.Errorf("%w: %v", domain.ErrInternal, err)
+		return domain.SupportTicketResponse{}, fmt.Errorf("%w: %w", domain.ErrInternal, err)
 	}
 
 	u.broker.publish(req.TicketID, domain.SupportTicketEventResponse{

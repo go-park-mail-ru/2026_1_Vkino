@@ -27,9 +27,10 @@ func UnaryRequestID() grpc.UnaryServerInterceptor {
 		id = requestid.Normalize(id)
 		ctx = requestid.ContextWithID(ctx, id)
 
-		_ = grpc.SetHeader(ctx, metadata.Pairs(requestid.MetadataKey, id))
+		if err := grpc.SetHeader(ctx, metadata.Pairs(requestid.MetadataKey, id)); err != nil {
+			return nil, err
+		}
 
 		return handler(ctx, req)
 	}
 }
-

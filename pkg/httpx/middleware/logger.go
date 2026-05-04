@@ -5,7 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -17,6 +17,8 @@ import (
 )
 
 const requestIDHeader = "X-Request-ID"
+
+var errResponseWriterHijacker = errors.New("response writer does not implement http.Hijacker")
 
 func LoggerMiddleware(baseLogger *logger.Logger) func(http.Handler) http.Handler {
 	if baseLogger == nil {
@@ -55,6 +57,7 @@ func LoggerMiddleware(baseLogger *logger.Logger) func(http.Handler) http.Handler
 
 type loggingResponseWriter struct {
 	http.ResponseWriter
+
 	statusCode  int
 	wroteHeader bool
 }
@@ -97,7 +100,7 @@ func (w *loggingResponseWriter) Flush() {
 func (w *loggingResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker, ok := w.ResponseWriter.(http.Hijacker)
 	if !ok {
-		return nil, nil, fmt.Errorf("response writer does not implement http.Hijacker")
+		return nil, nil, errResponseWriterHijacker
 	}
 
 	return hijacker.Hijack()

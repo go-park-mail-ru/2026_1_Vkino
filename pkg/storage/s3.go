@@ -1,7 +1,9 @@
+//nolint:gocyclo // Storage config validation remains intentionally explicit.
 package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -45,33 +47,48 @@ type S3Storage struct {
 	presignClient MinioClient
 }
 
+const defaultPresignTTL = 15 * time.Minute
+
+var (
+	errBucketRequired           = errors.New("storage: bucket is required")
+	errAccessKeyRequired        = errors.New("storage: access key is required")
+	errSecretKeyRequired        = errors.New("storage: secret key is required")
+	errInternalEndpointRequired = errors.New("storage: internal endpoint is required")
+	errPublicEndpointRequired   = errors.New("storage: public endpoint is required")
+	errPresignTTLInvalid        = errors.New("storage: presign ttl must be positive")
+	errEmptyObjectKey           = errors.New("storage: empty object key")
+	errNilObjectBody            = errors.New("storage: nil object body")
+	errTTLInvalid               = errors.New("storage: ttl must be positive")
+)
+
+//nolint:cyclop // Config validation intentionally stays explicit.
 func NewS3Storage(_ context.Context, cfg Config) (*S3Storage, error) {
 	if cfg.Bucket == "" {
-		return nil, fmt.Errorf("storage: bucket is required")
+		return nil, errBucketRequired
 	}
 
 	if cfg.AccessKeyID == "" {
-		return nil, fmt.Errorf("storage: access key is required")
+		return nil, errAccessKeyRequired
 	}
 
 	if cfg.SecretAccessKey == "" {
-		return nil, fmt.Errorf("storage: secret key is required")
+		return nil, errSecretKeyRequired
 	}
 
 	if cfg.InternalEndpoint == "" {
-		return nil, fmt.Errorf("storage: internal endpoint is required")
+		return nil, errInternalEndpointRequired
 	}
 
 	if cfg.PublicEndpoint == "" {
-		return nil, fmt.Errorf("storage: public endpoint is required")
+		return nil, errPublicEndpointRequired
 	}
 
 	if cfg.PresignTTL == 0 {
-		cfg.PresignTTL = 15 * time.Minute
+		cfg.PresignTTL = defaultPresignTTL
 	}
 
 	if cfg.PresignTTL < 0 {
-		return nil, fmt.Errorf("storage: presign ttl must be positive")
+		return nil, errPresignTTLInvalid
 	}
 
 	bucketLookup := minio.BucketLookupAuto
@@ -147,17 +164,16 @@ func (s *S3Storage) PutObject(
 	contentType string,
 ) error {
 	if key == "" {
-		return fmt.Errorf("storage: empty object key")
+		return errEmptyObjectKey
 	}
 
 	if body == nil {
-		return fmt.Errorf("storage: nil object body")
+		return errNilObjectBody
 	}
 
 	_, err := s.client.PutObject(ctx, s.bucket, key, body, size, minio.PutObjectOptions{
 		ContentType: contentType,
 	})
-
 	if err != nil {
 		return fmt.Errorf("%w: put object %q: %w", ErrUploadFailed, key, err)
 	}
@@ -167,7 +183,7 @@ func (s *S3Storage) PutObject(
 
 func (s *S3Storage) DeleteObject(ctx context.Context, key string) error {
 	if key == "" {
-		return fmt.Errorf("storage: empty object key")
+		return errEmptyObjectKey
 	}
 
 	err := s.client.RemoveObject(ctx, s.bucket, key, minio.RemoveObjectOptions{})
@@ -184,7 +200,7 @@ func (s *S3Storage) PresignGetObject(
 	ttl time.Duration,
 ) (string, error) {
 	if key == "" {
-		return "", fmt.Errorf("storage: empty object key")
+		return "", errEmptyObjectKey
 	}
 
 	if ttl == 0 {
@@ -192,7 +208,7 @@ func (s *S3Storage) PresignGetObject(
 	}
 
 	if ttl < 0 {
-		return "", fmt.Errorf("storage: ttl must be positive")
+		return "", errTTLInvalid
 	}
 
 	u, err := s.presignClient.PresignedGetObject(ctx, s.bucket, key, ttl, nil)

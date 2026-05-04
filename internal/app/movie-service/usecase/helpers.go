@@ -1,3 +1,4 @@
+//nolint:gocyclo // DTO building stays explicit to mirror response structure.
 package usecase
 
 import (
@@ -159,10 +160,7 @@ func (u *MovieUsecase) buildGenreShortResponses(genres []domain.GenreShort) []do
 
 	result := make([]domain.GenreShortResponse, 0, len(genres))
 	for _, genre := range genres {
-		result = append(result, domain.GenreShortResponse{
-			ID:    genre.ID,
-			Title: genre.Title,
-		})
+		result = append(result, domain.GenreShortResponse(genre))
 	}
 
 	return result
@@ -227,7 +225,7 @@ func presignIfExists(ctx context.Context, store presignStorage, key string) (str
 
 	url, err := store.PresignGetObject(ctx, key, 0)
 	if err != nil {
-		return "", fmt.Errorf("%w: presign object key=%q: %v", domain.ErrInternal, key, err)
+		return "", fmt.Errorf("%w: presign object key=%q: %w", domain.ErrInternal, key, err)
 	}
 
 	return url, nil

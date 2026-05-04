@@ -39,6 +39,7 @@ const (
 		returning id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
 	`
 
+	//nolint:gosec // References the schema column name, not a hardcoded credential.
 	sqlUpdateUserPasswordByID = `
 		update users
 		set password_hash = $1, updated_at = now()

@@ -29,6 +29,8 @@ type Config struct {
 
 type Middleware = rootmw.Middleware
 
+const defaultReadHeaderTimeout = 5 * time.Second
+
 type Server struct {
 	server      *http.Server
 	mux         *http.ServeMux
@@ -41,7 +43,8 @@ func New(opts ...Option) *Server {
 		mux:         mux,
 		middlewares: []Middleware{},
 		server: &http.Server{
-			Handler: mux,
+			Handler:           mux,
+			ReadHeaderTimeout: defaultReadHeaderTimeout,
 		},
 	}
 

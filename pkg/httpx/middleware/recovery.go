@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"runtime/debug"
 
@@ -9,15 +10,15 @@ import (
 
 func RecoveryMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
+		defer func(ctx context.Context) {
 			if err := recover(); err != nil {
-				logger.FromContext(r.Context()).
+				logger.FromContext(ctx).
 					WithField("panic", err).
 					WithField("stack", string(debug.Stack())).
 					Error("panic recovered")
 				http.Error(w, "500 - Internal Server Error", http.StatusInternalServerError)
 			}
-		}()
+		}(r.Context())
 
 		next.ServeHTTP(w, r)
 	}

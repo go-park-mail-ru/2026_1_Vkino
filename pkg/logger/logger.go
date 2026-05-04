@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"maps"
@@ -15,9 +16,13 @@ import (
 )
 
 const (
-	defaultLevel  = "info"
-	defaultFormat = "text"
+	defaultLevel    = "info"
+	defaultFormat   = "text"
+	defaultDirPerm  = 0o755
+	defaultFilePerm = 0o644
 )
+
+var errUnsupportedLogFormat = errors.New("unsupported log format")
 
 type Logger struct {
 	entry        *logrus.Entry
@@ -61,7 +66,7 @@ func New(cfg Config) (*Logger, error) {
 			ForceColors:     cfg.OutputPath == "",
 		})
 	default:
-		return nil, fmt.Errorf("unsupported log format %q", cfg.Format)
+		return nil, fmt.Errorf("%w: %q", errUnsupportedLogFormat, cfg.Format)
 	}
 
 	return &Logger{
@@ -196,12 +201,12 @@ func buildOutput(outputPath string) (io.Writer, error) {
 
 	logDir := filepath.Dir(outputPath)
 	if logDir != "." {
-		if err := os.MkdirAll(logDir, 0o755); err != nil {
+		if err := os.MkdirAll(logDir, defaultDirPerm); err != nil {
 			return nil, fmt.Errorf("create log dir %q: %w", logDir, err)
 		}
 	}
 
-	file, err := os.OpenFile(outputPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	file, err := os.OpenFile(outputPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, defaultFilePerm)
 	if err != nil {
 		return nil, fmt.Errorf("open log file %q: %w", outputPath, err)
 	}

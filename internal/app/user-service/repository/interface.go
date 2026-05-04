@@ -1,3 +1,4 @@
+//nolint:interfacebloat,lll // Central repository contracts intentionally group related user/support operations.
 package repository
 
 //go:generate mockgen -source=./interface.go -destination=./mocks/user_repo_mock.go -package=mocks

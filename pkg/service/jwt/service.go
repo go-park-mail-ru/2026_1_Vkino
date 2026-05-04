@@ -30,8 +30,9 @@ type JWTService struct {
 }
 
 type CustomClaims struct {
-	UserID int64 `json:"user_id"`
 	jwt.RegisteredClaims
+
+	UserID int64 `json:"user_id"`
 }
 
 func New(cfg Config) *JWTService {

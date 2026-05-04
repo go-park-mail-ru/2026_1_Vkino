@@ -2,13 +2,15 @@ package metrics
 
 import (
 	"bufio"
-	"fmt"
+	"errors"
 	"io"
 	"net"
 	"net/http"
 	"strconv"
 	"time"
 )
+
+var errMetricsResponseWriterHijacker = errors.New("response writer does not implement http.Hijacker")
 
 func InstrumentHTTPHandler(service, route string, next http.Handler) http.Handler {
 	Register()
@@ -23,8 +25,8 @@ func InstrumentHTTPHandler(service, route string, next http.Handler) http.Handle
 		next.ServeHTTP(mw, r)
 
 		status := strconv.Itoa(mw.StatusCode())
-		serviceLabel := labelValue(service, "unknown")
-		routeLabel := labelValue(route, "unknown")
+		serviceLabel := labelValue(service)
+		routeLabel := labelValue(route)
 
 		HTTPRequestsTotal.WithLabelValues(serviceLabel, r.Method, routeLabel, status).Inc()
 		HTTPRequestDurationSeconds.WithLabelValues(serviceLabel, r.Method, routeLabel, status).
@@ -42,6 +44,7 @@ func InstrumentHTTPHandlerFunc(service, route string, next http.HandlerFunc) htt
 
 type responseWriter struct {
 	http.ResponseWriter
+
 	statusCode  int
 	wroteHeader bool
 }
@@ -84,7 +87,7 @@ func (w *responseWriter) Flush() {
 func (w *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker, ok := w.ResponseWriter.(http.Hijacker)
 	if !ok {
-		return nil, nil, fmt.Errorf("response writer does not implement http.Hijacker")
+		return nil, nil, errMetricsResponseWriterHijacker
 	}
 
 	return hijacker.Hijack()

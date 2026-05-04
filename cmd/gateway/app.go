@@ -16,7 +16,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-const serviceName = "api-gateway"
+const (
+	serviceName       = "api-gateway"
+	corsMaxAgeSeconds = 3600
+)
 
 func Run(configPath string) error {
 	cfg := &Config{}
@@ -30,6 +33,7 @@ func Run(configPath string) error {
 	}
 
 	appLogger := baseLogger.WithField("component", serviceName)
+
 	runCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -99,7 +103,7 @@ func serverOptions(cfg *Config, log *logger.Logger) []httpserver.Option {
 			AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 			AllowedHeaders:   []string{"Content-Type", "Authorization", "X-Request-ID"},
 			AllowCredentials: cfg.Server.CORS.AllowCredentials,
-			MaxAge:           3600,
+			MaxAge:           corsMaxAgeSeconds,
 		})),
 		httpserver.WithMiddleware(rootmw.LoggerMiddleware(log)),
 		httpserver.WithMiddleware(rootmw.RecoveryMiddleware),

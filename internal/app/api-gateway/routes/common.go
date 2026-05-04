@@ -37,6 +37,7 @@ func route(pattern string, handler http.HandlerFunc) httpserver.Option {
 
 func routeLabel(pattern string) string {
 	pattern = strings.TrimSpace(pattern)
+
 	_, route, found := strings.Cut(pattern, " ")
 	if !found {
 		return pattern

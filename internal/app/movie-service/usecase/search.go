@@ -1,3 +1,4 @@
+//nolint:gocyclo // Search aggregation stays explicit for readability.
 package usecase
 
 import (

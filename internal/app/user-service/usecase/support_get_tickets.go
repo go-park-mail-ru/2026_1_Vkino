@@ -1,3 +1,4 @@
+//nolint:gocyclo // Access checks and filter assembly stay explicit.
 package usecase
 
 import (
@@ -9,6 +10,7 @@ import (
 	validator "github.com/go-park-mail-ru/2026_1_VKino/pkg/validatex"
 )
 
+//nolint:cyclop // Access checks and filter assembly stay explicit.
 func (u *supportUsecase) GetTickets(
 	ctx context.Context,
 	actorUserID int64,
@@ -54,7 +56,7 @@ func (u *supportUsecase) GetTickets(
 
 	tickets, err := u.supportRepo.GetTickets(ctx, userIDFilter, req)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", domain.ErrInternal, err)
+		return nil, fmt.Errorf("%w: %w", domain.ErrInternal, err)
 	}
 
 	return tickets, nil

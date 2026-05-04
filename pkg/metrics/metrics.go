@@ -6,7 +6,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-const namespace = "vkino"
+const (
+	namespace         = "vkino"
+	unknownLabelValue = "unknown"
+)
 
 var (
 	HTTPRequestsTotal = prometheus.NewCounterVec(
@@ -124,12 +127,12 @@ func Register() {
 
 func SetServiceInfo(service string) {
 	Register()
-	ServiceInfo.WithLabelValues(labelValue(service, "unknown")).Set(1)
+	ServiceInfo.WithLabelValues(labelValue(service)).Set(1)
 }
 
-func labelValue(value, fallback string) string {
+func labelValue(value string) string {
 	if value == "" {
-		return fallback
+		return unknownLabelValue
 	}
 
 	return value

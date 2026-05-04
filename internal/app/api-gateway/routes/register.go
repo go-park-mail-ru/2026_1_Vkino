@@ -1,3 +1,4 @@
+//nolint:wsl_v5 // Tiny route bootstrap stays clearer in this compact form.
 package routes
 
 import (
@@ -19,7 +20,9 @@ func Register(
 	result = append(result,
 		route("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte("ok"))
+			if _, err := w.Write([]byte("ok")); err != nil {
+				return
+			}
 		}),
 	)
 

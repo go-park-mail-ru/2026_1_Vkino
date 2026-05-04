@@ -1,3 +1,4 @@
+//nolint:lll,wsl_v5 // Repository methods are kept close to SQL/query parameters for readability.
 package postgres
 
 import (

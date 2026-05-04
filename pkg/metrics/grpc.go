@@ -10,7 +10,8 @@ import (
 
 func UnaryServerInterceptor(service string) grpc.UnaryServerInterceptor {
 	Register()
-	serviceLabel := labelValue(service, "unknown")
+
+	serviceLabel := labelValue(service)
 
 	return func(
 		ctx context.Context,
@@ -23,7 +24,7 @@ func UnaryServerInterceptor(service string) grpc.UnaryServerInterceptor {
 		resp, err := handler(ctx, req)
 
 		code := status.Code(err).String()
-		method := labelValue(info.FullMethod, "unknown")
+		method := labelValue(info.FullMethod)
 
 		GRPCRequestsTotal.WithLabelValues(serviceLabel, method, code).Inc()
 		GRPCRequestDurationSeconds.WithLabelValues(serviceLabel, method, code).
@@ -39,7 +40,8 @@ func UnaryServerInterceptor(service string) grpc.UnaryServerInterceptor {
 
 func StreamServerInterceptor(service string) grpc.StreamServerInterceptor {
 	Register()
-	serviceLabel := labelValue(service, "unknown")
+
+	serviceLabel := labelValue(service)
 
 	return func(
 		srv any,
@@ -52,7 +54,7 @@ func StreamServerInterceptor(service string) grpc.StreamServerInterceptor {
 		err := handler(srv, ss)
 
 		code := status.Code(err).String()
-		method := labelValue(info.FullMethod, "unknown")
+		method := labelValue(info.FullMethod)
 
 		GRPCStreamsTotal.WithLabelValues(serviceLabel, method, code).Inc()
 		GRPCStreamDurationSeconds.WithLabelValues(serviceLabel, method, code).

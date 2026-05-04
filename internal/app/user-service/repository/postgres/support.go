@@ -1,3 +1,4 @@
+//nolint:gocyclo,lll // Repository methods are kept explicit and close to their SQL contracts.
 package postgres
 
 import (
@@ -84,6 +85,7 @@ func scanTicket(
 	return ticket
 }
 
+//nolint:funcorder // Scan helper is kept near the ticket row schema for maintainability.
 func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain.SupportTicketResponse, error) {
 	var (
 		id                int64
