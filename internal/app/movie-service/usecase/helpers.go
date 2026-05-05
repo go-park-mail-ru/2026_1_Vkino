@@ -87,7 +87,7 @@ func (u *MovieUsecase) buildActorResponse(ctx context.Context, actor *domain.Act
 		FullName:  actor.FullName,
 		Biography: actor.Biography,
 		BirthDate: formatDate(actor.BirthDate),
-		CountryID: actor.CountryID,
+		Country:   actor.Country,
 		Movies:    make([]domain.MovieCardResponse, 0, len(actor.Movies)),
 	}
 

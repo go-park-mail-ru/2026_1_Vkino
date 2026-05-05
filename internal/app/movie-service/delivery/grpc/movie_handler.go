@@ -73,7 +73,7 @@ func (s *Server) GetActorByID(
 		FullName:  actor.FullName,
 		Biography: actor.Biography,
 		Birthdate: actor.BirthDate,
-		CountryId: actor.CountryID,
+		Country:   actor.Country,
 		ImgUrl:    actor.PictureFileKey,
 		Movies:    mapMovieCards(actor.Movies),
 	}, nil

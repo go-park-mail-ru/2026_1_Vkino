@@ -90,6 +90,7 @@ message GetActorByIDResponse {
   int64 country_id = 5;
   string img_url = 6;
   repeated MovieCard movies = 7;
+  string country = 8;
 }
 
 message GetGenreByIDRequest {

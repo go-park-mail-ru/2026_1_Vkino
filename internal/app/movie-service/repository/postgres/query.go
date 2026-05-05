@@ -66,8 +66,10 @@ const (
 			a.birthdate,
 			coalesce(a.biography, ''),
 			a.country_id,
+			c.title,
 			a.picture_file_key
 		from actor a
+		join country c on c.id = a.country_id
 		where a.id = $1
 	`
 
