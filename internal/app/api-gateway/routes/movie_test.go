@@ -10,7 +10,8 @@ import (
 
 type stubMovieClient struct {
 	moviev1.MovieServiceClient
-	getAllGenres func(context.Context, *moviev1.GetAllGenresRequest, ...grpc.CallOption) (*moviev1.GetAllGenresResponse, error)
+	getAllGenres func(context.Context, *moviev1.GetAllGenresRequest,
+	...grpc.CallOption) (*moviev1.GetAllGenresResponse, error)
 }
 
 func (s stubMovieClient) GetAllGenres(
@@ -25,7 +26,8 @@ func TestResolveGenreID(t *testing.T) {
 	t.Parallel()
 
 	client := stubMovieClient{
-		getAllGenres: func(context.Context, *moviev1.GetAllGenresRequest, ...grpc.CallOption) (*moviev1.GetAllGenresResponse, error) {
+		getAllGenres: func(context.Context, *moviev1.GetAllGenresRequest,
+		...grpc.CallOption) (*moviev1.GetAllGenresResponse, error) {
 			return &moviev1.GetAllGenresResponse{
 				Genres: []*moviev1.GenreShort{
 					{Id: 1, Title: "Комедия"},
@@ -36,10 +38,10 @@ func TestResolveGenreID(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		raw     string
-		wantID  int64
-		wantOK  bool
+		name   string
+		raw    string
+		wantID int64
+		wantOK bool
 	}{
 		{name: "numeric id", raw: "12", wantID: 12, wantOK: true},
 		{name: "genre title", raw: "Драма", wantID: 2, wantOK: true},

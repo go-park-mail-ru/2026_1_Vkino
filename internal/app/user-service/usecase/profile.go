@@ -119,6 +119,7 @@ func (u *UserUsecase) updateAvatarIfProvided(
 	}
 
 	requestedContentType := sanitize.NormalizeAvatarContentType(contentType)
+
 	detectedContentType := sanitize.DetectAvatarContentType(avatarBytes)
 	if _, ok := sanitize.AvatarExtensionByContentType(detectedContentType); !ok {
 		requestLogger.

@@ -3,6 +3,7 @@ package routes
 import (
 	"bytes"
 	"mime/multipart"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -67,6 +68,7 @@ func TestReadUpdateProfilePayload_IgnoresNullAvatarField(t *testing.T) {
 	t.Parallel()
 
 	var body bytes.Buffer
+
 	writer := multipart.NewWriter(&body)
 
 	if err := writer.WriteField("birthdate", "2004-03-01"); err != nil {
@@ -81,7 +83,7 @@ func TestReadUpdateProfilePayload_IgnoresNullAvatarField(t *testing.T) {
 		t.Fatalf("writer.Close: %v", err)
 	}
 
-	req := httptest.NewRequest("PUT", "/user/profile", &body)
+	req := httptest.NewRequest(http.MethodPut, "/user/profile", &body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	rr := httptest.NewRecorder()

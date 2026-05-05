@@ -12,6 +12,7 @@ import (
 
 	dto "github.com/go-park-mail-ru/2026_1_VKino/internal/app/api-gateway/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"

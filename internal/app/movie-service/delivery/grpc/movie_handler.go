@@ -34,7 +34,6 @@ func (s *Server) GetMovieByID(
 		AgeLimit:           i32(movie.AgeLimit),
 		OriginalLanguageId: movie.OriginalLanguageID,
 		OriginalLanguage:   movie.OriginalLanguage,
-		CountryId:          movie.CountryID,
 		Country:            movie.Country,
 		ImgUrl:             movie.PictureFileKey,
 		PosterUrl:          movie.PosterFileKey,
