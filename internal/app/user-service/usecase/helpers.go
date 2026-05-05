@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 )
 
 func (u *UserUsecase) profileResponse(ctx context.Context, user *domain.User) (domain.ProfileResponse, error) {
@@ -22,7 +22,12 @@ func (u *UserUsecase) profileResponse(ctx context.Context, user *domain.User) (d
 	if u.avatarStore != nil && avatarKey != "" {
 		url, err := u.avatarStore.PresignGetObject(ctx, avatarKey, 0)
 		if err != nil {
-			return domain.ProfileResponse{}, fmt.Errorf("%w: presign avatar key=%q: %w", domain.ErrInternal, avatarKey, err)
+			logger.FromContext(ctx).
+				WithField("avatar_key", avatarKey).
+				WithField("error", err).
+				Warn("failed to presign avatar for profile response")
+
+			return resp, nil
 		}
 
 		resp.AvatarURL = url

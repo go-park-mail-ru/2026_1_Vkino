@@ -94,7 +94,7 @@ func (u *UserUsecase) updateAvatarIfProvided(
 	}
 
 	if size <= 0 {
-		return nil, domain.ErrInvalidAvatar
+		return user, nil
 	}
 
 	avatarBytes, err := io.ReadAll(body)
@@ -105,11 +105,30 @@ func (u *UserUsecase) updateAvatarIfProvided(
 				Error("failed to read avatar body")
 		}
 
-		return nil, domain.ErrInvalidAvatar
+		return user, nil
+	}
+
+	if shouldIgnoreAvatarPayload(avatarBytes, contentType) {
+		requestLogger.
+			WithField("avatar_content_type", contentType).
+			WithField("avatar_size", len(avatarBytes)).
+			WithField("avatar_preview", string(bytes.TrimSpace(avatarBytes))).
+			Info("ignoring avatar payload during profile update")
+
+		return user, nil
 	}
 
 	requestedContentType := sanitize.NormalizeAvatarContentType(contentType)
 	detectedContentType := sanitize.DetectAvatarContentType(avatarBytes)
+	if _, ok := sanitize.AvatarExtensionByContentType(detectedContentType); !ok {
+		requestLogger.
+			WithField("avatar_content_type", contentType).
+			WithField("detected_content_type", detectedContentType).
+			WithField("avatar_size", len(avatarBytes)).
+			Warn("ignoring unsupported avatar payload during profile update")
+
+		return user, nil
+	}
 
 	sanitizedAvatarBytes, normalizedContentType, ext, err := sanitize.SanitizeAvatarUpload(avatarBytes, requestedContentType)
 	if err != nil {
@@ -117,6 +136,8 @@ func (u *UserUsecase) updateAvatarIfProvided(
 			WithField("original_content_type", contentType).
 			WithField("requested_content_type", requestedContentType).
 			WithField("detected_content_type", detectedContentType).
+			WithField("avatar_size", len(avatarBytes)).
+			WithField("avatar_preview", string(bytes.TrimSpace(avatarBytes))).
 			WithField("error", err).
 			Error("invalid avatar payload")
 
@@ -164,4 +185,27 @@ func parseBirthdate(rawBirthdate string) (*time.Time, error) {
 	}
 
 	return &parsed, nil
+}
+
+func shouldIgnoreAvatarPayload(body []byte, contentType string) bool {
+	trimmedBody := bytes.TrimSpace(body)
+	if len(trimmedBody) == 0 {
+		return true
+	}
+
+	value := strings.ToLower(string(trimmedBody))
+
+	if value == "null" || value == "undefined" {
+		return true
+	}
+
+	if strings.HasPrefix(value, "blob:") ||
+		strings.HasPrefix(value, "http://") ||
+		strings.HasPrefix(value, "https://") {
+		return true
+	}
+
+	trimmedType := strings.ToLower(strings.TrimSpace(contentType))
+
+	return !strings.HasPrefix(trimmedType, "image/")
 }
