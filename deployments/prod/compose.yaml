@@ -16,7 +16,7 @@ services:
       - app-network
 
   api-gateway:
-    image: saucesamba/vkino-gateway:v0.1.7
+    image: saucesamba/vkino-gateway:v0.1.8
     platform: linux/amd64
     restart: always
     env_file:
@@ -55,7 +55,7 @@ services:
       - app-network
 
   user-service:
-    image: karielka/vkino-user:v0.1.5
+    image: saucesamba/vkino-user:v0.1.6
     platform: linux/amd64
     restart: always
     env_file:
@@ -80,7 +80,7 @@ services:
       - app-network
 
   movie-service:
-    image: saucesamba/vkino-movie:v0.1.4
+    image: saucesamba/vkino-movie:v0.1.5
     platform: linux/amd64
     restart: always
     env_file:
