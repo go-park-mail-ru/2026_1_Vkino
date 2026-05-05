@@ -16,13 +16,12 @@ func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Mov
 		Description:        movie.Description,
 		Director:           movie.Director,
 		TrailerURL:         movie.TrailerURL,
-		ContentType:        movie.ContentType,
+		ContentType:        localizeMovieContentType(movie.ContentType),
 		ReleaseYear:        movie.ReleaseYear,
 		DurationSeconds:    movie.DurationSeconds,
 		AgeLimit:           movie.AgeLimit,
 		OriginalLanguageID: movie.OriginalLanguageID,
 		OriginalLanguage:   movie.OriginalLanguage,
-		CountryID:          movie.CountryID,
 		Country:            movie.Country,
 		Genres:             movie.Genres,
 		Actors:             make([]domain.ActorShortResponse, 0, len(movie.Actors)),
@@ -87,7 +86,7 @@ func (u *MovieUsecase) buildActorResponse(ctx context.Context, actor *domain.Act
 		FullName:  actor.FullName,
 		Biography: actor.Biography,
 		BirthDate: formatDate(actor.BirthDate),
-		CountryID: actor.CountryID,
+		Country:   actor.Country,
 		Movies:    make([]domain.MovieCardResponse, 0, len(actor.Movies)),
 	}
 
@@ -196,6 +195,17 @@ func (u *MovieUsecase) buildActorShortResponse(
 		FullName:       actor.FullName,
 		PictureFileKey: imageURL,
 	}, nil
+}
+
+func localizeMovieContentType(contentType string) string {
+	switch contentType {
+	case "film":
+		return "Фильм"
+	case "series":
+		return "Сериал"
+	default:
+		return contentType
+	}
 }
 
 func (u *MovieUsecase) presignPoster(ctx context.Context, key string) (string, error) {

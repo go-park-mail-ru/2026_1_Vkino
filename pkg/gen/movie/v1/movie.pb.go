@@ -614,6 +614,7 @@ type GetActorByIDResponse struct {
 	CountryId     int64                  `protobuf:"varint,5,opt,name=country_id,json=countryId,proto3" json:"country_id,omitempty"`
 	ImgUrl        string                 `protobuf:"bytes,6,opt,name=img_url,json=imgUrl,proto3" json:"img_url,omitempty"`
 	Movies        []*MovieCard           `protobuf:"bytes,7,rep,name=movies,proto3" json:"movies,omitempty"`
+	Country       string                 `protobuf:"bytes,8,opt,name=country,proto3" json:"country,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -695,6 +696,13 @@ func (x *GetActorByIDResponse) GetMovies() []*MovieCard {
 		return x.Movies
 	}
 	return nil
+}
+
+func (x *GetActorByIDResponse) GetCountry() string {
+	if x != nil {
+		return x.Country
+	}
+	return ""
 }
 
 type GetGenreByIDRequest struct {
@@ -1972,7 +1980,7 @@ const file_movie_v1_movie_proto_rawDesc = "" +
 	"\tMovieCard\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x17\n" +
-	"\aimg_url\x18\x03 \x01(\tR\x06imgUrl\"\xe4\x01\n" +
+	"\aimg_url\x18\x03 \x01(\tR\x06imgUrl\"\xfe\x01\n" +
 	"\x14GetActorByIDResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
 	"\tfull_name\x18\x02 \x01(\tR\bfullName\x12\x1c\n" +
@@ -1981,7 +1989,8 @@ const file_movie_v1_movie_proto_rawDesc = "" +
 	"\n" +
 	"country_id\x18\x05 \x01(\x03R\tcountryId\x12\x17\n" +
 	"\aimg_url\x18\x06 \x01(\tR\x06imgUrl\x12+\n" +
-	"\x06movies\x18\a \x03(\v2\x13.movie.v1.MovieCardR\x06movies\"0\n" +
+	"\x06movies\x18\a \x03(\v2\x13.movie.v1.MovieCardR\x06movies\x12\x18\n" +
+	"\acountry\x18\b \x01(\tR\acountry\"0\n" +
 	"\x13GetGenreByIDRequest\x12\x19\n" +
 	"\bgenre_id\x18\x01 \x01(\x03R\agenreId\"i\n" +
 	"\x14GetGenreByIDResponse\x12\x0e\n" +

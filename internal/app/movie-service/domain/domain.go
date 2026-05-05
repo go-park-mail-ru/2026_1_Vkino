@@ -31,6 +31,7 @@ type Actor struct {
 	BirthDate      *time.Time
 	Biography      string
 	CountryID      int64
+	Country        string
 	PictureFileKey string
 	Movies         []MovieCard
 }

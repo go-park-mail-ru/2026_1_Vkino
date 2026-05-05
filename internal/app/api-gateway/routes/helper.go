@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -20,6 +21,38 @@ func parseInt32Query(r *http.Request, key string, defaultValue int32) int32 {
 	}
 
 	return int32(parsed)
+}
+
+func resolveGenreID(
+	ctx context.Context,
+	movieClient moviev1.MovieServiceClient,
+	raw string,
+) (int64, bool, error) {
+	value := strings.TrimSpace(raw)
+	if value == "" {
+		return 0, false, nil
+	}
+
+	if genreID, err := strconv.ParseInt(value, 10, 64); err == nil {
+		return genreID, true, nil
+	}
+
+	resp, err := movieClient.GetAllGenres(ctx, &moviev1.GetAllGenresRequest{})
+	if err != nil {
+		return 0, false, err
+	}
+
+	for _, genre := range resp.GetGenres() {
+		if genre == nil {
+			continue
+		}
+
+		if strings.EqualFold(strings.TrimSpace(genre.GetTitle()), value) {
+			return genre.GetId(), true, nil
+		}
+	}
+
+	return 0, false, nil
 }
 
 func orderMovieCardsByIDOrder(movieIDs []int64, movies []*moviev1.MovieCard) []*moviev1.MovieCard {

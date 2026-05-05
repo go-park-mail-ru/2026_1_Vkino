@@ -2,14 +2,17 @@
 package routes
 
 import (
+	"bytes"
 	"context"
-	"errors"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
 
 	dto "github.com/go-park-mail-ru/2026_1_VKino/internal/app/api-gateway/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
+
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
 	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
@@ -289,12 +292,17 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 			Birthdate: strings.TrimSpace(r.FormValue("birthdate")),
 		}
 
-		file, header, err := r.FormFile("avatar")
-		if err != nil {
-			if errors.Is(err, http.ErrMissingFile) {
-				return payload, true
-			}
+		header, ok := firstMultipartFile(r.MultipartForm, "avatar")
+		if !ok {
+			return payload, true
+		}
 
+		if shouldIgnoreMultipartAvatarHeader(header) {
+			return payload, true
+		}
+
+		file, err := header.Open()
+		if err != nil {
 			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid avatar file")
 
 			return updateProfilePayload{}, false
@@ -311,10 +319,21 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 			return updateProfilePayload{}, false
 		}
 
-		payload.Avatar = avatarBytes
 		if header != nil {
 			payload.AvatarContentType = header.Header.Get("Content-Type")
 		}
+
+		if isAvatarReferencePayload(avatarBytes, payload.AvatarContentType) {
+			logger.FromContext(r.Context()).
+				WithField("avatar_content_type", payload.AvatarContentType).
+				WithField("avatar_size", len(avatarBytes)).
+				WithField("avatar_preview", string(bytes.TrimSpace(avatarBytes))).
+				Info("ignoring avatar reference payload")
+
+			return payload, true
+		}
+
+		payload.Avatar = avatarBytes
 
 		return payload, true
 
@@ -328,6 +347,61 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 			Birthdate: strings.TrimSpace(req.Birthdate),
 		}, true
 	}
+}
+
+func isAvatarReferencePayload(body []byte, contentType string) bool {
+	trimmedBody := bytes.TrimSpace(body)
+	if len(trimmedBody) == 0 {
+		return true
+	}
+
+	value := strings.ToLower(string(trimmedBody))
+
+	if value == "null" || value == "undefined" {
+		return true
+	}
+
+	if strings.HasPrefix(value, "blob:") ||
+		strings.HasPrefix(value, "http://") ||
+		strings.HasPrefix(value, "https://") {
+		return true
+	}
+
+	trimmedType := strings.ToLower(strings.TrimSpace(contentType))
+
+	return !strings.HasPrefix(trimmedType, "image/")
+}
+
+func firstMultipartFile(form *multipart.Form, field string) (*multipart.FileHeader, bool) {
+	if form == nil || form.File == nil {
+		return nil, false
+	}
+
+	files := form.File[field]
+	if len(files) == 0 || files[0] == nil {
+		return nil, false
+	}
+
+	return files[0], true
+}
+
+func shouldIgnoreMultipartAvatarHeader(header *multipart.FileHeader) bool {
+	if header == nil {
+		return true
+	}
+
+	filename := strings.ToLower(strings.TrimSpace(header.Filename))
+	contentType := strings.ToLower(strings.TrimSpace(header.Header.Get("Content-Type")))
+
+	if filename == "" || filename == "null" || filename == "undefined" || filename == "blob" {
+		return true
+	}
+
+	if strings.HasPrefix(contentType, "image/") {
+		return false
+	}
+
+	return false
 }
 
 //nolint:cyclop,maintidx // Route registration intentionally stays flat for readability.

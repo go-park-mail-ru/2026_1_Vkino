@@ -83,6 +83,7 @@ func (r *MovieRepo) GetActorByID(ctx context.Context, actorID int64) (*domain.Ac
 		&actor.BirthDate,
 		&actor.Biography,
 		&actor.CountryID,
+		&actor.Country,
 		&actor.PictureFileKey,
 	)
 	if err != nil {

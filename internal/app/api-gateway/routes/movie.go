@@ -91,13 +91,21 @@ func Movie(
 		}),
 
 		route("GET /movie/genre/{id}", func(w http.ResponseWriter, r *http.Request) {
-			genreID, ok := parsePathID(w, r, "invalid genre id")
-			if !ok {
+			cancel := grpcContext(r, cfg.MovieRequestTimeout())
+			defer cancel()
+
+			genreID, ok, err := resolveGenreID(r.Context(), movieClient, r.PathValue("id"))
+			if err != nil {
+				writeGRPCError(w, err)
+
 				return
 			}
 
-			cancel := grpcContext(r, cfg.MovieRequestTimeout())
-			defer cancel()
+			if !ok || genreID <= 0 {
+				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid genre id")
+
+				return
+			}
 
 			resp, err := movieClient.GetGenreByID(r.Context(), &moviev1.GetGenreByIDRequest{
 				GenreId: genreID,

@@ -27,7 +27,7 @@ type ActorResponse struct {
 	FullName       string              `json:"full_name"`
 	Biography      string              `json:"biography"`
 	BirthDate      string              `json:"birthdate"`
-	CountryID      int64               `json:"country_id"`
+	Country        string              `json:"country"`
 	PictureFileKey string              `json:"img_url"`
 	Movies         []MovieCardResponse `json:"movies"`
 }
