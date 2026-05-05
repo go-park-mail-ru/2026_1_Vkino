@@ -26,8 +26,31 @@ var errBeginUnsupported = errors.New("postgres: begin is not supported for this 
 
 func New(cfg Config, opts ...Option) (*Client, error) {
 	cfg.SetDefaults()
-	dsn := cfg.DSN()
 
+	client := newClient(cfg, opts...)
+
+	poolCfg, err := newPoolConfig(cfg, client)
+	if err != nil {
+		return nil, err
+	}
+
+	rawPool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
+	if err != nil {
+		return nil, fmt.Errorf("pgxpool.NewWithConfig failed: %w", err)
+	}
+
+	client.Pool = &pgxPool{pool: rawPool}
+
+	if err = client.connectWithRetry(context.Background()); err != nil {
+		rawPool.Close()
+
+		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
+	}
+
+	return client, nil
+}
+
+func newClient(cfg Config, opts ...Option) *Client {
 	client := &Client{
 		maxPoolSize:  cfg.MaxPoolSize,
 		connAttempts: cfg.ConnAttempts,
@@ -38,61 +61,49 @@ func New(cfg Config, opts ...Option) (*Client, error) {
 		opt(client)
 	}
 
-	poolCfg, err := pgxpool.ParseConfig(dsn)
+	return client
+}
+
+func newPoolConfig(cfg Config, client *Client) (*pgxpool.Config, error) {
+	poolCfg, err := pgxpool.ParseConfig(cfg.DSN())
 	if err != nil {
-		return nil, fmt.Errorf("pgxpool.ParseConfig failes: %w", err)
+		return nil, fmt.Errorf("pgxpool.ParseConfig failed: %w", err)
 	}
 
 	poolCfg.MaxConns = clampToInt32(client.maxPoolSize)
-
-	if cfg.ApplicationName != "" {
-		poolCfg.ConnConfig.RuntimeParams["application_name"] = cfg.ApplicationName
-	}
-
-	if cfg.StatementTimeout > 0 {
-		poolCfg.ConnConfig.RuntimeParams["statement_timeout"] = cfg.StatementTimeout.String()
-	}
-
-	if cfg.LockTimeout > 0 {
-		poolCfg.ConnConfig.RuntimeParams["lock_timeout"] = cfg.LockTimeout.String()
-	}
-
-	if cfg.IdleInTransactionSessionTimeout > 0 {
-		poolCfg.ConnConfig.RuntimeParams["idle_in_transaction_session_timeout"] =
-			cfg.IdleInTransactionSessionTimeout.String()
-	}
-
 	poolCfg.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeCacheStatement
 	poolCfg.ConnConfig.StatementCacheCapacity = 512
 
-	rawPool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
-	if err != nil {
-		return nil, fmt.Errorf("pgxpool.NewWithConfig failed: %w", err)
+	applyRuntimeParams(poolCfg, cfg)
+
+	return poolCfg, nil
+}
+
+func applyRuntimeParams(poolCfg *pgxpool.Config, cfg Config) {
+	setRuntimeParam(poolCfg, "application_name", cfg.ApplicationName)
+	setRuntimeParam(poolCfg, "statement_timeout", durationString(cfg.StatementTimeout))
+	setRuntimeParam(poolCfg, "lock_timeout", durationString(cfg.LockTimeout))
+	setRuntimeParam(
+		poolCfg,
+		"idle_in_transaction_session_timeout",
+		durationString(cfg.IdleInTransactionSessionTimeout),
+	)
+}
+
+func setRuntimeParam(poolCfg *pgxpool.Config, key string, value string) {
+	if value == "" {
+		return
 	}
 
-	client.Pool = &pgxPool{pool: rawPool}
+	poolCfg.ConnConfig.RuntimeParams[key] = value
+}
 
-	for client.connAttempts > 0 {
-		err = client.Ping(context.Background())
-		if err == nil {
-			break
-		}
-
-		logger.FromContext(context.TODO()).
-			WithField("component", "postgres").
-			WithField("attempts_left", client.connAttempts).
-			WithField("error", err).
-			Warn("trying to connect to postgres")
-
-		time.Sleep(client.connTimeout)
-		client.connAttempts--
+func durationString(value time.Duration) string {
+	if value <= 0 {
+		return ""
 	}
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
-	}
-
-	return client, nil
+	return value.String()
 }
 
 func (p *Client) Close() {
@@ -211,4 +222,25 @@ func clampToInt32(value int) int32 {
 	}
 
 	return int32(value)
+}
+
+func (p *Client) connectWithRetry(ctx context.Context) error {
+	var err error
+
+	for attemptsLeft := p.connAttempts; attemptsLeft > 0; attemptsLeft-- {
+		err = p.Ping(ctx)
+		if err == nil {
+			return nil
+		}
+
+		logger.FromContext(ctx).
+			WithField("component", "postgres").
+			WithField("attempts_left", attemptsLeft).
+			WithField("error", err).
+			Warn("trying to connect to postgres")
+
+		time.Sleep(p.connTimeout)
+	}
+
+	return err
 }

@@ -14,21 +14,21 @@ const (
 )
 
 type Config struct {
-	Host         string        `mapstructure:"host"`
-	Port         int           `mapstructure:"port"`
-	User         string        `mapstructure:"user"`
-	Password     string        `mapstructure:"password"`
-	DBName       string        `mapstructure:"dbname"`
-	SSLMode      string        `mapstructure:"sslmode"`
-	ApplicationName string     `mapstructure:"application_name"`
+	Host            string `mapstructure:"host"`
+	Port            int    `mapstructure:"port"`
+	User            string `mapstructure:"user"`
+	Password        string `mapstructure:"password"`
+	DBName          string `mapstructure:"dbname"`
+	SSLMode         string `mapstructure:"sslmode"`
+	ApplicationName string `mapstructure:"application_name"`
 
 	MaxPoolSize  int           `mapstructure:"max_pool_size"`
 	ConnAttempts int           `mapstructure:"conn_attempts"`
 	ConnTimeout  time.Duration `mapstructure:"conn_timeout"`
 
-	StatementTimeout                 time.Duration `mapstructure:"statement_timeout"`
-	LockTimeout                      time.Duration `mapstructure:"lock_timeout"`
-	IdleInTransactionSessionTimeout  time.Duration `mapstructure:"idle_in_transaction_session_timeout"`
+	StatementTimeout                time.Duration `mapstructure:"statement_timeout"`
+	LockTimeout                     time.Duration `mapstructure:"lock_timeout"`
+	IdleInTransactionSessionTimeout time.Duration `mapstructure:"idle_in_transaction_session_timeout"`
 }
 
 func (c *Config) SetDefaults() {
