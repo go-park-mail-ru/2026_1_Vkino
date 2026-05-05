@@ -45,6 +45,26 @@ func New(cfg Config, opts ...Option) (*Client, error) {
 
 	poolCfg.MaxConns = clampToInt32(client.maxPoolSize)
 
+	if cfg.ApplicationName != "" {
+		poolCfg.ConnConfig.RuntimeParams["application_name"] = cfg.ApplicationName
+	}
+
+	if cfg.StatementTimeout > 0 {
+		poolCfg.ConnConfig.RuntimeParams["statement_timeout"] = cfg.StatementTimeout.String()
+	}
+
+	if cfg.LockTimeout > 0 {
+		poolCfg.ConnConfig.RuntimeParams["lock_timeout"] = cfg.LockTimeout.String()
+	}
+
+	if cfg.IdleInTransactionSessionTimeout > 0 {
+		poolCfg.ConnConfig.RuntimeParams["idle_in_transaction_session_timeout"] =
+			cfg.IdleInTransactionSessionTimeout.String()
+	}
+
+	poolCfg.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeCacheStatement
+	poolCfg.ConnConfig.StatementCacheCapacity = 512
+
 	rawPool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 	if err != nil {
 		return nil, fmt.Errorf("pgxpool.NewWithConfig failed: %w", err)
