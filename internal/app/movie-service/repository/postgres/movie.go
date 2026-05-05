@@ -265,7 +265,12 @@ func (r *MovieRepo) GetMovieCardsByIDs(ctx context.Context, movieIDs []int64) ([
 }
 
 func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]domain.MovieCard, error) {
-	rows, err := r.db.Query(ctx, sqlSearchMovies, query)
+	prefixQuery := buildPrefixSearchQuery(query)
+	if prefixQuery == "" {
+		return []domain.MovieCard{}, nil
+	}
+
+	rows, err := r.db.Query(ctx, sqlSearchMovies, prefixQuery)
 	if err != nil {
 		return nil, fmt.Errorf("search movies: %w", err)
 	}
@@ -290,7 +295,12 @@ func (r *MovieRepo) SearchMovies(ctx context.Context, query string) ([]domain.Mo
 }
 
 func (r *MovieRepo) SearchActors(ctx context.Context, query string) ([]domain.ActorShort, error) {
-	rows, err := r.db.Query(ctx, sqlSearchActors, query)
+	prefixQuery := buildPrefixSearchQuery(query)
+	if prefixQuery == "" {
+		return []domain.ActorShort{}, nil
+	}
+
+	rows, err := r.db.Query(ctx, sqlSearchActors, prefixQuery)
 	if err != nil {
 		return nil, fmt.Errorf("search actors: %w", err)
 	}

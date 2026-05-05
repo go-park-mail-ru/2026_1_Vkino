@@ -146,7 +146,7 @@ const (
 			setweight(to_tsvector('simple', coalesce(m.title, '')), 'A') ||
 			setweight(to_tsvector('simple', coalesce(m.description, '')), 'B') ||
 			setweight(to_tsvector('simple', coalesce(m.director, '')), 'C')
-		) @@ plainto_tsquery('simple', $1)
+		) @@ to_tsquery('simple', $1)
 		order by
 			ts_rank(
 				(
@@ -154,7 +154,7 @@ const (
 					setweight(to_tsvector('simple', coalesce(m.description, '')), 'B') ||
 					setweight(to_tsvector('simple', coalesce(m.director, '')), 'C')
 				),
-				plainto_tsquery('simple', $1)
+				to_tsquery('simple', $1)
 			) desc,
 			m.release_year desc,
 			m.title
@@ -170,14 +170,14 @@ const (
 		where (
 			setweight(to_tsvector('simple', coalesce(a.full_name, '')), 'A') ||
 			setweight(to_tsvector('simple', coalesce(a.biography, '')), 'B')
-		) @@ plainto_tsquery('simple', $1)
+		) @@ to_tsquery('simple', $1)
 		order by
 			ts_rank(
 				(
 					setweight(to_tsvector('simple', coalesce(a.full_name, '')), 'A') ||
 					setweight(to_tsvector('simple', coalesce(a.biography, '')), 'B')
 				),
-				plainto_tsquery('simple', $1)
+				to_tsquery('simple', $1)
 			) desc,
 			a.full_name
 		limit 50
