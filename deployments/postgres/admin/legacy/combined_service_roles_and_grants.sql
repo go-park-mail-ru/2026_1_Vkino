@@ -1,5 +1,8 @@
 \set ON_ERROR_STOP on
 
+-- Legacy combined roles/grants script kept only for historical reference.
+-- Do not call this file from compose or helper scripts.
+
 -- VKino DB service roles
 --
 -- Этот скрипт выполняется администратором БД, НЕ runtime-приложением.
@@ -17,7 +20,7 @@
 --   -v movie_password="'strong_movie_password'" \
 --   -v migrator_password="'strong_migrator_password'" \
 --   -v monitoring_password="'strong_monitoring_password'" \
---   -f deployments/postgres/admin/01_service_roles.sql
+--   -f deployments/postgres/admin/legacy/combined_service_roles_and_grants.sql
 
 
 -- 1. Runtime-роли приложения

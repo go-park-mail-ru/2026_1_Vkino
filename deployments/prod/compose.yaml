@@ -114,23 +114,37 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
     command:
-    [
-      "postgres",
-      "-c",
-      "config_file=/etc/postgresql/postgresql.conf"
-    ]
+      [
+        "postgres",
+        "-c",
+        "config_file=/etc/postgresql/postgresql.conf"
+      ]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_ADMIN_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
     volumes:
-      - db-data:/var/lib/postgresql
-      - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
-      - ./postgres/conf.d:/etc/postgresql/conf.d:ro
-      - ./postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - db-data:/var/lib/postgresql/data
+      - ../postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ../postgres/conf.d:/etc/postgresql/conf.d:ro
+      - ../postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
       - ./logs/postgres:/var/log/postgresql
+    networks:
+      - app-network
+
+  postgres-bootstrap:
+    image: postgres:18.3
+    env_file:
+      - ./.env
+    entrypoint: ["/bin/sh", "/scripts/bootstrap.sh"]
+    volumes:
+      - ../postgres/admin:/scripts:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
     networks:
       - app-network
 
@@ -149,8 +163,22 @@ services:
         "up"
       ]
     depends_on:
-      db:
-        condition: service_healthy
+      postgres-bootstrap:
+        condition: service_completed_successfully
+    restart: "no"
+    networks:
+      - app-network
+
+  postgres-grants:
+    image: postgres:18.3
+    env_file:
+      - ./.env
+    entrypoint: ["/bin/sh", "/scripts/apply-runtime-grants.sh"]
+    volumes:
+      - ../postgres/admin:/scripts:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     restart: "no"
     networks:
       - app-network
@@ -259,6 +287,9 @@ services:
       - ./.env
     environment:
       DATA_SOURCE_NAME: "postgresql://${VKINO_MONITORING_DB_USER}:${VKINO_MONITORING_DB_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable"
+    depends_on:
+      db:
+        condition: service_healthy
     expose:
       - "9187"
     networks:
@@ -266,6 +297,7 @@ services:
 
 networks:
   app-network:
+    driver: bridge
 
 volumes:
   db-data:
