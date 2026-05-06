@@ -140,7 +140,7 @@ services:
       retries: 5
       start_period: 30s
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql
       - ../postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
       - ../postgres/conf.d:/etc/postgresql/conf.d:ro
       - ../postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
