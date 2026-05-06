@@ -163,8 +163,8 @@ services:
         "up"
       ]
     depends_on:
-      postgres-bootstrap:
-        condition: service_completed_successfully
+      db:
+        condition: service_healthy
     restart: "no"
     networks:
       - app-network
