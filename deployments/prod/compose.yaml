@@ -261,9 +261,6 @@ services:
       DATA_SOURCE_NAME: "postgresql://${VKINO_MONITORING_DB_USER}:${VKINO_MONITORING_DB_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable"
     expose:
       - "9187"
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - app-network
 
