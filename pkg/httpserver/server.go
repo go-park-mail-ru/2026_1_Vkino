@@ -37,6 +37,10 @@ type Server struct {
 	middlewares []Middleware
 }
 
+func (s *Server) Handler() http.Handler {
+	return s.server.Handler
+}
+
 func New(opts ...Option) *Server {
 	mux := http.NewServeMux()
 	s := &Server{

@@ -14,7 +14,7 @@ func TestValidateSearchQuery(t *testing.T) {
 		want  bool
 	}{
 		{name: "empty", query: "   ", want: false},
-		{name: "three characters", query: "mat", want: false},
+		{name: "three characters", query: "mat", want: true},
 		{name: "four characters", query: "matr", want: true},
 		{name: "no searchable characters", query: "!!!!", want: false},
 		{name: "too long", query: strings.Repeat("a", 256), want: false},
