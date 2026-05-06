@@ -23,6 +23,10 @@ postgres:
   password: ""
   dbname: ""
   sslmode: "disable"
+  application_name: "vkino-auth-service"
   max_pool_size: 10
   conn_attempts: 10
   conn_timeout: "5s"
+  statement_timeout: "5s"
+  lock_timeout: "1s"
+  idle_in_transaction_session_timeout: "10s"

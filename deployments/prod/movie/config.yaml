@@ -21,9 +21,13 @@ postgres:
   password: ""
   dbname: ""
   sslmode: "disable"
-  max_pool_size: 25
+  application_name: "vkino-movie-service"
+  max_pool_size: 20
   conn_attempts: 10
   conn_timeout: "5s"
+  statement_timeout: "5s"
+  lock_timeout: "1s"
+  idle_in_transaction_session_timeout: "10s"
 
 s3:
   internal_endpoint: "minio:9000"

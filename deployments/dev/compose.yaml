@@ -10,6 +10,8 @@ services:
       - ./logs/nginx:/var/log/nginx
     extra_hosts:
       - host.docker.internal:host-gateway
+    networks:
+      - app-network
 
   api-gateway:
     build:
@@ -27,6 +29,8 @@ services:
       - ../../configs/gateway.yaml:/etc/vkino/gateway.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./gateway -config /etc/vkino/gateway.yaml
+    networks:
+      - app-network
 
   auth-service:
     env_file:
@@ -42,9 +46,19 @@ services:
       - ../../configs/auth.yaml:/etc/vkino/auth.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./auth -config /etc/vkino/auth.yaml
+    environment:
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+      POSTGRES_USER: ${VKINO_AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${VKINO_AUTH_DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
     expose:
       - "9090"
       - "9200"
+    networks:
+      - app-network
 
   user-service:
     env_file:
@@ -60,9 +74,20 @@ services:
       - ../../configs/user.yaml:/etc/vkino/user.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./user -config /etc/vkino/user.yaml
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      POSTGRES_USER: ${VKINO_USER_DB_USER}
+      POSTGRES_PASSWORD: ${VKINO_USER_DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
     expose:
       - "9091"
       - "9200"
+    networks:
+      - app-network
 
   movie-service:
     env_file:
@@ -78,28 +103,50 @@ services:
       - ../../configs/movie.yaml:/etc/vkino/movie.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     command: ./movie -config /etc/vkino/movie.yaml
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      POSTGRES_USER: ${VKINO_MOVIE_DB_USER}
+      POSTGRES_PASSWORD: ${VKINO_MOVIE_DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
     expose:
       - "9092"
       - "9200"
+    networks:
+      - app-network
 
   db:
     image: postgres:18.3
     env_file:
       - ./.env
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    command:
+      [
+        "postgres",
+        "-c",
+        "config_file=/etc/postgresql/postgresql.conf"
+      ]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_ADMIN_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
-    ports:
-      - 5434:5432
     volumes:
       - db-data:/var/lib/postgresql
+      - ../postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ../postgres/conf.d:/etc/postgresql/conf.d:ro
+      - ../postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./logs/postgres:/var/log/postgresql
+    networks:
+      - app-network
 
   migrate:
     image: migrate/migrate
@@ -112,13 +159,15 @@ services:
         "-path",
         "/migrations",
         "-database",
-        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable",
+        "postgres://${VKINO_MIGRATOR_DB_USER}:${VKINO_MIGRATOR_DB_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable",
         "up"
       ]
     depends_on:
-      db:
-        condition: service_healthy
+      postgres-bootstrap:
+        condition: service_completed_successfully
     restart: "no"
+    networks:
+      - app-network
 
   minio:
     image: minio/minio:latest
@@ -134,6 +183,8 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
+    networks:
+      - app-network
 
   minio-init:
     image: minio/mc:latest
@@ -145,6 +196,8 @@ services:
     volumes:
       - ../scripts/init-minio-buckets.sh:/scripts/init-minio-buckets.sh:ro
     entrypoint: ["/bin/sh", "/scripts/init-minio-buckets.sh"]
+    networks:
+      - app-network
 
   prometheus:
     image: prom/prometheus:latest
@@ -160,6 +213,8 @@ services:
       - auth-service
       - user-service
       - movie-service
+    networks:
+      - app-network
 
   grafana:
     image: grafana/grafana:latest
@@ -176,6 +231,8 @@ services:
       - ../monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
     depends_on:
       - prometheus
+    networks:
+      - app-network
 
   node-exporter:
     image: prom/node-exporter:latest
@@ -188,6 +245,8 @@ services:
       - /:/host:ro
     expose:
       - "9100"
+    networks:
+      - app-network
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -203,6 +262,12 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     expose:
       - "8080"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   db-data:
