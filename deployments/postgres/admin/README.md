@@ -43,10 +43,6 @@
 Запускать из директории нужного deployment (`deployments/dev` или `deployments/prod`):
 
 ```bash
-docker compose up -d db
-docker compose up postgres-bootstrap
-docker compose up migrate
-docker compose up postgres-grants
 docker compose up -d
 ```
 
@@ -72,9 +68,3 @@ WHERE rolname LIKE 'vkino_%'
 ORDER BY rolname;
 "
 ```
-
-## Почему legacy script больше не используется
-
-Старый combined roles/grants script перенесён в `legacy/`.
-Он смешивал pre-migration действия и post-migration права на таблицы, из-за чего
-deployment-цепочка становилась неочевидной и более хрупкой.
