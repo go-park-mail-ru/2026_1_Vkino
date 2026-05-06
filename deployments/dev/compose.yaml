@@ -148,20 +148,6 @@ services:
     networks:
       - app-network
 
-  postgres-bootstrap:
-    image: postgres:18.3
-    env_file:
-      - ./.env
-    entrypoint: ["/bin/sh", "/scripts/bootstrap.sh"]
-    volumes:
-      - ../postgres/admin:/scripts:ro
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: "no"
-    networks:
-      - app-network
-
   migrate:
     image: migrate/migrate
     env_file:
@@ -178,20 +164,6 @@ services:
       ]
     depends_on:
       postgres-bootstrap:
-        condition: service_completed_successfully
-    restart: "no"
-    networks:
-      - app-network
-
-  postgres-grants:
-    image: postgres:18.3
-    env_file:
-      - ./.env
-    entrypoint: ["/bin/sh", "/scripts/apply-runtime-grants.sh"]
-    volumes:
-      - ../postgres/admin:/scripts:ro
-    depends_on:
-      migrate:
         condition: service_completed_successfully
     restart: "no"
     networks:
