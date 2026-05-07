@@ -48,6 +48,19 @@ message ExternalRating {
   double scale = 3;
 }
 
+message MovieReview {
+  int64 id = 1;
+  int64 author_user_id = 2;
+  string author = 3;
+  optional double rating = 4;
+  string comment = 5;
+  int64 likes_count = 6;
+  int64 dislikes_count = 7;
+  string viewer_reaction = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
 message GetMovieByIDResponse {
   int64 id = 1;
   string title = 2;
@@ -69,6 +82,7 @@ message GetMovieByIDResponse {
   repeated EpisodeShort episodes = 18;
   bool is_favorite = 19;
   repeated ExternalRating external_ratings = 20;
+  repeated MovieReview reviews = 21;
 }
 
 message GetMoviesByIDsRequest {

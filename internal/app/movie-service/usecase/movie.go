@@ -17,13 +17,23 @@ func (u *MovieUsecase) GetMovieByID(ctx context.Context, movieID int64) (domain.
 		return domain.MovieResponse{}, err
 	}
 
+	viewerUserID := int64(0)
+	if authCtx, err := authctx.FromContext(ctx); err == nil {
+		viewerUserID = authCtx.UserID
+	}
+
+	movie.Reviews, err = u.movieRepo.GetMovieReviews(ctx, movieID, viewerUserID)
+	if err != nil {
+		return domain.MovieResponse{}, err
+	}
+
 	resp, err := u.buildMovieResponse(ctx, movie)
 	if err != nil {
 		return domain.MovieResponse{}, err
 	}
 
-	if authCtx, err := authctx.FromContext(ctx); err == nil {
-		isFavorite, err := u.movieRepo.IsFavorite(ctx, authCtx.UserID, movieID)
+	if viewerUserID > 0 {
+		isFavorite, err := u.movieRepo.IsFavorite(ctx, viewerUserID, movieID)
 		if err == nil {
 			resp.IsFavorite = isFavorite
 		}

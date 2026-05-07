@@ -3,6 +3,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -181,6 +182,152 @@ func (r *UserRepo) SetMovieRating(ctx context.Context, userID, movieID int64, ra
 
 	if tag.RowsAffected() == 0 {
 		return ErrMovieNotFound
+	}
+
+	return nil
+}
+
+func (r *UserRepo) SetMovieReview(
+	ctx context.Context,
+	userID, movieID int64,
+	rating *float64,
+	comment *string,
+) (domain.MovieReviewResponse, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return domain.MovieReviewResponse{}, fmt.Errorf("begin set movie review tx: %w", err)
+	}
+
+	defer func() {
+		ignoreRollbackError(tx.Rollback(ctx))
+	}()
+
+	var (
+		reviewResp domain.MovieReviewResponse
+		dbRating   sql.NullFloat64
+		dbComment  sql.NullString
+	)
+
+	err = tx.QueryRow(ctx, sqlUpsertUserMovieReview, userID, movieID, rating, comment).Scan(
+		&reviewResp.ReviewID,
+		&reviewResp.MovieID,
+		&dbRating,
+		&dbComment,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.MovieReviewResponse{}, ErrMovieNotFound
+		}
+
+		return domain.MovieReviewResponse{}, fmt.Errorf("upsert movie review: %w", err)
+	}
+
+	if !dbComment.Valid || dbComment.String == "" {
+		if _, err = tx.Exec(ctx, sqlDeleteReviewReactionsByReviewID, reviewResp.ReviewID); err != nil {
+			return domain.MovieReviewResponse{}, fmt.Errorf("cleanup review reactions: %w", err)
+		}
+	}
+
+	if dbRating.Valid {
+		ratingValue := dbRating.Float64
+		reviewResp.Rating = &ratingValue
+	}
+
+	if dbComment.Valid && dbComment.String != "" {
+		commentValue := dbComment.String
+		reviewResp.Comment = &commentValue
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return domain.MovieReviewResponse{}, fmt.Errorf("commit set movie review tx: %w", err)
+	}
+
+	return reviewResp, nil
+}
+
+func (r *UserRepo) DeleteMovieReview(ctx context.Context, userID, movieID int64) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin delete movie review tx: %w", err)
+	}
+
+	defer func() {
+		ignoreRollbackError(tx.Rollback(ctx))
+	}()
+
+	var (
+		reviewID    int64
+		isFavorite  bool
+	)
+
+	err = tx.QueryRow(ctx, sqlGetReviewByUserAndMovie, userID, movieID).Scan(&reviewID, &isFavorite)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil
+		}
+
+		return fmt.Errorf("get movie review by user and movie: %w", err)
+	}
+
+	if _, err = tx.Exec(ctx, sqlDeleteReviewReactionsByReviewID, reviewID); err != nil {
+		return fmt.Errorf("delete movie review reactions: %w", err)
+	}
+
+	if isFavorite {
+		if _, err = tx.Exec(ctx, sqlClearUserMovieReview, reviewID); err != nil {
+			return fmt.Errorf("clear movie review: %w", err)
+		}
+	} else {
+		if _, err = tx.Exec(ctx, sqlDeleteUserMovieReviewRow, reviewID); err != nil {
+			return fmt.Errorf("delete movie review row: %w", err)
+		}
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit delete movie review tx: %w", err)
+	}
+
+	return nil
+}
+
+func (r *UserRepo) SetReviewReaction(ctx context.Context, userID, reviewID int64, reaction string) error {
+	tag, err := r.db.Exec(ctx, sqlSetReviewReaction, userID, reviewID, reaction)
+	if err != nil {
+		return fmt.Errorf("set review reaction: %w", err)
+	}
+
+	if tag.RowsAffected() > 0 {
+		return nil
+	}
+
+	var (
+		reviewOwnerID int64
+		hasComment    bool
+	)
+
+	err = r.db.QueryRow(ctx, sqlGetReviewOwner, reviewID).Scan(&reviewOwnerID, &hasComment)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrMovieReviewNotFound
+		}
+
+		return fmt.Errorf("get review owner: %w", err)
+	}
+
+	if reviewOwnerID == userID {
+		return domain.ErrSelfReviewVote
+	}
+
+	if !hasComment {
+		return domain.ErrMovieReviewNotFound
+	}
+
+	return domain.ErrInternal
+}
+
+func (r *UserRepo) DeleteReviewReaction(ctx context.Context, userID, reviewID int64) error {
+	if _, err := r.db.Exec(ctx, sqlDeleteReviewReaction, reviewID, userID); err != nil {
+		return fmt.Errorf("delete review reaction: %w", err)
 	}
 
 	return nil

@@ -104,6 +104,26 @@ func (mr *MockUserClientMockRecorder) SetMovieRating(ctx, in any, opts ...any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieRating", reflect.TypeOf((*MockUserClient)(nil).SetMovieRating), varargs...)
 }
 
+// SetMovieReview mocks base method.
+func (m *MockUserClient) SetMovieReview(ctx context.Context, in *userv1.SetMovieReviewRequest, opts ...grpc.CallOption) (*userv1.SetMovieReviewResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetMovieReview", varargs...)
+	ret0, _ := ret[0].(*userv1.SetMovieReviewResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetMovieReview indicates an expected call of SetMovieReview.
+func (mr *MockUserClientMockRecorder) SetMovieReview(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieReview", reflect.TypeOf((*MockUserClient)(nil).SetMovieReview), varargs...)
+}
+
 // CreateTicket mocks base method.
 func (m *MockUserClient) CreateTicket(ctx context.Context, in *supportv1.CreateTicketRequest, opts ...grpc.CallOption) (*supportv1.TicketResponse, error) {
 	m.ctrl.T.Helper()
@@ -182,6 +202,46 @@ func (mr *MockUserClientMockRecorder) DeleteOutgoingFriendRequest(ctx, in any, o
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOutgoingFriendRequest", reflect.TypeOf((*MockUserClient)(nil).DeleteOutgoingFriendRequest), varargs...)
+}
+
+// DeleteMovieReview mocks base method.
+func (m *MockUserClient) DeleteMovieReview(ctx context.Context, in *userv1.DeleteMovieReviewRequest, opts ...grpc.CallOption) (*userv1.DeleteMovieReviewResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteMovieReview", varargs...)
+	ret0, _ := ret[0].(*userv1.DeleteMovieReviewResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteMovieReview indicates an expected call of DeleteMovieReview.
+func (mr *MockUserClientMockRecorder) DeleteMovieReview(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMovieReview", reflect.TypeOf((*MockUserClient)(nil).DeleteMovieReview), varargs...)
+}
+
+// DeleteReviewReaction mocks base method.
+func (m *MockUserClient) DeleteReviewReaction(ctx context.Context, in *userv1.DeleteReviewReactionRequest, opts ...grpc.CallOption) (*userv1.DeleteReviewReactionResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteReviewReaction", varargs...)
+	ret0, _ := ret[0].(*userv1.DeleteReviewReactionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteReviewReaction indicates an expected call of DeleteReviewReaction.
+func (mr *MockUserClientMockRecorder) DeleteReviewReaction(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReviewReaction", reflect.TypeOf((*MockUserClient)(nil).DeleteReviewReaction), varargs...)
 }
 
 // GetContinueWatching mocks base method.
@@ -442,6 +502,26 @@ func (mr *MockUserClientMockRecorder) SearchUsers(ctx, in any, opts ...any) *gom
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUsers", reflect.TypeOf((*MockUserClient)(nil).SearchUsers), varargs...)
+}
+
+// SetReviewReaction mocks base method.
+func (m *MockUserClient) SetReviewReaction(ctx context.Context, in *userv1.SetReviewReactionRequest, opts ...grpc.CallOption) (*userv1.SetReviewReactionResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetReviewReaction", varargs...)
+	ret0, _ := ret[0].(*userv1.SetReviewReactionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetReviewReaction indicates an expected call of SetReviewReaction.
+func (mr *MockUserClientMockRecorder) SetReviewReaction(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetReviewReaction", reflect.TypeOf((*MockUserClient)(nil).SetReviewReaction), varargs...)
 }
 
 // SearchUsersByEmail mocks base method.

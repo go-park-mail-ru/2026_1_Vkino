@@ -24,12 +24,26 @@ type Movie struct {
 	Actors             []ActorShort
 	Episodes           []Episode
 	ExternalRatings    []ExternalRating
+	Reviews            []MovieReview
 }
 
 type ExternalRating struct {
 	Source string
 	Value  float64
 	Scale  float64
+}
+
+type MovieReview struct {
+	ID             int64
+	AuthorUserID   int64
+	AuthorEmail    string
+	Rating         *float64
+	Comment        string
+	LikesCount     int64
+	DislikesCount  int64
+	ViewerReaction string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 type Actor struct {

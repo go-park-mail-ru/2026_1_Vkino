@@ -68,3 +68,56 @@ WHERE rolname LIKE 'vkino_%'
 ORDER BY rolname;
 "
 ```
+
+Как запустить на локальной машинке
+
+Заполнить .env перменнную по примеру
+
+```bash
+sudo docker compose up -d --force-recreate db
+```
+
+```bash
+NETWORK=$(sudo docker inspect "$(sudo docker compose ps -q db)" \
+  --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' | head -n1)
+
+echo "$NETWORK"
+```
+
+```bash
+sudo docker run --rm \
+  --network "$NETWORK" \
+  --env-file .env \
+  -v "$(pwd)/../postgres/admin:/scripts:ro" \
+  postgres:18.3 \
+  /bin/sh /scripts/bootstrap.sh
+```
+
+```bash
+sudo docker compose run --rm migrate
+```
+
+if needed (permission denied prev step)
+
+```bash
+set -a
+source .env
+set +a
+
+sudo docker compose exec -T \
+  -e PGPASSWORD="$POSTGRES_ADMIN_PASSWORD" \
+  db psql -U "$POSTGRES_ADMIN_USER" -d "$POSTGRES_DB" -c "
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO vkino_migrator;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO vkino_migrator;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO vkino_migrator;
+"
+```
+
+```bash
+sudo docker run --rm \
+  --network "$NETWORK" \
+  --env-file .env \
+  -v "$(pwd)/../postgres/admin:/scripts:ro" \
+  postgres:18.3 \
+  /bin/sh /scripts/apply-runtime-grants.sh
+```

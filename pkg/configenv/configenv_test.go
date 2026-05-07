@@ -16,8 +16,6 @@ type loadConfig struct {
 }
 
 func TestLoadWithBindings(t *testing.T) {
-	t.Parallel()
-
 	dir := t.TempDir()
 	path := filepath.Join(dir, "config.yaml")
 

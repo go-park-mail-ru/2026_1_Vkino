@@ -2,6 +2,7 @@ package grpcx
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 )
@@ -35,6 +36,10 @@ func TestListen(t *testing.T) {
 
 	lis, err := Listen(0)
 	if err != nil {
+		if errors.Is(err, ErrListenPermissionDenied) {
+			t.Skipf("listen is not allowed in this environment: %v", err)
+		}
+
 		t.Fatalf("Listen error: %v", err)
 	}
 

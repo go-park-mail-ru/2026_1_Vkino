@@ -26,6 +26,10 @@ const (
 	UserService_DeleteFriend_FullMethodName                = "/user.v1.UserService/DeleteFriend"
 	UserService_AddMovieToFavorites_FullMethodName         = "/user.v1.UserService/AddMovieToFavorites"
 	UserService_SetMovieRating_FullMethodName              = "/user.v1.UserService/SetMovieRating"
+	UserService_SetMovieReview_FullMethodName              = "/user.v1.UserService/SetMovieReview"
+	UserService_DeleteMovieReview_FullMethodName           = "/user.v1.UserService/DeleteMovieReview"
+	UserService_SetReviewReaction_FullMethodName           = "/user.v1.UserService/SetReviewReaction"
+	UserService_DeleteReviewReaction_FullMethodName        = "/user.v1.UserService/DeleteReviewReaction"
 	UserService_ToggleFavorite_FullMethodName              = "/user.v1.UserService/ToggleFavorite"
 	UserService_GetFavorites_FullMethodName                = "/user.v1.UserService/GetFavorites"
 	UserService_SearchUsers_FullMethodName                 = "/user.v1.UserService/SearchUsers"
@@ -47,6 +51,10 @@ type UserServiceClient interface {
 	DeleteFriend(ctx context.Context, in *DeleteFriendRequest, opts ...grpc.CallOption) (*DeleteFriendResponse, error)
 	AddMovieToFavorites(ctx context.Context, in *AddMovieToFavoritesRequest, opts ...grpc.CallOption) (*AddMovieToFavoritesResponse, error)
 	SetMovieRating(ctx context.Context, in *SetMovieRatingRequest, opts ...grpc.CallOption) (*SetMovieRatingResponse, error)
+	SetMovieReview(ctx context.Context, in *SetMovieReviewRequest, opts ...grpc.CallOption) (*SetMovieReviewResponse, error)
+	DeleteMovieReview(ctx context.Context, in *DeleteMovieReviewRequest, opts ...grpc.CallOption) (*DeleteMovieReviewResponse, error)
+	SetReviewReaction(ctx context.Context, in *SetReviewReactionRequest, opts ...grpc.CallOption) (*SetReviewReactionResponse, error)
+	DeleteReviewReaction(ctx context.Context, in *DeleteReviewReactionRequest, opts ...grpc.CallOption) (*DeleteReviewReactionResponse, error)
 	ToggleFavorite(ctx context.Context, in *ToggleFavoriteRequest, opts ...grpc.CallOption) (*ToggleFavoriteResponse, error)
 	GetFavorites(ctx context.Context, in *GetFavoritesRequest, opts ...grpc.CallOption) (*GetFavoritesResponse, error)
 	SearchUsers(ctx context.Context, in *SearchUsersRequest, opts ...grpc.CallOption) (*SearchUsersResponse, error)
@@ -129,6 +137,46 @@ func (c *userServiceClient) SetMovieRating(ctx context.Context, in *SetMovieRati
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SetMovieRatingResponse)
 	err := c.cc.Invoke(ctx, UserService_SetMovieRating_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) SetMovieReview(ctx context.Context, in *SetMovieReviewRequest, opts ...grpc.CallOption) (*SetMovieReviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetMovieReviewResponse)
+	err := c.cc.Invoke(ctx, UserService_SetMovieReview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) DeleteMovieReview(ctx context.Context, in *DeleteMovieReviewRequest, opts ...grpc.CallOption) (*DeleteMovieReviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteMovieReviewResponse)
+	err := c.cc.Invoke(ctx, UserService_DeleteMovieReview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) SetReviewReaction(ctx context.Context, in *SetReviewReactionRequest, opts ...grpc.CallOption) (*SetReviewReactionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetReviewReactionResponse)
+	err := c.cc.Invoke(ctx, UserService_SetReviewReaction_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) DeleteReviewReaction(ctx context.Context, in *DeleteReviewReactionRequest, opts ...grpc.CallOption) (*DeleteReviewReactionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteReviewReactionResponse)
+	err := c.cc.Invoke(ctx, UserService_DeleteReviewReaction_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -226,6 +274,10 @@ type UserServiceServer interface {
 	DeleteFriend(context.Context, *DeleteFriendRequest) (*DeleteFriendResponse, error)
 	AddMovieToFavorites(context.Context, *AddMovieToFavoritesRequest) (*AddMovieToFavoritesResponse, error)
 	SetMovieRating(context.Context, *SetMovieRatingRequest) (*SetMovieRatingResponse, error)
+	SetMovieReview(context.Context, *SetMovieReviewRequest) (*SetMovieReviewResponse, error)
+	DeleteMovieReview(context.Context, *DeleteMovieReviewRequest) (*DeleteMovieReviewResponse, error)
+	SetReviewReaction(context.Context, *SetReviewReactionRequest) (*SetReviewReactionResponse, error)
+	DeleteReviewReaction(context.Context, *DeleteReviewReactionRequest) (*DeleteReviewReactionResponse, error)
 	ToggleFavorite(context.Context, *ToggleFavoriteRequest) (*ToggleFavoriteResponse, error)
 	GetFavorites(context.Context, *GetFavoritesRequest) (*GetFavoritesResponse, error)
 	SearchUsers(context.Context, *SearchUsersRequest) (*SearchUsersResponse, error)
@@ -264,6 +316,18 @@ func (UnimplementedUserServiceServer) AddMovieToFavorites(context.Context, *AddM
 }
 func (UnimplementedUserServiceServer) SetMovieRating(context.Context, *SetMovieRatingRequest) (*SetMovieRatingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SetMovieRating not implemented")
+}
+func (UnimplementedUserServiceServer) SetMovieReview(context.Context, *SetMovieReviewRequest) (*SetMovieReviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetMovieReview not implemented")
+}
+func (UnimplementedUserServiceServer) DeleteMovieReview(context.Context, *DeleteMovieReviewRequest) (*DeleteMovieReviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteMovieReview not implemented")
+}
+func (UnimplementedUserServiceServer) SetReviewReaction(context.Context, *SetReviewReactionRequest) (*SetReviewReactionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetReviewReaction not implemented")
+}
+func (UnimplementedUserServiceServer) DeleteReviewReaction(context.Context, *DeleteReviewReactionRequest) (*DeleteReviewReactionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteReviewReaction not implemented")
 }
 func (UnimplementedUserServiceServer) ToggleFavorite(context.Context, *ToggleFavoriteRequest) (*ToggleFavoriteResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ToggleFavorite not implemented")
@@ -432,6 +496,78 @@ func _UserService_SetMovieRating_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).SetMovieRating(ctx, req.(*SetMovieRatingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_SetMovieReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetMovieReviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).SetMovieReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_SetMovieReview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).SetMovieReview(ctx, req.(*SetMovieReviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_DeleteMovieReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteMovieReviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).DeleteMovieReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_DeleteMovieReview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).DeleteMovieReview(ctx, req.(*DeleteMovieReviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_SetReviewReaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetReviewReactionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).SetReviewReaction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_SetReviewReaction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).SetReviewReaction(ctx, req.(*SetReviewReactionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_DeleteReviewReaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteReviewReactionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).DeleteReviewReaction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_DeleteReviewReaction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).DeleteReviewReaction(ctx, req.(*DeleteReviewReactionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -614,6 +750,22 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetMovieRating",
 			Handler:    _UserService_SetMovieRating_Handler,
+		},
+		{
+			MethodName: "SetMovieReview",
+			Handler:    _UserService_SetMovieReview_Handler,
+		},
+		{
+			MethodName: "DeleteMovieReview",
+			Handler:    _UserService_DeleteMovieReview_Handler,
+		},
+		{
+			MethodName: "SetReviewReaction",
+			Handler:    _UserService_SetReviewReaction_Handler,
+		},
+		{
+			MethodName: "DeleteReviewReaction",
+			Handler:    _UserService_DeleteReviewReaction_Handler,
 		},
 		{
 			MethodName: "ToggleFavorite",

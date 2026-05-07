@@ -69,6 +69,45 @@ const (
 		order by mer.source
 	`
 
+	sqlGetMovieReviewsByMovieID = `
+		with reaction_counts as (
+			select
+				uir.review_id,
+				count(*) filter (where uir.reaction = 'like') as likes_count,
+				count(*) filter (where uir.reaction = 'dislike') as dislikes_count
+			from user_interaction_review_reaction uir
+			group by uir.review_id
+		),
+		viewer_reactions as (
+			select
+				uir.review_id,
+				uir.reaction
+			from user_interaction_review_reaction uir
+			where uir.user_id = $2
+		)
+		select
+			ui.id,
+			ui.user_id,
+			u.email,
+			ui.rating::double precision,
+			coalesce(ui.comment, ''),
+			coalesce(rc.likes_count, 0),
+			coalesce(rc.dislikes_count, 0),
+			coalesce(vr.reaction, ''),
+			ui.created_at,
+			ui.updated_at
+		from user_interaction ui
+		join users u on u.id = ui.user_id
+		left join reaction_counts rc on rc.review_id = ui.id
+		left join viewer_reactions vr on vr.review_id = ui.id
+		where ui.movie_id = $1
+			and (
+				ui.rating is not null
+				or nullif(btrim(coalesce(ui.comment, '')), '') is not null
+			)
+		order by ui.updated_at desc, ui.id desc
+	`
+
 	sqlGetActorBaseByID = `
 		select
 			a.id,
@@ -140,7 +179,7 @@ const (
 		)
 		select
 			s.title,
-			coalesce(sr.rating, -1),
+			sr.rating,
 			m.id,
 			m.title,
 			m.picture_file_key
@@ -171,7 +210,7 @@ const (
 		)
 		select
 			s.title,
-			coalesce(sr.rating, -1),
+			sr.rating,
 			m.id,
 			m.title,
 			m.picture_file_key

@@ -21,6 +21,15 @@ type Usecase interface {
 		contentType string) (domain.ProfileResponse, error)
 	AddMovieToFavorites(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error)
 	SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) (domain.MovieRatingResponse, error)
+	SetMovieReview(
+		ctx context.Context,
+		userID, movieID int64,
+		rating *float64,
+		comment *string,
+	) (domain.MovieReviewResponse, error)
+	DeleteMovieReview(ctx context.Context, userID, movieID int64) error
+	SetReviewReaction(ctx context.Context, userID, reviewID int64, reaction string) (domain.ReviewReactionResponse, error)
+	DeleteReviewReaction(ctx context.Context, userID, reviewID int64) error
 	ToggleFavorite(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error)
 	GetFavorites(ctx context.Context, userID int64, limit, offset int32) (domain.FavoritesResponse, error)
 	SendFriendRequest(ctx context.Context, userID, toUserID int64) (int64, error)
