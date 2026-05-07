@@ -84,6 +84,26 @@ func (mr *MockUserClientMockRecorder) AddMovieToFavorites(ctx, in any, opts ...a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMovieToFavorites", reflect.TypeOf((*MockUserClient)(nil).AddMovieToFavorites), varargs...)
 }
 
+// SetMovieRating mocks base method.
+func (m *MockUserClient) SetMovieRating(ctx context.Context, in *userv1.SetMovieRatingRequest, opts ...grpc.CallOption) (*userv1.SetMovieRatingResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetMovieRating", varargs...)
+	ret0, _ := ret[0].(*userv1.SetMovieRatingResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetMovieRating indicates an expected call of SetMovieRating.
+func (mr *MockUserClientMockRecorder) SetMovieRating(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieRating", reflect.TypeOf((*MockUserClient)(nil).SetMovieRating), varargs...)
+}
+
 // CreateTicket mocks base method.
 func (m *MockUserClient) CreateTicket(ctx context.Context, in *supportv1.CreateTicketRequest, opts ...grpc.CallOption) (*supportv1.TicketResponse, error) {
 	m.ctrl.T.Helper()

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -48,13 +49,19 @@ func TestMovieRoutes_GetSelectionByTitle(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockMovieServiceClient(ctrl)
 
+	rating := 8.25
+
 	client.EXPECT().GetSelectionByTitle(gomock.Any(), &moviev1.GetSelectionByTitleRequest{Title: "Top"}).
-		Return(&moviev1.GetSelectionByTitleResponse{}, nil)
+		Return(&moviev1.GetSelectionByTitleResponse{Rating: &rating}, nil)
 
 	handler := newMovieHandler(t, client)
 	rr := doRequest(handler, http.MethodGet, "/movie/selection/%20Top%20", nil)
 
 	require.Equal(t, http.StatusOK, rr.Code)
+
+	var body map[string]any
+	require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &body))
+	require.Equal(t, 8.25, body["rating"])
 }
 
 func TestMovieRoutes_GetSelectionByTitle_Empty(t *testing.T) {

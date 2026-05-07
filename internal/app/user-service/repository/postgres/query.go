@@ -62,6 +62,17 @@ const (
 			is_favorite = excluded.is_favorite
 	`
 
+	sqlUpsertUserMovieRating = `
+		insert into user_interaction (user_id, movie_id, rating)
+		select $1, m.id, $3
+		from movie m
+		where m.id = $2
+		on conflict (movie_id, user_id)
+		do update set
+			rating = excluded.rating,
+			updated_at = now()
+	`
+
 	sqlToggleFavorite = `
 		with current as (
 			select is_favorite from user_interaction

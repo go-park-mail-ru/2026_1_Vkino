@@ -30,7 +30,7 @@ SELECT format('GRANT SELECT, INSERT ON TABLE support_ticket_message TO %I', :'us
 \gexec
 
 SELECT format(
-    'GRANT SELECT ON TABLE movie, episode, actor, genre, language, country, genre_to_movie, actor_to_movie, selection, movie_to_selection TO %I',
+    'GRANT SELECT ON TABLE movie, episode, actor, genre, language, country, genre_to_movie, actor_to_movie, selection, movie_to_selection, movie_external_rating TO %I',
     :'movie_user'
 )
 \gexec

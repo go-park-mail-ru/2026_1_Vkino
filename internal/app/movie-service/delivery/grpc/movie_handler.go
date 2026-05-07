@@ -41,6 +41,7 @@ func (s *Server) GetMovieByID(
 		Actors:             mapActorShorts(movie.Actors),
 		Episodes:           mapEpisodeShorts(movie.Episodes),
 		IsFavorite:         movie.IsFavorite,
+		ExternalRatings:    mapExternalRatings(movie.ExternalRatings),
 	}, nil
 }
 
@@ -120,6 +121,7 @@ func (s *Server) GetSelectionByTitle(
 	return &moviev1.GetSelectionByTitleResponse{
 		Title:  selection.Title,
 		Movies: mapMovieCards(selection.Movies),
+		Rating: optionalF64(selection.Rating),
 	}, nil
 }
 
@@ -337,6 +339,24 @@ func mapSelections(selections []domain.SelectionResponse) []*moviev1.Selection {
 		result = append(result, &moviev1.Selection{
 			Title:  selection.Title,
 			Movies: mapMovieCards(selection.Movies),
+			Rating: optionalF64(selection.Rating),
+		})
+	}
+
+	return result
+}
+
+func mapExternalRatings(ratings []domain.ExternalRatingDTO) []*moviev1.ExternalRating {
+	if len(ratings) == 0 {
+		return []*moviev1.ExternalRating{}
+	}
+
+	result := make([]*moviev1.ExternalRating, 0, len(ratings))
+	for _, rating := range ratings {
+		result = append(result, &moviev1.ExternalRating{
+			Source: rating.Source,
+			Value:  rating.Value,
+			Scale:  rating.Scale,
 		})
 	}
 
@@ -371,4 +391,14 @@ func mapWatchProgressItems(items []domain.WatchProgressItemResponse) []*moviev1.
 	}
 
 	return result
+}
+
+func optionalF64(value *float64) *float64 {
+	if value == nil {
+		return nil
+	}
+
+	copied := *value
+
+	return &copied
 }

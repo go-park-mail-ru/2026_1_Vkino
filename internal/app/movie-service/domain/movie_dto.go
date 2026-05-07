@@ -20,6 +20,13 @@ type MovieResponse struct {
 	Actors             []ActorShortResponse `json:"actors"`
 	Episodes           []EpisodeResponse    `json:"episodes"`
 	IsFavorite         bool                 `json:"is_favorite"`
+	ExternalRatings    []ExternalRatingDTO  `json:"external_ratings"`
+}
+
+type ExternalRatingDTO struct {
+	Source string  `json:"source"`
+	Value  float64 `json:"value"`
+	Scale  float64 `json:"scale"`
 }
 
 type ActorResponse struct {
@@ -75,6 +82,7 @@ type GenreShortResponse struct {
 type SelectionResponse struct {
 	Title  string              `json:"title"`
 	Movies []MovieCardResponse `json:"movies"`
+	Rating *float64            `json:"rating,omitempty"`
 }
 
 type EpisodePlaybackResponse struct {

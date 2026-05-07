@@ -11,6 +11,7 @@ service UserService {
   rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
   rpc DeleteFriend(DeleteFriendRequest) returns (DeleteFriendResponse);
   rpc AddMovieToFavorites(AddMovieToFavoritesRequest) returns (AddMovieToFavoritesResponse);
+  rpc SetMovieRating(SetMovieRatingRequest) returns (SetMovieRatingResponse);
   rpc ToggleFavorite(ToggleFavoriteRequest) returns (ToggleFavoriteResponse);
   rpc GetFavorites(GetFavoritesRequest) returns (GetFavoritesResponse);
   rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse);
@@ -89,6 +90,16 @@ message AddMovieToFavoritesRequest {
 message AddMovieToFavoritesResponse {
   int64 movie_id = 1;
   bool is_favorite = 2;
+}
+
+message SetMovieRatingRequest {
+  int64 movie_id = 1;
+  double rating = 2;
+}
+
+message SetMovieRatingResponse {
+  int64 movie_id = 1;
+  double rating = 2;
 }
 
 message ToggleFavoriteRequest {

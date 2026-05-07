@@ -10,6 +10,11 @@ type FavoriteMovieResponse struct {
 	IsFavorite bool  `json:"is_favorite"`
 }
 
+type MovieRatingResponse struct {
+	MovieID int64   `json:"movie_id"`
+	Rating  float64 `json:"rating"`
+}
+
 type ProfileResponse struct {
 	Email     string  `json:"email"`
 	Role      string  `json:"role"`

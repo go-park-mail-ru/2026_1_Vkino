@@ -71,6 +71,11 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, movieID int64) (*domain.Mo
 		return nil, err
 	}
 
+	movie.ExternalRatings, err = r.getMovieExternalRatings(ctx, movieID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &movie, nil
 }
 
@@ -161,9 +166,12 @@ func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (doma
 	}
 
 	for rows.Next() {
+		var ratingValue float64
+
 		var movie domain.MovieCard
 		if err = rows.Scan(
 			&selection.Title,
+			&ratingValue,
 			&movie.ID,
 			&movie.Title,
 			&movie.PictureFileKey,
@@ -171,6 +179,7 @@ func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (doma
 			return domain.Selection{}, fmt.Errorf("scan selection movie: %w", err)
 		}
 
+		selection.Rating = optionalSelectionRating(ratingValue)
 		selection.Movies = append(selection.Movies, movie)
 	}
 
@@ -197,12 +206,14 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, e
 
 	for rows.Next() {
 		var (
-			title string
-			movie domain.MovieCard
+			title       string
+			ratingValue float64
+			movie       domain.MovieCard
 		)
 
 		if err = rows.Scan(
 			&title,
+			&ratingValue,
 			&movie.ID,
 			&movie.Title,
 			&movie.PictureFileKey,
@@ -215,6 +226,7 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, e
 			selection = &domain.Selection{
 				Title:  title,
 				Movies: make([]domain.MovieCard, 0),
+				Rating: optionalSelectionRating(ratingValue),
 			}
 			selectionMap[title] = selection
 			order = append(order, title)
@@ -526,6 +538,41 @@ func (r *MovieRepo) getMovieEpisodes(ctx context.Context, movieID int64) ([]doma
 	}
 
 	return result, nil
+}
+
+func (r *MovieRepo) getMovieExternalRatings(ctx context.Context, movieID int64) ([]domain.ExternalRating, error) {
+	rows, err := r.db.Query(ctx, sqlGetMovieExternalRatingsByID, movieID)
+	if err != nil {
+		return nil, fmt.Errorf("get movie external ratings: %w", err)
+	}
+	defer rows.Close()
+
+	ratings := make([]domain.ExternalRating, 0)
+
+	for rows.Next() {
+		var rating domain.ExternalRating
+		if err = rows.Scan(&rating.Source, &rating.Value, &rating.Scale); err != nil {
+			return nil, fmt.Errorf("scan movie external rating: %w", err)
+		}
+
+		ratings = append(ratings, rating)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate movie external ratings: %w", err)
+	}
+
+	return ratings, nil
+}
+
+func optionalSelectionRating(value float64) *float64 {
+	if value < 0 {
+		return nil
+	}
+
+	rating := value
+
+	return &rating
 }
 
 func (r *MovieRepo) getGenreMovies(ctx context.Context, genreID int64) ([]domain.MovieCard, error) {

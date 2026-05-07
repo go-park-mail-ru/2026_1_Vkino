@@ -23,6 +23,13 @@ type Movie struct {
 	Genres             []string
 	Actors             []ActorShort
 	Episodes           []Episode
+	ExternalRatings    []ExternalRating
+}
+
+type ExternalRating struct {
+	Source string
+	Value  float64
+	Scale  float64
 }
 
 type Actor struct {
@@ -74,6 +81,7 @@ type GenreShort struct {
 type Selection struct {
 	Title  string
 	Movies []MovieCard
+	Rating *float64
 }
 
 type EpisodeProgress struct {

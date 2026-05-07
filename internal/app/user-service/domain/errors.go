@@ -8,6 +8,7 @@ var (
 	ErrInvalidToken         = errors.New("invalid token")
 	ErrInvalidEmail         = errors.New("invalid email")
 	ErrInvalidMovieID       = errors.New("invalid movie id")
+	ErrInvalidMovieRating   = errors.New("invalid movie rating")
 	ErrInvalidBirthdate     = errors.New("invalid birthdate")
 	ErrInvalidAvatar        = errors.New("invalid avatar")
 	ErrAlreadyFriends       = errors.New("already friends")

@@ -59,6 +59,16 @@ const (
 		order by e.season_number, e.episode_number, e.id
 	`
 
+	sqlGetMovieExternalRatingsByID = `
+		select
+			mer.source,
+			mer.value::double precision,
+			mer.scale::double precision
+		from movie_external_rating mer
+		where mer.movie_id = $1
+		order by mer.source
+	`
+
 	sqlGetActorBaseByID = `
 		select
 			a.id,
@@ -112,27 +122,63 @@ const (
 	`
 
 	sqlGetSelectionMoviesByTitle = `
+		with movie_user_ratings as (
+			select
+				ui.movie_id,
+				avg(ui.rating)::double precision as avg_rating
+			from user_interaction ui
+			where ui.rating is not null
+			group by ui.movie_id
+		),
+		selection_ratings as (
+			select
+				ms.selection_id,
+				round(avg(mur.avg_rating)::numeric, 2)::double precision as rating
+			from movie_to_selection ms
+			left join movie_user_ratings mur on mur.movie_id = ms.movie_id
+			group by ms.selection_id
+		)
 		select
 			s.title,
+			coalesce(sr.rating, -1),
 			m.id,
 			m.title,
 			m.picture_file_key
 		from selection s
 		join movie_to_selection ms on ms.selection_id = s.id
 		join movie m on m.id = ms.movie_id
+		left join selection_ratings sr on sr.selection_id = s.id
 		where s.title = $1
 		order by ms.id
 	`
 
 	sqlGetAllSelectionMovies = `
+		with movie_user_ratings as (
+			select
+				ui.movie_id,
+				avg(ui.rating)::double precision as avg_rating
+			from user_interaction ui
+			where ui.rating is not null
+			group by ui.movie_id
+		),
+		selection_ratings as (
+			select
+				ms.selection_id,
+				round(avg(mur.avg_rating)::numeric, 2)::double precision as rating
+			from movie_to_selection ms
+			left join movie_user_ratings mur on mur.movie_id = ms.movie_id
+			group by ms.selection_id
+		)
 		select
 			s.title,
+			coalesce(sr.rating, -1),
 			m.id,
 			m.title,
 			m.picture_file_key
 		from selection s
 		join movie_to_selection ms on ms.selection_id = s.id
 		join movie m on m.id = ms.movie_id
+		left join selection_ratings sr on sr.selection_id = s.id
 		order by s.id, ms.id
 	`
 

@@ -158,6 +158,26 @@ func (s *Server) AddMovieToFavorites(
 	}, nil
 }
 
+func (s *Server) SetMovieRating(
+	ctx context.Context,
+	req *userv1.SetMovieRatingRequest,
+) (*userv1.SetMovieRatingResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ratedMovie, err := s.usecase.SetMovieRating(ctx, authCtx.UserID, req.GetMovieId(), req.GetRating())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &userv1.SetMovieRatingResponse{
+		MovieId: ratedMovie.MovieID,
+		Rating:  ratedMovie.Rating,
+	}, nil
+}
+
 func (s *Server) ToggleFavorite(
 	ctx context.Context,
 	req *userv1.ToggleFavoriteRequest,

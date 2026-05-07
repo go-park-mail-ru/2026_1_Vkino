@@ -42,6 +42,12 @@ message EpisodeShort {
   string img_url = 8;
 }
 
+message ExternalRating {
+  string source = 1;
+  double value = 2;
+  double scale = 3;
+}
+
 message GetMovieByIDResponse {
   int64 id = 1;
   string title = 2;
@@ -62,6 +68,7 @@ message GetMovieByIDResponse {
   repeated ActorShort actors = 17;
   repeated EpisodeShort episodes = 18;
   bool is_favorite = 19;
+  repeated ExternalRating external_ratings = 20;
 }
 
 message GetMoviesByIDsRequest {
@@ -121,11 +128,13 @@ message GetSelectionByTitleRequest {
 message Selection {
   string title = 1;
   repeated MovieCard movies = 2;
+  optional double rating = 3;
 }
 
 message GetSelectionByTitleResponse {
   string title = 1;
   repeated MovieCard movies = 2;
+  optional double rating = 3;
 }
 
 message GetAllSelectionsRequest {}

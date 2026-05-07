@@ -70,6 +70,20 @@ func (mr *MockUserRepoMockRecorder) AddMovieToFavorites(ctx, userID, movieID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMovieToFavorites", reflect.TypeOf((*MockUserRepo)(nil).AddMovieToFavorites), ctx, userID, movieID)
 }
 
+// SetMovieRating mocks base method.
+func (m *MockUserRepo) SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetMovieRating", ctx, userID, movieID, rating)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetMovieRating indicates an expected call of SetMovieRating.
+func (mr *MockUserRepoMockRecorder) SetMovieRating(ctx, userID, movieID, rating any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieRating", reflect.TypeOf((*MockUserRepo)(nil).SetMovieRating), ctx, userID, movieID, rating)
+}
+
 // DeleteFriend mocks base method.
 func (m *MockUserRepo) DeleteFriend(ctx context.Context, userID, friendID int64) error {
 	m.ctrl.T.Helper()

@@ -173,6 +173,19 @@ func (r *UserRepo) AddMovieToFavorites(ctx context.Context, userID, movieID int6
 	return nil
 }
 
+func (r *UserRepo) SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) error {
+	tag, err := r.db.Exec(ctx, sqlUpsertUserMovieRating, userID, movieID, rating)
+	if err != nil {
+		return fmt.Errorf("upsert user movie rating: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return ErrMovieNotFound
+	}
+
+	return nil
+}
+
 func (r *UserRepo) ToggleFavorite(ctx context.Context, userID, movieID int64) (bool, error) {
 	var isFavorite bool
 

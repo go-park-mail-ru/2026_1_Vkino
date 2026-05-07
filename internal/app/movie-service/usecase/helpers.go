@@ -26,6 +26,7 @@ func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Mov
 		Genres:             movie.Genres,
 		Actors:             make([]domain.ActorShortResponse, 0, len(movie.Actors)),
 		Episodes:           make([]domain.EpisodeResponse, 0, len(movie.Episodes)),
+		ExternalRatings:    make([]domain.ExternalRatingDTO, 0, len(movie.ExternalRatings)),
 	}
 
 	var err error
@@ -77,6 +78,14 @@ func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Mov
 		})
 	}
 
+	for _, rating := range movie.ExternalRatings {
+		resp.ExternalRatings = append(resp.ExternalRatings, domain.ExternalRatingDTO{
+			Source: rating.Source,
+			Value:  rating.Value,
+			Scale:  rating.Scale,
+		})
+	}
+
 	return resp, nil
 }
 
@@ -116,6 +125,7 @@ func (u *MovieUsecase) buildSelectionResponse(
 	resp := domain.SelectionResponse{
 		Title:  selection.Title,
 		Movies: make([]domain.MovieCardResponse, 0, len(selection.Movies)),
+		Rating: selection.Rating,
 	}
 
 	for _, movie := range selection.Movies {

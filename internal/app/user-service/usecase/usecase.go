@@ -20,6 +20,7 @@ type Usecase interface {
 	UpdateProfile(ctx context.Context, userID int64, birthdate string, body io.Reader, size int64,
 		contentType string) (domain.ProfileResponse, error)
 	AddMovieToFavorites(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error)
+	SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) (domain.MovieRatingResponse, error)
 	ToggleFavorite(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error)
 	GetFavorites(ctx context.Context, userID int64, limit, offset int32) (domain.FavoritesResponse, error)
 	SendFriendRequest(ctx context.Context, userID, toUserID int64) (int64, error)

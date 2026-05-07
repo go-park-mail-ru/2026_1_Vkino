@@ -99,6 +99,22 @@ func TestUserRoutes_ToggleFavorite(t *testing.T) {
 	require.Equal(t, http.StatusOK, rr.Code)
 }
 
+func TestUserRoutes_SetMovieRating(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	client := NewMockUserClient(ctrl)
+
+	client.EXPECT().SetMovieRating(gomock.Any(), &userv1.SetMovieRatingRequest{MovieId: 4, Rating: 8.5}).
+		Return(&userv1.SetMovieRatingResponse{MovieId: 4, Rating: 8.5}, nil)
+
+	handler := newUserHandler(t, testConfig{}, client)
+	rr := doRequest(handler, http.MethodPut, "/user/ratings/4", bytes.NewReader([]byte(`{"rating":8.5}`)))
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.JSONEq(t, `{"movie_id":4,"rating":8.5}`, rr.Body.String())
+}
+
 func TestUserRoutes_GetFavorites_Empty(t *testing.T) {
 	t.Parallel()
 

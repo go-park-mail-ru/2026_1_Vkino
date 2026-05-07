@@ -128,6 +128,14 @@ func (c grpcUserClient) AddMovieToFavorites(
 	return c.user.AddMovieToFavorites(ctx, in, opts...)
 }
 
+func (c grpcUserClient) SetMovieRating(
+	ctx context.Context,
+	in *userv1.SetMovieRatingRequest,
+	opts ...grpc.CallOption,
+) (*userv1.SetMovieRatingResponse, error) {
+	return c.user.SetMovieRating(ctx, in, opts...)
+}
+
 func (c grpcUserClient) ToggleFavorite(
 	ctx context.Context,
 	in *userv1.ToggleFavoriteRequest,
@@ -272,6 +280,10 @@ type updateProfilePayload struct {
 	Birthdate         string
 	Avatar            []byte
 	AvatarContentType string
+}
+
+type setMovieRatingRequest struct {
+	Rating float64 `json:"rating"`
 }
 
 func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updateProfilePayload, bool) {
@@ -516,6 +528,33 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 
 			resp, err := userClient.ToggleFavorite(r.Context(), &userv1.ToggleFavoriteRequest{
 				MovieId: movieID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		route("PUT /user/ratings/{id}", func(w http.ResponseWriter, r *http.Request) {
+			movieID, ok := parsePathID(w, r, "invalid movie id")
+			if !ok {
+				return
+			}
+
+			var req setMovieRatingRequest
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.SetMovieRating(r.Context(), &userv1.SetMovieRatingRequest{
+				MovieId: movieID,
+				Rating:  req.Rating,
 			})
 			if err != nil {
 				writeGRPCError(w, err)
