@@ -40,7 +40,10 @@ up:
 	docker compose -f deployments/dev/compose.yaml up
 
 down:
-	docker compose -f deployments/dev/compose.yaml downе s=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/support/v1/support.proto
+	docker compose -f deployments/dev/compose.yaml down
+
+proto-gen:
+	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/support/v1/support.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/movie/v1/movie.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/user/v1/user.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/auth/v1/auth.proto
