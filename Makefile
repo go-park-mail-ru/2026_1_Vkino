@@ -1,12 +1,16 @@
-.PHONY: init generate
+.PHONY: init generate init-db
 
-PACKAGES_NO_MOCKS := $(shell go list ./... | grep -v '/mocks$$')
+PACKAGES_NO_MOCKS = $(shell go list ./... | grep -v '/mocks$$')
 PROTOC_PLUGIN_PATH := $(shell go env GOPATH)/bin
+DEPLOY_ENV ?= dev
 
 init:
 	cp .github/hooks/* .git/hooks
 	chmod +x .git/hooks/*
 	migrate create -ext sql -dir ./migrations migration
+
+init-db:
+	bash ./deployments/postgres/init-db.sh $(DEPLOY_ENV)
 
 generate:
 	go generate ./...

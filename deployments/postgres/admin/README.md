@@ -38,29 +38,61 @@
   Подключается к `db` под `POSTGRES_ADMIN_USER` и выполняет:
   1. `03_runtime_grants.sql`
 
+- `../init-db.sh`
+  Оркестрирует полный init flow для `dev` и `prod`:
+  1. поднимает `db` c `--force-recreate`
+  2. ждёт `healthy`
+  3. находит docker network контейнера `db`
+  4. запускает `bootstrap.sh` во временном `postgres:18.3` контейнере
+  5. запускает `migrate`
+  6. если миграции падают с `permission denied`, автоматически применяет fallback grants и повторяет миграции
+  7. запускает `apply-runtime-grants.sh`
+
 ## Ручной порядок запуска
 
-Запускать из директории нужного deployment (`deployments/dev` или `deployments/prod`):
+Основной способ запуска из корня репозитория:
 
 ```bash
-docker compose up -d
+make init-db
+```
+
+Для `prod`:
+
+```bash
+make init-db DEPLOY_ENV=prod
+```
+
+Скрипт также можно вызвать напрямую:
+
+```bash
+./deployments/postgres/init-db.sh dev
+```
+
+```bash
+./deployments/postgres/init-db.sh prod
 ```
 
 ## Логи
 
+Основной ход инициализации печатается прямо в stdout `make init-db` или `init-db.sh`.
+Для service-логов перейдите в нужную deployment-директорию. Для `prod` используйте `deployments/prod` вместо `deployments/dev`.
+
 ```bash
-docker compose logs postgres-bootstrap
-docker compose logs migrate
-docker compose logs postgres-grants
+cd deployments/dev
+docker compose logs db
 ```
 
 ## Проверка результата
 
+Из нужной deployment-директории. Для `prod` используйте `deployments/prod` вместо `deployments/dev`.
+
 ```bash
+cd deployments/dev
 docker compose ps -a
 ```
 
 ```bash
+cd deployments/dev
 docker compose exec db psql -U "$POSTGRES_ADMIN_USER" -d "$POSTGRES_DB" -c "
 SELECT rolname, rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolconnlimit
 FROM pg_roles
@@ -69,55 +101,4 @@ ORDER BY rolname;
 "
 ```
 
-Как запустить на локальной машинке
-
-Заполнить .env перменнную по примеру
-
-```bash
-sudo docker compose up -d --force-recreate db
-```
-
-```bash
-NETWORK=$(sudo docker inspect "$(sudo docker compose ps -q db)" \
-  --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' | head -n1)
-
-echo "$NETWORK"
-```
-
-```bash
-sudo docker run --rm \
-  --network "$NETWORK" \
-  --env-file .env \
-  -v "$(pwd)/../postgres/admin:/scripts:ro" \
-  postgres:18.3 \
-  /bin/sh /scripts/bootstrap.sh
-```
-
-```bash
-sudo docker compose run --rm migrate
-```
-
-if needed (permission denied prev step)
-
-```bash
-set -a
-source .env
-set +a
-
-sudo docker compose exec -T \
-  -e PGPASSWORD="$POSTGRES_ADMIN_PASSWORD" \
-  db psql -U "$POSTGRES_ADMIN_USER" -d "$POSTGRES_DB" -c "
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO vkino_migrator;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO vkino_migrator;
-GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO vkino_migrator;
-"
-```
-
-```bash
-sudo docker run --rm \
-  --network "$NETWORK" \
-  --env-file .env \
-  -v "$(pwd)/../postgres/admin:/scripts:ro" \
-  postgres:18.3 \
-  /bin/sh /scripts/apply-runtime-grants.sh
-```
+Перед запуском нужно заполнить `.env` в `deployments/dev` или `deployments/prod` по соответствующему `.env.example`.

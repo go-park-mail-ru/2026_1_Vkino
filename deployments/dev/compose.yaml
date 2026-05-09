@@ -144,7 +144,7 @@ services:
       - ../postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
       - ../postgres/conf.d:/etc/postgresql/conf.d:ro
       - ../postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
-      - ./logs/postgres:/var/log/postgresql
+      - db-logs:/var/log/postgresql
     networks:
       - app-network
 
@@ -271,6 +271,7 @@ networks:
 
 volumes:
   db-data:
+  db-logs:
   minio_data:
   prometheus_data:
   grafana_data:
