@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"strings"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
 )
@@ -11,7 +12,11 @@ func (s *service) GetOverview(ctx context.Context, userID int64) (domain.Overvie
 		return domain.OverviewResponse{}, domain.ErrInvalidUserID
 	}
 
-	return domain.OverviewResponse{}, domain.ErrNotImplemented
+	if s.partyRepo == nil {
+		return domain.OverviewResponse{}, domain.ErrInternal
+	}
+
+	return s.partyRepo.GetOverview(ctx, userID)
 }
 
 func (s *service) GetRoom(ctx context.Context, userID, roomID int64) (domain.RoomResponse, error) {
@@ -23,7 +28,20 @@ func (s *service) GetRoom(ctx context.Context, userID, roomID int64) (domain.Roo
 		return domain.RoomResponse{}, domain.ErrInvalidRoomID
 	}
 
-	return domain.RoomResponse{}, domain.ErrNotImplemented
+	if s.partyRepo == nil {
+		return domain.RoomResponse{}, domain.ErrInternal
+	}
+
+	room, err := s.partyRepo.GetRoomByID(ctx, roomID)
+	if err != nil {
+		return domain.RoomResponse{}, err
+	}
+
+	if room.Visibility == "private" && !isRoomMember(room.Members, userID) {
+		return domain.RoomResponse{}, domain.ErrAccessDenied
+	}
+
+	return domain.RoomResponse{Room: *room}, nil
 }
 
 func (s *service) CreateRoom(
@@ -43,7 +61,19 @@ func (s *service) CreateRoom(
 		return domain.RoomResponse{}, domain.ErrInvalidVisibility
 	}
 
-	return domain.RoomResponse{}, domain.ErrNotImplemented
+	if s.partyRepo == nil {
+		return domain.RoomResponse{}, domain.ErrInternal
+	}
+
+	req.Name = strings.TrimSpace(req.Name)
+	req.Visibility = strings.TrimSpace(strings.ToLower(req.Visibility))
+
+	room, err := s.partyRepo.CreateRoom(ctx, userID, req)
+	if err != nil {
+		return domain.RoomResponse{}, err
+	}
+
+	return domain.RoomResponse{Room: *room}, nil
 }
 
 func (s *service) JoinRoom(
@@ -59,7 +89,31 @@ func (s *service) JoinRoom(
 		return domain.RoomResponse{}, domain.ErrInvalidInviteLink
 	}
 
-	return domain.RoomResponse{}, domain.ErrNotImplemented
+	if s.partyRepo == nil {
+		return domain.RoomResponse{}, domain.ErrInternal
+	}
+
+	roomID := req.RoomID
+	if roomID <= 0 {
+		inviteCode := normalizeInviteLink(req.InviteLink)
+		if inviteCode == "" {
+			return domain.RoomResponse{}, domain.ErrInvalidInviteLink
+		}
+
+		invite, err := s.partyRepo.GetInvite(ctx, inviteCode)
+		if err != nil {
+			return domain.RoomResponse{}, err
+		}
+
+		roomID = invite.RoomID
+	}
+
+	room, err := s.partyRepo.AddMember(ctx, roomID, userID)
+	if err != nil {
+		return domain.RoomResponse{}, err
+	}
+
+	return domain.RoomResponse{Room: *room}, nil
 }
 
 func (s *service) DeleteRoom(ctx context.Context, userID, roomID int64) (domain.DeleteRoomResponse, error) {
@@ -71,7 +125,27 @@ func (s *service) DeleteRoom(ctx context.Context, userID, roomID int64) (domain.
 		return domain.DeleteRoomResponse{}, domain.ErrInvalidRoomID
 	}
 
-	return domain.DeleteRoomResponse{}, domain.ErrNotImplemented
+	if s.partyRepo == nil {
+		return domain.DeleteRoomResponse{}, domain.ErrInternal
+	}
+
+	room, err := s.partyRepo.GetRoomByID(ctx, roomID)
+	if err != nil {
+		return domain.DeleteRoomResponse{}, err
+	}
+
+	if room.HostUserID != userID {
+		return domain.DeleteRoomResponse{}, domain.ErrAccessDenied
+	}
+
+	if err = s.partyRepo.DeleteRoom(ctx, roomID); err != nil {
+		return domain.DeleteRoomResponse{}, err
+	}
+
+	return domain.DeleteRoomResponse{
+		RoomID:  roomID,
+		Success: true,
+	}, nil
 }
 
 func (s *service) SubscribeRoom(
@@ -87,5 +161,33 @@ func (s *service) SubscribeRoom(
 		return nil, nil, domain.ErrInvalidRoomID
 	}
 
-	return nil, nil, domain.ErrNotImplemented
+	if s.eventBroker == nil {
+		return nil, nil, domain.ErrNotImplemented
+	}
+
+	return s.eventBroker.Subscribe(ctx, req.RoomID)
+}
+
+func isRoomMember(members []domain.RoomMember, userID int64) bool {
+	for _, member := range members {
+		if member.UserID == userID {
+			return true
+		}
+	}
+
+	return false
+}
+
+func normalizeInviteLink(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+
+	value = strings.TrimRight(value, "/")
+	if idx := strings.LastIndex(value, "/"); idx >= 0 {
+		value = value[idx+1:]
+	}
+
+	return strings.TrimSpace(value)
 }

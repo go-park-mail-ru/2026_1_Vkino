@@ -33,6 +33,10 @@ movie_grpc:
   address: "movie-service:9092"
   request_timeout: 5s
 
+party_grpc:
+  address: "party-service:9093"
+  request_timeout: 5s
+
 user_auth:
   refresh_cookie_name: "refresh_token"
   refresh_token_ttl: "336h"

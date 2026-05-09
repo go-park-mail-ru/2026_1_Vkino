@@ -19,6 +19,7 @@ type testConfig struct {
 	authTimeout       time.Duration
 	userTimeout       time.Duration
 	movieTimeout      time.Duration
+	partyTimeout      time.Duration
 	refreshCookieName string
 	cookieSecure      bool
 }
@@ -26,6 +27,7 @@ type testConfig struct {
 func (c testConfig) AuthRequestTimeout() time.Duration  { return c.authTimeout }
 func (c testConfig) UserRequestTimeout() time.Duration  { return c.userTimeout }
 func (c testConfig) MovieRequestTimeout() time.Duration { return c.movieTimeout }
+func (c testConfig) PartyRequestTimeout() time.Duration { return c.partyTimeout }
 func (c testConfig) RefreshCookieName() string          { return c.refreshCookieName }
 func (c testConfig) CookieSecure() bool                 { return c.cookieSecure }
 

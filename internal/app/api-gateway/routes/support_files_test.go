@@ -92,6 +92,7 @@ func TestSupportFileUploadHandler(t *testing.T) {
 			require.Equal(t, "note.txt", req.Filename)
 			require.Equal(t, "text/plain", req.ContentType)
 			require.Equal(t, int64(5), req.SizeBytes)
+
 			return &supportv1.UploadSupportFileResponse{FileKey: "file-key"}, nil
 		})
 

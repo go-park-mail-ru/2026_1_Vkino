@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/delivery/grpc"
+	memoryrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/repository/memory"
+	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/repository/postgres"
 	partyusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/usecase"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
@@ -90,7 +92,9 @@ func Run(configPath string) error {
 		_ = userConn.Close()
 	}()
 
-	partyUC := partyusecase.New(nil, nil)
+	partyRepo := postgresrepo.NewPartyRepo(pgDB)
+	eventBroker := memoryrepo.NewRoomEventBroker()
+	partyUC := partyusecase.New(partyRepo, eventBroker)
 
 	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {

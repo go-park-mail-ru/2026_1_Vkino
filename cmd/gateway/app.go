@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/api-gateway/routes"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+	partyv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/party/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
@@ -68,11 +69,21 @@ func Run(configPath string) error {
 		_ = movieConn.Close()
 	}()
 
+	partyConn, err := newGRPCConn(cfg.PartyGRPC)
+	if err != nil {
+		return fmt.Errorf("init party grpc client: %w", err)
+	}
+
+	defer func() {
+		_ = partyConn.Close()
+	}()
+
 	server := httpserver.New(append(serverOptions(cfg, appLogger), routes.Register(
 		cfg,
 		authv1.NewAuthServiceClient(authConn),
 		routes.NewUserClient(userConn, movieConn),
 		moviev1.NewMovieServiceClient(movieConn),
+		partyv1.NewPartyServiceClient(partyConn),
 	)...)...)
 
 	appLogger.WithField("port", cfg.Server.Port).Info("starting api gateway")
