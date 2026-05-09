@@ -13,7 +13,7 @@
 ## 🚀 Попробовать
 
 Оцените наш сервис в действии:
-[vkino.tech](http://vkino.tech)
+[vkino.tech](https://vkino.tech/?utm_source=github&utm_medium=readme&utm_campaign=info&utm_content=golang)
 
 ## 🥋 Наша команда
 
