@@ -48,6 +48,7 @@ down:
 
 proto-gen:
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/support/v1/support.proto
+	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/party/v1/party.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/movie/v1/movie.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/user/v1/user.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/auth/v1/auth.proto
