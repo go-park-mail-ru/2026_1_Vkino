@@ -4,6 +4,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
@@ -26,6 +27,8 @@ func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Mov
 		Genres:             movie.Genres,
 		Actors:             make([]domain.ActorShortResponse, 0, len(movie.Actors)),
 		Episodes:           make([]domain.EpisodeResponse, 0, len(movie.Episodes)),
+		ExternalRatings:    make([]domain.ExternalRating, 0, len(movie.ExternalRatings)),
+		Reviews:            make([]domain.MovieReviewDTO, 0, len(movie.Reviews)),
 	}
 
 	var err error
@@ -77,6 +80,25 @@ func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Mov
 		})
 	}
 
+	for _, rating := range movie.ExternalRatings {
+		resp.ExternalRatings = append(resp.ExternalRatings, rating)
+	}
+
+	for _, review := range movie.Reviews {
+		resp.Reviews = append(resp.Reviews, domain.MovieReviewDTO{
+			ID:             review.ID,
+			AuthorUserID:   review.AuthorUserID,
+			Author:         maskEmail(review.AuthorEmail),
+			Rating:         review.Rating,
+			Comment:        review.Comment,
+			LikesCount:     review.LikesCount,
+			DislikesCount:  review.DislikesCount,
+			ViewerReaction: review.ViewerReaction,
+			CreatedAt:      review.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:      review.UpdatedAt.Format(time.RFC3339),
+		})
+	}
+
 	return resp, nil
 }
 
@@ -116,6 +138,7 @@ func (u *MovieUsecase) buildSelectionResponse(
 	resp := domain.SelectionResponse{
 		Title:  selection.Title,
 		Movies: make([]domain.MovieCardResponse, 0, len(selection.Movies)),
+		Rating: selection.Rating,
 	}
 
 	for _, movie := range selection.Movies {
@@ -247,4 +270,19 @@ func formatDate(value *time.Time) string {
 	}
 
 	return value.Format("2006-01-02")
+}
+
+func maskEmail(email string) string {
+	at := strings.Index(email, "@")
+	if at <= 0 {
+		return "user"
+	}
+
+	local := email[:at]
+	domainPart := email[at:]
+	if len(local) <= 2 {
+		return local[:1] + "***" + domainPart
+	}
+
+	return local[:2] + "***" + domainPart
 }

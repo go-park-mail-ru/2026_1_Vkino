@@ -24,6 +24,7 @@ type MovieRepo interface {
 	GetEpisodeProgress(ctx context.Context, userID, episodeID int64) (domain.EpisodeProgress, error)
 	SaveEpisodeProgress(ctx context.Context, userID, episodeID, positionSec int64) (domain.EpisodeProgress, error)
 	IsFavorite(ctx context.Context, userID, movieID int64) (bool, error)
+	GetMovieReviews(ctx context.Context, movieID int64, viewerUserID int64) ([]domain.MovieReview, error)
 	GetContinueWatching(ctx context.Context, userID int64, limit int32) ([]domain.WatchProgressItem, error)
 	GetWatchHistory(ctx context.Context, userID int64, limit int32, minProgress float64) ([]domain.WatchProgressItem, error)
 }

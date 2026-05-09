@@ -11,6 +11,11 @@ service UserService {
   rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
   rpc DeleteFriend(DeleteFriendRequest) returns (DeleteFriendResponse);
   rpc AddMovieToFavorites(AddMovieToFavoritesRequest) returns (AddMovieToFavoritesResponse);
+  rpc SetMovieRating(SetMovieRatingRequest) returns (SetMovieRatingResponse);
+  rpc SetMovieReview(SetMovieReviewRequest) returns (SetMovieReviewResponse);
+  rpc DeleteMovieReview(DeleteMovieReviewRequest) returns (DeleteMovieReviewResponse);
+  rpc SetReviewReaction(SetReviewReactionRequest) returns (SetReviewReactionResponse);
+  rpc DeleteReviewReaction(DeleteReviewReactionRequest) returns (DeleteReviewReactionResponse);
   rpc ToggleFavorite(ToggleFavoriteRequest) returns (ToggleFavoriteResponse);
   rpc GetFavorites(GetFavoritesRequest) returns (GetFavoritesResponse);
   rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse);
@@ -89,6 +94,55 @@ message AddMovieToFavoritesRequest {
 message AddMovieToFavoritesResponse {
   int64 movie_id = 1;
   bool is_favorite = 2;
+}
+
+message SetMovieRatingRequest {
+  int64 movie_id = 1;
+  double rating = 2;
+}
+
+message SetMovieRatingResponse {
+  int64 movie_id = 1;
+  double rating = 2;
+}
+
+message SetMovieReviewRequest {
+  int64 movie_id = 1;
+  optional double rating = 2;
+  optional string comment = 3;
+}
+
+message SetMovieReviewResponse {
+  int64 review_id = 1;
+  int64 movie_id = 2;
+  optional double rating = 3;
+  optional string comment = 4;
+}
+
+message DeleteMovieReviewRequest {
+  int64 movie_id = 1;
+}
+
+message DeleteMovieReviewResponse {
+  bool success = 1;
+}
+
+message SetReviewReactionRequest {
+  int64 review_id = 1;
+  string reaction = 2;
+}
+
+message SetReviewReactionResponse {
+  int64 review_id = 1;
+  string reaction = 2;
+}
+
+message DeleteReviewReactionRequest {
+  int64 review_id = 1;
+}
+
+message DeleteReviewReactionResponse {
+  bool success = 1;
 }
 
 message ToggleFavoriteRequest {

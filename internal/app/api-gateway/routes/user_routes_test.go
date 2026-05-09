@@ -99,6 +99,102 @@ func TestUserRoutes_ToggleFavorite(t *testing.T) {
 	require.Equal(t, http.StatusOK, rr.Code)
 }
 
+func TestUserRoutes_SetMovieRating(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	client := NewMockUserClient(ctrl)
+
+	client.EXPECT().SetMovieRating(gomock.Any(), &userv1.SetMovieRatingRequest{MovieId: 4, Rating: 8.5}).
+		Return(&userv1.SetMovieRatingResponse{MovieId: 4, Rating: 8.5}, nil)
+
+	handler := newUserHandler(t, testConfig{}, client)
+	rr := doRequest(handler, http.MethodPut, "/user/ratings/4", bytes.NewReader([]byte(`{"rating":8.5}`)))
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.JSONEq(t, `{"movie_id":4,"rating":8.5}`, rr.Body.String())
+}
+
+func TestUserRoutes_SetMovieReview(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	client := NewMockUserClient(ctrl)
+
+	rating := 8.5
+	comment := "Очень понравилось"
+
+	client.EXPECT().SetMovieReview(gomock.Any(), &userv1.SetMovieReviewRequest{
+		MovieId: 4,
+		Rating:  &rating,
+		Comment: &comment,
+	}).Return(&userv1.SetMovieReviewResponse{
+		ReviewId: 9,
+		MovieId:  4,
+		Rating:   &rating,
+		Comment:  &comment,
+	}, nil)
+
+	handler := newUserHandler(t, testConfig{}, client)
+	rr := doRequest(handler, http.MethodPut, "/user/reviews/4", bytes.NewReader([]byte(`{"rating":8.5,"message":"Очень понравилось"}`)))
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.JSONEq(t, `{"review_id":9,"movie_id":4,"rating":8.5,"comment":"Очень понравилось"}`, rr.Body.String())
+}
+
+func TestUserRoutes_DeleteMovieReview(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	client := NewMockUserClient(ctrl)
+
+	client.EXPECT().DeleteMovieReview(gomock.Any(), &userv1.DeleteMovieReviewRequest{MovieId: 4}).
+		Return(&userv1.DeleteMovieReviewResponse{}, nil)
+
+	handler := newUserHandler(t, testConfig{}, client)
+	rr := doRequest(handler, http.MethodDelete, "/user/reviews/4", nil)
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.JSONEq(t, `{"success":true}`, rr.Body.String())
+}
+
+func TestUserRoutes_SetReviewReaction(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	client := NewMockUserClient(ctrl)
+
+	client.EXPECT().SetReviewReaction(gomock.Any(), &userv1.SetReviewReactionRequest{
+		ReviewId: 11,
+		Reaction: "like",
+	}).Return(&userv1.SetReviewReactionResponse{
+		ReviewId: 11,
+		Reaction: "like",
+	}, nil)
+
+	handler := newUserHandler(t, testConfig{}, client)
+	rr := doRequest(handler, http.MethodPut, "/user/review-reactions/11", bytes.NewReader([]byte(`{"reaction":"like"}`)))
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.JSONEq(t, `{"review_id":11,"reaction":"like"}`, rr.Body.String())
+}
+
+func TestUserRoutes_DeleteReviewReaction(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	client := NewMockUserClient(ctrl)
+
+	client.EXPECT().DeleteReviewReaction(gomock.Any(), &userv1.DeleteReviewReactionRequest{ReviewId: 11}).
+		Return(&userv1.DeleteReviewReactionResponse{}, nil)
+
+	handler := newUserHandler(t, testConfig{}, client)
+	rr := doRequest(handler, http.MethodDelete, "/user/review-reactions/11", nil)
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.JSONEq(t, `{"success":true}`, rr.Body.String())
+}
+
 func TestUserRoutes_GetFavorites_Empty(t *testing.T) {
 	t.Parallel()
 

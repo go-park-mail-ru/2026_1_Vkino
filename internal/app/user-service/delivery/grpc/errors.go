@@ -4,6 +4,7 @@ import (
 	"maps"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
+	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository/postgres"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/errmap/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 	"google.golang.org/grpc/codes"
@@ -37,6 +38,14 @@ var userGRPCErrorMapper = newGRPCErrorMapper(
 		domain.ErrUserNotFound,
 		domain.ErrInvalidSearchQuery,
 		domain.ErrInvalidMovieID,
+		domain.ErrInvalidMovieRating,
+		domain.ErrInvalidMovieReview,
+		domain.ErrInvalidMovieComment,
+		domain.ErrInvalidReviewID,
+		domain.ErrInvalidReviewVote,
+		domain.ErrMovieReviewNotFound,
+		domain.ErrSelfReviewVote,
+		postgresrepo.ErrMovieNotFound,
 		domain.ErrInvalidBirthdate,
 		domain.ErrInvalidAvatar,
 		storage.ErrInvalidFileType,
@@ -48,14 +57,22 @@ var userGRPCErrorMapper = newGRPCErrorMapper(
 		domain.ErrInternal,
 	},
 	mergeGRPCErrorRules(commonGRPCErrorRules, map[error]grpcx.ErrResponse{
-		domain.ErrUserNotFound:       {Code: codes.NotFound, Message: "user not found"},
-		domain.ErrInvalidSearchQuery: {Code: codes.InvalidArgument, Message: "invalid search query"},
-		domain.ErrInvalidMovieID:     {Code: codes.InvalidArgument, Message: "invalid movie id"},
-		domain.ErrInvalidBirthdate:   {Code: codes.InvalidArgument, Message: "invalid birthdate"},
-		domain.ErrInvalidAvatar:      {Code: codes.InvalidArgument, Message: "invalid avatar"},
-		domain.ErrAlreadyFriends:     {Code: codes.AlreadyExists, Message: "already friends"},
-		domain.ErrFriendNotFound:     {Code: codes.NotFound, Message: "friend not found"},
-		domain.ErrSelfFriendship:     {Code: codes.FailedPrecondition, Message: "self friendship is forbidden"},
+		domain.ErrUserNotFound:        {Code: codes.NotFound, Message: "user not found"},
+		domain.ErrInvalidSearchQuery:  {Code: codes.InvalidArgument, Message: "invalid search query"},
+		domain.ErrInvalidMovieID:      {Code: codes.InvalidArgument, Message: "invalid movie id"},
+		domain.ErrInvalidMovieRating:  {Code: codes.InvalidArgument, Message: "invalid movie rating"},
+		domain.ErrInvalidMovieReview:  {Code: codes.InvalidArgument, Message: "invalid movie review payload"},
+		domain.ErrInvalidMovieComment: {Code: codes.InvalidArgument, Message: "invalid movie comment"},
+		domain.ErrInvalidReviewID:     {Code: codes.InvalidArgument, Message: "invalid review id"},
+		domain.ErrInvalidReviewVote:   {Code: codes.InvalidArgument, Message: "invalid review vote"},
+		domain.ErrMovieReviewNotFound: {Code: codes.NotFound, Message: "movie review not found"},
+		domain.ErrSelfReviewVote:      {Code: codes.FailedPrecondition, Message: "self review vote is forbidden"},
+		postgresrepo.ErrMovieNotFound: {Code: codes.NotFound, Message: "movie not found"},
+		domain.ErrInvalidBirthdate:    {Code: codes.InvalidArgument, Message: "invalid birthdate"},
+		domain.ErrInvalidAvatar:       {Code: codes.InvalidArgument, Message: "invalid avatar"},
+		domain.ErrAlreadyFriends:      {Code: codes.AlreadyExists, Message: "already friends"},
+		domain.ErrFriendNotFound:      {Code: codes.NotFound, Message: "friend not found"},
+		domain.ErrSelfFriendship:      {Code: codes.FailedPrecondition, Message: "self friendship is forbidden"},
 	}),
 )
 

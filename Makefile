@@ -1,12 +1,16 @@
-.PHONY: init generate
+.PHONY: init generate init-db
 
-PACKAGES_NO_MOCKS := $(shell go list ./... | grep -v '/mocks$$')
+PACKAGES_NO_MOCKS = $(shell go list ./... | grep -v '/mocks$$')
 PROTOC_PLUGIN_PATH := $(shell go env GOPATH)/bin
+DEPLOY_ENV ?= dev
 
 init:
 	cp .github/hooks/* .git/hooks
 	chmod +x .git/hooks/*
 	migrate create -ext sql -dir ./migrations migration
+
+init-db:
+	bash ./deployments/postgres/init-db.sh $(DEPLOY_ENV)
 
 generate:
 	go generate ./...
@@ -40,7 +44,10 @@ up:
 	docker compose -f deployments/dev/compose.yaml up
 
 down:
-	docker compose -f deployments/dev/compose.yaml downе s=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/support/v1/support.proto
+	docker compose -f deployments/dev/compose.yaml down
+
+proto-gen:
+	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/support/v1/support.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/movie/v1/movie.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/user/v1/user.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/auth/v1/auth.proto

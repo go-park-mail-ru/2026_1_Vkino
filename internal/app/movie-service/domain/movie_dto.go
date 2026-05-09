@@ -20,6 +20,21 @@ type MovieResponse struct {
 	Actors             []ActorShortResponse `json:"actors"`
 	Episodes           []EpisodeResponse    `json:"episodes"`
 	IsFavorite         bool                 `json:"is_favorite"`
+	ExternalRatings    []ExternalRating     `json:"external_ratings"`
+	Reviews            []MovieReviewDTO     `json:"reviews"`
+}
+
+type MovieReviewDTO struct {
+	ID             int64    `json:"id"`
+	AuthorUserID   int64    `json:"author_user_id"`
+	Author         string   `json:"author"`
+	Rating         *float64 `json:"rating,omitempty"`
+	Comment        string   `json:"comment,omitempty"`
+	LikesCount     int64    `json:"likes_count"`
+	DislikesCount  int64    `json:"dislikes_count"`
+	ViewerReaction string   `json:"viewer_reaction,omitempty"`
+	CreatedAt      string   `json:"created_at"`
+	UpdatedAt      string   `json:"updated_at"`
 }
 
 type ActorResponse struct {
@@ -75,6 +90,7 @@ type GenreShortResponse struct {
 type SelectionResponse struct {
 	Title  string              `json:"title"`
 	Movies []MovieCardResponse `json:"movies"`
+	Rating *float64            `json:"rating,omitempty"`
 }
 
 type EpisodePlaybackResponse struct {

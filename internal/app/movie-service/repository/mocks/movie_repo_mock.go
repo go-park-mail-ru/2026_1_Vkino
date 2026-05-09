@@ -176,6 +176,21 @@ func (mr *MockMovieRepoMockRecorder) GetMovieCardsByIDs(ctx, movieIDs any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieCardsByIDs", reflect.TypeOf((*MockMovieRepo)(nil).GetMovieCardsByIDs), ctx, movieIDs)
 }
 
+// GetMovieReviews mocks base method.
+func (m *MockMovieRepo) GetMovieReviews(ctx context.Context, movieID int64, viewerUserID int64) ([]domain.MovieReview, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMovieReviews", ctx, movieID, viewerUserID)
+	ret0, _ := ret[0].([]domain.MovieReview)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMovieReviews indicates an expected call of GetMovieReviews.
+func (mr *MockMovieRepoMockRecorder) GetMovieReviews(ctx, movieID, viewerUserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieReviews", reflect.TypeOf((*MockMovieRepo)(nil).GetMovieReviews), ctx, movieID, viewerUserID)
+}
+
 // GetSelectionByTitle mocks base method.
 func (m *MockMovieRepo) GetSelectionByTitle(ctx context.Context, title string) (domain.Selection, error) {
 	m.ctrl.T.Helper()

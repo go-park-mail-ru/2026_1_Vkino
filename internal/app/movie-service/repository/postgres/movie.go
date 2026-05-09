@@ -3,6 +3,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -71,7 +72,61 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, movieID int64) (*domain.Mo
 		return nil, err
 	}
 
+	movie.ExternalRatings, err = r.getMovieExternalRatings(ctx, movieID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &movie, nil
+}
+
+func (r *MovieRepo) GetMovieReviews(ctx context.Context, movieID int64, viewerUserID int64) ([]domain.MovieReview, error) {
+	rows, err := r.db.Query(ctx, sqlGetMovieReviewsByMovieID, movieID, viewerUserID)
+	if err != nil {
+		return nil, fmt.Errorf("get movie reviews: %w", err)
+	}
+	defer rows.Close()
+
+	reviews := make([]domain.MovieReview, 0)
+
+	for rows.Next() {
+		var (
+			review    domain.MovieReview
+			rating    sql.NullFloat64
+			createdAt time.Time
+			updatedAt time.Time
+		)
+
+		if err = rows.Scan(
+			&review.ID,
+			&review.AuthorUserID,
+			&review.AuthorEmail,
+			&rating,
+			&review.Comment,
+			&review.LikesCount,
+			&review.DislikesCount,
+			&review.ViewerReaction,
+			&createdAt,
+			&updatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan movie review: %w", err)
+		}
+
+		if rating.Valid {
+			reviewRating := rating.Float64
+			review.Rating = &reviewRating
+		}
+
+		review.CreatedAt = createdAt
+		review.UpdatedAt = updatedAt
+		reviews = append(reviews, review)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate movie reviews: %w", err)
+	}
+
+	return reviews, nil
 }
 
 func (r *MovieRepo) GetActorByID(ctx context.Context, actorID int64) (*domain.Actor, error) {
@@ -161,9 +216,12 @@ func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (doma
 	}
 
 	for rows.Next() {
+		var rating sql.NullFloat64
+
 		var movie domain.MovieCard
 		if err = rows.Scan(
 			&selection.Title,
+			&rating,
 			&movie.ID,
 			&movie.Title,
 			&movie.PictureFileKey,
@@ -171,6 +229,12 @@ func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (doma
 			return domain.Selection{}, fmt.Errorf("scan selection movie: %w", err)
 		}
 
+		if rating.Valid {
+			selectionRating := rating.Float64
+			selection.Rating = &selectionRating
+		} else {
+			selection.Rating = nil
+		}
 		selection.Movies = append(selection.Movies, movie)
 	}
 
@@ -197,12 +261,14 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, e
 
 	for rows.Next() {
 		var (
-			title string
-			movie domain.MovieCard
+			title  string
+			rating sql.NullFloat64
+			movie  domain.MovieCard
 		)
 
 		if err = rows.Scan(
 			&title,
+			&rating,
 			&movie.ID,
 			&movie.Title,
 			&movie.PictureFileKey,
@@ -215,6 +281,10 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, e
 			selection = &domain.Selection{
 				Title:  title,
 				Movies: make([]domain.MovieCard, 0),
+			}
+			if rating.Valid {
+				selectionRating := rating.Float64
+				selection.Rating = &selectionRating
 			}
 			selectionMap[title] = selection
 			order = append(order, title)
@@ -526,6 +596,31 @@ func (r *MovieRepo) getMovieEpisodes(ctx context.Context, movieID int64) ([]doma
 	}
 
 	return result, nil
+}
+
+func (r *MovieRepo) getMovieExternalRatings(ctx context.Context, movieID int64) ([]domain.ExternalRating, error) {
+	rows, err := r.db.Query(ctx, sqlGetMovieExternalRatingsByID, movieID)
+	if err != nil {
+		return nil, fmt.Errorf("get movie external ratings: %w", err)
+	}
+	defer rows.Close()
+
+	ratings := make([]domain.ExternalRating, 0)
+
+	for rows.Next() {
+		var rating domain.ExternalRating
+		if err = rows.Scan(&rating.Source, &rating.Value, &rating.Scale); err != nil {
+			return nil, fmt.Errorf("scan movie external rating: %w", err)
+		}
+
+		ratings = append(ratings, rating)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate movie external ratings: %w", err)
+	}
+
+	return ratings, nil
 }
 
 func (r *MovieRepo) getGenreMovies(ctx context.Context, genreID int64) ([]domain.MovieCard, error) {

@@ -18,6 +18,16 @@ type UserRepo interface {
 	UpdateBirthdate(ctx context.Context, userID int64, birthdate *time.Time) (*domain.User, error)
 	UpdateAvatarFileKey(ctx context.Context, userID int64, avatarFileKey *string) (*domain.User, error)
 	AddMovieToFavorites(ctx context.Context, userID, movieID int64) error
+	SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) error
+	SetMovieReview(
+		ctx context.Context,
+		userID, movieID int64,
+		rating *float64,
+		comment *string,
+	) (domain.MovieReviewResponse, error)
+	DeleteMovieReview(ctx context.Context, userID, movieID int64) error
+	SetReviewReaction(ctx context.Context, userID, reviewID int64, reaction string) error
+	DeleteReviewReaction(ctx context.Context, userID, reviewID int64) error
 	ToggleFavorite(ctx context.Context, userID, movieID int64) (bool, error)
 	GetFavorites(ctx context.Context, userID int64, limit, offset int32) ([]int64, int32, error)
 	AddFriend(ctx context.Context, userID int64, friendID int64) error

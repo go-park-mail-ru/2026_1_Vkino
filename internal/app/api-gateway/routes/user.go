@@ -128,6 +128,46 @@ func (c grpcUserClient) AddMovieToFavorites(
 	return c.user.AddMovieToFavorites(ctx, in, opts...)
 }
 
+func (c grpcUserClient) SetMovieRating(
+	ctx context.Context,
+	in *userv1.SetMovieRatingRequest,
+	opts ...grpc.CallOption,
+) (*userv1.SetMovieRatingResponse, error) {
+	return c.user.SetMovieRating(ctx, in, opts...)
+}
+
+func (c grpcUserClient) SetMovieReview(
+	ctx context.Context,
+	in *userv1.SetMovieReviewRequest,
+	opts ...grpc.CallOption,
+) (*userv1.SetMovieReviewResponse, error) {
+	return c.user.SetMovieReview(ctx, in, opts...)
+}
+
+func (c grpcUserClient) DeleteMovieReview(
+	ctx context.Context,
+	in *userv1.DeleteMovieReviewRequest,
+	opts ...grpc.CallOption,
+) (*userv1.DeleteMovieReviewResponse, error) {
+	return c.user.DeleteMovieReview(ctx, in, opts...)
+}
+
+func (c grpcUserClient) SetReviewReaction(
+	ctx context.Context,
+	in *userv1.SetReviewReactionRequest,
+	opts ...grpc.CallOption,
+) (*userv1.SetReviewReactionResponse, error) {
+	return c.user.SetReviewReaction(ctx, in, opts...)
+}
+
+func (c grpcUserClient) DeleteReviewReaction(
+	ctx context.Context,
+	in *userv1.DeleteReviewReactionRequest,
+	opts ...grpc.CallOption,
+) (*userv1.DeleteReviewReactionResponse, error) {
+	return c.user.DeleteReviewReaction(ctx, in, opts...)
+}
+
 func (c grpcUserClient) ToggleFavorite(
 	ctx context.Context,
 	in *userv1.ToggleFavoriteRequest,
@@ -272,6 +312,28 @@ type updateProfilePayload struct {
 	Birthdate         string
 	Avatar            []byte
 	AvatarContentType string
+}
+
+type setMovieRatingRequest struct {
+	Rating float64 `json:"rating"`
+}
+
+type setMovieReviewRequest struct {
+	Rating  *float64 `json:"rating"`
+	Comment *string  `json:"comment,omitempty"`
+	Message *string  `json:"message,omitempty"`
+}
+
+type setReviewReactionRequest struct {
+	Reaction string `json:"reaction"`
+}
+
+func (r setMovieReviewRequest) reviewComment() *string {
+	if r.Message != nil {
+		return r.Message
+	}
+
+	return r.Comment
 }
 
 func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updateProfilePayload, bool) {
@@ -524,6 +586,134 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 			}
 
 			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		route("PUT /user/ratings/{id}", func(w http.ResponseWriter, r *http.Request) {
+			movieID, ok := parsePathID(w, r, "invalid movie id")
+			if !ok {
+				return
+			}
+
+			var req setMovieRatingRequest
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.SetMovieRating(r.Context(), &userv1.SetMovieRatingRequest{
+				MovieId: movieID,
+				Rating:  req.Rating,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		route("PUT /user/reviews/{id}", func(w http.ResponseWriter, r *http.Request) {
+			movieID, ok := parsePathID(w, r, "invalid movie id")
+			if !ok {
+				return
+			}
+
+			var req setMovieReviewRequest
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.SetMovieReview(r.Context(), &userv1.SetMovieReviewRequest{
+				MovieId: movieID,
+				Rating:  req.Rating,
+				Comment: req.reviewComment(),
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		route("DELETE /user/reviews/{id}", func(w http.ResponseWriter, r *http.Request) {
+			movieID, ok := parsePathID(w, r, "invalid movie id")
+			if !ok {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			_, err := userClient.DeleteMovieReview(r.Context(), &userv1.DeleteMovieReviewRequest{
+				MovieId: movieID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, map[string]bool{
+				"success": true,
+			})
+		}),
+
+		route("PUT /user/review-reactions/{id}", func(w http.ResponseWriter, r *http.Request) {
+			reviewID, ok := parsePathID(w, r, "invalid review id")
+			if !ok {
+				return
+			}
+
+			var req setReviewReactionRequest
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			resp, err := userClient.SetReviewReaction(r.Context(), &userv1.SetReviewReactionRequest{
+				ReviewId: reviewID,
+				Reaction: req.Reaction,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		route("DELETE /user/review-reactions/{id}", func(w http.ResponseWriter, r *http.Request) {
+			reviewID, ok := parsePathID(w, r, "invalid review id")
+			if !ok {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancel()
+
+			_, err := userClient.DeleteReviewReaction(r.Context(), &userv1.DeleteReviewReactionRequest{
+				ReviewId: reviewID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, map[string]bool{
+				"success": true,
+			})
 		}),
 
 		route("GET /user/favorites", func(w http.ResponseWriter, r *http.Request) {

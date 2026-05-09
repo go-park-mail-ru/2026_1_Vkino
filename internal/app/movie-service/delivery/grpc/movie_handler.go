@@ -41,6 +41,8 @@ func (s *Server) GetMovieByID(
 		Actors:             mapActorShorts(movie.Actors),
 		Episodes:           mapEpisodeShorts(movie.Episodes),
 		IsFavorite:         movie.IsFavorite,
+		ExternalRatings:    mapExternalRatings(movie.ExternalRatings),
+		Reviews:            mapMovieReviews(movie.Reviews),
 	}, nil
 }
 
@@ -120,6 +122,7 @@ func (s *Server) GetSelectionByTitle(
 	return &moviev1.GetSelectionByTitleResponse{
 		Title:  selection.Title,
 		Movies: mapMovieCards(selection.Movies),
+		Rating: selection.Rating,
 	}, nil
 }
 
@@ -337,6 +340,48 @@ func mapSelections(selections []domain.SelectionResponse) []*moviev1.Selection {
 		result = append(result, &moviev1.Selection{
 			Title:  selection.Title,
 			Movies: mapMovieCards(selection.Movies),
+			Rating: selection.Rating,
+		})
+	}
+
+	return result
+}
+
+func mapExternalRatings(ratings []domain.ExternalRating) []*moviev1.ExternalRating {
+	if len(ratings) == 0 {
+		return []*moviev1.ExternalRating{}
+	}
+
+	result := make([]*moviev1.ExternalRating, 0, len(ratings))
+	for _, rating := range ratings {
+		result = append(result, &moviev1.ExternalRating{
+			Source: rating.Source,
+			Value:  rating.Value,
+			Scale:  rating.Scale,
+		})
+	}
+
+	return result
+}
+
+func mapMovieReviews(reviews []domain.MovieReviewDTO) []*moviev1.MovieReview {
+	if len(reviews) == 0 {
+		return []*moviev1.MovieReview{}
+	}
+
+	result := make([]*moviev1.MovieReview, 0, len(reviews))
+	for _, review := range reviews {
+		result = append(result, &moviev1.MovieReview{
+			Id:             review.ID,
+			AuthorUserId:   review.AuthorUserID,
+			Author:         review.Author,
+			Rating:         review.Rating,
+			Comment:        review.Comment,
+			LikesCount:     review.LikesCount,
+			DislikesCount:  review.DislikesCount,
+			ViewerReaction: review.ViewerReaction,
+			CreatedAt:      review.CreatedAt,
+			UpdatedAt:      review.UpdatedAt,
 		})
 	}
 

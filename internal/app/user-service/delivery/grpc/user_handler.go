@@ -158,6 +158,100 @@ func (s *Server) AddMovieToFavorites(
 	}, nil
 }
 
+func (s *Server) SetMovieRating(
+	ctx context.Context,
+	req *userv1.SetMovieRatingRequest,
+) (*userv1.SetMovieRatingResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ratedMovie, err := s.usecase.SetMovieRating(ctx, authCtx.UserID, req.GetMovieId(), req.GetRating())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &userv1.SetMovieRatingResponse{
+		MovieId: ratedMovie.MovieID,
+		Rating:  ratedMovie.Rating,
+	}, nil
+}
+
+func (s *Server) SetMovieReview(
+	ctx context.Context,
+	req *userv1.SetMovieReviewRequest,
+) (*userv1.SetMovieReviewResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	review, err := s.usecase.SetMovieReview(ctx, authCtx.UserID, req.GetMovieId(), req.Rating, req.Comment)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &userv1.SetMovieReviewResponse{
+		ReviewId: review.ReviewID,
+		MovieId:  review.MovieID,
+		Rating:   review.Rating,
+		Comment:  review.Comment,
+	}, nil
+}
+
+func (s *Server) DeleteMovieReview(
+	ctx context.Context,
+	req *userv1.DeleteMovieReviewRequest,
+) (*userv1.DeleteMovieReviewResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = s.usecase.DeleteMovieReview(ctx, authCtx.UserID, req.GetMovieId()); err != nil {
+		return nil, mapError(err)
+	}
+
+	return &userv1.DeleteMovieReviewResponse{Success: true}, nil
+}
+
+func (s *Server) SetReviewReaction(
+	ctx context.Context,
+	req *userv1.SetReviewReactionRequest,
+) (*userv1.SetReviewReactionResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	reaction, err := s.usecase.SetReviewReaction(ctx, authCtx.UserID, req.GetReviewId(), req.GetReaction())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &userv1.SetReviewReactionResponse{
+		ReviewId: reaction.ReviewID,
+		Reaction: reaction.Reaction,
+	}, nil
+}
+
+func (s *Server) DeleteReviewReaction(
+	ctx context.Context,
+	req *userv1.DeleteReviewReactionRequest,
+) (*userv1.DeleteReviewReactionResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = s.usecase.DeleteReviewReaction(ctx, authCtx.UserID, req.GetReviewId()); err != nil {
+		return nil, mapError(err)
+	}
+
+	return &userv1.DeleteReviewReactionResponse{Success: true}, nil
+}
+
 func (s *Server) ToggleFavorite(
 	ctx context.Context,
 	req *userv1.ToggleFavoriteRequest,

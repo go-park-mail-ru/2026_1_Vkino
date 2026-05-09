@@ -70,6 +70,35 @@ func (mr *MockUserRepoMockRecorder) AddMovieToFavorites(ctx, userID, movieID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMovieToFavorites", reflect.TypeOf((*MockUserRepo)(nil).AddMovieToFavorites), ctx, userID, movieID)
 }
 
+// SetMovieRating mocks base method.
+func (m *MockUserRepo) SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetMovieRating", ctx, userID, movieID, rating)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetMovieRating indicates an expected call of SetMovieRating.
+func (mr *MockUserRepoMockRecorder) SetMovieRating(ctx, userID, movieID, rating any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieRating", reflect.TypeOf((*MockUserRepo)(nil).SetMovieRating), ctx, userID, movieID, rating)
+}
+
+// SetMovieReview mocks base method.
+func (m *MockUserRepo) SetMovieReview(ctx context.Context, userID, movieID int64, rating *float64, comment *string) (domain.MovieReviewResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetMovieReview", ctx, userID, movieID, rating, comment)
+	ret0, _ := ret[0].(domain.MovieReviewResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetMovieReview indicates an expected call of SetMovieReview.
+func (mr *MockUserRepoMockRecorder) SetMovieReview(ctx, userID, movieID, rating, comment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieReview", reflect.TypeOf((*MockUserRepo)(nil).SetMovieReview), ctx, userID, movieID, rating, comment)
+}
+
 // DeleteFriend mocks base method.
 func (m *MockUserRepo) DeleteFriend(ctx context.Context, userID, friendID int64) error {
 	m.ctrl.T.Helper()
@@ -96,6 +125,34 @@ func (m *MockUserRepo) DeleteOutgoingFriendRequest(ctx context.Context, requestI
 func (mr *MockUserRepoMockRecorder) DeleteOutgoingFriendRequest(ctx, requestID, fromUserID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOutgoingFriendRequest", reflect.TypeOf((*MockUserRepo)(nil).DeleteOutgoingFriendRequest), ctx, requestID, fromUserID)
+}
+
+// DeleteMovieReview mocks base method.
+func (m *MockUserRepo) DeleteMovieReview(ctx context.Context, userID, movieID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMovieReview", ctx, userID, movieID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteMovieReview indicates an expected call of DeleteMovieReview.
+func (mr *MockUserRepoMockRecorder) DeleteMovieReview(ctx, userID, movieID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMovieReview", reflect.TypeOf((*MockUserRepo)(nil).DeleteMovieReview), ctx, userID, movieID)
+}
+
+// DeleteReviewReaction mocks base method.
+func (m *MockUserRepo) DeleteReviewReaction(ctx context.Context, userID, reviewID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteReviewReaction", ctx, userID, reviewID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteReviewReaction indicates an expected call of DeleteReviewReaction.
+func (mr *MockUserRepoMockRecorder) DeleteReviewReaction(ctx, userID, reviewID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReviewReaction", reflect.TypeOf((*MockUserRepo)(nil).DeleteReviewReaction), ctx, userID, reviewID)
 }
 
 // GetFavorites mocks base method.
@@ -217,6 +274,20 @@ func (m *MockUserRepo) SearchUsersByEmail(ctx context.Context, userID int64, que
 func (mr *MockUserRepoMockRecorder) SearchUsersByEmail(ctx, userID, query any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUsersByEmail", reflect.TypeOf((*MockUserRepo)(nil).SearchUsersByEmail), ctx, userID, query)
+}
+
+// SetReviewReaction mocks base method.
+func (m *MockUserRepo) SetReviewReaction(ctx context.Context, userID, reviewID int64, reaction string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetReviewReaction", ctx, userID, reviewID, reaction)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetReviewReaction indicates an expected call of SetReviewReaction.
+func (mr *MockUserRepoMockRecorder) SetReviewReaction(ctx, userID, reviewID, reaction any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetReviewReaction", reflect.TypeOf((*MockUserRepo)(nil).SetReviewReaction), ctx, userID, reviewID, reaction)
 }
 
 // SendFriendRequest mocks base method.
@@ -364,18 +435,33 @@ func (mr *MockSupportRepoMockRecorder) GetTicketMessages(ctx, ticketID any) *gom
 }
 
 // GetTicketStatistics mocks base method.
-func (m *MockSupportRepo) GetTicketStatistics(ctx context.Context) (*domain.SupportTicketStatisticsResponse, error) {
+func (m *MockSupportRepo) GetTicketStatistics(ctx context.Context, allowedCategories []string) (*domain.SupportTicketStatisticsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTicketStatistics", ctx)
+	ret := m.ctrl.Call(m, "GetTicketStatistics", ctx, allowedCategories)
 	ret0, _ := ret[0].(*domain.SupportTicketStatisticsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTicketStatistics indicates an expected call of GetTicketStatistics.
-func (mr *MockSupportRepoMockRecorder) GetTicketStatistics(ctx any) *gomock.Call {
+func (mr *MockSupportRepoMockRecorder) GetTicketStatistics(ctx, allowedCategories any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTicketStatistics", reflect.TypeOf((*MockSupportRepo)(nil).GetTicketStatistics), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTicketStatistics", reflect.TypeOf((*MockSupportRepo)(nil).GetTicketStatistics), ctx, allowedCategories)
+}
+
+// HasTicketFile mocks base method.
+func (m *MockSupportRepo) HasTicketFile(ctx context.Context, ticketID int64, fileKey string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasTicketFile", ctx, ticketID, fileKey)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HasTicketFile indicates an expected call of HasTicketFile.
+func (mr *MockSupportRepoMockRecorder) HasTicketFile(ctx, ticketID, fileKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasTicketFile", reflect.TypeOf((*MockSupportRepo)(nil).HasTicketFile), ctx, ticketID, fileKey)
 }
 
 // GetTickets mocks base method.

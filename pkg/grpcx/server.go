@@ -2,8 +2,10 @@ package grpcx
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
+	"syscall"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx/interceptor"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
@@ -12,11 +14,17 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+var ErrListenPermissionDenied = errors.New("listen permission denied")
+
 func Listen(port int) (net.Listener, error) {
 	addr := fmt.Sprintf(":%d", port)
 
 	lis, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", addr)
 	if err != nil {
+		if errors.Is(err, syscall.EPERM) || errors.Is(err, syscall.EACCES) {
+			return nil, fmt.Errorf("%w: %s: %w", ErrListenPermissionDenied, addr, err)
+		}
+
 		return nil, fmt.Errorf("listen grpc on %s: %w", addr, err)
 	}
 

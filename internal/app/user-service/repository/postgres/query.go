@@ -62,6 +62,80 @@ const (
 			is_favorite = excluded.is_favorite
 	`
 
+	sqlUpsertUserMovieRating = `
+		insert into user_interaction (user_id, movie_id, rating)
+		select $1, m.id, $3
+		from movie m
+		where m.id = $2
+		on conflict (movie_id, user_id)
+		do update set
+			rating = excluded.rating,
+			updated_at = now()
+	`
+
+	sqlUpsertUserMovieReview = `
+		insert into user_interaction (user_id, movie_id, rating, comment)
+		select $1, m.id, $3, $4
+		from movie m
+		where m.id = $2
+		on conflict (movie_id, user_id)
+		do update set
+			rating = excluded.rating,
+			comment = excluded.comment,
+			updated_at = now()
+		returning id, movie_id, rating::double precision, comment
+	`
+
+	sqlDeleteReviewReactionsByReviewID = `
+		delete from user_interaction_review_reaction
+		where review_id = $1
+	`
+
+	sqlGetReviewByUserAndMovie = `
+		select id, is_favorite
+		from user_interaction
+		where user_id = $1 and movie_id = $2
+	`
+
+	sqlDeleteUserMovieReviewRow = `
+		delete from user_interaction
+		where id = $1
+	`
+
+	sqlClearUserMovieReview = `
+		update user_interaction
+		set rating = null,
+			comment = null,
+			updated_at = now()
+		where id = $1
+	`
+
+	sqlSetReviewReaction = `
+		insert into user_interaction_review_reaction (review_id, user_id, reaction)
+		select ui.id, $1, $3
+		from user_interaction ui
+		where ui.id = $2
+			and ui.user_id <> $1
+			and nullif(btrim(coalesce(ui.comment, '')), '') is not null
+		on conflict (review_id, user_id)
+		do update set
+			reaction = excluded.reaction,
+			updated_at = now()
+	`
+
+	sqlGetReviewOwner = `
+		select
+			ui.user_id,
+			nullif(btrim(coalesce(ui.comment, '')), '') is not null
+		from user_interaction ui
+		where ui.id = $1
+	`
+
+	sqlDeleteReviewReaction = `
+		delete from user_interaction_review_reaction
+		where review_id = $1 and user_id = $2
+	`
+
 	sqlToggleFavorite = `
 		with current as (
 			select is_favorite from user_interaction
