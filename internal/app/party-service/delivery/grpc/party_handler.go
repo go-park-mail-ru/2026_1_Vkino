@@ -273,15 +273,18 @@ func toProtoRoomEvent(item domain.RoomEvent) *partyv1.RoomEvent {
 	if item.Playback != nil {
 		result.Playback = toProtoPlaybackState(*item.Playback)
 	}
+
 	if item.Message != nil {
 		result.Message = toProtoRoomMessage(*item.Message)
 	}
+
 	if item.Poll != nil {
 		result.Poll = toProtoPoll(*item.Poll)
 	}
 	if item.Member != nil {
 		result.Member = toProtoRoomMember(*item.Member)
 	}
+
 	if item.Vote != nil {
 		result.Vote = &partyv1.PollVote{
 			PollId:   item.Vote.PollID,

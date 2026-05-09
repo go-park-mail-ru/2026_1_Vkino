@@ -28,6 +28,7 @@ func (b *RoomEventBroker) Publish(_ context.Context, event domain.RoomEvent) err
 	for _, ch := range roomSubs {
 		targets = append(targets, ch)
 	}
+
 	b.mu.RUnlock()
 
 	for _, ch := range targets {
@@ -54,6 +55,7 @@ func (b *RoomEventBroker) Subscribe(_ context.Context, roomID int64) (<-chan dom
 	if _, ok := b.subscribers[roomID]; !ok {
 		b.subscribers[roomID] = make(map[int64]chan domain.RoomEvent)
 	}
+
 	b.subscribers[roomID][subID] = ch
 	b.mu.Unlock()
 

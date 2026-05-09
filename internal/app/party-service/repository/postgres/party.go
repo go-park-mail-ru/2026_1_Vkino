@@ -362,6 +362,7 @@ func (r *PartyRepo) getRoomMembers(ctx context.Context, roomID int64) ([]domain.
 	defer rows.Close()
 
 	members := make([]domain.RoomMember, 0)
+
 	for rows.Next() {
 		var member domain.RoomMember
 		if err = rows.Scan(
@@ -415,6 +416,7 @@ func (r *PartyRepo) getRoomMessages(ctx context.Context, roomID int64) ([]domain
 	defer rows.Close()
 
 	messages := make([]domain.RoomMessage, 0)
+
 	for rows.Next() {
 		var message domain.RoomMessage
 		if err = rows.Scan(

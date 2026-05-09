@@ -23,6 +23,8 @@ psql \
   -v user_password="${VKINO_USER_DB_PASSWORD}" \
   -v movie_user="${VKINO_MOVIE_DB_USER}" \
   -v movie_password="${VKINO_MOVIE_DB_PASSWORD}" \
+  -v party_user="${VKINO_PARTY_DB_USER}" \
+  -v party_password="${VKINO_PARTY_DB_PASSWORD}" \
   -v migrator_user="${VKINO_MIGRATOR_DB_USER}" \
   -v migrator_password="${VKINO_MIGRATOR_DB_PASSWORD}" \
   -v monitoring_user="${VKINO_MONITORING_DB_USER}" \

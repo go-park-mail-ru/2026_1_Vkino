@@ -38,6 +38,21 @@ SELECT format(
 )
 \gexec
 
+SELECT format('GRANT SELECT ON TABLE users TO %I', :'party_user')
+\gexec
+
+SELECT format(
+    'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE vkino_room, vkino_room_member, vkino_room_invite, vkino_room_playback_state TO %I',
+    :'party_user'
+)
+\gexec
+
+SELECT format(
+    'GRANT SELECT, INSERT ON TABLE vkino_room_chat_message, vkino_room_chat_bet, vkino_room_chat_bet_variant, vkino_room_chat_bet_answer TO %I',
+    :'party_user'
+)
+\gexec
+
 SELECT format('GRANT SELECT, INSERT, UPDATE ON TABLE watch_progress_episode TO %I', :'movie_user')
 \gexec
 
@@ -69,4 +84,7 @@ SELECT format('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO %I', :'u
 \gexec
 
 SELECT format('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO %I', :'movie_user')
+\gexec
+
+SELECT format('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO %I', :'party_user')
 \gexec
