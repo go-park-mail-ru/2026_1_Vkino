@@ -31,6 +31,7 @@ func TestAuthRoutes_SignUp(t *testing.T) {
 	rr := doRequest(handler, http.MethodPost, "/user/sign-up", bytes.NewReader([]byte(`{"email":"user@example.com","password":"pass"}`)))
 
 	res := rr.Result()
+
 	defer func() {
 		_ = res.Body.Close()
 	}()
@@ -115,6 +116,7 @@ func TestAuthRoutes_Refresh(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/user/refresh", nil)
 	req.AddCookie(&http.Cookie{Name: "refresh", Value: "refresh-token"})
+
 	rr := httptest.NewRecorder()
 
 	handler.ServeHTTP(rr, req)

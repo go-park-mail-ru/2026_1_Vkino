@@ -45,6 +45,7 @@ func TestSanitizeAvatarUploadPNG(t *testing.T) {
 	}
 
 	data := buf.Bytes()
+
 	cleaned, contentType, ext, err := SanitizeAvatarUpload(data, "image/png")
 	if err != nil {
 		t.Fatalf("sanitize error: %v", err)

@@ -61,6 +61,7 @@ func Run(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("init auth grpc client: %w", err)
 	}
+
 	defer func() {
 		_ = authConn.Close()
 	}()
@@ -72,6 +73,7 @@ func Run(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("init movie grpc client: %w", err)
 	}
+
 	defer func() {
 		_ = movieConn.Close()
 	}()
@@ -83,11 +85,12 @@ func Run(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("init user grpc client: %w", err)
 	}
+
 	defer func() {
 		_ = userConn.Close()
 	}()
 
-	partyUC := partyusecase.New()
+	partyUC := partyusecase.New(nil, nil)
 
 	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {

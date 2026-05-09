@@ -28,6 +28,7 @@ func TestAccessTokenFromIncomingContext(t *testing.T) {
 	t.Parallel()
 
 	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(MetadataKey, "Bearer token"))
+
 	got, err := AccessTokenFromIncomingContext(ctx)
 	if err != nil || got != "token" {
 		t.Fatalf("expected token, got %q, err=%v", got, err)
@@ -38,6 +39,7 @@ func TestAppendOutgoing(t *testing.T) {
 	t.Parallel()
 
 	ctx := AppendOutgoing(context.Background(), "Bearer token")
+
 	md, ok := metadata.FromOutgoingContext(ctx)
 	if !ok {
 		t.Fatal("expected metadata")

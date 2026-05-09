@@ -31,10 +31,12 @@ func TestContextWithID(t *testing.T) {
 	t.Parallel()
 
 	ctx := ContextWithID(nil, "custom")
+
 	got, ok := FromContext(ctx)
 	if !ok {
 		t.Fatal("expected id in context")
 	}
+
 	if got != "custom" {
 		t.Fatalf("expected custom id, got %q", got)
 	}

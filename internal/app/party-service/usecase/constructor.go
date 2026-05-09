@@ -1,7 +1,10 @@
 package usecase
 
-type service struct{}
+import "github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/repository"
 
-func New() Usecase {
-	return &service{}
+func New(partyRepo repository.PartyRepo, eventBroker repository.RoomEventBroker) Usecase {
+	return &service{
+		partyRepo:   partyRepo,
+		eventBroker: eventBroker,
+	}
 }

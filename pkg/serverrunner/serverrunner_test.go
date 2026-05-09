@@ -25,9 +25,11 @@ func TestRunHTTPContextCancel(t *testing.T) {
 
 	err := RunHTTP(ctx, nil, "svc", func() error {
 		<-runCh
+
 		return http.ErrServerClosed
 	}, func(context.Context) error {
 		close(runCh)
+
 		return nil
 	})
 
@@ -46,6 +48,7 @@ func TestRunGRPCContextCancel(t *testing.T) {
 
 	err := RunGRPC(ctx, nil, "svc", func() error {
 		<-runCh
+
 		return nil
 	}, func() {
 		close(runCh)
@@ -66,7 +69,6 @@ func TestRunGRPCServeError(t *testing.T) {
 	err := RunGRPC(ctx, nil, "svc", func() error {
 		return expected
 	}, func() {}, func() {})
-
 	if err == nil {
 		t.Fatal("expected error")
 	}

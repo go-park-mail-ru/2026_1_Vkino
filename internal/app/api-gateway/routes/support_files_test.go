@@ -18,10 +18,12 @@ func newMultipartFileRequest(t *testing.T, path, field, filename, contentType st
 	t.Helper()
 
 	var body bytes.Buffer
+
 	writer := multipart.NewWriter(&body)
 
 	header := make(textproto.MIMEHeader)
 	header.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, field, filename))
+
 	if contentType != "" {
 		header.Set("Content-Type", contentType)
 	}

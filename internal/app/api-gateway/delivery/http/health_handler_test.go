@@ -19,6 +19,7 @@ func TestHealthHandler(t *testing.T) {
 	h.Health(rr, req)
 
 	res := rr.Result()
+
 	defer func() {
 		_ = res.Body.Close()
 	}()

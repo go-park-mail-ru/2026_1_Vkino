@@ -12,6 +12,7 @@ func TestGenerateAndParseToken(t *testing.T) {
 	t.Parallel()
 
 	svc := New(Config{Secret: "secret", Issuer: "issuer"})
+
 	token, err := svc.GenerateToken("user@example.com", 42, time.Minute)
 	if err != nil {
 		t.Fatalf("GenerateToken error: %v", err)
@@ -34,6 +35,7 @@ func TestParseTokenInvalidMethod(t *testing.T) {
 
 	claims := CustomClaims{RegisteredClaims: jwt.RegisteredClaims{Subject: "user@example.com"}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS384, claims)
+
 	signed, err := token.SignedString([]byte("secret"))
 	if err != nil {
 		t.Fatalf("sign token: %v", err)
@@ -52,6 +54,7 @@ func TestParseTokenEmptySubject(t *testing.T) {
 
 	claims := CustomClaims{RegisteredClaims: jwt.RegisteredClaims{Subject: ""}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	signed, err := token.SignedString([]byte("secret"))
 	if err != nil {
 		t.Fatalf("sign token: %v", err)
