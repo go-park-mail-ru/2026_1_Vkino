@@ -70,12 +70,30 @@ const (
 	`
 
 	sqlGetMovieReviewsByMovieID = `
-		with reaction_counts as (
+		with target_reviews as (
+			select
+				ui.id,
+				ui.user_id,
+				u.email,
+				ui.rating::double precision as rating,
+				coalesce(ui.comment, '') as comment,
+				ui.created_at,
+				ui.updated_at
+			from user_interaction ui
+			join users u on u.id = ui.user_id
+			where ui.movie_id = $1
+				and (
+					ui.rating is not null
+					or nullif(btrim(coalesce(ui.comment, '')), '') is not null
+				)
+		),
+		reaction_counts as (
 			select
 				uir.review_id,
 				count(*) filter (where uir.reaction = 'like') as likes_count,
 				count(*) filter (where uir.reaction = 'dislike') as dislikes_count
 			from user_interaction_review_reaction uir
+			join target_reviews tr on tr.id = uir.review_id
 			group by uir.review_id
 		),
 		viewer_reactions as (
@@ -83,29 +101,24 @@ const (
 				uir.review_id,
 				uir.reaction
 			from user_interaction_review_reaction uir
+			join target_reviews tr on tr.id = uir.review_id
 			where uir.user_id = $2
 		)
 		select
-			ui.id,
-			ui.user_id,
-			u.email,
-			ui.rating::double precision,
-			coalesce(ui.comment, ''),
+			tr.id,
+			tr.user_id,
+			tr.email,
+			tr.rating,
+			tr.comment,
 			coalesce(rc.likes_count, 0),
 			coalesce(rc.dislikes_count, 0),
 			coalesce(vr.reaction, ''),
-			ui.created_at,
-			ui.updated_at
-		from user_interaction ui
-		join users u on u.id = ui.user_id
-		left join reaction_counts rc on rc.review_id = ui.id
-		left join viewer_reactions vr on vr.review_id = ui.id
-		where ui.movie_id = $1
-			and (
-				ui.rating is not null
-				or nullif(btrim(coalesce(ui.comment, '')), '') is not null
-			)
-		order by ui.updated_at desc, ui.id desc
+			tr.created_at,
+			tr.updated_at
+		from target_reviews tr
+		left join reaction_counts rc on rc.review_id = tr.id
+		left join viewer_reactions vr on vr.review_id = tr.id
+		order by tr.updated_at desc, tr.id desc
 	`
 
 	sqlGetActorBaseByID = `
@@ -161,64 +174,90 @@ const (
 	`
 
 	sqlGetSelectionMoviesByTitle = `
-		with movie_user_ratings as (
+		with selected_movies as (
+			select
+				s.id as selection_id,
+				s.title,
+				ms.id as selection_movie_id,
+				ms.movie_id
+			from selection s
+			join movie_to_selection ms on ms.selection_id = s.id
+			where s.title = $1
+		),
+		selected_movie_ids as (
+			select distinct sm.movie_id
+			from selected_movies sm
+		),
+		movie_user_ratings as (
 			select
 				ui.movie_id,
 				avg(ui.rating)::double precision as avg_rating
-			from user_interaction ui
+			from selected_movie_ids sm
+			join user_interaction ui on ui.movie_id = sm.movie_id
 			where ui.rating is not null
 			group by ui.movie_id
 		),
 		selection_ratings as (
 			select
-				ms.selection_id,
+				sm.selection_id,
 				round(avg(mur.avg_rating)::numeric, 2)::double precision as rating
-			from movie_to_selection ms
-			left join movie_user_ratings mur on mur.movie_id = ms.movie_id
-			group by ms.selection_id
+			from selected_movies sm
+			left join movie_user_ratings mur on mur.movie_id = sm.movie_id
+			group by sm.selection_id
 		)
 		select
-			s.title,
+			sm.title,
 			sr.rating,
 			m.id,
 			m.title,
 			m.picture_file_key
-		from selection s
-		join movie_to_selection ms on ms.selection_id = s.id
-		join movie m on m.id = ms.movie_id
-		left join selection_ratings sr on sr.selection_id = s.id
-		where s.title = $1
-		order by ms.id
+		from selected_movies sm
+		join movie m on m.id = sm.movie_id
+		left join selection_ratings sr on sr.selection_id = sm.selection_id
+		order by sm.selection_movie_id
 	`
 
 	sqlGetAllSelectionMovies = `
-		with movie_user_ratings as (
+		with selected_movies as (
+			select
+				s.id as selection_id,
+				s.title,
+				ms.id as selection_movie_id,
+				ms.movie_id
+			from selection s
+			join movie_to_selection ms on ms.selection_id = s.id
+		),
+		selected_movie_ids as (
+			select distinct sm.movie_id
+			from selected_movies sm
+		),
+		movie_user_ratings as (
 			select
 				ui.movie_id,
 				avg(ui.rating)::double precision as avg_rating
-			from user_interaction ui
+			from selected_movie_ids sm
+			join user_interaction ui on ui.movie_id = sm.movie_id
 			where ui.rating is not null
 			group by ui.movie_id
 		),
 		selection_ratings as (
 			select
-				ms.selection_id,
+				sm.selection_id,
 				round(avg(mur.avg_rating)::numeric, 2)::double precision as rating
-			from movie_to_selection ms
-			left join movie_user_ratings mur on mur.movie_id = ms.movie_id
-			group by ms.selection_id
+			from selected_movies sm
+			left join movie_user_ratings mur on mur.movie_id = sm.movie_id
+			group by sm.selection_id
 		)
 		select
-			s.title,
+			sm.title,
 			sr.rating,
 			m.id,
 			m.title,
 			m.picture_file_key
-		from selection s
-		join movie_to_selection ms on ms.selection_id = s.id
-		join movie m on m.id = ms.movie_id
-		left join selection_ratings sr on sr.selection_id = s.id
-		order by s.id, ms.id
+		from selected_movies sm
+		join movie m on m.id = sm.movie_id
+		left join selection_ratings sr on sr.selection_id = sm.selection_id
+		order by sm.selection_id, sm.selection_movie_id
 	`
 
 	sqlSearchMovies = `

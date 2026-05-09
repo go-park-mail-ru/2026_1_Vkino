@@ -352,23 +352,25 @@ func (r *UserRepo) GetFavorites(ctx context.Context, userID int64, limit, offset
 	defer rows.Close()
 
 	movieIDs := make([]int64, 0, limit)
+	var total int32
 
 	for rows.Next() {
-		var movieID int64
-		if err := rows.Scan(&movieID); err != nil {
+		var (
+			movieID sql.NullInt64
+			count   int32
+		)
+		if err := rows.Scan(&movieID, &count); err != nil {
 			return nil, 0, fmt.Errorf("scan favorite movie id: %w", err)
 		}
 
-		movieIDs = append(movieIDs, movieID)
+		total = count
+		if movieID.Valid {
+			movieIDs = append(movieIDs, movieID.Int64)
+		}
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, 0, fmt.Errorf("iterate favorites: %w", err)
-	}
-
-	var total int32
-	if err := r.db.QueryRow(ctx, sqlCountFavorites, userID).Scan(&total); err != nil {
-		return nil, 0, fmt.Errorf("count favorites: %w", err)
 	}
 
 	return movieIDs, total, nil
