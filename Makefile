@@ -1,4 +1,4 @@
-.PHONY: init generate init-db
+.PHONY: init generate init-db run-build run-stop up down proto-gen
 
 PACKAGES_NO_MOCKS = $(shell go list ./... | grep -v '/mocks$$')
 PROTOC_PLUGIN_PATH := $(shell go env GOPATH)/bin
@@ -34,11 +34,12 @@ cover-total:
 	@go tool cover -func=coverage.filtered.out | grep total | awk '{print $$3}'
 
 run-build:
-	make proto-gen
+	$(MAKE) proto-gen
+	$(MAKE) init-db
 	docker compose -f deployments/dev/compose.yaml up --build
 
 run-stop:
-	docker compose -f deployments/dev/compose.yaml down
+	docker compose -f deployments/dev/compose.yaml down -v
 
 up:
 	docker compose -f deployments/dev/compose.yaml up

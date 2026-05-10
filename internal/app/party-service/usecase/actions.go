@@ -30,13 +30,17 @@ func (s *service) ApplyRoomAction(
 		return domain.PlaybackState{}, err
 	}
 
-	if room.HostUserID != userID {
-		return domain.PlaybackState{}, domain.ErrAccessDenied
-	}
-
 	action := strings.TrimSpace(strings.ToLower(req.Action))
 	if action == "" {
 		return domain.PlaybackState{}, domain.ErrInvalidAction
+	}
+
+	if !isRoomMember(room.Members, userID) {
+		return domain.PlaybackState{}, domain.ErrAccessDenied
+	}
+
+	if !isParticipantPlaybackAction(action) && room.HostUserID != userID {
+		return domain.PlaybackState{}, domain.ErrAccessDenied
 	}
 
 	state := room.Playback
@@ -44,11 +48,13 @@ func (s *service) ApplyRoomAction(
 
 	switch action {
 	case "play":
+		applyPlaybackRequest(&state, req)
 		state.Status = "playing"
 		if req.PositionSeconds >= 0 {
 			state.PositionSeconds = req.PositionSeconds
 		}
 	case "pause":
+		applyPlaybackRequest(&state, req)
 		state.Status = "paused"
 		if req.PositionSeconds >= 0 {
 			state.PositionSeconds = req.PositionSeconds
@@ -57,6 +63,7 @@ func (s *service) ApplyRoomAction(
 		if req.PositionSeconds < 0 {
 			return domain.PlaybackState{}, domain.ErrInvalidPlayback
 		}
+		applyPlaybackRequest(&state, req)
 		state.PositionSeconds = req.PositionSeconds
 	case "select_movie":
 		if req.MovieID <= 0 {
@@ -128,6 +135,30 @@ func (s *service) ApplyRoomAction(
 	}
 
 	return state, nil
+}
+
+func isParticipantPlaybackAction(action string) bool {
+	switch action {
+	case "play", "pause", "seek", "sync_state":
+		return true
+	default:
+		return false
+	}
+}
+
+func applyPlaybackRequest(state *domain.PlaybackState, req domain.ApplyRoomActionRequest) {
+	if req.MovieID > 0 {
+		state.MovieID = req.MovieID
+	}
+	if req.EpisodeID > 0 {
+		state.EpisodeID = req.EpisodeID
+	}
+	if strings.TrimSpace(req.PlaybackURL) != "" {
+		state.PlaybackURL = strings.TrimSpace(req.PlaybackURL)
+	}
+	if req.DurationSeconds > 0 {
+		state.DurationSeconds = req.DurationSeconds
+	}
 }
 
 func (s *service) SendRoomMessage(
