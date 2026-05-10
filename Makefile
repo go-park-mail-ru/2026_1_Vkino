@@ -38,7 +38,7 @@ run-build:
 	docker compose -f deployments/dev/compose.yaml up --build
 
 run-stop:
-	docker compose -f deployments/dev/compose.yaml down -v
+	docker compose -f deployments/dev/compose.yaml down
 
 up:
 	docker compose -f deployments/dev/compose.yaml up

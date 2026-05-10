@@ -20,21 +20,15 @@ func NewRoomEventBroker() *RoomEventBroker {
 	}
 }
 
-func (b *RoomEventBroker) Publish(_ context.Context, event domain.RoomEvent) error {
+func (b *RoomEventBroker) Publish(ctx context.Context, event domain.RoomEvent) error {
 	b.mu.RLock()
-	roomSubs := b.subscribers[event.RoomID]
+	defer b.mu.RUnlock()
 
-	targets := make([]chan domain.RoomEvent, 0, len(roomSubs))
-	for _, ch := range roomSubs {
-		targets = append(targets, ch)
-	}
-
-	b.mu.RUnlock()
-
-	for _, ch := range targets {
+	for _, ch := range b.subscribers[event.RoomID] {
 		select {
+		case <-ctx.Done():
+			return ctx.Err()
 		case ch <- event:
-		default:
 		}
 	}
 

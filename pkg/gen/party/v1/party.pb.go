@@ -509,6 +509,462 @@ func (x *DeleteRoomResponse) GetSuccess() bool {
 	return false
 }
 
+type ApplyRoomActionRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	RoomId          int64                  `protobuf:"varint,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	Action          string                 `protobuf:"bytes,2,opt,name=action,proto3" json:"action,omitempty"`
+	MovieId         int64                  `protobuf:"varint,3,opt,name=movie_id,json=movieId,proto3" json:"movie_id,omitempty"`
+	EpisodeId       int64                  `protobuf:"varint,4,opt,name=episode_id,json=episodeId,proto3" json:"episode_id,omitempty"`
+	PlaybackUrl     string                 `protobuf:"bytes,5,opt,name=playback_url,json=playbackUrl,proto3" json:"playback_url,omitempty"`
+	DurationSeconds int64                  `protobuf:"varint,6,opt,name=duration_seconds,json=durationSeconds,proto3" json:"duration_seconds,omitempty"`
+	PositionSeconds int64                  `protobuf:"varint,7,opt,name=position_seconds,json=positionSeconds,proto3" json:"position_seconds,omitempty"`
+	Status          string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ApplyRoomActionRequest) Reset() {
+	*x = ApplyRoomActionRequest{}
+	mi := &file_party_v1_party_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApplyRoomActionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyRoomActionRequest) ProtoMessage() {}
+
+func (x *ApplyRoomActionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_party_v1_party_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyRoomActionRequest.ProtoReflect.Descriptor instead.
+func (*ApplyRoomActionRequest) Descriptor() ([]byte, []int) {
+	return file_party_v1_party_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ApplyRoomActionRequest) GetRoomId() int64 {
+	if x != nil {
+		return x.RoomId
+	}
+	return 0
+}
+
+func (x *ApplyRoomActionRequest) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *ApplyRoomActionRequest) GetMovieId() int64 {
+	if x != nil {
+		return x.MovieId
+	}
+	return 0
+}
+
+func (x *ApplyRoomActionRequest) GetEpisodeId() int64 {
+	if x != nil {
+		return x.EpisodeId
+	}
+	return 0
+}
+
+func (x *ApplyRoomActionRequest) GetPlaybackUrl() string {
+	if x != nil {
+		return x.PlaybackUrl
+	}
+	return ""
+}
+
+func (x *ApplyRoomActionRequest) GetDurationSeconds() int64 {
+	if x != nil {
+		return x.DurationSeconds
+	}
+	return 0
+}
+
+func (x *ApplyRoomActionRequest) GetPositionSeconds() int64 {
+	if x != nil {
+		return x.PositionSeconds
+	}
+	return 0
+}
+
+func (x *ApplyRoomActionRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type ApplyRoomActionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Playback      *PlaybackState         `protobuf:"bytes,1,opt,name=playback,proto3" json:"playback,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApplyRoomActionResponse) Reset() {
+	*x = ApplyRoomActionResponse{}
+	mi := &file_party_v1_party_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApplyRoomActionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyRoomActionResponse) ProtoMessage() {}
+
+func (x *ApplyRoomActionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_party_v1_party_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyRoomActionResponse.ProtoReflect.Descriptor instead.
+func (*ApplyRoomActionResponse) Descriptor() ([]byte, []int) {
+	return file_party_v1_party_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ApplyRoomActionResponse) GetPlayback() *PlaybackState {
+	if x != nil {
+		return x.Playback
+	}
+	return nil
+}
+
+type SendRoomMessageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        int64                  `protobuf:"varint,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendRoomMessageRequest) Reset() {
+	*x = SendRoomMessageRequest{}
+	mi := &file_party_v1_party_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendRoomMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendRoomMessageRequest) ProtoMessage() {}
+
+func (x *SendRoomMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_party_v1_party_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendRoomMessageRequest.ProtoReflect.Descriptor instead.
+func (*SendRoomMessageRequest) Descriptor() ([]byte, []int) {
+	return file_party_v1_party_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SendRoomMessageRequest) GetRoomId() int64 {
+	if x != nil {
+		return x.RoomId
+	}
+	return 0
+}
+
+func (x *SendRoomMessageRequest) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+type SendRoomMessageResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       *RoomMessage           `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendRoomMessageResponse) Reset() {
+	*x = SendRoomMessageResponse{}
+	mi := &file_party_v1_party_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendRoomMessageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendRoomMessageResponse) ProtoMessage() {}
+
+func (x *SendRoomMessageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_party_v1_party_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendRoomMessageResponse.ProtoReflect.Descriptor instead.
+func (*SendRoomMessageResponse) Descriptor() ([]byte, []int) {
+	return file_party_v1_party_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SendRoomMessageResponse) GetMessage() *RoomMessage {
+	if x != nil {
+		return x.Message
+	}
+	return nil
+}
+
+type CreateRoomPollRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        int64                  `protobuf:"varint,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	Question      string                 `protobuf:"bytes,2,opt,name=question,proto3" json:"question,omitempty"`
+	Options       []string               `protobuf:"bytes,3,rep,name=options,proto3" json:"options,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateRoomPollRequest) Reset() {
+	*x = CreateRoomPollRequest{}
+	mi := &file_party_v1_party_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateRoomPollRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateRoomPollRequest) ProtoMessage() {}
+
+func (x *CreateRoomPollRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_party_v1_party_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateRoomPollRequest.ProtoReflect.Descriptor instead.
+func (*CreateRoomPollRequest) Descriptor() ([]byte, []int) {
+	return file_party_v1_party_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CreateRoomPollRequest) GetRoomId() int64 {
+	if x != nil {
+		return x.RoomId
+	}
+	return 0
+}
+
+func (x *CreateRoomPollRequest) GetQuestion() string {
+	if x != nil {
+		return x.Question
+	}
+	return ""
+}
+
+func (x *CreateRoomPollRequest) GetOptions() []string {
+	if x != nil {
+		return x.Options
+	}
+	return nil
+}
+
+type CreateRoomPollResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Poll          *Poll                  `protobuf:"bytes,1,opt,name=poll,proto3" json:"poll,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateRoomPollResponse) Reset() {
+	*x = CreateRoomPollResponse{}
+	mi := &file_party_v1_party_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateRoomPollResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateRoomPollResponse) ProtoMessage() {}
+
+func (x *CreateRoomPollResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_party_v1_party_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateRoomPollResponse.ProtoReflect.Descriptor instead.
+func (*CreateRoomPollResponse) Descriptor() ([]byte, []int) {
+	return file_party_v1_party_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CreateRoomPollResponse) GetPoll() *Poll {
+	if x != nil {
+		return x.Poll
+	}
+	return nil
+}
+
+type VoteRoomPollRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        int64                  `protobuf:"varint,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	PollId        int64                  `protobuf:"varint,2,opt,name=poll_id,json=pollId,proto3" json:"poll_id,omitempty"`
+	OptionId      int64                  `protobuf:"varint,3,opt,name=option_id,json=optionId,proto3" json:"option_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoteRoomPollRequest) Reset() {
+	*x = VoteRoomPollRequest{}
+	mi := &file_party_v1_party_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoteRoomPollRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoteRoomPollRequest) ProtoMessage() {}
+
+func (x *VoteRoomPollRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_party_v1_party_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoteRoomPollRequest.ProtoReflect.Descriptor instead.
+func (*VoteRoomPollRequest) Descriptor() ([]byte, []int) {
+	return file_party_v1_party_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *VoteRoomPollRequest) GetRoomId() int64 {
+	if x != nil {
+		return x.RoomId
+	}
+	return 0
+}
+
+func (x *VoteRoomPollRequest) GetPollId() int64 {
+	if x != nil {
+		return x.PollId
+	}
+	return 0
+}
+
+func (x *VoteRoomPollRequest) GetOptionId() int64 {
+	if x != nil {
+		return x.OptionId
+	}
+	return 0
+}
+
+type VoteRoomPollResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Vote          *PollVote              `protobuf:"bytes,1,opt,name=vote,proto3" json:"vote,omitempty"`
+	Poll          *Poll                  `protobuf:"bytes,2,opt,name=poll,proto3" json:"poll,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoteRoomPollResponse) Reset() {
+	*x = VoteRoomPollResponse{}
+	mi := &file_party_v1_party_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoteRoomPollResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoteRoomPollResponse) ProtoMessage() {}
+
+func (x *VoteRoomPollResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_party_v1_party_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoteRoomPollResponse.ProtoReflect.Descriptor instead.
+func (*VoteRoomPollResponse) Descriptor() ([]byte, []int) {
+	return file_party_v1_party_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *VoteRoomPollResponse) GetVote() *PollVote {
+	if x != nil {
+		return x.Vote
+	}
+	return nil
+}
+
+func (x *VoteRoomPollResponse) GetPoll() *Poll {
+	if x != nil {
+		return x.Poll
+	}
+	return nil
+}
+
 type SubscribeRoomRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RoomId        int64                  `protobuf:"varint,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
@@ -518,7 +974,7 @@ type SubscribeRoomRequest struct {
 
 func (x *SubscribeRoomRequest) Reset() {
 	*x = SubscribeRoomRequest{}
-	mi := &file_party_v1_party_proto_msgTypes[10]
+	mi := &file_party_v1_party_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -530,7 +986,7 @@ func (x *SubscribeRoomRequest) String() string {
 func (*SubscribeRoomRequest) ProtoMessage() {}
 
 func (x *SubscribeRoomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_party_v1_party_proto_msgTypes[10]
+	mi := &file_party_v1_party_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -543,7 +999,7 @@ func (x *SubscribeRoomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeRoomRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeRoomRequest) Descriptor() ([]byte, []int) {
-	return file_party_v1_party_proto_rawDescGZIP(), []int{10}
+	return file_party_v1_party_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SubscribeRoomRequest) GetRoomId() int64 {
@@ -570,7 +1026,7 @@ type RoomCard struct {
 
 func (x *RoomCard) Reset() {
 	*x = RoomCard{}
-	mi := &file_party_v1_party_proto_msgTypes[11]
+	mi := &file_party_v1_party_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -582,7 +1038,7 @@ func (x *RoomCard) String() string {
 func (*RoomCard) ProtoMessage() {}
 
 func (x *RoomCard) ProtoReflect() protoreflect.Message {
-	mi := &file_party_v1_party_proto_msgTypes[11]
+	mi := &file_party_v1_party_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -595,7 +1051,7 @@ func (x *RoomCard) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoomCard.ProtoReflect.Descriptor instead.
 func (*RoomCard) Descriptor() ([]byte, []int) {
-	return file_party_v1_party_proto_rawDescGZIP(), []int{11}
+	return file_party_v1_party_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *RoomCard) GetId() int64 {
@@ -679,7 +1135,7 @@ type Room struct {
 
 func (x *Room) Reset() {
 	*x = Room{}
-	mi := &file_party_v1_party_proto_msgTypes[12]
+	mi := &file_party_v1_party_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -691,7 +1147,7 @@ func (x *Room) String() string {
 func (*Room) ProtoMessage() {}
 
 func (x *Room) ProtoReflect() protoreflect.Message {
-	mi := &file_party_v1_party_proto_msgTypes[12]
+	mi := &file_party_v1_party_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -704,7 +1160,7 @@ func (x *Room) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Room.ProtoReflect.Descriptor instead.
 func (*Room) Descriptor() ([]byte, []int) {
-	return file_party_v1_party_proto_rawDescGZIP(), []int{12}
+	return file_party_v1_party_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Room) GetId() int64 {
@@ -790,7 +1246,7 @@ type RoomMember struct {
 
 func (x *RoomMember) Reset() {
 	*x = RoomMember{}
-	mi := &file_party_v1_party_proto_msgTypes[13]
+	mi := &file_party_v1_party_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -802,7 +1258,7 @@ func (x *RoomMember) String() string {
 func (*RoomMember) ProtoMessage() {}
 
 func (x *RoomMember) ProtoReflect() protoreflect.Message {
-	mi := &file_party_v1_party_proto_msgTypes[13]
+	mi := &file_party_v1_party_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -815,7 +1271,7 @@ func (x *RoomMember) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoomMember.ProtoReflect.Descriptor instead.
 func (*RoomMember) Descriptor() ([]byte, []int) {
-	return file_party_v1_party_proto_rawDescGZIP(), []int{13}
+	return file_party_v1_party_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *RoomMember) GetUserId() int64 {
@@ -868,7 +1324,7 @@ type PlaybackState struct {
 
 func (x *PlaybackState) Reset() {
 	*x = PlaybackState{}
-	mi := &file_party_v1_party_proto_msgTypes[14]
+	mi := &file_party_v1_party_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -880,7 +1336,7 @@ func (x *PlaybackState) String() string {
 func (*PlaybackState) ProtoMessage() {}
 
 func (x *PlaybackState) ProtoReflect() protoreflect.Message {
-	mi := &file_party_v1_party_proto_msgTypes[14]
+	mi := &file_party_v1_party_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -893,7 +1349,7 @@ func (x *PlaybackState) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlaybackState.ProtoReflect.Descriptor instead.
 func (*PlaybackState) Descriptor() ([]byte, []int) {
-	return file_party_v1_party_proto_rawDescGZIP(), []int{14}
+	return file_party_v1_party_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *PlaybackState) GetMovieId() int64 {
@@ -959,7 +1415,7 @@ type RoomMessage struct {
 
 func (x *RoomMessage) Reset() {
 	*x = RoomMessage{}
-	mi := &file_party_v1_party_proto_msgTypes[15]
+	mi := &file_party_v1_party_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -971,7 +1427,7 @@ func (x *RoomMessage) String() string {
 func (*RoomMessage) ProtoMessage() {}
 
 func (x *RoomMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_party_v1_party_proto_msgTypes[15]
+	mi := &file_party_v1_party_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -984,7 +1440,7 @@ func (x *RoomMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoomMessage.ProtoReflect.Descriptor instead.
 func (*RoomMessage) Descriptor() ([]byte, []int) {
-	return file_party_v1_party_proto_rawDescGZIP(), []int{15}
+	return file_party_v1_party_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *RoomMessage) GetId() int64 {
@@ -1044,7 +1500,7 @@ type Poll struct {
 
 func (x *Poll) Reset() {
 	*x = Poll{}
-	mi := &file_party_v1_party_proto_msgTypes[16]
+	mi := &file_party_v1_party_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1056,7 +1512,7 @@ func (x *Poll) String() string {
 func (*Poll) ProtoMessage() {}
 
 func (x *Poll) ProtoReflect() protoreflect.Message {
-	mi := &file_party_v1_party_proto_msgTypes[16]
+	mi := &file_party_v1_party_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1069,7 +1525,7 @@ func (x *Poll) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Poll.ProtoReflect.Descriptor instead.
 func (*Poll) Descriptor() ([]byte, []int) {
-	return file_party_v1_party_proto_rawDescGZIP(), []int{16}
+	return file_party_v1_party_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *Poll) GetId() int64 {
@@ -1132,7 +1588,7 @@ type PollOption struct {
 
 func (x *PollOption) Reset() {
 	*x = PollOption{}
-	mi := &file_party_v1_party_proto_msgTypes[17]
+	mi := &file_party_v1_party_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1144,7 +1600,7 @@ func (x *PollOption) String() string {
 func (*PollOption) ProtoMessage() {}
 
 func (x *PollOption) ProtoReflect() protoreflect.Message {
-	mi := &file_party_v1_party_proto_msgTypes[17]
+	mi := &file_party_v1_party_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1157,7 +1613,7 @@ func (x *PollOption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PollOption.ProtoReflect.Descriptor instead.
 func (*PollOption) Descriptor() ([]byte, []int) {
-	return file_party_v1_party_proto_rawDescGZIP(), []int{17}
+	return file_party_v1_party_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *PollOption) GetId() int64 {
@@ -1192,7 +1648,7 @@ type PollVote struct {
 
 func (x *PollVote) Reset() {
 	*x = PollVote{}
-	mi := &file_party_v1_party_proto_msgTypes[18]
+	mi := &file_party_v1_party_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1204,7 +1660,7 @@ func (x *PollVote) String() string {
 func (*PollVote) ProtoMessage() {}
 
 func (x *PollVote) ProtoReflect() protoreflect.Message {
-	mi := &file_party_v1_party_proto_msgTypes[18]
+	mi := &file_party_v1_party_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1217,7 +1673,7 @@ func (x *PollVote) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PollVote.ProtoReflect.Descriptor instead.
 func (*PollVote) Descriptor() ([]byte, []int) {
-	return file_party_v1_party_proto_rawDescGZIP(), []int{18}
+	return file_party_v1_party_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *PollVote) GetPollId() int64 {
@@ -1258,7 +1714,7 @@ type RoomEvent struct {
 
 func (x *RoomEvent) Reset() {
 	*x = RoomEvent{}
-	mi := &file_party_v1_party_proto_msgTypes[19]
+	mi := &file_party_v1_party_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1270,7 +1726,7 @@ func (x *RoomEvent) String() string {
 func (*RoomEvent) ProtoMessage() {}
 
 func (x *RoomEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_party_v1_party_proto_msgTypes[19]
+	mi := &file_party_v1_party_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1283,7 +1739,7 @@ func (x *RoomEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoomEvent.ProtoReflect.Descriptor instead.
 func (*RoomEvent) Descriptor() ([]byte, []int) {
-	return file_party_v1_party_proto_rawDescGZIP(), []int{19}
+	return file_party_v1_party_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *RoomEvent) GetType() string {
@@ -1383,7 +1839,37 @@ const file_party_v1_party_proto_rawDesc = "" +
 	"\aroom_id\x18\x01 \x01(\x03R\x06roomId\"G\n" +
 	"\x12DeleteRoomResponse\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\x03R\x06roomId\x12\x18\n" +
-	"\asuccess\x18\x02 \x01(\bR\asuccess\"/\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess\"\x94\x02\n" +
+	"\x16ApplyRoomActionRequest\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\x03R\x06roomId\x12\x16\n" +
+	"\x06action\x18\x02 \x01(\tR\x06action\x12\x19\n" +
+	"\bmovie_id\x18\x03 \x01(\x03R\amovieId\x12\x1d\n" +
+	"\n" +
+	"episode_id\x18\x04 \x01(\x03R\tepisodeId\x12!\n" +
+	"\fplayback_url\x18\x05 \x01(\tR\vplaybackUrl\x12)\n" +
+	"\x10duration_seconds\x18\x06 \x01(\x03R\x0fdurationSeconds\x12)\n" +
+	"\x10position_seconds\x18\a \x01(\x03R\x0fpositionSeconds\x12\x16\n" +
+	"\x06status\x18\b \x01(\tR\x06status\"N\n" +
+	"\x17ApplyRoomActionResponse\x123\n" +
+	"\bplayback\x18\x01 \x01(\v2\x17.party.v1.PlaybackStateR\bplayback\"K\n" +
+	"\x16SendRoomMessageRequest\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\x03R\x06roomId\x12\x18\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\"J\n" +
+	"\x17SendRoomMessageResponse\x12/\n" +
+	"\amessage\x18\x01 \x01(\v2\x15.party.v1.RoomMessageR\amessage\"f\n" +
+	"\x15CreateRoomPollRequest\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\x03R\x06roomId\x12\x1a\n" +
+	"\bquestion\x18\x02 \x01(\tR\bquestion\x12\x18\n" +
+	"\aoptions\x18\x03 \x03(\tR\aoptions\"<\n" +
+	"\x16CreateRoomPollResponse\x12\"\n" +
+	"\x04poll\x18\x01 \x01(\v2\x0e.party.v1.PollR\x04poll\"d\n" +
+	"\x13VoteRoomPollRequest\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\x03R\x06roomId\x12\x17\n" +
+	"\apoll_id\x18\x02 \x01(\x03R\x06pollId\x12\x1b\n" +
+	"\toption_id\x18\x03 \x01(\x03R\boptionId\"b\n" +
+	"\x14VoteRoomPollResponse\x12&\n" +
+	"\x04vote\x18\x01 \x01(\v2\x12.party.v1.PollVoteR\x04vote\x12\"\n" +
+	"\x04poll\x18\x02 \x01(\v2\x0e.party.v1.PollR\x04poll\"/\n" +
 	"\x14SubscribeRoomRequest\x12\x17\n" +
 	"\aroom_id\x18\x01 \x01(\x03R\x06roomId\"\xb1\x02\n" +
 	"\bRoomCard\x12\x0e\n" +
@@ -1473,7 +1959,7 @@ const file_party_v1_party_proto_rawDesc = "" +
 	"\x04poll\x18\x06 \x01(\v2\x0e.party.v1.PollR\x04poll\x12,\n" +
 	"\x06member\x18\a \x01(\v2\x14.party.v1.RoomMemberR\x06member\x12&\n" +
 	"\x04vote\x18\b \x01(\v2\x12.party.v1.PollVoteR\x04vote\x12\x17\n" +
-	"\asent_at\x18\t \x01(\tR\x06sentAt2\xb7\x03\n" +
+	"\asent_at\x18\t \x01(\tR\x06sentAt2\x8b\x06\n" +
 	"\fPartyService\x12J\n" +
 	"\vGetOverview\x12\x1c.party.v1.GetOverviewRequest\x1a\x1d.party.v1.GetOverviewResponse\x12>\n" +
 	"\aGetRoom\x12\x18.party.v1.GetRoomRequest\x1a\x19.party.v1.GetRoomResponse\x12G\n" +
@@ -1481,7 +1967,11 @@ const file_party_v1_party_proto_rawDesc = "" +
 	"CreateRoom\x12\x1b.party.v1.CreateRoomRequest\x1a\x1c.party.v1.CreateRoomResponse\x12A\n" +
 	"\bJoinRoom\x12\x19.party.v1.JoinRoomRequest\x1a\x1a.party.v1.JoinRoomResponse\x12G\n" +
 	"\n" +
-	"DeleteRoom\x12\x1b.party.v1.DeleteRoomRequest\x1a\x1c.party.v1.DeleteRoomResponse\x12F\n" +
+	"DeleteRoom\x12\x1b.party.v1.DeleteRoomRequest\x1a\x1c.party.v1.DeleteRoomResponse\x12V\n" +
+	"\x0fApplyRoomAction\x12 .party.v1.ApplyRoomActionRequest\x1a!.party.v1.ApplyRoomActionResponse\x12V\n" +
+	"\x0fSendRoomMessage\x12 .party.v1.SendRoomMessageRequest\x1a!.party.v1.SendRoomMessageResponse\x12S\n" +
+	"\x0eCreateRoomPoll\x12\x1f.party.v1.CreateRoomPollRequest\x1a .party.v1.CreateRoomPollResponse\x12M\n" +
+	"\fVoteRoomPoll\x12\x1d.party.v1.VoteRoomPollRequest\x1a\x1e.party.v1.VoteRoomPollResponse\x12F\n" +
 	"\rSubscribeRoom\x12\x1e.party.v1.SubscribeRoomRequest\x1a\x13.party.v1.RoomEvent0\x01BBZ@github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/party/v1;partyv1b\x06proto3"
 
 var (
@@ -1496,64 +1986,85 @@ func file_party_v1_party_proto_rawDescGZIP() []byte {
 	return file_party_v1_party_proto_rawDescData
 }
 
-var file_party_v1_party_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_party_v1_party_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_party_v1_party_proto_goTypes = []any{
-	(*GetOverviewRequest)(nil),   // 0: party.v1.GetOverviewRequest
-	(*GetOverviewResponse)(nil),  // 1: party.v1.GetOverviewResponse
-	(*GetRoomRequest)(nil),       // 2: party.v1.GetRoomRequest
-	(*GetRoomResponse)(nil),      // 3: party.v1.GetRoomResponse
-	(*CreateRoomRequest)(nil),    // 4: party.v1.CreateRoomRequest
-	(*CreateRoomResponse)(nil),   // 5: party.v1.CreateRoomResponse
-	(*JoinRoomRequest)(nil),      // 6: party.v1.JoinRoomRequest
-	(*JoinRoomResponse)(nil),     // 7: party.v1.JoinRoomResponse
-	(*DeleteRoomRequest)(nil),    // 8: party.v1.DeleteRoomRequest
-	(*DeleteRoomResponse)(nil),   // 9: party.v1.DeleteRoomResponse
-	(*SubscribeRoomRequest)(nil), // 10: party.v1.SubscribeRoomRequest
-	(*RoomCard)(nil),             // 11: party.v1.RoomCard
-	(*Room)(nil),                 // 12: party.v1.Room
-	(*RoomMember)(nil),           // 13: party.v1.RoomMember
-	(*PlaybackState)(nil),        // 14: party.v1.PlaybackState
-	(*RoomMessage)(nil),          // 15: party.v1.RoomMessage
-	(*Poll)(nil),                 // 16: party.v1.Poll
-	(*PollOption)(nil),           // 17: party.v1.PollOption
-	(*PollVote)(nil),             // 18: party.v1.PollVote
-	(*RoomEvent)(nil),            // 19: party.v1.RoomEvent
+	(*GetOverviewRequest)(nil),      // 0: party.v1.GetOverviewRequest
+	(*GetOverviewResponse)(nil),     // 1: party.v1.GetOverviewResponse
+	(*GetRoomRequest)(nil),          // 2: party.v1.GetRoomRequest
+	(*GetRoomResponse)(nil),         // 3: party.v1.GetRoomResponse
+	(*CreateRoomRequest)(nil),       // 4: party.v1.CreateRoomRequest
+	(*CreateRoomResponse)(nil),      // 5: party.v1.CreateRoomResponse
+	(*JoinRoomRequest)(nil),         // 6: party.v1.JoinRoomRequest
+	(*JoinRoomResponse)(nil),        // 7: party.v1.JoinRoomResponse
+	(*DeleteRoomRequest)(nil),       // 8: party.v1.DeleteRoomRequest
+	(*DeleteRoomResponse)(nil),      // 9: party.v1.DeleteRoomResponse
+	(*ApplyRoomActionRequest)(nil),  // 10: party.v1.ApplyRoomActionRequest
+	(*ApplyRoomActionResponse)(nil), // 11: party.v1.ApplyRoomActionResponse
+	(*SendRoomMessageRequest)(nil),  // 12: party.v1.SendRoomMessageRequest
+	(*SendRoomMessageResponse)(nil), // 13: party.v1.SendRoomMessageResponse
+	(*CreateRoomPollRequest)(nil),   // 14: party.v1.CreateRoomPollRequest
+	(*CreateRoomPollResponse)(nil),  // 15: party.v1.CreateRoomPollResponse
+	(*VoteRoomPollRequest)(nil),     // 16: party.v1.VoteRoomPollRequest
+	(*VoteRoomPollResponse)(nil),    // 17: party.v1.VoteRoomPollResponse
+	(*SubscribeRoomRequest)(nil),    // 18: party.v1.SubscribeRoomRequest
+	(*RoomCard)(nil),                // 19: party.v1.RoomCard
+	(*Room)(nil),                    // 20: party.v1.Room
+	(*RoomMember)(nil),              // 21: party.v1.RoomMember
+	(*PlaybackState)(nil),           // 22: party.v1.PlaybackState
+	(*RoomMessage)(nil),             // 23: party.v1.RoomMessage
+	(*Poll)(nil),                    // 24: party.v1.Poll
+	(*PollOption)(nil),              // 25: party.v1.PollOption
+	(*PollVote)(nil),                // 26: party.v1.PollVote
+	(*RoomEvent)(nil),               // 27: party.v1.RoomEvent
 }
 var file_party_v1_party_proto_depIdxs = []int32{
-	11, // 0: party.v1.GetOverviewResponse.active_rooms:type_name -> party.v1.RoomCard
-	11, // 1: party.v1.GetOverviewResponse.my_rooms:type_name -> party.v1.RoomCard
-	11, // 2: party.v1.GetOverviewResponse.featured_rooms:type_name -> party.v1.RoomCard
-	12, // 3: party.v1.GetRoomResponse.room:type_name -> party.v1.Room
-	12, // 4: party.v1.CreateRoomResponse.room:type_name -> party.v1.Room
-	12, // 5: party.v1.JoinRoomResponse.room:type_name -> party.v1.Room
-	14, // 6: party.v1.RoomCard.playback:type_name -> party.v1.PlaybackState
-	13, // 7: party.v1.Room.members:type_name -> party.v1.RoomMember
-	14, // 8: party.v1.Room.playback:type_name -> party.v1.PlaybackState
-	15, // 9: party.v1.Room.messages:type_name -> party.v1.RoomMessage
-	16, // 10: party.v1.Room.polls:type_name -> party.v1.Poll
-	17, // 11: party.v1.Poll.options:type_name -> party.v1.PollOption
-	14, // 12: party.v1.RoomEvent.playback:type_name -> party.v1.PlaybackState
-	15, // 13: party.v1.RoomEvent.message:type_name -> party.v1.RoomMessage
-	16, // 14: party.v1.RoomEvent.poll:type_name -> party.v1.Poll
-	13, // 15: party.v1.RoomEvent.member:type_name -> party.v1.RoomMember
-	18, // 16: party.v1.RoomEvent.vote:type_name -> party.v1.PollVote
-	0,  // 17: party.v1.PartyService.GetOverview:input_type -> party.v1.GetOverviewRequest
-	2,  // 18: party.v1.PartyService.GetRoom:input_type -> party.v1.GetRoomRequest
-	4,  // 19: party.v1.PartyService.CreateRoom:input_type -> party.v1.CreateRoomRequest
-	6,  // 20: party.v1.PartyService.JoinRoom:input_type -> party.v1.JoinRoomRequest
-	8,  // 21: party.v1.PartyService.DeleteRoom:input_type -> party.v1.DeleteRoomRequest
-	10, // 22: party.v1.PartyService.SubscribeRoom:input_type -> party.v1.SubscribeRoomRequest
-	1,  // 23: party.v1.PartyService.GetOverview:output_type -> party.v1.GetOverviewResponse
-	3,  // 24: party.v1.PartyService.GetRoom:output_type -> party.v1.GetRoomResponse
-	5,  // 25: party.v1.PartyService.CreateRoom:output_type -> party.v1.CreateRoomResponse
-	7,  // 26: party.v1.PartyService.JoinRoom:output_type -> party.v1.JoinRoomResponse
-	9,  // 27: party.v1.PartyService.DeleteRoom:output_type -> party.v1.DeleteRoomResponse
-	19, // 28: party.v1.PartyService.SubscribeRoom:output_type -> party.v1.RoomEvent
-	23, // [23:29] is the sub-list for method output_type
-	17, // [17:23] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	19, // 0: party.v1.GetOverviewResponse.active_rooms:type_name -> party.v1.RoomCard
+	19, // 1: party.v1.GetOverviewResponse.my_rooms:type_name -> party.v1.RoomCard
+	19, // 2: party.v1.GetOverviewResponse.featured_rooms:type_name -> party.v1.RoomCard
+	20, // 3: party.v1.GetRoomResponse.room:type_name -> party.v1.Room
+	20, // 4: party.v1.CreateRoomResponse.room:type_name -> party.v1.Room
+	20, // 5: party.v1.JoinRoomResponse.room:type_name -> party.v1.Room
+	22, // 6: party.v1.ApplyRoomActionResponse.playback:type_name -> party.v1.PlaybackState
+	23, // 7: party.v1.SendRoomMessageResponse.message:type_name -> party.v1.RoomMessage
+	24, // 8: party.v1.CreateRoomPollResponse.poll:type_name -> party.v1.Poll
+	26, // 9: party.v1.VoteRoomPollResponse.vote:type_name -> party.v1.PollVote
+	24, // 10: party.v1.VoteRoomPollResponse.poll:type_name -> party.v1.Poll
+	22, // 11: party.v1.RoomCard.playback:type_name -> party.v1.PlaybackState
+	21, // 12: party.v1.Room.members:type_name -> party.v1.RoomMember
+	22, // 13: party.v1.Room.playback:type_name -> party.v1.PlaybackState
+	23, // 14: party.v1.Room.messages:type_name -> party.v1.RoomMessage
+	24, // 15: party.v1.Room.polls:type_name -> party.v1.Poll
+	25, // 16: party.v1.Poll.options:type_name -> party.v1.PollOption
+	22, // 17: party.v1.RoomEvent.playback:type_name -> party.v1.PlaybackState
+	23, // 18: party.v1.RoomEvent.message:type_name -> party.v1.RoomMessage
+	24, // 19: party.v1.RoomEvent.poll:type_name -> party.v1.Poll
+	21, // 20: party.v1.RoomEvent.member:type_name -> party.v1.RoomMember
+	26, // 21: party.v1.RoomEvent.vote:type_name -> party.v1.PollVote
+	0,  // 22: party.v1.PartyService.GetOverview:input_type -> party.v1.GetOverviewRequest
+	2,  // 23: party.v1.PartyService.GetRoom:input_type -> party.v1.GetRoomRequest
+	4,  // 24: party.v1.PartyService.CreateRoom:input_type -> party.v1.CreateRoomRequest
+	6,  // 25: party.v1.PartyService.JoinRoom:input_type -> party.v1.JoinRoomRequest
+	8,  // 26: party.v1.PartyService.DeleteRoom:input_type -> party.v1.DeleteRoomRequest
+	10, // 27: party.v1.PartyService.ApplyRoomAction:input_type -> party.v1.ApplyRoomActionRequest
+	12, // 28: party.v1.PartyService.SendRoomMessage:input_type -> party.v1.SendRoomMessageRequest
+	14, // 29: party.v1.PartyService.CreateRoomPoll:input_type -> party.v1.CreateRoomPollRequest
+	16, // 30: party.v1.PartyService.VoteRoomPoll:input_type -> party.v1.VoteRoomPollRequest
+	18, // 31: party.v1.PartyService.SubscribeRoom:input_type -> party.v1.SubscribeRoomRequest
+	1,  // 32: party.v1.PartyService.GetOverview:output_type -> party.v1.GetOverviewResponse
+	3,  // 33: party.v1.PartyService.GetRoom:output_type -> party.v1.GetRoomResponse
+	5,  // 34: party.v1.PartyService.CreateRoom:output_type -> party.v1.CreateRoomResponse
+	7,  // 35: party.v1.PartyService.JoinRoom:output_type -> party.v1.JoinRoomResponse
+	9,  // 36: party.v1.PartyService.DeleteRoom:output_type -> party.v1.DeleteRoomResponse
+	11, // 37: party.v1.PartyService.ApplyRoomAction:output_type -> party.v1.ApplyRoomActionResponse
+	13, // 38: party.v1.PartyService.SendRoomMessage:output_type -> party.v1.SendRoomMessageResponse
+	15, // 39: party.v1.PartyService.CreateRoomPoll:output_type -> party.v1.CreateRoomPollResponse
+	17, // 40: party.v1.PartyService.VoteRoomPoll:output_type -> party.v1.VoteRoomPollResponse
+	27, // 41: party.v1.PartyService.SubscribeRoom:output_type -> party.v1.RoomEvent
+	32, // [32:42] is the sub-list for method output_type
+	22, // [22:32] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_party_v1_party_proto_init() }
@@ -1567,7 +2078,7 @@ func file_party_v1_party_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_party_v1_party_proto_rawDesc), len(file_party_v1_party_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

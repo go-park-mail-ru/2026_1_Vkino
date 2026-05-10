@@ -242,4 +242,10 @@ const (
 		on conflict (user_id, bet_variant_id)
 		do nothing
 	`
+
+	sqlTouchRoom = `
+		update vkino_room
+		set updated_at = now()
+		where id = $1
+	`
 )

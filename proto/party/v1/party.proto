@@ -10,6 +10,10 @@ service PartyService {
   rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
   rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
   rpc DeleteRoom(DeleteRoomRequest) returns (DeleteRoomResponse);
+  rpc ApplyRoomAction(ApplyRoomActionRequest) returns (ApplyRoomActionResponse);
+  rpc SendRoomMessage(SendRoomMessageRequest) returns (SendRoomMessageResponse);
+  rpc CreateRoomPoll(CreateRoomPollRequest) returns (CreateRoomPollResponse);
+  rpc VoteRoomPoll(VoteRoomPollRequest) returns (VoteRoomPollResponse);
 
   rpc SubscribeRoom(SubscribeRoomRequest) returns (stream RoomEvent);
 }
@@ -57,6 +61,51 @@ message DeleteRoomRequest {
 message DeleteRoomResponse {
   int64 room_id = 1;
   bool success = 2;
+}
+
+message ApplyRoomActionRequest {
+  int64 room_id = 1;
+  string action = 2;
+  int64 movie_id = 3;
+  int64 episode_id = 4;
+  string playback_url = 5;
+  int64 duration_seconds = 6;
+  int64 position_seconds = 7;
+  string status = 8;
+}
+
+message ApplyRoomActionResponse {
+  PlaybackState playback = 1;
+}
+
+message SendRoomMessageRequest {
+  int64 room_id = 1;
+  string content = 2;
+}
+
+message SendRoomMessageResponse {
+  RoomMessage message = 1;
+}
+
+message CreateRoomPollRequest {
+  int64 room_id = 1;
+  string question = 2;
+  repeated string options = 3;
+}
+
+message CreateRoomPollResponse {
+  Poll poll = 1;
+}
+
+message VoteRoomPollRequest {
+  int64 room_id = 1;
+  int64 poll_id = 2;
+  int64 option_id = 3;
+}
+
+message VoteRoomPollResponse {
+  PollVote vote = 1;
+  Poll poll = 2;
 }
 
 message SubscribeRoomRequest {

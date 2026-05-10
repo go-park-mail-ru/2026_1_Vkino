@@ -18,6 +18,7 @@ type PartyRepo interface {
 	SaveMessage(ctx context.Context, message domain.RoomMessage) (*domain.RoomMessage, error)
 	SavePoll(ctx context.Context, poll domain.Poll) (*domain.Poll, error)
 	SaveVote(ctx context.Context, vote domain.PollVote) error
+	TouchRoom(ctx context.Context, roomID int64) error
 }
 
 type RoomEventBroker interface {

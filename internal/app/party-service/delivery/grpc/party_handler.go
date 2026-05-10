@@ -107,6 +107,107 @@ func (s *Server) DeleteRoom(
 	}, nil
 }
 
+func (s *Server) ApplyRoomAction(
+	ctx context.Context,
+	req *partyv1.ApplyRoomActionRequest,
+) (*partyv1.ApplyRoomActionResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	playback, err := s.usecase.ApplyRoomAction(ctx, authCtx.UserID, domain.ApplyRoomActionRequest{
+		RoomID:          req.GetRoomId(),
+		Action:          req.GetAction(),
+		MovieID:         req.GetMovieId(),
+		EpisodeID:       req.GetEpisodeId(),
+		PlaybackURL:     req.GetPlaybackUrl(),
+		DurationSeconds: req.GetDurationSeconds(),
+		PositionSeconds: req.GetPositionSeconds(),
+		Status:          req.GetStatus(),
+	})
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &partyv1.ApplyRoomActionResponse{
+		Playback: toProtoPlaybackState(playback),
+	}, nil
+}
+
+func (s *Server) SendRoomMessage(
+	ctx context.Context,
+	req *partyv1.SendRoomMessageRequest,
+) (*partyv1.SendRoomMessageResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	message, err := s.usecase.SendRoomMessage(ctx, authCtx.UserID, domain.SendRoomMessageRequest{
+		RoomID:  req.GetRoomId(),
+		Content: req.GetContent(),
+	})
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &partyv1.SendRoomMessageResponse{
+		Message: toProtoRoomMessage(message),
+	}, nil
+}
+
+func (s *Server) CreateRoomPoll(
+	ctx context.Context,
+	req *partyv1.CreateRoomPollRequest,
+) (*partyv1.CreateRoomPollResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	poll, err := s.usecase.CreateRoomPoll(ctx, authCtx.UserID, domain.CreateRoomPollRequest{
+		RoomID:   req.GetRoomId(),
+		Question: req.GetQuestion(),
+		Options:  req.GetOptions(),
+	})
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &partyv1.CreateRoomPollResponse{
+		Poll: toProtoPoll(poll),
+	}, nil
+}
+
+func (s *Server) VoteRoomPoll(
+	ctx context.Context,
+	req *partyv1.VoteRoomPollRequest,
+) (*partyv1.VoteRoomPollResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	vote, poll, err := s.usecase.VoteRoomPoll(ctx, authCtx.UserID, domain.VoteRoomPollRequest{
+		RoomID:   req.GetRoomId(),
+		PollID:   req.GetPollId(),
+		OptionID: req.GetOptionId(),
+	})
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &partyv1.VoteRoomPollResponse{
+		Vote: &partyv1.PollVote{
+			PollId:   vote.PollID,
+			OptionId: vote.OptionID,
+			UserId:   vote.UserID,
+		},
+		Poll: toProtoPoll(poll),
+	}, nil
+}
+
 func (s *Server) SubscribeRoom(
 	req *partyv1.SubscribeRoomRequest,
 	stream grpc.ServerStreamingServer[partyv1.RoomEvent],

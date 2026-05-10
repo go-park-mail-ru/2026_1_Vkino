@@ -19,12 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PartyService_GetOverview_FullMethodName   = "/party.v1.PartyService/GetOverview"
-	PartyService_GetRoom_FullMethodName       = "/party.v1.PartyService/GetRoom"
-	PartyService_CreateRoom_FullMethodName    = "/party.v1.PartyService/CreateRoom"
-	PartyService_JoinRoom_FullMethodName      = "/party.v1.PartyService/JoinRoom"
-	PartyService_DeleteRoom_FullMethodName    = "/party.v1.PartyService/DeleteRoom"
-	PartyService_SubscribeRoom_FullMethodName = "/party.v1.PartyService/SubscribeRoom"
+	PartyService_GetOverview_FullMethodName     = "/party.v1.PartyService/GetOverview"
+	PartyService_GetRoom_FullMethodName         = "/party.v1.PartyService/GetRoom"
+	PartyService_CreateRoom_FullMethodName      = "/party.v1.PartyService/CreateRoom"
+	PartyService_JoinRoom_FullMethodName        = "/party.v1.PartyService/JoinRoom"
+	PartyService_DeleteRoom_FullMethodName      = "/party.v1.PartyService/DeleteRoom"
+	PartyService_ApplyRoomAction_FullMethodName = "/party.v1.PartyService/ApplyRoomAction"
+	PartyService_SendRoomMessage_FullMethodName = "/party.v1.PartyService/SendRoomMessage"
+	PartyService_CreateRoomPoll_FullMethodName  = "/party.v1.PartyService/CreateRoomPoll"
+	PartyService_VoteRoomPoll_FullMethodName    = "/party.v1.PartyService/VoteRoomPoll"
+	PartyService_SubscribeRoom_FullMethodName   = "/party.v1.PartyService/SubscribeRoom"
 )
 
 // PartyServiceClient is the client API for PartyService service.
@@ -36,6 +40,10 @@ type PartyServiceClient interface {
 	CreateRoom(ctx context.Context, in *CreateRoomRequest, opts ...grpc.CallOption) (*CreateRoomResponse, error)
 	JoinRoom(ctx context.Context, in *JoinRoomRequest, opts ...grpc.CallOption) (*JoinRoomResponse, error)
 	DeleteRoom(ctx context.Context, in *DeleteRoomRequest, opts ...grpc.CallOption) (*DeleteRoomResponse, error)
+	ApplyRoomAction(ctx context.Context, in *ApplyRoomActionRequest, opts ...grpc.CallOption) (*ApplyRoomActionResponse, error)
+	SendRoomMessage(ctx context.Context, in *SendRoomMessageRequest, opts ...grpc.CallOption) (*SendRoomMessageResponse, error)
+	CreateRoomPoll(ctx context.Context, in *CreateRoomPollRequest, opts ...grpc.CallOption) (*CreateRoomPollResponse, error)
+	VoteRoomPoll(ctx context.Context, in *VoteRoomPollRequest, opts ...grpc.CallOption) (*VoteRoomPollResponse, error)
 	SubscribeRoom(ctx context.Context, in *SubscribeRoomRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[RoomEvent], error)
 }
 
@@ -97,6 +105,46 @@ func (c *partyServiceClient) DeleteRoom(ctx context.Context, in *DeleteRoomReque
 	return out, nil
 }
 
+func (c *partyServiceClient) ApplyRoomAction(ctx context.Context, in *ApplyRoomActionRequest, opts ...grpc.CallOption) (*ApplyRoomActionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApplyRoomActionResponse)
+	err := c.cc.Invoke(ctx, PartyService_ApplyRoomAction_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *partyServiceClient) SendRoomMessage(ctx context.Context, in *SendRoomMessageRequest, opts ...grpc.CallOption) (*SendRoomMessageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendRoomMessageResponse)
+	err := c.cc.Invoke(ctx, PartyService_SendRoomMessage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *partyServiceClient) CreateRoomPoll(ctx context.Context, in *CreateRoomPollRequest, opts ...grpc.CallOption) (*CreateRoomPollResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateRoomPollResponse)
+	err := c.cc.Invoke(ctx, PartyService_CreateRoomPoll_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *partyServiceClient) VoteRoomPoll(ctx context.Context, in *VoteRoomPollRequest, opts ...grpc.CallOption) (*VoteRoomPollResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VoteRoomPollResponse)
+	err := c.cc.Invoke(ctx, PartyService_VoteRoomPoll_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *partyServiceClient) SubscribeRoom(ctx context.Context, in *SubscribeRoomRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[RoomEvent], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &PartyService_ServiceDesc.Streams[0], PartyService_SubscribeRoom_FullMethodName, cOpts...)
@@ -125,6 +173,10 @@ type PartyServiceServer interface {
 	CreateRoom(context.Context, *CreateRoomRequest) (*CreateRoomResponse, error)
 	JoinRoom(context.Context, *JoinRoomRequest) (*JoinRoomResponse, error)
 	DeleteRoom(context.Context, *DeleteRoomRequest) (*DeleteRoomResponse, error)
+	ApplyRoomAction(context.Context, *ApplyRoomActionRequest) (*ApplyRoomActionResponse, error)
+	SendRoomMessage(context.Context, *SendRoomMessageRequest) (*SendRoomMessageResponse, error)
+	CreateRoomPoll(context.Context, *CreateRoomPollRequest) (*CreateRoomPollResponse, error)
+	VoteRoomPoll(context.Context, *VoteRoomPollRequest) (*VoteRoomPollResponse, error)
 	SubscribeRoom(*SubscribeRoomRequest, grpc.ServerStreamingServer[RoomEvent]) error
 	mustEmbedUnimplementedPartyServiceServer()
 }
@@ -150,6 +202,18 @@ func (UnimplementedPartyServiceServer) JoinRoom(context.Context, *JoinRoomReques
 }
 func (UnimplementedPartyServiceServer) DeleteRoom(context.Context, *DeleteRoomRequest) (*DeleteRoomResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteRoom not implemented")
+}
+func (UnimplementedPartyServiceServer) ApplyRoomAction(context.Context, *ApplyRoomActionRequest) (*ApplyRoomActionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApplyRoomAction not implemented")
+}
+func (UnimplementedPartyServiceServer) SendRoomMessage(context.Context, *SendRoomMessageRequest) (*SendRoomMessageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SendRoomMessage not implemented")
+}
+func (UnimplementedPartyServiceServer) CreateRoomPoll(context.Context, *CreateRoomPollRequest) (*CreateRoomPollResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateRoomPoll not implemented")
+}
+func (UnimplementedPartyServiceServer) VoteRoomPoll(context.Context, *VoteRoomPollRequest) (*VoteRoomPollResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method VoteRoomPoll not implemented")
 }
 func (UnimplementedPartyServiceServer) SubscribeRoom(*SubscribeRoomRequest, grpc.ServerStreamingServer[RoomEvent]) error {
 	return status.Error(codes.Unimplemented, "method SubscribeRoom not implemented")
@@ -265,6 +329,78 @@ func _PartyService_DeleteRoom_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PartyService_ApplyRoomAction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApplyRoomActionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartyServiceServer).ApplyRoomAction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PartyService_ApplyRoomAction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartyServiceServer).ApplyRoomAction(ctx, req.(*ApplyRoomActionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PartyService_SendRoomMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendRoomMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartyServiceServer).SendRoomMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PartyService_SendRoomMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartyServiceServer).SendRoomMessage(ctx, req.(*SendRoomMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PartyService_CreateRoomPoll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateRoomPollRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartyServiceServer).CreateRoomPoll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PartyService_CreateRoomPoll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartyServiceServer).CreateRoomPoll(ctx, req.(*CreateRoomPollRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PartyService_VoteRoomPoll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VoteRoomPollRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartyServiceServer).VoteRoomPoll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PartyService_VoteRoomPoll_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartyServiceServer).VoteRoomPoll(ctx, req.(*VoteRoomPollRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PartyService_SubscribeRoom_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SubscribeRoomRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -302,6 +438,22 @@ var PartyService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteRoom",
 			Handler:    _PartyService_DeleteRoom_Handler,
+		},
+		{
+			MethodName: "ApplyRoomAction",
+			Handler:    _PartyService_ApplyRoomAction_Handler,
+		},
+		{
+			MethodName: "SendRoomMessage",
+			Handler:    _PartyService_SendRoomMessage_Handler,
+		},
+		{
+			MethodName: "CreateRoomPoll",
+			Handler:    _PartyService_CreateRoomPoll_Handler,
+		},
+		{
+			MethodName: "VoteRoomPoll",
+			Handler:    _PartyService_VoteRoomPoll_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

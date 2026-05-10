@@ -14,6 +14,10 @@ type Usecase interface {
 	CreateRoom(ctx context.Context, userID int64, req domain.CreateRoomRequest) (domain.RoomResponse, error)
 	JoinRoom(ctx context.Context, userID int64, req domain.JoinRoomRequest) (domain.RoomResponse, error)
 	DeleteRoom(ctx context.Context, userID, roomID int64) (domain.DeleteRoomResponse, error)
+	ApplyRoomAction(ctx context.Context, userID int64, req domain.ApplyRoomActionRequest) (domain.PlaybackState, error)
+	SendRoomMessage(ctx context.Context, userID int64, req domain.SendRoomMessageRequest) (domain.RoomMessage, error)
+	CreateRoomPoll(ctx context.Context, userID int64, req domain.CreateRoomPollRequest) (domain.Poll, error)
+	VoteRoomPoll(ctx context.Context, userID int64, req domain.VoteRoomPollRequest) (domain.PollVote, domain.Poll, error)
 	SubscribeRoom(
 		ctx context.Context,
 		userID int64,

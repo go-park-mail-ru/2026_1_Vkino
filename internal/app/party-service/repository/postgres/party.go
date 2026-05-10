@@ -250,6 +250,15 @@ func (r *PartyRepo) SavePlaybackState(ctx context.Context, roomID int64, state d
 	return nil
 }
 
+func (r *PartyRepo) TouchRoom(ctx context.Context, roomID int64) error {
+	_, err := r.db.Exec(ctx, sqlTouchRoom, roomID)
+	if err != nil {
+		return fmt.Errorf("touch room: %w", err)
+	}
+
+	return nil
+}
+
 func (r *PartyRepo) SaveMessage(ctx context.Context, message domain.RoomMessage) (*domain.RoomMessage, error) {
 	var createdAt time.Time
 
