@@ -2,3 +2,8 @@
 *.out
 .idea
 .vscode
+
+.gocache
+vendor
+deployments/dev/logs
+docs
