@@ -63,6 +63,36 @@ const (
 		order by r.updated_at desc, r.id desc
 	`
 
+	sqlGetOverviewFeaturedRooms = `
+		select
+			r.id,
+			r.name,
+			r.visibility,
+			coalesce(inv.invite_code, ''),
+			r.user_owner_id,
+			owner.email,
+			coalesce(member_counts.participants_count, 0),
+			coalesce(ps.movie_id, 0),
+			coalesce(ps.episode_id, 0),
+			coalesce(ps.playback_url, ''),
+			coalesce(ps.duration_seconds, 0),
+			coalesce(ps.position_seconds, 0),
+			coalesce(ps.status, 'paused'),
+			coalesce(ps.updated_at, r.updated_at),
+			r.updated_at
+		from vkino_room r
+		join users owner on owner.id = r.user_owner_id
+		left join (
+			select vkino_room_id, count(*)::int as participants_count
+			from vkino_room_member
+			group by vkino_room_id
+		) member_counts on member_counts.vkino_room_id = r.id
+		left join vkino_room_invite inv on inv.vkino_room_id = r.id
+		left join vkino_room_playback_state ps on ps.vkino_room_id = r.id
+		order by coalesce(member_counts.participants_count, 0) desc, r.updated_at desc, r.id desc
+		limit 2
+	`
+
 	sqlGetRoomBaseByID = `
 		select
 			r.id,

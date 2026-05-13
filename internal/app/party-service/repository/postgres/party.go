@@ -34,10 +34,15 @@ func (r *PartyRepo) GetOverview(ctx context.Context, userID int64) (domain.Overv
 		return domain.OverviewResponse{}, err
 	}
 
+	featuredRooms, err := r.loadRoomCards(ctx, sqlGetOverviewFeaturedRooms)
+	if err != nil {
+		return domain.OverviewResponse{}, err
+	}
+
 	return domain.OverviewResponse{
 		ActiveRooms:   activeRooms,
 		MyRooms:       myRooms,
-		FeaturedRooms: activeRooms,
+		FeaturedRooms: featuredRooms,
 	}, nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	partyv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/party/v1"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
@@ -26,8 +27,38 @@ type PartyClient interface {
 	SubscribeRoom(ctx context.Context, in *partyv1.SubscribeRoomRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[partyv1.RoomEvent], error)
 }
 
+type partyOverviewResponse struct {
+	ActiveRooms   []partyRoomCardHTTP `json:"active_rooms"`
+	MyRooms       []partyRoomCardHTTP `json:"my_rooms"`
+	FeaturedRooms []partyRoomCardHTTP `json:"featured_rooms"`
+}
+
+type partyRoomCardHTTP struct {
+	ID                int64                   `json:"id"`
+	Name              string                  `json:"name"`
+	Visibility        string                  `json:"visibility"`
+	InviteLink        string                  `json:"invite_link"`
+	HostUserID        int64                   `json:"host_user_id"`
+	HostName          string                  `json:"host_name"`
+	ParticipantsCount int32                   `json:"participants_count"`
+	Playback          *partyPlaybackStateHTTP `json:"playback,omitempty"`
+	UpdatedAt         string                  `json:"updated_at"`
+}
+
+type partyPlaybackStateHTTP struct {
+	MovieID         int64   `json:"movie_id"`
+	MovieTitle      *string `json:"movie_title"`
+	EpisodeID       int64   `json:"episode_id"`
+	ImgURL          *string `json:"img_url"`
+	PlaybackURL     string  `json:"playback_url,omitempty"`
+	DurationSeconds int64   `json:"duration_seconds"`
+	PositionSeconds int64   `json:"position_seconds"`
+	Status          string  `json:"status"`
+	UpdatedAt       string  `json:"updated_at"`
+}
+
 //nolint:gocyclo,cyclop // Route registration intentionally stays flat for readability.
-func Party(cfg Config, partyClient PartyClient) []httpserver.Option {
+func Party(cfg Config, partyClient PartyClient, movieClient moviev1.MovieServiceClient) []httpserver.Option {
 	return []httpserver.Option{
 		route("GET /watch-party/overview", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.PartyRequestTimeout())
@@ -40,7 +71,14 @@ func Party(cfg Config, partyClient PartyClient) []httpserver.Option {
 				return
 			}
 
-			httppkg.Response(w, http.StatusOK, resp)
+			movieImages, err := loadMovieImageURLs(r.Context(), movieClient, collectOverviewMovieIDs(resp))
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, mapOverviewResponse(resp, movieImages))
 		}),
 
 		route("GET /watch-party/rooms/{id}", func(w http.ResponseWriter, r *http.Request) {
@@ -276,6 +314,131 @@ func Party(cfg Config, partyClient PartyClient) []httpserver.Option {
 		}),
 
 		httpserver.WithRoute("GET /watch-party/rooms/{id}/subscribe", newPartyRoomSubscribeHandler(partyClient)),
+	}
+}
+
+func collectOverviewMovieIDs(resp *partyv1.GetOverviewResponse) []int64 {
+	seen := make(map[int64]struct{})
+	result := make([]int64, 0)
+
+	appendFromRooms := func(items []*partyv1.RoomCard) {
+		for _, item := range items {
+			if item == nil || item.GetPlayback() == nil {
+				continue
+			}
+
+			movieID := item.GetPlayback().GetMovieId()
+			if movieID == 0 {
+				continue
+			}
+
+			if _, ok := seen[movieID]; ok {
+				continue
+			}
+
+			seen[movieID] = struct{}{}
+			result = append(result, movieID)
+		}
+	}
+
+	appendFromRooms(resp.GetActiveRooms())
+	appendFromRooms(resp.GetMyRooms())
+	appendFromRooms(resp.GetFeaturedRooms())
+
+	return result
+}
+
+func loadMovieImageURLs(
+	ctx context.Context,
+	movieClient moviev1.MovieServiceClient,
+	movieIDs []int64,
+) (map[int64]movieOverviewMeta, error) {
+	result := make(map[int64]movieOverviewMeta, len(movieIDs))
+	if len(movieIDs) == 0 {
+		return result, nil
+	}
+
+	resp, err := movieClient.GetMoviesByIDs(ctx, &moviev1.GetMoviesByIDsRequest{MovieIds: movieIDs})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, movie := range resp.GetMovies() {
+		if movie == nil {
+			continue
+		}
+
+		meta := movieOverviewMeta{}
+
+		if value := strings.TrimSpace(movie.GetTitle()); value != "" {
+			valueCopy := value
+			meta.title = &valueCopy
+		}
+
+		if value := strings.TrimSpace(movie.GetImgUrl()); value != "" {
+			valueCopy := value
+			meta.imageURL = &valueCopy
+		}
+
+		result[movie.GetId()] = meta
+	}
+
+	return result, nil
+}
+
+type movieOverviewMeta struct {
+	title    *string
+	imageURL *string
+}
+
+func mapOverviewResponse(resp *partyv1.GetOverviewResponse, movieImages map[int64]movieOverviewMeta) partyOverviewResponse {
+	return partyOverviewResponse{
+		ActiveRooms:   mapRoomCardsHTTP(resp.GetActiveRooms(), movieImages),
+		MyRooms:       mapRoomCardsHTTP(resp.GetMyRooms(), movieImages),
+		FeaturedRooms: mapRoomCardsHTTP(resp.GetFeaturedRooms(), movieImages),
+	}
+}
+
+func mapRoomCardsHTTP(items []*partyv1.RoomCard, movieImages map[int64]movieOverviewMeta) []partyRoomCardHTTP {
+	result := make([]partyRoomCardHTTP, 0, len(items))
+	for _, item := range items {
+		if item == nil {
+			continue
+		}
+
+		result = append(result, partyRoomCardHTTP{
+			ID:                item.GetId(),
+			Name:              item.GetName(),
+			Visibility:        item.GetVisibility(),
+			InviteLink:        item.GetInviteLink(),
+			HostUserID:        item.GetHostUserId(),
+			HostName:          item.GetHostName(),
+			ParticipantsCount: item.GetParticipantsCount(),
+			Playback:          mapPlaybackHTTP(item.GetPlayback(), movieImages),
+			UpdatedAt:         item.GetUpdatedAt(),
+		})
+	}
+
+	return result
+}
+
+func mapPlaybackHTTP(item *partyv1.PlaybackState, movieImages map[int64]movieOverviewMeta) *partyPlaybackStateHTTP {
+	if item == nil {
+		return nil
+	}
+
+	meta := movieImages[item.GetMovieId()]
+
+	return &partyPlaybackStateHTTP{
+		MovieID:         item.GetMovieId(),
+		MovieTitle:      meta.title,
+		EpisodeID:       item.GetEpisodeId(),
+		ImgURL:          meta.imageURL,
+		PlaybackURL:     item.GetPlaybackUrl(),
+		DurationSeconds: item.GetDurationSeconds(),
+		PositionSeconds: item.GetPositionSeconds(),
+		Status:          item.GetStatus(),
+		UpdatedAt:       item.GetUpdatedAt(),
 	}
 }
 

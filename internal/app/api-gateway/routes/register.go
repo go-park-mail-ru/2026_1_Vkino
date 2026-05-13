@@ -18,7 +18,7 @@ func Register(
 	partyClient partyv1.PartyServiceClient,
 ) []httpserver.Option {
 	result := make([]httpserver.Option, 0, 1+len(Auth(cfg, authClient))+len(User(cfg, userClient))+
-		len(Movie(cfg, movieClient))+len(Party(cfg, partyClient)))
+		len(Movie(cfg, movieClient))+len(Party(cfg, partyClient, movieClient)))
 	result = append(result,
 		route("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -31,7 +31,7 @@ func Register(
 	result = append(result, Auth(cfg, authClient)...)
 	result = append(result, User(cfg, userClient)...)
 	result = append(result, Movie(cfg, movieClient)...)
-	result = append(result, Party(cfg, partyClient)...)
+	result = append(result, Party(cfg, partyClient, movieClient)...)
 
 	return result
 }
