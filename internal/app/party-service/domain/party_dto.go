@@ -19,7 +19,6 @@ type CreateRoomRequest struct {
 
 type JoinRoomRequest struct {
 	InviteLink string
-	RoomID     int64
 }
 
 type DeleteRoomResponse struct {

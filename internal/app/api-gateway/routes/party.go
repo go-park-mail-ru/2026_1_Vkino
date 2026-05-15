@@ -134,7 +134,6 @@ func Party(cfg Config, partyClient PartyClient, movieClient moviev1.MovieService
 		route("POST /watch-party/join", func(w http.ResponseWriter, r *http.Request) {
 			var req struct {
 				InviteLink string `json:"invite_link"`
-				RoomID     int64  `json:"room_id"`
 			}
 			if !readJSON(w, r, &req) {
 				return
@@ -145,7 +144,29 @@ func Party(cfg Config, partyClient PartyClient, movieClient moviev1.MovieService
 
 			resp, err := partyClient.JoinRoom(r.Context(), &partyv1.JoinRoomRequest{
 				InviteLink: req.InviteLink,
-				RoomId:     req.RoomID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		route("GET /watch-party/join/{inviteCode}", func(w http.ResponseWriter, r *http.Request) {
+			inviteCode := strings.TrimSpace(r.PathValue("inviteCode"))
+			if inviteCode == "" {
+				httppkg.ErrResponse(w, http.StatusBadRequest, "invalid invite link")
+
+				return
+			}
+
+			cancel := grpcContext(r, cfg.PartyRequestTimeout())
+			defer cancel()
+
+			resp, err := partyClient.JoinRoom(r.Context(), &partyv1.JoinRoomRequest{
+				InviteLink: inviteCode,
 			})
 			if err != nil {
 				writeGRPCError(w, err)

@@ -78,7 +78,6 @@ func (s *Server) JoinRoom(
 
 	room, err := s.usecase.JoinRoom(ctx, authCtx.UserID, domain.JoinRoomRequest{
 		InviteLink: req.GetInviteLink(),
-		RoomID:     req.GetRoomId(),
 	})
 	if err != nil {
 		return nil, mapError(err)

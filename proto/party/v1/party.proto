@@ -47,7 +47,6 @@ message CreateRoomResponse {
 
 message JoinRoomRequest {
   string invite_link = 1;
-  int64 room_id = 2;
 }
 
 message JoinRoomResponse {

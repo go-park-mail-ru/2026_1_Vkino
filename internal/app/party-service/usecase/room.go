@@ -16,7 +16,14 @@ func (s *service) GetOverview(ctx context.Context, userID int64) (domain.Overvie
 		return domain.OverviewResponse{}, domain.ErrInternal
 	}
 
-	return s.partyRepo.GetOverview(ctx, userID)
+	overview, err := s.partyRepo.GetOverview(ctx, userID)
+	if err != nil {
+		return domain.OverviewResponse{}, err
+	}
+
+	maskOverviewInviteLinks(&overview, userID)
+
+	return overview, nil
 }
 
 func (s *service) GetRoom(ctx context.Context, userID, roomID int64) (domain.RoomResponse, error) {
@@ -37,9 +44,11 @@ func (s *service) GetRoom(ctx context.Context, userID, roomID int64) (domain.Roo
 		return domain.RoomResponse{}, err
 	}
 
-	if room.Visibility == "private" && !isRoomMember(room.Members, userID) {
+	if !isRoomMember(room.Members, userID) {
 		return domain.RoomResponse{}, domain.ErrAccessDenied
 	}
+
+	maskRoomInviteLink(room, userID)
 
 	return domain.RoomResponse{Room: *room}, nil
 }
@@ -85,7 +94,7 @@ func (s *service) JoinRoom(
 		return domain.RoomResponse{}, domain.ErrInvalidUserID
 	}
 
-	if req.RoomID <= 0 && req.InviteLink == "" {
+	if req.InviteLink == "" {
 		return domain.RoomResponse{}, domain.ErrInvalidInviteLink
 	}
 
@@ -93,25 +102,22 @@ func (s *service) JoinRoom(
 		return domain.RoomResponse{}, domain.ErrInternal
 	}
 
-	roomID := req.RoomID
-	if roomID <= 0 {
-		inviteCode := normalizeInviteLink(req.InviteLink)
-		if inviteCode == "" {
-			return domain.RoomResponse{}, domain.ErrInvalidInviteLink
-		}
-
-		invite, err := s.partyRepo.GetInvite(ctx, inviteCode)
-		if err != nil {
-			return domain.RoomResponse{}, err
-		}
-
-		roomID = invite.RoomID
+	inviteCode := normalizeInviteLink(req.InviteLink)
+	if inviteCode == "" {
+		return domain.RoomResponse{}, domain.ErrInvalidInviteLink
 	}
 
-	room, err := s.partyRepo.AddMember(ctx, roomID, userID)
+	invite, err := s.partyRepo.GetInvite(ctx, inviteCode)
 	if err != nil {
 		return domain.RoomResponse{}, err
 	}
+
+	room, err := s.partyRepo.AddMember(ctx, invite.RoomID, userID)
+	if err != nil {
+		return domain.RoomResponse{}, err
+	}
+
+	maskRoomInviteLink(room, userID)
 
 	return domain.RoomResponse{Room: *room}, nil
 }
@@ -165,6 +171,15 @@ func (s *service) SubscribeRoom(
 		return nil, nil, domain.ErrNotImplemented
 	}
 
+	room, err := s.partyRepo.GetRoomByID(ctx, req.RoomID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !isRoomMember(room.Members, userID) {
+		return nil, nil, domain.ErrAccessDenied
+	}
+
 	return s.eventBroker.Subscribe(ctx, req.RoomID)
 }
 
@@ -190,4 +205,24 @@ func normalizeInviteLink(value string) string {
 	}
 
 	return strings.TrimSpace(value)
+}
+
+func maskOverviewInviteLinks(overview *domain.OverviewResponse, userID int64) {
+	maskRoomCardsInviteLinks(overview.ActiveRooms, userID)
+	maskRoomCardsInviteLinks(overview.MyRooms, userID)
+	maskRoomCardsInviteLinks(overview.FeaturedRooms, userID)
+}
+
+func maskRoomCardsInviteLinks(items []domain.RoomCard, userID int64) {
+	for i := range items {
+		if items[i].HostUserID != userID {
+			items[i].InviteLink = ""
+		}
+	}
+}
+
+func maskRoomInviteLink(room *domain.Room, userID int64) {
+	if room.HostUserID != userID {
+		room.InviteLink = ""
+	}
 }

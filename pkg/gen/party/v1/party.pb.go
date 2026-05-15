@@ -320,7 +320,6 @@ func (x *CreateRoomResponse) GetRoom() *Room {
 type JoinRoomRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	InviteLink    string                 `protobuf:"bytes,1,opt,name=invite_link,json=inviteLink,proto3" json:"invite_link,omitempty"`
-	RoomId        int64                  `protobuf:"varint,2,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -360,13 +359,6 @@ func (x *JoinRoomRequest) GetInviteLink() string {
 		return x.InviteLink
 	}
 	return ""
-}
-
-func (x *JoinRoomRequest) GetRoomId() int64 {
-	if x != nil {
-		return x.RoomId
-	}
-	return 0
 }
 
 type JoinRoomResponse struct {
@@ -1828,11 +1820,10 @@ const file_party_v1_party_proto_rawDesc = "" +
 	"\n" +
 	"episode_id\x18\x04 \x01(\x03R\tepisodeId\"8\n" +
 	"\x12CreateRoomResponse\x12\"\n" +
-	"\x04room\x18\x01 \x01(\v2\x0e.party.v1.RoomR\x04room\"K\n" +
+	"\x04room\x18\x01 \x01(\v2\x0e.party.v1.RoomR\x04room\"2\n" +
 	"\x0fJoinRoomRequest\x12\x1f\n" +
 	"\vinvite_link\x18\x01 \x01(\tR\n" +
-	"inviteLink\x12\x17\n" +
-	"\aroom_id\x18\x02 \x01(\x03R\x06roomId\"6\n" +
+	"inviteLink\"6\n" +
 	"\x10JoinRoomResponse\x12\"\n" +
 	"\x04room\x18\x01 \x01(\v2\x0e.party.v1.RoomR\x04room\",\n" +
 	"\x11DeleteRoomRequest\x12\x17\n" +
