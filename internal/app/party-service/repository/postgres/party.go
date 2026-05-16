@@ -130,7 +130,7 @@ func (r *PartyRepo) CreateRoom(
 		return nil, fmt.Errorf("create room: %w", err)
 	}
 
-	if _, err = tx.Exec(ctx, sqlCreateRoomMember, roomID, hostUserID, "host"); err != nil {
+	if _, err = tx.Exec(ctx, sqlCreateRoomMember, roomID, hostUserID, "host", "active"); err != nil {
 		return nil, fmt.Errorf("create host room member: %w", err)
 	}
 
@@ -159,6 +159,7 @@ func (r *PartyRepo) CreateRoom(
 				DisplayName: "",
 				AvatarURL:   "",
 				Role:        "host",
+				Status:      "active",
 				JoinedAt:    updatedAt,
 			},
 		},
@@ -177,6 +178,14 @@ func (r *PartyRepo) CreateRoom(
 	return room, nil
 }
 
+func (r *PartyRepo) InviteMember(ctx context.Context, roomID, userID int64) error {
+	if _, err := r.db.Exec(ctx, sqlInviteRoomMember, roomID, userID); err != nil {
+		return fmt.Errorf("invite room member: %w", err)
+	}
+
+	return nil
+}
+
 func (r *PartyRepo) AddMember(ctx context.Context, roomID, userID int64) (*domain.Room, error) {
 	tag, err := r.db.Exec(ctx, sqlAddRoomMember, roomID, userID)
 	if err != nil {
@@ -193,6 +202,14 @@ func (r *PartyRepo) AddMember(ctx context.Context, roomID, userID int64) (*domai
 	}
 
 	return r.GetRoomByID(ctx, roomID)
+}
+
+func (r *PartyRepo) ActivateMember(ctx context.Context, roomID, userID int64) error {
+	if _, err := r.db.Exec(ctx, sqlActivateRoomMember, roomID, userID); err != nil {
+		return fmt.Errorf("activate room member: %w", err)
+	}
+
+	return nil
 }
 
 func (r *PartyRepo) DeleteRoom(ctx context.Context, roomID int64) error {
@@ -384,6 +401,7 @@ func (r *PartyRepo) getRoomMembers(ctx context.Context, roomID int64) ([]domain.
 			&member.DisplayName,
 			&member.AvatarURL,
 			&member.Role,
+			&member.Status,
 			&member.JoinedAt,
 		); err != nil {
 			return nil, fmt.Errorf("scan room member: %w", err)

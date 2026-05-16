@@ -11,6 +11,8 @@ import (
 type Usecase interface {
 	GetOverview(ctx context.Context, userID int64) (domain.OverviewResponse, error)
 	GetRoom(ctx context.Context, userID, roomID int64) (domain.RoomResponse, error)
+	GetRoomInvite(ctx context.Context, userID, roomID int64) (domain.RoomInviteResponse, error)
+	InviteFriendToRoom(ctx context.Context, userID int64, req domain.InviteFriendToRoomRequest) (domain.InviteFriendToRoomResponse, error)
 	CreateRoom(ctx context.Context, userID int64, req domain.CreateRoomRequest) (domain.RoomResponse, error)
 	JoinRoom(ctx context.Context, userID int64, req domain.JoinRoomRequest) (domain.RoomResponse, error)
 	DeleteRoom(ctx context.Context, userID, roomID int64) (domain.DeleteRoomResponse, error)

@@ -52,7 +52,11 @@ func routeLabel(pattern string) string {
 }
 
 func parsePathID(w http.ResponseWriter, r *http.Request, message string) (int64, bool) {
-	value := r.PathValue("id")
+	return parseNamedPathID(w, r, "id", message)
+}
+
+func parseNamedPathID(w http.ResponseWriter, r *http.Request, key, message string) (int64, bool) {
+	value := r.PathValue(key)
 
 	id, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {

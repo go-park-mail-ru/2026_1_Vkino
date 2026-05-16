@@ -48,9 +48,87 @@ func (s *service) GetRoom(ctx context.Context, userID, roomID int64) (domain.Roo
 		return domain.RoomResponse{}, domain.ErrAccessDenied
 	}
 
+	if activated, err := s.activatePendingMemberIfNeeded(ctx, roomID, userID, room.Members); err != nil {
+		return domain.RoomResponse{}, err
+	} else if activated {
+		room, err = s.partyRepo.GetRoomByID(ctx, roomID)
+		if err != nil {
+			return domain.RoomResponse{}, err
+		}
+	}
+
 	maskRoomInviteLink(room, userID)
 
 	return domain.RoomResponse{Room: *room}, nil
+}
+
+func (s *service) GetRoomInvite(ctx context.Context, userID, roomID int64) (domain.RoomInviteResponse, error) {
+	if userID <= 0 {
+		return domain.RoomInviteResponse{}, domain.ErrInvalidUserID
+	}
+
+	if roomID <= 0 {
+		return domain.RoomInviteResponse{}, domain.ErrInvalidRoomID
+	}
+
+	if s.partyRepo == nil {
+		return domain.RoomInviteResponse{}, domain.ErrInternal
+	}
+
+	room, err := s.partyRepo.GetRoomByID(ctx, roomID)
+	if err != nil {
+		return domain.RoomInviteResponse{}, err
+	}
+
+	if room.HostUserID != userID {
+		return domain.RoomInviteResponse{}, domain.ErrAccessDenied
+	}
+
+	return domain.RoomInviteResponse{
+		RoomID:     room.ID,
+		InviteLink: room.InviteLink,
+	}, nil
+}
+
+func (s *service) InviteFriendToRoom(
+	ctx context.Context,
+	userID int64,
+	req domain.InviteFriendToRoomRequest,
+) (domain.InviteFriendToRoomResponse, error) {
+	if userID <= 0 {
+		return domain.InviteFriendToRoomResponse{}, domain.ErrInvalidUserID
+	}
+
+	if req.RoomID <= 0 {
+		return domain.InviteFriendToRoomResponse{}, domain.ErrInvalidRoomID
+	}
+
+	if req.InvitedUserID <= 0 || req.InvitedUserID == userID {
+		return domain.InviteFriendToRoomResponse{}, domain.ErrInvalidUserID
+	}
+
+	if s.partyRepo == nil {
+		return domain.InviteFriendToRoomResponse{}, domain.ErrInternal
+	}
+
+	room, err := s.partyRepo.GetRoomByID(ctx, req.RoomID)
+	if err != nil {
+		return domain.InviteFriendToRoomResponse{}, err
+	}
+
+	if room.HostUserID != userID {
+		return domain.InviteFriendToRoomResponse{}, domain.ErrAccessDenied
+	}
+
+	if err = s.partyRepo.InviteMember(ctx, req.RoomID, req.InvitedUserID); err != nil {
+		return domain.InviteFriendToRoomResponse{}, err
+	}
+
+	return domain.InviteFriendToRoomResponse{
+		RoomID:        req.RoomID,
+		InvitedUserID: req.InvitedUserID,
+		Status:        "pending",
+	}, nil
 }
 
 func (s *service) CreateRoom(
@@ -180,6 +258,10 @@ func (s *service) SubscribeRoom(
 		return nil, nil, domain.ErrAccessDenied
 	}
 
+	if _, err = s.activatePendingMemberIfNeeded(ctx, req.RoomID, userID, room.Members); err != nil {
+		return nil, nil, err
+	}
+
 	return s.eventBroker.Subscribe(ctx, req.RoomID)
 }
 
@@ -191,6 +273,33 @@ func isRoomMember(members []domain.RoomMember, userID int64) bool {
 	}
 
 	return false
+}
+
+func findRoomMember(members []domain.RoomMember, userID int64) (domain.RoomMember, bool) {
+	for _, member := range members {
+		if member.UserID == userID {
+			return member, true
+		}
+	}
+
+	return domain.RoomMember{}, false
+}
+
+func (s *service) activatePendingMemberIfNeeded(
+	ctx context.Context,
+	roomID, userID int64,
+	members []domain.RoomMember,
+) (bool, error) {
+	member, ok := findRoomMember(members, userID)
+	if !ok || member.Role == "host" || member.Status != "pending" {
+		return false, nil
+	}
+
+	if err := s.partyRepo.ActivateMember(ctx, roomID, userID); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func normalizeInviteLink(value string) string {

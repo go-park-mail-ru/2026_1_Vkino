@@ -18,6 +18,15 @@ const (
 		where id = $1
 	`
 
+	sqlGetFriendByID = `
+		select u.id, u.email, u.password_hash, u.role, u.birthdate, u.avatar_file_key, u.registration_date, u.is_active, u.created_at, u.updated_at
+		from users u
+		join friend f on
+			((f.user1_id = $1 and f.user2_id = u.id) or (f.user2_id = $1 and f.user1_id = u.id))
+		where u.id = $2
+			and u.is_active = true
+	`
+
 	sqlSearchUsersByEmail = `
 		select
 			u.id,

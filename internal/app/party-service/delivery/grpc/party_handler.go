@@ -45,6 +45,50 @@ func (s *Server) GetRoom(ctx context.Context, req *partyv1.GetRoomRequest) (*par
 	return &partyv1.GetRoomResponse{Room: toProtoRoom(room.Room)}, nil
 }
 
+func (s *Server) GetRoomInvite(
+	ctx context.Context,
+	req *partyv1.GetRoomInviteRequest,
+) (*partyv1.GetRoomInviteResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.usecase.GetRoomInvite(ctx, authCtx.UserID, req.GetRoomId())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &partyv1.GetRoomInviteResponse{
+		RoomId:     resp.RoomID,
+		InviteLink: resp.InviteLink,
+	}, nil
+}
+
+func (s *Server) InviteFriendToRoom(
+	ctx context.Context,
+	req *partyv1.InviteFriendToRoomRequest,
+) (*partyv1.InviteFriendToRoomResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.usecase.InviteFriendToRoom(ctx, authCtx.UserID, domain.InviteFriendToRoomRequest{
+		RoomID:        req.GetRoomId(),
+		InvitedUserID: req.GetInvitedUserId(),
+	})
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &partyv1.InviteFriendToRoomResponse{
+		RoomId:        resp.RoomID,
+		InvitedUserId: resp.InvitedUserID,
+		Status:        resp.Status,
+	}, nil
+}
+
 func (s *Server) CreateRoom(
 	ctx context.Context,
 	req *partyv1.CreateRoomRequest,
@@ -314,6 +358,7 @@ func toProtoRoomMember(item domain.RoomMember) *partyv1.RoomMember {
 		AvatarUrl:   item.AvatarURL,
 		Role:        item.Role,
 		JoinedAt:    formatTime(item.JoinedAt),
+		Status:      item.Status,
 	}
 }
 

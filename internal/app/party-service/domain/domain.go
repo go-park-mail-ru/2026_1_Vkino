@@ -32,6 +32,7 @@ type RoomMember struct {
 	DisplayName string
 	AvatarURL   string
 	Role        string
+	Status      string
 	JoinedAt    time.Time
 }
 

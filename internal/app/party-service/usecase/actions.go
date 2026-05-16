@@ -364,6 +364,15 @@ func (s *service) getAccessibleRoom(ctx context.Context, userID, roomID int64) (
 		return nil, domain.ErrAccessDenied
 	}
 
+	if activated, err := s.activatePendingMemberIfNeeded(ctx, roomID, userID, room.Members); err != nil {
+		return nil, err
+	} else if activated {
+		room, err = s.partyRepo.GetRoomByID(ctx, roomID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return room, nil
 }
 

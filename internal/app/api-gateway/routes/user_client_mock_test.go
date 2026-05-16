@@ -364,6 +364,26 @@ func (mr *MockUserClientMockRecorder) GetProfile(ctx, in any, opts ...any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockUserClient)(nil).GetProfile), varargs...)
 }
 
+// GetFriend mocks base method.
+func (m *MockUserClient) GetFriend(ctx context.Context, in *userv1.GetFriendRequest, opts ...grpc.CallOption) (*userv1.GetFriendResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetFriend", varargs...)
+	ret0, _ := ret[0].(*userv1.GetFriendResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFriend indicates an expected call of GetFriend.
+func (mr *MockUserClientMockRecorder) GetFriend(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriend", reflect.TypeOf((*MockUserClient)(nil).GetFriend), varargs...)
+}
+
 // GetSupportFileURL mocks base method.
 func (m *MockUserClient) GetSupportFileURL(ctx context.Context, in *supportv1.GetSupportFileURLRequest, opts ...grpc.CallOption) (*supportv1.GetSupportFileURLResponse, error) {
 	m.ctrl.T.Helper()

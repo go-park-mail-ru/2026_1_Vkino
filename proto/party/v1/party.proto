@@ -7,6 +7,8 @@ option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/party/v1;pa
 service PartyService {
   rpc GetOverview(GetOverviewRequest) returns (GetOverviewResponse);
   rpc GetRoom(GetRoomRequest) returns (GetRoomResponse);
+  rpc GetRoomInvite(GetRoomInviteRequest) returns (GetRoomInviteResponse);
+  rpc InviteFriendToRoom(InviteFriendToRoomRequest) returns (InviteFriendToRoomResponse);
   rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
   rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
   rpc DeleteRoom(DeleteRoomRequest) returns (DeleteRoomResponse);
@@ -32,6 +34,26 @@ message GetRoomRequest {
 
 message GetRoomResponse {
   Room room = 1;
+}
+
+message GetRoomInviteRequest {
+  int64 room_id = 1;
+}
+
+message GetRoomInviteResponse {
+  int64 room_id = 1;
+  string invite_link = 2;
+}
+
+message InviteFriendToRoomRequest {
+  int64 room_id = 1;
+  int64 invited_user_id = 2;
+}
+
+message InviteFriendToRoomResponse {
+  int64 room_id = 1;
+  int64 invited_user_id = 2;
+  string status = 3;
 }
 
 message CreateRoomRequest {
@@ -142,6 +164,7 @@ message RoomMember {
   string avatar_url = 3;
   string role = 4;
   string joined_at = 5;
+  string status = 6;
 }
 
 message PlaybackState {

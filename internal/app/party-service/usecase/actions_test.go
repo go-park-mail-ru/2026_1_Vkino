@@ -164,8 +164,8 @@ func newPlaybackActionRepo() *playbackActionRepo {
 			Visibility: "public",
 			HostUserID: 1,
 			Members: []domain.RoomMember{
-				{UserID: 1, Role: "host"},
-				{UserID: 2, Role: "member"},
+				{UserID: 1, Role: "host", Status: "active"},
+				{UserID: 2, Role: "member", Status: "active"},
 			},
 			Playback: domain.PlaybackState{
 				MovieID:         7,
@@ -204,8 +204,16 @@ func (r *playbackActionRepo) CreateRoom(
 	return nil, domain.ErrNotImplemented
 }
 
+func (r *playbackActionRepo) InviteMember(context.Context, int64, int64) error {
+	return domain.ErrNotImplemented
+}
+
 func (r *playbackActionRepo) AddMember(context.Context, int64, int64) (*domain.Room, error) {
 	return nil, domain.ErrNotImplemented
+}
+
+func (r *playbackActionRepo) ActivateMember(context.Context, int64, int64) error {
+	return nil
 }
 
 func (r *playbackActionRepo) DeleteRoom(context.Context, int64) error {

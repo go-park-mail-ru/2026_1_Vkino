@@ -13,6 +13,7 @@ import (
 type UserRepo interface {
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
+	GetFriend(ctx context.Context, userID, friendID int64) (*domain.User, error)
 	GetUserRole(ctx context.Context, userID int64) (string, error)
 	SearchUsersByEmail(ctx context.Context, userID int64, query string) ([]domain.UserSearchResult, error)
 	UpdateBirthdate(ctx context.Context, userID int64, birthdate *time.Time) (*domain.User, error)

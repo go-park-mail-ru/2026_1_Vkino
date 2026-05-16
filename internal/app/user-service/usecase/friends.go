@@ -38,6 +38,35 @@ func (u *UserUsecase) SearchUsersByEmail(
 	return users, nil
 }
 
+func (u *UserUsecase) GetFriend(ctx context.Context, userID, friendID int64) (domain.FriendResponse, error) {
+	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) {
+			return domain.FriendResponse{}, domain.ErrUserNotFound
+		}
+
+		return domain.FriendResponse{}, fmt.Errorf("get user by id: %w", err)
+	}
+
+	if userID == friendID {
+		return domain.FriendResponse{}, domain.ErrSelfFriendship
+	}
+
+	friend, err := u.userRepo.GetFriend(ctx, userID, friendID)
+	if err != nil {
+		if errors.Is(err, domain.ErrFriendNotFound) {
+			return domain.FriendResponse{}, err
+		}
+
+		return domain.FriendResponse{}, fmt.Errorf("get friend: %w", err)
+	}
+
+	return domain.FriendResponse{
+		ID:        friend.ID,
+		Email:     friend.Email,
+		AvatarURL: u.friendAvatarPresignedURL(ctx, friend),
+	}, nil
+}
+
 func (u *UserUsecase) SearchUsers(
 	ctx context.Context,
 	userID int64,

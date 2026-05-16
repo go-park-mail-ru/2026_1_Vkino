@@ -88,6 +88,14 @@ func (c grpcUserClient) GetProfile(
 	return c.user.GetProfile(ctx, in, opts...)
 }
 
+func (c grpcUserClient) GetFriend(
+	ctx context.Context,
+	in *userv1.GetFriendRequest,
+	opts ...grpc.CallOption,
+) (*userv1.GetFriendResponse, error) {
+	return c.user.GetFriend(ctx, in, opts...)
+}
+
 func (c grpcUserClient) SearchUsersByEmail(
 	ctx context.Context,
 	in *userv1.SearchUsersByEmailRequest,

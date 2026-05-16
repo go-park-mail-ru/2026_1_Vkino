@@ -10,6 +10,22 @@ type RoomResponse struct {
 	Room Room
 }
 
+type RoomInviteResponse struct {
+	RoomID     int64
+	InviteLink string
+}
+
+type InviteFriendToRoomRequest struct {
+	RoomID        int64
+	InvitedUserID int64
+}
+
+type InviteFriendToRoomResponse struct {
+	RoomID        int64
+	InvitedUserID int64
+	Status        string
+}
+
 type CreateRoomRequest struct {
 	Name       string
 	Visibility string

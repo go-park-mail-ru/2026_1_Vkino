@@ -24,6 +24,7 @@ const (
 		left join (
 			select vkino_room_id, count(*)::int as participants_count
 			from vkino_room_member
+			where status = 'active'
 			group by vkino_room_id
 		) member_counts on member_counts.vkino_room_id = r.id
 		left join vkino_room_invite inv on inv.vkino_room_id = r.id
@@ -55,6 +56,7 @@ const (
 		left join (
 			select vkino_room_id, count(*)::int as participants_count
 			from vkino_room_member
+			where status = 'active'
 			group by vkino_room_id
 		) member_counts on member_counts.vkino_room_id = r.id
 		left join vkino_room_invite inv on inv.vkino_room_id = r.id
@@ -85,6 +87,7 @@ const (
 		left join (
 			select vkino_room_id, count(*)::int as participants_count
 			from vkino_room_member
+			where status = 'active'
 			group by vkino_room_id
 		) member_counts on member_counts.vkino_room_id = r.id
 		left join vkino_room_invite inv on inv.vkino_room_id = r.id
@@ -112,12 +115,14 @@ const (
 			u.email,
 			coalesce(u.avatar_file_key, ''),
 			rm.role,
+			rm.status,
 			rm.created_at
 		from vkino_room_member rm
 		join users u on u.id = rm.user_id
 		where rm.vkino_room_id = $1
 		order by
 			case when rm.role = 'host' then 0 else 1 end,
+			case when rm.status = 'active' then 0 else 1 end,
 			rm.created_at,
 			rm.user_id
 	`
@@ -178,10 +183,13 @@ const (
 	`
 
 	sqlCreateRoomMember = `
-		insert into vkino_room_member (vkino_room_id, user_id, role)
-		values ($1, $2, $3)
+		insert into vkino_room_member (vkino_room_id, user_id, role, status)
+		values ($1, $2, $3, $4)
 		on conflict (vkino_room_id, user_id)
-		do update set role = excluded.role, updated_at = now()
+		do update set
+			role = excluded.role,
+			status = excluded.status,
+			updated_at = now()
 	`
 
 	sqlCreateRoomInvite = `
@@ -205,10 +213,32 @@ const (
 	`
 
 	sqlAddRoomMember = `
-		insert into vkino_room_member (vkino_room_id, user_id, role)
-		values ($1, $2, 'member')
+		insert into vkino_room_member (vkino_room_id, user_id, role, status)
+		values ($1, $2, 'member', 'active')
 		on conflict (vkino_room_id, user_id)
-		do nothing
+		do update set
+			role = case when vkino_room_member.role = 'host' then vkino_room_member.role else 'member' end,
+			status = 'active',
+			updated_at = now()
+	`
+
+	sqlInviteRoomMember = `
+		insert into vkino_room_member (vkino_room_id, user_id, role, status)
+		values ($1, $2, 'member', 'pending')
+		on conflict (vkino_room_id, user_id)
+		do update set
+			role = case when vkino_room_member.role = 'host' then vkino_room_member.role else 'member' end,
+			status = case when vkino_room_member.status = 'active' then 'active' else 'pending' end,
+			updated_at = now()
+	`
+
+	sqlActivateRoomMember = `
+		update vkino_room_member
+		set status = 'active',
+			updated_at = now()
+		where vkino_room_id = $1
+			and user_id = $2
+			and status = 'pending'
 	`
 
 	sqlDeleteRoom = `

@@ -31,6 +31,24 @@ func (s *Server) GetProfile(ctx context.Context, req *userv1.GetProfileRequest) 
 	return resp, nil
 }
 
+func (s *Server) GetFriend(ctx context.Context, req *userv1.GetFriendRequest) (*userv1.GetFriendResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	friend, err := s.usecase.GetFriend(ctx, authCtx.UserID, req.GetFriendId())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &userv1.GetFriendResponse{
+		Id:        friend.ID,
+		Email:     friend.Email,
+		AvatarUrl: friend.AvatarURL,
+	}, nil
+}
+
 func (s *Server) UpdateProfile(
 	ctx context.Context,
 	req *userv1.UpdateProfileRequest,

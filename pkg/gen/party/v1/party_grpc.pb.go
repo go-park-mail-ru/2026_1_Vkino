@@ -19,16 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PartyService_GetOverview_FullMethodName     = "/party.v1.PartyService/GetOverview"
-	PartyService_GetRoom_FullMethodName         = "/party.v1.PartyService/GetRoom"
-	PartyService_CreateRoom_FullMethodName      = "/party.v1.PartyService/CreateRoom"
-	PartyService_JoinRoom_FullMethodName        = "/party.v1.PartyService/JoinRoom"
-	PartyService_DeleteRoom_FullMethodName      = "/party.v1.PartyService/DeleteRoom"
-	PartyService_ApplyRoomAction_FullMethodName = "/party.v1.PartyService/ApplyRoomAction"
-	PartyService_SendRoomMessage_FullMethodName = "/party.v1.PartyService/SendRoomMessage"
-	PartyService_CreateRoomPoll_FullMethodName  = "/party.v1.PartyService/CreateRoomPoll"
-	PartyService_VoteRoomPoll_FullMethodName    = "/party.v1.PartyService/VoteRoomPoll"
-	PartyService_SubscribeRoom_FullMethodName   = "/party.v1.PartyService/SubscribeRoom"
+	PartyService_GetOverview_FullMethodName        = "/party.v1.PartyService/GetOverview"
+	PartyService_GetRoom_FullMethodName            = "/party.v1.PartyService/GetRoom"
+	PartyService_GetRoomInvite_FullMethodName      = "/party.v1.PartyService/GetRoomInvite"
+	PartyService_InviteFriendToRoom_FullMethodName = "/party.v1.PartyService/InviteFriendToRoom"
+	PartyService_CreateRoom_FullMethodName         = "/party.v1.PartyService/CreateRoom"
+	PartyService_JoinRoom_FullMethodName           = "/party.v1.PartyService/JoinRoom"
+	PartyService_DeleteRoom_FullMethodName         = "/party.v1.PartyService/DeleteRoom"
+	PartyService_ApplyRoomAction_FullMethodName    = "/party.v1.PartyService/ApplyRoomAction"
+	PartyService_SendRoomMessage_FullMethodName    = "/party.v1.PartyService/SendRoomMessage"
+	PartyService_CreateRoomPoll_FullMethodName     = "/party.v1.PartyService/CreateRoomPoll"
+	PartyService_VoteRoomPoll_FullMethodName       = "/party.v1.PartyService/VoteRoomPoll"
+	PartyService_SubscribeRoom_FullMethodName      = "/party.v1.PartyService/SubscribeRoom"
 )
 
 // PartyServiceClient is the client API for PartyService service.
@@ -37,6 +39,8 @@ const (
 type PartyServiceClient interface {
 	GetOverview(ctx context.Context, in *GetOverviewRequest, opts ...grpc.CallOption) (*GetOverviewResponse, error)
 	GetRoom(ctx context.Context, in *GetRoomRequest, opts ...grpc.CallOption) (*GetRoomResponse, error)
+	GetRoomInvite(ctx context.Context, in *GetRoomInviteRequest, opts ...grpc.CallOption) (*GetRoomInviteResponse, error)
+	InviteFriendToRoom(ctx context.Context, in *InviteFriendToRoomRequest, opts ...grpc.CallOption) (*InviteFriendToRoomResponse, error)
 	CreateRoom(ctx context.Context, in *CreateRoomRequest, opts ...grpc.CallOption) (*CreateRoomResponse, error)
 	JoinRoom(ctx context.Context, in *JoinRoomRequest, opts ...grpc.CallOption) (*JoinRoomResponse, error)
 	DeleteRoom(ctx context.Context, in *DeleteRoomRequest, opts ...grpc.CallOption) (*DeleteRoomResponse, error)
@@ -69,6 +73,26 @@ func (c *partyServiceClient) GetRoom(ctx context.Context, in *GetRoomRequest, op
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetRoomResponse)
 	err := c.cc.Invoke(ctx, PartyService_GetRoom_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *partyServiceClient) GetRoomInvite(ctx context.Context, in *GetRoomInviteRequest, opts ...grpc.CallOption) (*GetRoomInviteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRoomInviteResponse)
+	err := c.cc.Invoke(ctx, PartyService_GetRoomInvite_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *partyServiceClient) InviteFriendToRoom(ctx context.Context, in *InviteFriendToRoomRequest, opts ...grpc.CallOption) (*InviteFriendToRoomResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(InviteFriendToRoomResponse)
+	err := c.cc.Invoke(ctx, PartyService_InviteFriendToRoom_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -170,6 +194,8 @@ type PartyService_SubscribeRoomClient = grpc.ServerStreamingClient[RoomEvent]
 type PartyServiceServer interface {
 	GetOverview(context.Context, *GetOverviewRequest) (*GetOverviewResponse, error)
 	GetRoom(context.Context, *GetRoomRequest) (*GetRoomResponse, error)
+	GetRoomInvite(context.Context, *GetRoomInviteRequest) (*GetRoomInviteResponse, error)
+	InviteFriendToRoom(context.Context, *InviteFriendToRoomRequest) (*InviteFriendToRoomResponse, error)
 	CreateRoom(context.Context, *CreateRoomRequest) (*CreateRoomResponse, error)
 	JoinRoom(context.Context, *JoinRoomRequest) (*JoinRoomResponse, error)
 	DeleteRoom(context.Context, *DeleteRoomRequest) (*DeleteRoomResponse, error)
@@ -193,6 +219,12 @@ func (UnimplementedPartyServiceServer) GetOverview(context.Context, *GetOverview
 }
 func (UnimplementedPartyServiceServer) GetRoom(context.Context, *GetRoomRequest) (*GetRoomResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRoom not implemented")
+}
+func (UnimplementedPartyServiceServer) GetRoomInvite(context.Context, *GetRoomInviteRequest) (*GetRoomInviteResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRoomInvite not implemented")
+}
+func (UnimplementedPartyServiceServer) InviteFriendToRoom(context.Context, *InviteFriendToRoomRequest) (*InviteFriendToRoomResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method InviteFriendToRoom not implemented")
 }
 func (UnimplementedPartyServiceServer) CreateRoom(context.Context, *CreateRoomRequest) (*CreateRoomResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateRoom not implemented")
@@ -271,6 +303,42 @@ func _PartyService_GetRoom_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PartyServiceServer).GetRoom(ctx, req.(*GetRoomRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PartyService_GetRoomInvite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRoomInviteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartyServiceServer).GetRoomInvite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PartyService_GetRoomInvite_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartyServiceServer).GetRoomInvite(ctx, req.(*GetRoomInviteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PartyService_InviteFriendToRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InviteFriendToRoomRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PartyServiceServer).InviteFriendToRoom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PartyService_InviteFriendToRoom_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PartyServiceServer).InviteFriendToRoom(ctx, req.(*InviteFriendToRoomRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -426,6 +494,14 @@ var PartyService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRoom",
 			Handler:    _PartyService_GetRoom_Handler,
+		},
+		{
+			MethodName: "GetRoomInvite",
+			Handler:    _PartyService_GetRoomInvite_Handler,
+		},
+		{
+			MethodName: "InviteFriendToRoom",
+			Handler:    _PartyService_InviteFriendToRoom_Handler,
 		},
 		{
 			MethodName: "CreateRoom",

@@ -9,6 +9,7 @@ import (
 
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	partyv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/party/v1"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	"google.golang.org/grpc"
@@ -17,6 +18,8 @@ import (
 type PartyClient interface {
 	GetOverview(ctx context.Context, in *partyv1.GetOverviewRequest, opts ...grpc.CallOption) (*partyv1.GetOverviewResponse, error)
 	GetRoom(ctx context.Context, in *partyv1.GetRoomRequest, opts ...grpc.CallOption) (*partyv1.GetRoomResponse, error)
+	GetRoomInvite(ctx context.Context, in *partyv1.GetRoomInviteRequest, opts ...grpc.CallOption) (*partyv1.GetRoomInviteResponse, error)
+	InviteFriendToRoom(ctx context.Context, in *partyv1.InviteFriendToRoomRequest, opts ...grpc.CallOption) (*partyv1.InviteFriendToRoomResponse, error)
 	CreateRoom(ctx context.Context, in *partyv1.CreateRoomRequest, opts ...grpc.CallOption) (*partyv1.CreateRoomResponse, error)
 	JoinRoom(ctx context.Context, in *partyv1.JoinRoomRequest, opts ...grpc.CallOption) (*partyv1.JoinRoomResponse, error)
 	DeleteRoom(ctx context.Context, in *partyv1.DeleteRoomRequest, opts ...grpc.CallOption) (*partyv1.DeleteRoomResponse, error)
@@ -25,6 +28,10 @@ type PartyClient interface {
 	CreateRoomPoll(ctx context.Context, in *partyv1.CreateRoomPollRequest, opts ...grpc.CallOption) (*partyv1.CreateRoomPollResponse, error)
 	VoteRoomPoll(ctx context.Context, in *partyv1.VoteRoomPollRequest, opts ...grpc.CallOption) (*partyv1.VoteRoomPollResponse, error)
 	SubscribeRoom(ctx context.Context, in *partyv1.SubscribeRoomRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[partyv1.RoomEvent], error)
+}
+
+type PartyFriendClient interface {
+	GetFriend(ctx context.Context, in *userv1.GetFriendRequest, opts ...grpc.CallOption) (*userv1.GetFriendResponse, error)
 }
 
 type partyOverviewResponse struct {
@@ -57,8 +64,19 @@ type partyPlaybackStateHTTP struct {
 	UpdatedAt       string  `json:"updated_at"`
 }
 
+type partyFriendInviteHTTP struct {
+	RoomID int64                     `json:"room_id"`
+	Status string                    `json:"status"`
+	Friend *userv1.GetFriendResponse `json:"friend"`
+}
+
 //nolint:gocyclo,cyclop // Route registration intentionally stays flat for readability.
-func Party(cfg Config, partyClient PartyClient, movieClient moviev1.MovieServiceClient) []httpserver.Option {
+func Party(
+	cfg Config,
+	partyClient PartyClient,
+	movieClient moviev1.MovieServiceClient,
+	friendClient PartyFriendClient,
+) []httpserver.Option {
 	return []httpserver.Option{
 		route("GET /watch-party/overview", func(w http.ResponseWriter, r *http.Request) {
 			cancel := grpcContext(r, cfg.PartyRequestTimeout())
@@ -129,6 +147,72 @@ func Party(cfg Config, partyClient PartyClient, movieClient moviev1.MovieService
 			}
 
 			httppkg.Response(w, http.StatusCreated, resp)
+		}),
+
+		route("POST /watch-party/rooms/{id}/invite", func(w http.ResponseWriter, r *http.Request) {
+			roomID, ok := parseRoomPathID(w, r, "invalid room id")
+			if !ok {
+				return
+			}
+
+			cancel := grpcContext(r, cfg.PartyRequestTimeout())
+			defer cancel()
+
+			resp, err := partyClient.GetRoomInvite(r.Context(), &partyv1.GetRoomInviteRequest{
+				RoomId: roomID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, resp)
+		}),
+
+		route("POST /watch-party/friends/{friendId}/invite", func(w http.ResponseWriter, r *http.Request) {
+			friendID, ok := parseNamedPathID(w, r, "friendId", "invalid friend id")
+			if !ok {
+				return
+			}
+
+			var req struct {
+				RoomID int64 `json:"room_id"`
+			}
+			if !readJSON(w, r, &req) {
+				return
+			}
+
+			cancelUser := grpcContext(r, cfg.UserRequestTimeout())
+			defer cancelUser()
+
+			friend, err := friendClient.GetFriend(r.Context(), &userv1.GetFriendRequest{
+				FriendId: friendID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			cancelParty := grpcContext(r, cfg.PartyRequestTimeout())
+			defer cancelParty()
+
+			resp, err := partyClient.InviteFriendToRoom(r.Context(), &partyv1.InviteFriendToRoomRequest{
+				RoomId:        req.RoomID,
+				InvitedUserId: friendID,
+			})
+			if err != nil {
+				writeGRPCError(w, err)
+
+				return
+			}
+
+			httppkg.Response(w, http.StatusOK, partyFriendInviteHTTP{
+				RoomID: resp.GetRoomId(),
+				Status: resp.GetStatus(),
+				Friend: friend,
+			})
 		}),
 
 		route("POST /watch-party/join", func(w http.ResponseWriter, r *http.Request) {
@@ -481,22 +565,4 @@ func parseRoomPathID(w http.ResponseWriter, r *http.Request, message string) (in
 	}
 
 	return roomID, true
-}
-
-func parseNamedPathID(w http.ResponseWriter, r *http.Request, name, message string) (int64, bool) {
-	value := strings.TrimSpace(r.PathValue(name))
-	if value == "" {
-		httppkg.ErrResponse(w, http.StatusBadRequest, message)
-
-		return 0, false
-	}
-
-	id, err := strconv.ParseInt(value, 10, 64)
-	if err != nil {
-		httppkg.ErrResponse(w, http.StatusBadRequest, message)
-
-		return 0, false
-	}
-
-	return id, true
 }
