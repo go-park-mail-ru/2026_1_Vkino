@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
@@ -17,7 +16,7 @@ func TestGetRoomRequiresMembershipEvenForPublicRoom(t *testing.T) {
 
 	_, err := svc.GetRoom(context.Background(), 3, 5)
 
-	require.True(t, errors.Is(err, domain.ErrAccessDenied))
+	require.ErrorIs(t, err, domain.ErrAccessDenied)
 }
 
 func TestGetRoomHidesInviteForNonHost(t *testing.T) {
@@ -83,7 +82,7 @@ func TestJoinRoomUsesInviteOnly(t *testing.T) {
 
 	_, err := svc.JoinRoom(context.Background(), 9, domain.JoinRoomRequest{})
 
-	require.True(t, errors.Is(err, domain.ErrInvalidInviteLink))
+	require.ErrorIs(t, err, domain.ErrInvalidInviteLink)
 }
 
 func TestJoinRoomAddsMemberByInviteAndHidesInviteForNonHost(t *testing.T) {
@@ -123,7 +122,7 @@ func TestSubscribeRoomRequiresMembership(t *testing.T) {
 
 	_, _, err := svc.SubscribeRoom(context.Background(), 3, domain.SubscribeRoomRequest{RoomID: 5})
 
-	require.True(t, errors.Is(err, domain.ErrAccessDenied))
+	require.ErrorIs(t, err, domain.ErrAccessDenied)
 	require.Empty(t, broker.subscribedRoomIDs)
 }
 

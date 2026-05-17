@@ -426,6 +426,7 @@ func toProtoRoomEvent(item domain.RoomEvent) *partyv1.RoomEvent {
 	if item.Poll != nil {
 		result.Poll = toProtoPoll(*item.Poll)
 	}
+
 	if item.Member != nil {
 		result.Member = toProtoRoomMember(*item.Member)
 	}

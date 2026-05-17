@@ -49,6 +49,7 @@ func (s *service) ApplyRoomAction(
 	switch action {
 	case "play":
 		applyPlaybackRequest(&state, req)
+
 		state.Status = "playing"
 		if req.PositionSeconds >= 0 {
 			state.PositionSeconds = req.PositionSeconds
@@ -63,12 +64,14 @@ func (s *service) ApplyRoomAction(
 		if req.PositionSeconds < 0 {
 			return domain.PlaybackState{}, domain.ErrInvalidPlayback
 		}
+
 		applyPlaybackRequest(&state, req)
 		state.PositionSeconds = req.PositionSeconds
 	case "select_movie":
 		if req.MovieID <= 0 {
 			return domain.PlaybackState{}, domain.ErrInvalidPlayback
 		}
+
 		state.MovieID = req.MovieID
 		state.EpisodeID = 0
 		state.PlaybackURL = ""
@@ -79,34 +82,43 @@ func (s *service) ApplyRoomAction(
 		if req.EpisodeID <= 0 {
 			return domain.PlaybackState{}, domain.ErrInvalidPlayback
 		}
+
 		state.EpisodeID = req.EpisodeID
 		if req.MovieID > 0 {
 			state.MovieID = req.MovieID
 		}
+
 		if strings.TrimSpace(req.PlaybackURL) != "" {
 			state.PlaybackURL = strings.TrimSpace(req.PlaybackURL)
 		}
+
 		if req.DurationSeconds >= 0 {
 			state.DurationSeconds = req.DurationSeconds
 		}
+
 		state.PositionSeconds = 0
 		state.Status = "paused"
 	case "sync_state":
 		if req.MovieID > 0 {
 			state.MovieID = req.MovieID
 		}
+
 		if req.EpisodeID > 0 {
 			state.EpisodeID = req.EpisodeID
 		}
+
 		if strings.TrimSpace(req.PlaybackURL) != "" {
 			state.PlaybackURL = strings.TrimSpace(req.PlaybackURL)
 		}
+
 		if req.DurationSeconds >= 0 {
 			state.DurationSeconds = req.DurationSeconds
 		}
+
 		if req.PositionSeconds >= 0 {
 			state.PositionSeconds = req.PositionSeconds
 		}
+
 		if strings.TrimSpace(req.Status) != "" {
 			state.Status = strings.TrimSpace(strings.ToLower(req.Status))
 		}
@@ -150,12 +162,15 @@ func applyPlaybackRequest(state *domain.PlaybackState, req domain.ApplyRoomActio
 	if req.MovieID > 0 {
 		state.MovieID = req.MovieID
 	}
+
 	if req.EpisodeID > 0 {
 		state.EpisodeID = req.EpisodeID
 	}
+
 	if strings.TrimSpace(req.PlaybackURL) != "" {
 		state.PlaybackURL = strings.TrimSpace(req.PlaybackURL)
 	}
+
 	if req.DurationSeconds > 0 {
 		state.DurationSeconds = req.DurationSeconds
 	}

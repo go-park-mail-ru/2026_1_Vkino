@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
@@ -131,7 +130,7 @@ func TestApplyRoomActionRejectsNonMember(t *testing.T) {
 		DurationSeconds: 70,
 	})
 
-	require.True(t, errors.Is(err, domain.ErrAccessDenied))
+	require.ErrorIs(t, err, domain.ErrAccessDenied)
 	require.Empty(t, repo.savedPlayback)
 	require.Empty(t, repo.touchedRooms)
 	require.Empty(t, broker.events)
@@ -150,7 +149,7 @@ func TestApplyRoomActionKeepsMovieSelectionHostOnly(t *testing.T) {
 		MovieID: 9,
 	})
 
-	require.True(t, errors.Is(err, domain.ErrAccessDenied))
+	require.ErrorIs(t, err, domain.ErrAccessDenied)
 	require.Empty(t, repo.savedPlayback)
 	require.Empty(t, repo.touchedRooms)
 	require.Empty(t, broker.events)

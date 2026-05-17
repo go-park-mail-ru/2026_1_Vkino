@@ -10,7 +10,8 @@ import (
 func TestRunHTTPRequiresContext(t *testing.T) {
 	t.Parallel()
 
-	if err := RunHTTP(nil, nil, "svc", func() error { return nil }, func(context.Context) error { return nil }); err == nil {
+	if err := RunHTTP(nil, nil, "svc", func() error { return nil },
+		func(context.Context) error { return nil }); err == nil {
 		t.Fatal("expected error for nil context")
 	}
 }

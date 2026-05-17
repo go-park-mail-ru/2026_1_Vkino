@@ -87,7 +87,8 @@ func TestSupportFileUploadHandler(t *testing.T) {
 	client := NewMockUserClient(ctrl)
 
 	client.EXPECT().UploadSupportFile(gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ any, req *supportv1.UploadSupportFileRequest, _ ...any) (*supportv1.UploadSupportFileResponse, error) {
+		DoAndReturn(func(_ any, req *supportv1.UploadSupportFileRequest,
+			_ ...any) (*supportv1.UploadSupportFileResponse, error) {
 			require.Equal(t, []byte("hello"), req.Content)
 			require.Equal(t, "note.txt", req.Filename)
 			require.Equal(t, "text/plain", req.ContentType)
@@ -98,7 +99,8 @@ func TestSupportFileUploadHandler(t *testing.T) {
 
 	handler := newSupportFileUploadHandler(testConfig{}, client)
 
-	req := newMultipartFileRequest(t, "/support/files", "file", "note.txt", "text/plain", []byte("hello"))
+	req := newMultipartFileRequest(t, "/support/files", "file", "note.txt", "text/plain",
+		[]byte("hello"))
 	rr := httptest.NewRecorder()
 
 	handler(rr, req)

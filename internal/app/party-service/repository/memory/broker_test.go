@@ -43,6 +43,7 @@ func TestRoomEventBrokerPublishWaitsInsteadOfDropping(t *testing.T) {
 	t.Parallel()
 
 	const roomID int64 = 9
+
 	const eventsCount = 17
 
 	broker := NewRoomEventBroker()

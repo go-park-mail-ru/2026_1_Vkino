@@ -61,7 +61,9 @@ func TestMovieRoutes_GetSelectionByTitle(t *testing.T) {
 
 	var body map[string]any
 	require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &body))
-	require.Equal(t, 8.25, body["rating"])
+	ratingValue, ok := body["rating"].(float64)
+	require.True(t, ok)
+	require.InDelta(t, 8.25, ratingValue, 0.000001)
 }
 
 func TestMovieRoutes_GetSelectionByTitle_Empty(t *testing.T) {
