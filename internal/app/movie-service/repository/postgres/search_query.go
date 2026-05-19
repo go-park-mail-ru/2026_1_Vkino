@@ -7,6 +7,7 @@ import (
 
 func buildPrefixSearchQuery(query string) string {
 	terms := make([]string, 0)
+
 	var term strings.Builder
 
 	flushTerm := func() {

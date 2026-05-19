@@ -1,0 +1,221 @@
+syntax = "proto3";
+
+package party.v1;
+
+option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/party/v1;partyv1";
+
+service PartyService {
+  rpc GetOverview(GetOverviewRequest) returns (GetOverviewResponse);
+  rpc GetRoom(GetRoomRequest) returns (GetRoomResponse);
+  rpc GetRoomInvite(GetRoomInviteRequest) returns (GetRoomInviteResponse);
+  rpc InviteFriendToRoom(InviteFriendToRoomRequest) returns (InviteFriendToRoomResponse);
+  rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
+  rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+  rpc DeleteRoom(DeleteRoomRequest) returns (DeleteRoomResponse);
+  rpc ApplyRoomAction(ApplyRoomActionRequest) returns (ApplyRoomActionResponse);
+  rpc SendRoomMessage(SendRoomMessageRequest) returns (SendRoomMessageResponse);
+  rpc CreateRoomPoll(CreateRoomPollRequest) returns (CreateRoomPollResponse);
+  rpc VoteRoomPoll(VoteRoomPollRequest) returns (VoteRoomPollResponse);
+
+  rpc SubscribeRoom(SubscribeRoomRequest) returns (stream RoomEvent);
+}
+
+message GetOverviewRequest {}
+
+message GetOverviewResponse {
+  repeated RoomCard active_rooms = 1;
+  repeated RoomCard my_rooms = 2;
+  repeated RoomCard featured_rooms = 3;
+}
+
+message GetRoomRequest {
+  int64 room_id = 1;
+}
+
+message GetRoomResponse {
+  Room room = 1;
+}
+
+message GetRoomInviteRequest {
+  int64 room_id = 1;
+}
+
+message GetRoomInviteResponse {
+  int64 room_id = 1;
+  string invite_link = 2;
+}
+
+message InviteFriendToRoomRequest {
+  int64 room_id = 1;
+  int64 invited_user_id = 2;
+}
+
+message InviteFriendToRoomResponse {
+  int64 room_id = 1;
+  int64 invited_user_id = 2;
+  string status = 3;
+}
+
+message CreateRoomRequest {
+  string name = 1;
+  string visibility = 2;
+  int64 movie_id = 3;
+  int64 episode_id = 4;
+}
+
+message CreateRoomResponse {
+  Room room = 1;
+}
+
+message JoinRoomRequest {
+  string invite_link = 1;
+}
+
+message JoinRoomResponse {
+  Room room = 1;
+}
+
+message DeleteRoomRequest {
+  int64 room_id = 1;
+}
+
+message DeleteRoomResponse {
+  int64 room_id = 1;
+  bool success = 2;
+}
+
+message ApplyRoomActionRequest {
+  int64 room_id = 1;
+  string action = 2;
+  int64 movie_id = 3;
+  int64 episode_id = 4;
+  string playback_url = 5;
+  int64 duration_seconds = 6;
+  int64 position_seconds = 7;
+  string status = 8;
+}
+
+message ApplyRoomActionResponse {
+  PlaybackState playback = 1;
+}
+
+message SendRoomMessageRequest {
+  int64 room_id = 1;
+  string content = 2;
+}
+
+message SendRoomMessageResponse {
+  RoomMessage message = 1;
+}
+
+message CreateRoomPollRequest {
+  int64 room_id = 1;
+  string question = 2;
+  repeated string options = 3;
+}
+
+message CreateRoomPollResponse {
+  Poll poll = 1;
+}
+
+message VoteRoomPollRequest {
+  int64 room_id = 1;
+  int64 poll_id = 2;
+  int64 option_id = 3;
+}
+
+message VoteRoomPollResponse {
+  PollVote vote = 1;
+  Poll poll = 2;
+}
+
+message SubscribeRoomRequest {
+  int64 room_id = 1;
+}
+
+message RoomCard {
+  int64 id = 1;
+  string name = 2;
+  string visibility = 3;
+  string invite_link = 4;
+  int64 host_user_id = 5;
+  string host_name = 6;
+  int32 participants_count = 7;
+  PlaybackState playback = 8;
+  string updated_at = 9;
+}
+
+message Room {
+  int64 id = 1;
+  string name = 2;
+  string visibility = 3;
+  int64 host_user_id = 4;
+  string invite_link = 5;
+  repeated RoomMember members = 6;
+  PlaybackState playback = 7;
+  repeated RoomMessage messages = 8;
+  repeated Poll polls = 9;
+  string updated_at = 10;
+}
+
+message RoomMember {
+  int64 user_id = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  string role = 4;
+  string joined_at = 5;
+  string status = 6;
+}
+
+message PlaybackState {
+  int64 movie_id = 1;
+  int64 episode_id = 2;
+  string playback_url = 3;
+  int64 duration_seconds = 4;
+  int64 position_seconds = 5;
+  string status = 6;
+  string updated_at = 7;
+}
+
+message RoomMessage {
+  int64 id = 1;
+  int64 room_id = 2;
+  int64 author_user_id = 3;
+  string author_name = 4;
+  string content = 5;
+  string created_at = 6;
+}
+
+message Poll {
+  int64 id = 1;
+  int64 room_id = 2;
+  string question = 3;
+  repeated PollOption options = 4;
+  int64 created_by_user_id = 5;
+  string created_at = 6;
+  string closed_at = 7;
+}
+
+message PollOption {
+  int64 id = 1;
+  string title = 2;
+  int64 votes_count = 3;
+}
+
+message PollVote {
+  int64 poll_id = 1;
+  int64 option_id = 2;
+  int64 user_id = 3;
+}
+
+message RoomEvent {
+  string type = 1;
+  int64 room_id = 2;
+  int64 actor_user_id = 3;
+  PlaybackState playback = 4;
+  RoomMessage message = 5;
+  Poll poll = 6;
+  RoomMember member = 7;
+  PollVote vote = 8;
+  string sent_at = 9;
+}

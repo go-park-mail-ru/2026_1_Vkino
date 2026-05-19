@@ -136,7 +136,8 @@ func TestUserRoutes_SetMovieReview(t *testing.T) {
 	}, nil)
 
 	handler := newUserHandler(t, testConfig{}, client)
-	rr := doRequest(handler, http.MethodPut, "/user/reviews/4", bytes.NewReader([]byte(`{"rating":8.5,"message":"Очень понравилось"}`)))
+	rr := doRequest(handler, http.MethodPut, "/user/reviews/4",
+		bytes.NewReader([]byte(`{"rating":8.5,"message":"Очень понравилось"}`)))
 
 	require.Equal(t, http.StatusOK, rr.Code)
 	require.JSONEq(t, `{"review_id":9,"movie_id":4,"rating":8.5,"comment":"Очень понравилось"}`, rr.Body.String())
@@ -248,7 +249,8 @@ func TestUserRoutes_GetWatchHistory(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockUserClient(ctrl)
 
-	client.EXPECT().GetWatchHistory(gomock.Any(), &moviev1.GetWatchHistoryRequest{Limit: defaultSearchLimit, MinProgress: 0}).
+	client.EXPECT().GetWatchHistory(gomock.Any(), &moviev1.GetWatchHistoryRequest{Limit: defaultSearchLimit,
+		MinProgress: 0}).
 		Return(&moviev1.GetWatchHistoryResponse{}, nil)
 
 	handler := newUserHandler(t, testConfig{}, client)
@@ -263,7 +265,8 @@ func TestUserRoutes_GetWatchRecent(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockUserClient(ctrl)
 
-	client.EXPECT().GetWatchHistory(gomock.Any(), &moviev1.GetWatchHistoryRequest{Limit: defaultSearchLimit, MinProgress: recentWatchHistoryMinProgress}).
+	client.EXPECT().GetWatchHistory(gomock.Any(), &moviev1.GetWatchHistoryRequest{Limit: defaultSearchLimit,
+		MinProgress: recentWatchHistoryMinProgress}).
 		Return(&moviev1.GetWatchHistoryResponse{}, nil)
 
 	handler := newUserHandler(t, testConfig{}, client)
@@ -278,7 +281,8 @@ func TestUserRoutes_GetFriendRequests(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockUserClient(ctrl)
 
-	client.EXPECT().GetFriendRequests(gomock.Any(), &userv1.GetFriendRequestsRequest{Direction: "out", Limit: defaultCollectionLimit}).
+	client.EXPECT().GetFriendRequests(gomock.Any(), &userv1.GetFriendRequestsRequest{Direction: "out",
+		Limit: defaultCollectionLimit}).
 		Return(&userv1.GetFriendRequestsResponse{}, nil)
 
 	handler := newUserHandler(t, testConfig{}, client)
@@ -344,7 +348,9 @@ func TestUserRoutes_CreateTicket(t *testing.T) {
 	}).Return(&supportv1.TicketResponse{}, nil)
 
 	handler := newUserHandler(t, testConfig{}, client)
-	rr := doRequest(handler, http.MethodPost, "/support/tickets", bytes.NewReader([]byte(`{"category":"billing","title":"Help","description":"Details","user_email":" user@example.com ","attachment_file_key":"file"}`)))
+	rr := doRequest(handler, http.MethodPost, "/support/tickets",
+		bytes.NewReader([]byte(`{"category":"billing","title":"Help","description":"Details","user_email":" 
+		user@example.com ","attachment_file_key":"file"}`)))
 
 	require.Equal(t, http.StatusCreated, rr.Code)
 }
@@ -380,7 +386,9 @@ func TestUserRoutes_UpdateTicket(t *testing.T) {
 	}).Return(&supportv1.TicketResponse{}, nil)
 
 	handler := newUserHandler(t, testConfig{}, client)
-	rr := doRequest(handler, http.MethodPatch, "/support/tickets/5", bytes.NewReader([]byte(`{"category":"billing","status":"open","support_line":2,"title":"Help","user_email":"user@example.com","description":"Details","attachment_file_key":"file","rating":4}`)))
+	rr := doRequest(handler, http.MethodPatch, "/support/tickets/5",
+		bytes.NewReader([]byte(`{"category":"billing","status":"open","support_line":2,"title":"Help",
+		"user_email":"user@example.com","description":"Details","attachment_file_key":"file","rating":4}`)))
 
 	require.Equal(t, http.StatusOK, rr.Code)
 }
@@ -406,11 +414,13 @@ func TestUserRoutes_CreateTicketMessage(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockUserClient(ctrl)
 
-	client.EXPECT().CreateTicketMessage(gomock.Any(), &supportv1.CreateTicketMessageRequest{TicketId: 3, Content: "hello", ContentFileKey: "key"}).
+	client.EXPECT().CreateTicketMessage(gomock.Any(), &supportv1.CreateTicketMessageRequest{TicketId: 3,
+		Content: "hello", ContentFileKey: "key"}).
 		Return(&supportv1.TicketMessageResponse{}, nil)
 
 	handler := newUserHandler(t, testConfig{}, client)
-	rr := doRequest(handler, http.MethodPost, "/support/tickets/3/messages", bytes.NewReader([]byte(`{"content":"hello","content_file_key":"key"}`)))
+	rr := doRequest(handler, http.MethodPost, "/support/tickets/3/messages",
+		bytes.NewReader([]byte(`{"content":"hello","content_file_key":"key"}`)))
 
 	require.Equal(t, http.StatusCreated, rr.Code)
 }

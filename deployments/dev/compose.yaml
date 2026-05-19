@@ -118,6 +118,33 @@ services:
     networks:
       - app-network
 
+  party-service:
+    env_file:
+      - ./.env
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+      args:
+        SERVICE_PATH: cmd/party
+        BINARY_NAME: party
+    restart: always
+    volumes:
+      - ../../configs/party.yaml:/etc/vkino/party.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    command: ./party -config /etc/vkino/party.yaml
+    environment:
+      POSTGRES_USER: ${VKINO_PARTY_DB_USER}
+      POSTGRES_PASSWORD: ${VKINO_PARTY_DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "9093"
+      - "9200"
+    networks:
+      - app-network
+
   db:
     image: postgres:18.3
     env_file:
@@ -213,6 +240,7 @@ services:
       - auth-service
       - user-service
       - movie-service
+      - party-service
     networks:
       - app-network
 

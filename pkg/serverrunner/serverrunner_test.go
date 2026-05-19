@@ -10,7 +10,8 @@ import (
 func TestRunHTTPRequiresContext(t *testing.T) {
 	t.Parallel()
 
-	if err := RunHTTP(nil, nil, "svc", func() error { return nil }, func(context.Context) error { return nil }); err == nil {
+	if err := RunHTTP(nil, nil, "svc", func() error { return nil },
+		func(context.Context) error { return nil }); err == nil {
 		t.Fatal("expected error for nil context")
 	}
 }
@@ -25,9 +26,11 @@ func TestRunHTTPContextCancel(t *testing.T) {
 
 	err := RunHTTP(ctx, nil, "svc", func() error {
 		<-runCh
+
 		return http.ErrServerClosed
 	}, func(context.Context) error {
 		close(runCh)
+
 		return nil
 	})
 
@@ -46,6 +49,7 @@ func TestRunGRPCContextCancel(t *testing.T) {
 
 	err := RunGRPC(ctx, nil, "svc", func() error {
 		<-runCh
+
 		return nil
 	}, func() {
 		close(runCh)
@@ -66,7 +70,6 @@ func TestRunGRPCServeError(t *testing.T) {
 	err := RunGRPC(ctx, nil, "svc", func() error {
 		return expected
 	}, func() {}, func() {})
-
 	if err == nil {
 		t.Fatal("expected error")
 	}

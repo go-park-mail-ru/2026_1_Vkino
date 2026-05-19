@@ -12,6 +12,7 @@ psql \
   -v auth_user="${VKINO_AUTH_DB_USER}" \
   -v user_user="${VKINO_USER_DB_USER}" \
   -v movie_user="${VKINO_MOVIE_DB_USER}" \
+  -v party_user="${VKINO_PARTY_DB_USER}" \
   -v migrator_user="${VKINO_MIGRATOR_DB_USER}" \
   -v monitoring_user="${VKINO_MONITORING_DB_USER}" \
   -f /scripts/03_runtime_grants.sql

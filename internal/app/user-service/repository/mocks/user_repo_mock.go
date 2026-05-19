@@ -186,6 +186,21 @@ func (mr *MockUserRepoMockRecorder) GetFriendRequests(ctx, userID, direction, li
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriendRequests", reflect.TypeOf((*MockUserRepo)(nil).GetFriendRequests), ctx, userID, direction, limit)
 }
 
+// GetFriend mocks base method.
+func (m *MockUserRepo) GetFriend(ctx context.Context, userID, friendID int64) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFriend", ctx, userID, friendID)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFriend indicates an expected call of GetFriend.
+func (mr *MockUserRepoMockRecorder) GetFriend(ctx, userID, friendID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriend", reflect.TypeOf((*MockUserRepo)(nil).GetFriend), ctx, userID, friendID)
+}
+
 // GetFriendsList mocks base method.
 func (m *MockUserRepo) GetFriendsList(ctx context.Context, userID int64, limit, offset int32) ([]domain.UserSearchResult, int32, error) {
 	m.ctrl.T.Helper()

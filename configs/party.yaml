@@ -1,0 +1,38 @@
+grpc:
+  port: 9093
+
+auth_grpc:
+  address: "auth-service:9090"
+  request_timeout: "5s"
+
+movie_grpc:
+  address: "movie-service:9092"
+  request_timeout: "5s"
+
+user_grpc:
+  address: "user-service:9091"
+  request_timeout: "5s"
+
+logger:
+  level: "info"
+  format: "json"
+  output_path: "logs/app/party.log"
+
+metrics:
+  enabled: true
+  address: ":9200"
+
+postgres:
+  host: "db"
+  port: 5432
+  user: ""
+  password: ""
+  dbname: ""
+  sslmode: "disable"
+  application_name: "vkino-party-service"
+  max_pool_size: 15
+  conn_attempts: 10
+  conn_timeout: "5s"
+  statement_timeout: "5s"
+  lock_timeout: "1s"
+  idle_in_transaction_session_timeout: "10s"

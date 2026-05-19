@@ -17,12 +17,14 @@ func TestChainOrder(t *testing.T) {
 	mw1 := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			order = append(order, "mw1")
+
 			next.ServeHTTP(w, r)
 		})
 	}
 	mw2 := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			order = append(order, "mw2")
+
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -58,6 +60,7 @@ func TestCorsMiddlewareOptions(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodOptions, "/", nil)
 	req.Header.Set("Origin", "https://example.com")
+
 	rr := httptest.NewRecorder()
 
 	h.ServeHTTP(rr, req)
@@ -118,6 +121,7 @@ func TestRequestIDMiddleware(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set(requestid.HeaderName, "abc")
+
 	rr := httptest.NewRecorder()
 
 	h.ServeHTTP(rr, req)

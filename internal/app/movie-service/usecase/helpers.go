@@ -279,6 +279,7 @@ func maskEmail(email string) string {
 	}
 
 	local := email[:at]
+
 	domainPart := email[at:]
 	if len(local) <= 2 {
 		return local[:1] + "***" + domainPart

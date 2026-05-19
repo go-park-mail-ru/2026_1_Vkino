@@ -6,6 +6,7 @@ option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1;use
 
 service UserService {
   rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc GetFriend(GetFriendRequest) returns (GetFriendResponse);
   rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
   rpc SearchUsersByEmail(SearchUsersByEmailRequest) returns (SearchUsersByEmailResponse);
   rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
@@ -35,6 +36,16 @@ message GetProfileResponse {
   string birthdate = 2;
   string avatar_url = 3;
   string role = 4;
+}
+
+message GetFriendRequest {
+  int64 friend_id = 1;
+}
+
+message GetFriendResponse {
+  int64 id = 1;
+  string email = 2;
+  string avatar_url = 3;
 }
 
 message UpdateProfileRequest {

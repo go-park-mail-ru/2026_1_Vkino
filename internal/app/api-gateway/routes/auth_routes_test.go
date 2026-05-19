@@ -28,9 +28,11 @@ func TestAuthRoutes_SignUp(t *testing.T) {
 	}, nil)
 
 	handler := newAuthHandler(t, cfg, client)
-	rr := doRequest(handler, http.MethodPost, "/user/sign-up", bytes.NewReader([]byte(`{"email":"user@example.com","password":"pass"}`)))
+	rr := doRequest(handler, http.MethodPost, "/user/sign-up",
+		bytes.NewReader([]byte(`{"email":"user@example.com","password":"pass"}`)))
 
 	res := rr.Result()
+
 	defer func() {
 		_ = res.Body.Close()
 	}()
@@ -75,7 +77,8 @@ func TestAuthRoutes_SignIn(t *testing.T) {
 	}, nil)
 
 	handler := newAuthHandler(t, cfg, client)
-	rr := doRequest(handler, http.MethodPost, "/user/sign-in", bytes.NewReader([]byte(`{"email":"user@example.com","password":"pass"}`)))
+	rr := doRequest(handler, http.MethodPost, "/user/sign-in",
+		bytes.NewReader([]byte(`{"email":"user@example.com","password":"pass"}`)))
 
 	require.Equal(t, http.StatusOK, rr.Code)
 	require.JSONEq(t, `{"access_token":"access"}`, rr.Body.String())
@@ -115,6 +118,7 @@ func TestAuthRoutes_Refresh(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/user/refresh", nil)
 	req.AddCookie(&http.Cookie{Name: "refresh", Value: "refresh-token"})
+
 	rr := httptest.NewRecorder()
 
 	handler.ServeHTTP(rr, req)
@@ -161,7 +165,8 @@ func TestAuthRoutes_ChangePassword(t *testing.T) {
 	}).Return(&authv1.ChangePasswordResponse{}, nil)
 
 	handler := newAuthHandler(t, testConfig{}, client)
-	rr := doRequest(handler, http.MethodPost, "/user/change-password", bytes.NewReader([]byte(`{"old_password":"old","new_password":"new"}`)))
+	rr := doRequest(handler, http.MethodPost, "/user/change-password",
+		bytes.NewReader([]byte(`{"old_password":"old","new_password":"new"}`)))
 
 	require.Equal(t, http.StatusOK, rr.Code)
 }

@@ -19,6 +19,7 @@ func ValidateSelectionTitle(title string) bool {
 
 func ValidateSearchQuery(query string) bool {
 	trimmed := strings.TrimSpace(query)
+
 	queryLen := utf8.RuneCountInString(trimmed)
 	if queryLen < minSearchQueryRunes || queryLen > maxSearchQueryRunes {
 		return false

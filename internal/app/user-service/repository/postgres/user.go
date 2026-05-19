@@ -79,6 +79,32 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 	return &user, nil
 }
 
+func (r *UserRepo) GetFriend(ctx context.Context, userID, friendID int64) (*domain.User, error) {
+	var user domain.User
+
+	err := r.db.QueryRow(ctx, sqlGetFriendByID, userID, friendID).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Password,
+		&user.Role,
+		&user.Birthdate,
+		&user.AvatarFileKey,
+		&user.RegistrationDate,
+		&user.IsActive,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrFriendNotFound
+		}
+
+		return nil, fmt.Errorf("get friend by id: %w", err)
+	}
+
+	return &user, nil
+}
+
 func (r *UserRepo) SearchUsersByEmail(
 	ctx context.Context,
 	userID int64,
@@ -256,8 +282,8 @@ func (r *UserRepo) DeleteMovieReview(ctx context.Context, userID, movieID int64)
 	}()
 
 	var (
-		reviewID    int64
-		isFavorite  bool
+		reviewID   int64
+		isFavorite bool
 	)
 
 	err = tx.QueryRow(ctx, sqlGetReviewByUserAndMovie, userID, movieID).Scan(&reviewID, &isFavorite)

@@ -48,7 +48,8 @@ func TestBuildMovieResponse_IncludesExternalRatings(t *testing.T) {
 		t.Fatalf("external ratings len = %d, want 2", len(resp.ExternalRatings))
 	}
 
-	if resp.ExternalRatings[0].Source != "IMDb" || resp.ExternalRatings[0].Value != 8.7 || resp.ExternalRatings[0].Scale != 10 {
+	if resp.ExternalRatings[0].Source != "IMDb" || resp.ExternalRatings[0].Value != 8.7 ||
+		resp.ExternalRatings[0].Scale != 10 {
 		t.Fatalf("unexpected first external rating: %+v", resp.ExternalRatings[0])
 	}
 

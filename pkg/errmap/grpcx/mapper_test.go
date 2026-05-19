@@ -26,6 +26,7 @@ func TestMapKnownError(t *testing.T) {
 	}, codes.Internal, "internal")
 
 	err := m.Map(sentinel)
+
 	st, ok := status.FromError(err)
 	if !ok {
 		t.Fatal("expected grpc status error")
@@ -41,6 +42,7 @@ func TestMapDefault(t *testing.T) {
 
 	m := New([]error{}, map[error]ErrResponse{}, codes.Internal, "internal")
 	err := m.Map(errors.New("unknown"))
+
 	st, _ := status.FromError(err)
 	if st.Code() != codes.Internal {
 		t.Fatalf("expected internal code, got %v", st.Code())

@@ -104,6 +104,29 @@ services:
     networks:
       - app-network
 
+  party-service:
+    image: saucesamba/vkino-party:v0.1.1
+    platform: linux/amd64
+    restart: always
+    env_file:
+      - ./.env
+    command: ./party -config /etc/vkino/party.yaml
+    volumes:
+      - ./party/config.yaml:/etc/vkino/party.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    environment:
+      POSTGRES_USER: ${VKINO_PARTY_DB_USER}
+      POSTGRES_PASSWORD: ${VKINO_PARTY_DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "9093"
+      - "9200"
+    networks:
+      - app-network
+
   db:
     image: postgres:18.3
     env_file:
@@ -200,6 +223,7 @@ services:
       - auth-service
       - user-service
       - movie-service
+      - party-service
       - node-exporter
       - cadvisor
     networks:

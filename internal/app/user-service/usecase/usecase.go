@@ -13,6 +13,7 @@ import (
 
 type Usecase interface {
 	GetProfile(ctx context.Context, userID int64) (domain.ProfileResponse, error)
+	GetFriend(ctx context.Context, userID, friendID int64) (domain.FriendResponse, error)
 	SearchUsersByEmail(ctx context.Context, userID int64, emailQuery string) ([]domain.UserSearchResult, error)
 	SearchUsers(ctx context.Context, userID int64, query string, limit int32) ([]domain.UserSearchResult, error)
 	AddFriend(ctx context.Context, userID int64, friendID int64) (domain.FriendResponse, error)
