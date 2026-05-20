@@ -159,17 +159,25 @@ const (
 	`
 
 	sqlGetFavorites = `
-		select ui.movie_id
-		from user_interaction ui
-		where ui.user_id = $1 and ui.is_favorite = true
-		order by ui.updated_at desc
-		limit $2 offset $3
-	`
-
-	sqlCountFavorites = `
-		select count(*)
-		from user_interaction
-		where user_id = $1 and is_favorite = true
+		with total as (
+			select count(*)::int as total_count
+			from user_interaction ui
+			where ui.user_id = $1 and ui.is_favorite = true
+		)
+		select
+			p.movie_id,
+			t.total_count
+		from total t
+		left join lateral (
+			select
+				ui.movie_id,
+				ui.updated_at
+			from user_interaction ui
+			where ui.user_id = $1 and ui.is_favorite = true
+			order by ui.updated_at desc
+			limit $2 offset $3
+		) p on true
+		order by p.updated_at desc nulls last
 	`
 
 	sqlAddFriend = `
