@@ -2450,6 +2450,118 @@ UPDATE actor
 SET picture_file_key = format('actors/%s/profile.webp', replace(picture_file_key, '.webp', ''))
 WHERE picture_file_key not like 'actors/%';
 
+WITH movie_genres AS (
+    SELECT
+        gtm.movie_id,
+        string_agg(g.title, ', ' ORDER BY g.title) AS genres
+    FROM genre_to_movie gtm
+    JOIN genre g ON g.id = gtm.genre_id
+    GROUP BY gtm.movie_id
+),
+movie_cast_preview AS (
+    SELECT
+        ranked.movie_id,
+        string_agg(ranked.full_name, ', ' ORDER BY ranked.full_name) AS cast_preview
+    FROM (
+        SELECT
+            atm.movie_id,
+            a.full_name,
+            row_number() OVER (PARTITION BY atm.movie_id ORDER BY a.full_name) AS rn
+        FROM actor_to_movie atm
+        JOIN actor a ON a.id = atm.actor_id
+    ) ranked
+    WHERE ranked.rn <= 4
+    GROUP BY ranked.movie_id
+)
+UPDATE movie m
+SET description = concat_ws(
+    ' ',
+    CASE
+        WHEN m.description IS NULL OR btrim(m.description) = '' THEN format('Проект "%s".', m.title)
+        WHEN right(btrim(m.description), 1) IN ('.', '!', '?') THEN btrim(m.description)
+        ELSE btrim(m.description) || '.'
+    END,
+    format(
+        'Релиз проекта состоялся в %s году, а режиссёрская работа указана как "%s".',
+        m.release_year,
+        coalesce(nullif(btrim(m.director), ''), 'режиссёр не указан')
+    ),
+    format(
+        'В карточке фильма зафиксированы жанры: %s.',
+        coalesce(mg.genres, 'жанры не указаны')
+    ),
+    CASE
+        WHEN mcp.cast_preview IS NOT NULL THEN format(
+            'Среди ключевых исполнителей в базе отмечены %s.',
+            mcp.cast_preview
+        )
+    END
+)
+FROM movie_genres mg
+LEFT JOIN movie_cast_preview mcp ON mcp.movie_id = mg.movie_id
+WHERE m.id = mg.movie_id;
+
+WITH actor_projects AS (
+    SELECT
+        ranked.actor_id,
+        string_agg(ranked.title, ', ' ORDER BY ranked.release_year DESC, ranked.title) AS project_list
+    FROM (
+        SELECT
+            atm.actor_id,
+            m.title,
+            m.release_year,
+            row_number() OVER (
+                PARTITION BY atm.actor_id
+                ORDER BY m.release_year DESC, m.title
+            ) AS rn
+        FROM actor_to_movie atm
+        JOIN movie m ON m.id = atm.movie_id
+    ) ranked
+    WHERE ranked.rn <= 4
+    GROUP BY ranked.actor_id
+),
+actor_enrichment AS (
+    SELECT
+        a.id AS actor_id,
+        c.title AS country_title,
+        ap.project_list
+    FROM actor a
+    JOIN country c ON c.id = a.country_id
+    LEFT JOIN actor_projects ap ON ap.actor_id = a.id
+)
+UPDATE actor a
+SET biography = concat_ws(
+    ' ',
+    CASE
+        WHEN a.biography IS NULL OR btrim(a.biography) = '' THEN format(
+            '%s — актёрская карточка, подготовленная для демонстрационного каталога сервиса.',
+            a.full_name
+        )
+        WHEN right(btrim(a.biography), 1) IN ('.', '!', '?') THEN btrim(a.biography)
+        ELSE btrim(a.biography) || '.'
+    END,
+    CASE
+        WHEN ae.project_list IS NOT NULL THEN format(
+            'В текущем каталоге с этой карточкой связаны проекты: %s.',
+            ae.project_list
+        )
+        ELSE 'Карточка сохранена в сид-данных как самостоятельный участник каталога, чтобы актерский состав витрины выглядел полнее и реалистичнее.'
+    END,
+    format(
+        'В базе эта карточка привязана к стране "%s"%s, что делает профиль более полным для витрины приложения.',
+        ae.country_title,
+        CASE
+            WHEN a.birthdate IS NOT NULL THEN format(
+                ' и дате рождения %s',
+                to_char(a.birthdate, 'DD.MM.YYYY')
+            )
+            ELSE ''
+        END
+    )
+)
+FROM actor_enrichment ae
+WHERE a.id = ae.actor_id;
+
 INSERT INTO episode (
     movie_id, description, season_number, episode_number, title,
     duration_seconds, picture_file_key, video_file_key
