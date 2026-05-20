@@ -1,3 +1,5 @@
+![Vkino](https://komarev.com/ghpvc/?username=2026-1-Vkino&color=blue&abbreviated=true&style=flat&label=Views)
+
 # 🎬 Vkino – Ваш мир кино и сериалов!
 
 Добро пожаловать в репозиторий **Vkino**, вашего нового любимого сервиса для онлайн-просмотра фильмов и сериалов!
