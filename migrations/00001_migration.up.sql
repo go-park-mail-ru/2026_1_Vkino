@@ -166,7 +166,6 @@ create table if not exists episode (
     updated_at timestamptz not null default now(),
 
     constraint episode_unique_in_series unique (movie_id, season_number, episode_number),
-    constraint episode_picture_file_key_unique unique (picture_file_key),
     constraint episode_video_file_key_unique unique (video_file_key)
 );
 
