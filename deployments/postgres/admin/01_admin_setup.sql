@@ -141,6 +141,9 @@ SELECT format('GRANT CONNECT ON DATABASE %I TO %I', :'db_name', :'party_user')
 SELECT format('GRANT CONNECT ON DATABASE %I TO %I', :'db_name', :'migrator_user')
 \gexec
 
+SELECT format('GRANT TEMPORARY ON DATABASE %I TO %I', :'db_name', :'migrator_user')
+\gexec
+
 SELECT format('GRANT CONNECT ON DATABASE %I TO %I', :'db_name', :'monitoring_user')
 \gexec
 
