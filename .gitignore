@@ -16,3 +16,4 @@ frontend-dist/
 *.md
 !README.md
 !docs/*.md
+!docs/deployment/*.md

@@ -16,7 +16,13 @@ services:
       - app-network
 
   api-gateway:
-    image: saucesamba/vkino-gateway:v0.1.10
+    image: vkino-gateway:${APP_VERSION:-prod}
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+      args:
+        SERVICE_PATH: cmd/gateway
+        BINARY_NAME: gateway
     platform: linux/amd64
     restart: always
     env_file:
@@ -26,12 +32,25 @@ services:
       - ./gateway/config.yaml:/etc/vkino/gateway.yaml:ro
       - ./logs/app:/vkinoapi/logs/app
     expose:
+      - "8080"
       - "9200"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O - http://127.0.0.1:8080/healthz >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
     networks:
       - app-network
 
   auth-service:
-    image: karielka/vkino-auth:v0.1.2
+    image: vkino-auth:${APP_VERSION:-prod}
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+      args:
+        SERVICE_PATH: cmd/auth
+        BINARY_NAME: auth
     platform: linux/amd64
     restart: always
     env_file:
@@ -51,11 +70,23 @@ services:
     expose:
       - "9090"
       - "9200"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O - http://127.0.0.1:9200/metrics >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
     networks:
       - app-network
 
   user-service:
-    image: saucesamba/vkino-user:v0.1.7
+    image: vkino-user:${APP_VERSION:-prod}
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+      args:
+        SERVICE_PATH: cmd/user
+        BINARY_NAME: user
     platform: linux/amd64
     restart: always
     env_file:
@@ -76,11 +107,23 @@ services:
     expose:
       - "9091"
       - "9200"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O - http://127.0.0.1:9200/metrics >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
     networks:
       - app-network
 
   movie-service:
-    image: saucesamba/vkino-movie:v0.1.7
+    image: vkino-movie:${APP_VERSION:-prod}
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+      args:
+        SERVICE_PATH: cmd/movie
+        BINARY_NAME: movie
     platform: linux/amd64
     restart: always
     env_file:
@@ -101,11 +144,23 @@ services:
     expose:
       - "9092"
       - "9200"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O - http://127.0.0.1:9200/metrics >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
     networks:
       - app-network
 
   party-service:
-    image: saucesamba/vkino-party:v0.1.1
+    image: vkino-party:${APP_VERSION:-prod}
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+      args:
+        SERVICE_PATH: cmd/party
+        BINARY_NAME: party
     platform: linux/amd64
     restart: always
     env_file:
@@ -124,6 +179,12 @@ services:
     expose:
       - "9093"
       - "9200"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O - http://127.0.0.1:9200/metrics >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
     networks:
       - app-network
 
