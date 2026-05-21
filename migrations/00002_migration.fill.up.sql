@@ -807,12 +807,6 @@ INSERT INTO movie (
     )
 ON CONFLICT (picture_file_key) DO NOTHING;
 
-UPDATE movie
-SET
-    picture_file_key = format('movies/%s/card.webp', replace(picture_file_key, '.webp', '')),
-    poster_file_key = format('movies/%s/poster.webp', replace(poster_file_key, '.webp', ''))
-WHERE picture_file_key not like 'movies/%';
-
 WITH genre_map(movie_title, genre_title) AS (
     VALUES
         ('Интерстеллар', 'Фантастика'),
@@ -2446,10 +2440,6 @@ JOIN actor a
     AND a.birthdate = seed.birthdate
 ON CONFLICT DO NOTHING;
 
-UPDATE actor
-SET picture_file_key = format('actors/%s/profile.webp', replace(picture_file_key, '.webp', ''))
-WHERE picture_file_key not like 'actors/%';
-
 WITH movie_genres AS (
     SELECT
         gtm.movie_id,
@@ -2577,14 +2567,10 @@ SELECT
     1,
     m.title,
     m.duration_seconds,
+    m.picture_file_key,
     format(
-        'episodes/%s/s01e01/card.webp',
-        split_part(m.picture_file_key, '/', 2)
-    ),
-    format(
-        'videos/%s/%s_feature.mp4',
-        split_part(m.picture_file_key, '/', 2),
-        split_part(m.picture_file_key, '/', 2)
+        '%s.mp4',
+        replace(m.picture_file_key, '.webp', '')
     )
 FROM movie m
 WHERE m.content_type = 'film'
@@ -2718,15 +2704,10 @@ SELECT
             ELSE 120
         END
     ),
+    m.picture_file_key,
     format(
-        'episodes/%s/s%se%s/card.webp',
-        split_part(m.picture_file_key, '/', 2),
-        lpad(seed.season_number::text, 2, '0'),
-        lpad(seed.episode_number::text, 2, '0')
-    ),
-    format(
-        'videos/%s/s%se%s.mp4',
-        split_part(m.picture_file_key, '/', 2),
+        '%s_s%se%s.mp4',
+        replace(m.picture_file_key, '.webp', ''),
         lpad(seed.season_number::text, 2, '0'),
         lpad(seed.episode_number::text, 2, '0')
     )
