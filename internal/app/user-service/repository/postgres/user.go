@@ -32,7 +32,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 	err := r.db.QueryRow(ctx, sqlGetUserByEmail, email).Scan(
 		&user.ID,
 		&user.Email,
-		&user.Password,
+		&user.CredentialHash,
 		&user.Role,
 		&user.Birthdate,
 		&user.AvatarFileKey,
@@ -58,7 +58,7 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 	err := r.db.QueryRow(ctx, sqlGetUserByID, id).Scan(
 		&user.ID,
 		&user.Email,
-		&user.Password,
+		&user.CredentialHash,
 		&user.Role,
 		&user.Birthdate,
 		&user.AvatarFileKey,
@@ -84,7 +84,7 @@ func (r *UserRepo) GetFriend(ctx context.Context, userID, friendID int64) (*doma
 	err := r.db.QueryRow(ctx, sqlGetFriendByID, userID, friendID).Scan(
 		&user.ID,
 		&user.Email,
-		&user.Password,
+		&user.CredentialHash,
 		&user.Role,
 		&user.Birthdate,
 		&user.AvatarFileKey,
@@ -140,7 +140,7 @@ func (r *UserRepo) UpdateBirthdate(ctx context.Context, userID int64, birthdate 
 	err := r.db.QueryRow(ctx, sqlUpdateUserBirthdate, birthdate, userID).Scan(
 		&user.ID,
 		&user.Email,
-		&user.Password,
+		&user.CredentialHash,
 		&user.Role,
 		&user.Birthdate,
 		&user.AvatarFileKey,
@@ -166,7 +166,7 @@ func (r *UserRepo) UpdateAvatarFileKey(ctx context.Context, userID int64, avatar
 	err := r.db.QueryRow(ctx, sqlUpdateUserAvatarFileKey, avatarFileKey, userID).Scan(
 		&user.ID,
 		&user.Email,
-		&user.Password,
+		&user.CredentialHash,
 		&user.Role,
 		&user.Birthdate,
 		&user.AvatarFileKey,

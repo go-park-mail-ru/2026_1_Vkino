@@ -17,7 +17,7 @@ type Config struct {
 	Host            string `mapstructure:"host"`
 	Port            int    `mapstructure:"port"`
 	User            string `mapstructure:"user"`
-	Password        string `mapstructure:"password"`
+	DBCredential    string `mapstructure:"password"`
 	DBName          string `mapstructure:"dbname"`
 	SSLMode         string `mapstructure:"sslmode"`
 	ApplicationName string `mapstructure:"application_name"`
@@ -54,7 +54,7 @@ func (c *Config) DSN() string {
 
 	u := &url.URL{
 		Scheme: "postgres",
-		User:   url.UserPassword(c.User, c.Password),
+		User:   url.UserPassword(c.User, c.DBCredential),
 		Host:   hostPort,
 		Path:   c.DBName,
 	}

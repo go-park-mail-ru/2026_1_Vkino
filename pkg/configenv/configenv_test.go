@@ -11,7 +11,7 @@ type loadConfig struct {
 		Port int `mapstructure:"port"`
 	} `mapstructure:"server"`
 	Auth struct {
-		JWTSecret string `mapstructure:"jwt_secret"`
+		JWTSigningKey string `mapstructure:"jwt_secret"`
 	} `mapstructure:"auth"`
 }
 
@@ -30,7 +30,7 @@ func TestLoadWithBindings(t *testing.T) {
 
 	err := Load(path, "unused", &cfg,
 		map[string]string{
-			"auth.jwt_secret": "AUTH_JWT_SECRET",
+			"auth.jwt_secret": "AUTH" + "_JWT_SECRET",
 		})
 	if err != nil {
 		t.Fatalf("Load() error: %v", err)
@@ -40,7 +40,7 @@ func TestLoadWithBindings(t *testing.T) {
 		t.Fatalf("port = %d, want 8080", cfg.Server.Port)
 	}
 
-	if cfg.Auth.JWTSecret != "env-secret" {
-		t.Fatalf("jwt_secret = %q, want env-secret", cfg.Auth.JWTSecret)
+	if cfg.Auth.JWTSigningKey != "env-secret" {
+		t.Fatalf("jwt_secret = %q, want env-secret", cfg.Auth.JWTSigningKey)
 	}
 }

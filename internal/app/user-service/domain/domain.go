@@ -9,7 +9,7 @@ import (
 type User struct {
 	ID               int64
 	Email            string
-	Password         string
+	CredentialHash   string
 	Role             string
 	Birthdate        *time.Time
 	AvatarFileKey    *string

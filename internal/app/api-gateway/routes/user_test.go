@@ -5,9 +5,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
-	"testing"
-
 	"net/textproto"
+	"testing"
 )
 
 func TestIsAvatarReferencePayload(t *testing.T) {

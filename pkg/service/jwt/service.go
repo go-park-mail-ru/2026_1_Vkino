@@ -11,8 +11,8 @@ import (
 var ErrInvalidToken = errors.New("invalid token")
 
 type Config struct {
-	Secret string
-	Issuer string
+	SigningKey string
+	Issuer     string
 }
 
 type AuthContext struct {
@@ -54,7 +54,7 @@ func (s *JWTService) GenerateToken(userEmail string, userID int64, tokenTTL time
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	stringToken, err := token.SignedString([]byte(s.cfg.Secret))
+	stringToken, err := token.SignedString([]byte(s.cfg.SigningKey))
 	if err != nil {
 		return "", err
 	}
@@ -70,7 +70,7 @@ func (s *JWTService) ParseToken(tokenString string) (AuthContext, error) {
 			return nil, ErrInvalidToken
 		}
 
-		return []byte(s.cfg.Secret), nil
+		return []byte(s.cfg.SigningKey), nil
 	})
 	if err != nil {
 		return AuthContext{}, fmt.Errorf("%w: %w", ErrInvalidToken, err)

@@ -34,7 +34,7 @@ func newSignUpHandler(cfg Config, authClient authv1.AuthServiceClient) http.Hand
 
 		resp, err := authClient.SignUp(r.Context(), &authv1.SignUpRequest{
 			Email:    req.Email,
-			Password: req.Password,
+			Password: req.Password(),
 		})
 		if err != nil {
 			writeGRPCError(w, err)
@@ -59,7 +59,7 @@ func newSignInHandler(cfg Config, authClient authv1.AuthServiceClient) http.Hand
 
 		resp, err := authClient.SignIn(r.Context(), &authv1.SignInRequest{
 			Email:    req.Email,
-			Password: req.Password,
+			Password: req.Password(),
 		})
 		if err != nil {
 			writeGRPCError(w, err)

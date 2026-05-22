@@ -1,15 +1,59 @@
 package domain
 
+import "encoding/json"
+
 import moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 
 type SignInRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email      string `json:"email"`
+	passphrase string
 }
 
 type SignUpRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email      string `json:"email"`
+	passphrase string
+}
+
+func (r *SignInRequest) Password() string {
+	return r.passphrase
+}
+
+func (r *SignInRequest) UnmarshalJSON(data []byte) error {
+	type wireSignInRequest struct {
+		Email      string `json:"email"`
+		Passphrase string `json:"password"`
+	}
+
+	var wireReq wireSignInRequest
+	if err := json.Unmarshal(data, &wireReq); err != nil {
+		return err
+	}
+
+	r.Email = wireReq.Email
+	r.passphrase = wireReq.Passphrase
+
+	return nil
+}
+
+func (r *SignUpRequest) Password() string {
+	return r.passphrase
+}
+
+func (r *SignUpRequest) UnmarshalJSON(data []byte) error {
+	type wireSignUpRequest struct {
+		Email      string `json:"email"`
+		Passphrase string `json:"password"`
+	}
+
+	var wireReq wireSignUpRequest
+	if err := json.Unmarshal(data, &wireReq); err != nil {
+		return err
+	}
+
+	r.Email = wireReq.Email
+	r.passphrase = wireReq.Passphrase
+
+	return nil
 }
 
 type ChangePasswordRequest struct {

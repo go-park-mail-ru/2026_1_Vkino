@@ -14,8 +14,8 @@ func (s *Server) SignUp(ctx context.Context, req *authv1.SignUpRequest) (*authv1
 	}
 
 	return &authv1.SignUpResponse{
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
+		AccessToken:  tokens.AccessToken(),
+		RefreshToken: tokens.RefreshToken(),
 	}, nil
 }
 
@@ -26,8 +26,8 @@ func (s *Server) SignIn(ctx context.Context, req *authv1.SignInRequest) (*authv1
 	}
 
 	return &authv1.SignInResponse{
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
+		AccessToken:  tokens.AccessToken(),
+		RefreshToken: tokens.RefreshToken(),
 	}, nil
 }
 
@@ -43,8 +43,8 @@ func (s *Server) Refresh(ctx context.Context, req *authv1.RefreshRequest) (*auth
 	}
 
 	return &authv1.RefreshResponse{
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
+		AccessToken:  tokens.AccessToken(),
+		RefreshToken: tokens.RefreshToken(),
 	}, nil
 }
 

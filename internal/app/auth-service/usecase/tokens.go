@@ -25,8 +25,5 @@ func (u *AuthUsecase) tokenPairGenerate(ctx context.Context, user *domain.User) 
 		return domain.TokenPair{}, fmt.Errorf("save session: %w", err)
 	}
 
-	return domain.TokenPair{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}, nil
+	return domain.NewTokenPair(accessToken, refreshToken), nil
 }
