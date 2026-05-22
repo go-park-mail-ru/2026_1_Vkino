@@ -1,4 +1,3 @@
-//nolint:gocyclo // Repository methods are kept explicit and close to their SQL contracts.
 package postgres
 
 import (
@@ -56,6 +55,18 @@ func scanTicket(
 		UpdatedAt:   updatedAt.Format(time.RFC3339),
 	}
 
+	assignTicketUser(&ticket, userID, userEmail, senderEmail)
+	assignOptionalTicketFields(&ticket, attachmentFileKey, rating, closedAt)
+
+	return ticket
+}
+
+func assignTicketUser(
+	ticket *domain.SupportTicketResponse,
+	userID *int64,
+	userEmail *string,
+	senderEmail *string,
+) {
 	if userID != nil {
 		ticket.UserID = *userID
 	}
@@ -64,12 +75,27 @@ func scanTicket(
 		ticket.UserEmail = *userEmail
 	}
 
+	ticket.SenderEmail = resolveSenderEmail(userEmail, senderEmail)
+}
+
+func resolveSenderEmail(userEmail *string, senderEmail *string) string {
 	if senderEmail != nil {
-		ticket.SenderEmail = *senderEmail
-	} else if userEmail != nil {
-		ticket.SenderEmail = *userEmail
+		return *senderEmail
 	}
 
+	if userEmail != nil {
+		return *userEmail
+	}
+
+	return ""
+}
+
+func assignOptionalTicketFields(
+	ticket *domain.SupportTicketResponse,
+	attachmentFileKey *string,
+	rating *int64,
+	closedAt *time.Time,
+) {
 	if attachmentFileKey != nil {
 		ticket.AttachmentFileKey = *attachmentFileKey
 	}
@@ -81,8 +107,6 @@ func scanTicket(
 	if closedAt != nil {
 		ticket.ClosedAt = closedAt.Format(time.RFC3339)
 	}
-
-	return ticket
 }
 
 func (r *SupportRepo) CreateTicket(

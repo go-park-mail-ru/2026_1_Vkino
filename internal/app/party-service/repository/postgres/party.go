@@ -1,4 +1,3 @@
-//nolint:gocyclo // Repository methods stay close to SQL contracts for readability.
 package postgres
 
 import (
@@ -75,33 +74,9 @@ func (r *PartyRepo) GetRoomByID(ctx context.Context, roomID int64) (*domain.Room
 
 	room.UpdatedAt = updatedAt
 
-	members, err := r.getRoomMembers(ctx, roomID)
-	if err != nil {
+	if err = r.populateRoomDetails(ctx, &room, roomID); err != nil {
 		return nil, err
 	}
-
-	room.Members = members
-
-	playback, err := r.getRoomPlaybackState(ctx, roomID)
-	if err != nil {
-		return nil, err
-	}
-
-	room.Playback = playback
-
-	messages, err := r.getRoomMessages(ctx, roomID)
-	if err != nil {
-		return nil, err
-	}
-
-	room.Messages = messages
-
-	polls, err := r.getRoomPolls(ctx, roomID)
-	if err != nil {
-		return nil, err
-	}
-
-	room.Polls = polls
 
 	return &room, nil
 }
@@ -342,6 +317,38 @@ func (r *PartyRepo) SaveVote(ctx context.Context, vote domain.PollVote) error {
 	return nil
 }
 
+func (r *PartyRepo) populateRoomDetails(ctx context.Context, room *domain.Room, roomID int64) error {
+	members, err := r.getRoomMembers(ctx, roomID)
+	if err != nil {
+		return err
+	}
+
+	room.Members = members
+
+	playback, err := r.getRoomPlaybackState(ctx, roomID)
+	if err != nil {
+		return err
+	}
+
+	room.Playback = playback
+
+	messages, err := r.getRoomMessages(ctx, roomID)
+	if err != nil {
+		return err
+	}
+
+	room.Messages = messages
+
+	polls, err := r.getRoomPolls(ctx, roomID)
+	if err != nil {
+		return err
+	}
+
+	room.Polls = polls
+
+	return nil
+}
+
 func (r *PartyRepo) loadRoomCards(ctx context.Context, query string, args ...any) ([]domain.RoomCard, error) {
 	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
@@ -508,25 +515,8 @@ func (r *PartyRepo) getRoomPolls(ctx context.Context, roomID int64) ([]domain.Po
 			return nil, fmt.Errorf("scan room poll: %w", err)
 		}
 
-		existing, ok := pollMap[poll.ID]
-		if !ok {
-			poll.Options = make([]domain.PollOption, 0)
-			pollMap[poll.ID] = &poll
-			order = append(order, poll.ID)
-			existing = &poll
-		}
-
-		if optionID.Valid {
-			option := domain.PollOption{
-				ID:    optionID.Int64,
-				Title: optionText.String,
-			}
-			if votesCount.Valid {
-				option.VotesCount = votesCount.Int64
-			}
-
-			existing.Options = append(existing.Options, option)
-		}
+		existing := ensureRoomPoll(pollMap, &order, poll)
+		appendRoomPollOption(existing, optionID, optionText, votesCount)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -539,6 +529,40 @@ func (r *PartyRepo) getRoomPolls(ctx context.Context, roomID int64) ([]domain.Po
 	}
 
 	return polls, nil
+}
+
+func ensureRoomPoll(pollMap map[int64]*domain.Poll, order *[]int64, poll domain.Poll) *domain.Poll {
+	existing, ok := pollMap[poll.ID]
+	if ok {
+		return existing
+	}
+
+	poll.Options = make([]domain.PollOption, 0)
+	pollMap[poll.ID] = &poll
+	*order = append(*order, poll.ID)
+
+	return &poll
+}
+
+func appendRoomPollOption(
+	poll *domain.Poll,
+	optionID sql.NullInt64,
+	optionText sql.NullString,
+	votesCount sql.NullInt64,
+) {
+	if !optionID.Valid {
+		return
+	}
+
+	option := domain.PollOption{
+		ID:    optionID.Int64,
+		Title: optionText.String,
+	}
+	if votesCount.Valid {
+		option.VotesCount = votesCount.Int64
+	}
+
+	poll.Options = append(poll.Options, option)
 }
 
 func ignoreRollbackError(err error) {

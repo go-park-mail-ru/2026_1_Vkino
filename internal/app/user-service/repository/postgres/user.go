@@ -1,4 +1,3 @@
-//nolint:gocyclo // Repository methods are kept explicit and close to their SQL contracts.
 package postgres
 
 import (
@@ -234,24 +233,13 @@ func (r *UserRepo) SetMovieReview(
 		dbComment  sql.NullString
 	)
 
-	err = tx.QueryRow(ctx, sqlUpsertUserMovieReview, userID, movieID, rating, comment).Scan(
-		&reviewResp.ReviewID,
-		&reviewResp.MovieID,
-		&dbRating,
-		&dbComment,
-	)
+	err = queryMovieReview(ctx, tx, userID, movieID, rating, comment, &reviewResp, &dbRating, &dbComment)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.MovieReviewResponse{}, ErrMovieNotFound
-		}
-
-		return domain.MovieReviewResponse{}, fmt.Errorf("upsert movie review: %w", err)
+		return domain.MovieReviewResponse{}, handleSetMovieReviewError(err)
 	}
 
-	if !dbComment.Valid || dbComment.String == "" {
-		if err = deleteReviewReactionsIfCommentMissing(ctx, tx, dbComment, reviewResp.ReviewID); err != nil {
-			return domain.MovieReviewResponse{}, fmt.Errorf("cleanup review reactions: %w", err)
-		}
+	if err = deleteReviewReactionsIfCommentMissing(ctx, tx, dbComment, reviewResp.ReviewID); err != nil {
+		return domain.MovieReviewResponse{}, fmt.Errorf("cleanup review reactions: %w", err)
 	}
 
 	assignMovieReviewResponseFields(&reviewResp, dbRating, dbComment)
@@ -261,6 +249,14 @@ func (r *UserRepo) SetMovieReview(
 	}
 
 	return reviewResp, nil
+}
+
+func handleSetMovieReviewError(err error) error {
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrMovieNotFound
+	}
+
+	return fmt.Errorf("upsert movie review: %w", err)
 }
 
 func deleteReviewReactionsIfCommentMissing(
@@ -294,6 +290,25 @@ func assignMovieReviewResponseFields(
 	}
 }
 
+func queryMovieReview(
+	ctx context.Context,
+	tx pgx.Tx,
+	userID int64,
+	movieID int64,
+	rating *float64,
+	comment *string,
+	reviewResp *domain.MovieReviewResponse,
+	dbRating *sql.NullFloat64,
+	dbComment *sql.NullString,
+) error {
+	return tx.QueryRow(ctx, sqlUpsertUserMovieReview, userID, movieID, rating, comment).Scan(
+		&reviewResp.ReviewID,
+		&reviewResp.MovieID,
+		dbRating,
+		dbComment,
+	)
+}
+
 func (r *UserRepo) DeleteMovieReview(ctx context.Context, userID, movieID int64) error {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -322,18 +337,28 @@ func (r *UserRepo) DeleteMovieReview(ctx context.Context, userID, movieID int64)
 		return fmt.Errorf("delete movie review reactions: %w", err)
 	}
 
-	if isFavorite {
-		if _, err = tx.Exec(ctx, sqlClearUserMovieReview, reviewID); err != nil {
-			return fmt.Errorf("clear movie review: %w", err)
-		}
-	} else {
-		if _, err = tx.Exec(ctx, sqlDeleteUserMovieReviewRow, reviewID); err != nil {
-			return fmt.Errorf("delete movie review row: %w", err)
-		}
+	if err = removeMovieReviewRow(ctx, tx, reviewID, isFavorite); err != nil {
+		return err
 	}
 
 	if err = tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit delete movie review tx: %w", err)
+	}
+
+	return nil
+}
+
+func removeMovieReviewRow(ctx context.Context, tx pgx.Tx, reviewID int64, isFavorite bool) error {
+	if isFavorite {
+		if _, err := tx.Exec(ctx, sqlClearUserMovieReview, reviewID); err != nil {
+			return fmt.Errorf("clear movie review: %w", err)
+		}
+
+		return nil
+	}
+
+	if _, err := tx.Exec(ctx, sqlDeleteUserMovieReviewRow, reviewID); err != nil {
+		return fmt.Errorf("delete movie review row: %w", err)
 	}
 
 	return nil
@@ -465,26 +490,17 @@ func (r *UserRepo) DeleteFriend(ctx context.Context, userID int64, friendID int6
 func (r *UserRepo) SendFriendRequest(ctx context.Context, fromUserID, toUserID int64) (int64, error) {
 	p1, p2 := orderedFriendPair(fromUserID, toUserID)
 
-	var areFriends bool
-	if err := r.db.QueryRow(ctx, sqlAreFriends, p1, p2).Scan(&areFriends); err != nil {
-		return 0, fmt.Errorf("check friends before request: %w", err)
+	areFriends, err := r.areFriends(ctx, p1, p2)
+	if err != nil {
+		return 0, err
 	}
 
 	if areFriends {
 		return 0, domain.ErrAlreadyFriends
 	}
 
-	var status string
-
-	err := r.db.QueryRow(ctx, sqlGetFriendRequestStatus, fromUserID, toUserID).Scan(&status)
-	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		return 0, fmt.Errorf("get friend request status: %w", err)
-	}
-
-	if err == nil && status == "accepted" {
-		if _, delErr := r.db.Exec(ctx, sqlDeleteFriendRequestPair, fromUserID, toUserID); delErr != nil {
-			return 0, fmt.Errorf("cleanup accepted friend request: %w", delErr)
-		}
+	if err = r.cleanupAcceptedFriendRequest(ctx, fromUserID, toUserID); err != nil {
+		return 0, err
 	}
 
 	var requestID int64
@@ -622,6 +638,47 @@ func (r *UserRepo) GetUserRole(ctx context.Context, userID int64) (string, error
 	}
 
 	return role, nil
+}
+
+func (r *UserRepo) areFriends(ctx context.Context, user1ID, user2ID int64) (bool, error) {
+	var areFriends bool
+	if err := r.db.QueryRow(ctx, sqlAreFriends, user1ID, user2ID).Scan(&areFriends); err != nil {
+		return false, fmt.Errorf("check friends before request: %w", err)
+	}
+
+	return areFriends, nil
+}
+
+func (r *UserRepo) cleanupAcceptedFriendRequest(ctx context.Context, fromUserID, toUserID int64) error {
+	status, exists, err := r.friendRequestStatus(ctx, fromUserID, toUserID)
+	if err != nil {
+		return err
+	}
+
+	if !exists || status != "accepted" {
+		return nil
+	}
+
+	if _, err = r.db.Exec(ctx, sqlDeleteFriendRequestPair, fromUserID, toUserID); err != nil {
+		return fmt.Errorf("cleanup accepted friend request: %w", err)
+	}
+
+	return nil
+}
+
+func (r *UserRepo) friendRequestStatus(ctx context.Context, fromUserID, toUserID int64) (string, bool, error) {
+	var status string
+
+	err := r.db.QueryRow(ctx, sqlGetFriendRequestStatus, fromUserID, toUserID).Scan(&status)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", false, nil
+	}
+
+	if err != nil {
+		return "", false, fmt.Errorf("get friend request status: %w", err)
+	}
+
+	return status, true, nil
 }
 
 func (r *UserRepo) acceptFriendRequestTx(ctx context.Context, requestID, toUserID int64) error {
