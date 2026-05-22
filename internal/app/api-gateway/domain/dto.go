@@ -19,18 +19,22 @@ func (r *SignInRequest) Password() string {
 }
 
 func (r *SignInRequest) UnmarshalJSON(data []byte) error {
-	type wireSignInRequest struct {
-		Email      string `json:"email"`
-		Passphrase string `json:"password"`
-	}
-
-	var wireReq wireSignInRequest
-	if err := json.Unmarshal(data, &wireReq); err != nil {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
 
-	r.Email = wireReq.Email
-	r.passphrase = wireReq.Passphrase
+	if value, ok := raw["email"]; ok {
+		if err := json.Unmarshal(value, &r.Email); err != nil {
+			return err
+		}
+	}
+
+	if value, ok := raw["password"]; ok {
+		if err := json.Unmarshal(value, &r.passphrase); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -40,18 +44,22 @@ func (r *SignUpRequest) Password() string {
 }
 
 func (r *SignUpRequest) UnmarshalJSON(data []byte) error {
-	type wireSignUpRequest struct {
-		Email      string `json:"email"`
-		Passphrase string `json:"password"`
-	}
-
-	var wireReq wireSignUpRequest
-	if err := json.Unmarshal(data, &wireReq); err != nil {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
 
-	r.Email = wireReq.Email
-	r.passphrase = wireReq.Passphrase
+	if value, ok := raw["email"]; ok {
+		if err := json.Unmarshal(value, &r.Email); err != nil {
+			return err
+		}
+	}
+
+	if value, ok := raw["password"]; ok {
+		if err := json.Unmarshal(value, &r.passphrase); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
