@@ -1,0 +1,62 @@
+name: Production Deploy
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.ref == 'refs/heads/master' && 'production-deploy' || format('ci-{0}', github.ref) }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    name: Lint and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Show Go version
+        run: go version
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.11.4
+          args: --config build/ci/golangci.yml ./...
+
+      - name: Run tests
+        run: go test -mod=readonly ./...
+
+  deploy:
+    name: Deploy production
+    runs-on: ubuntu-latest
+    needs:
+      - ci
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Deploy on production server
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: ${{ secrets.PROD_SSH_PORT }}
+          command_timeout: 60m
+          script: |
+            set -e
+            cd "${{ secrets.PROD_PROJECT_PATH }}"
+            ./deployments/prod/deploy-prod.sh
