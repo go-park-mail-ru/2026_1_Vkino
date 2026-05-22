@@ -57,37 +57,54 @@ func TestRoomEventBrokerPublishWaitsInsteadOfDropping(t *testing.T) {
 	done := make(chan error, 1)
 
 	go func() {
-		for i := 0; i < eventsCount; i++ {
-			err = broker.Publish(context.Background(), domain.RoomEvent{
-				Type:        "sync_state",
-				RoomID:      roomID,
-				ActorUserID: int64(i),
-			})
-			if err != nil {
-				done <- err
-
-				return
-			}
-		}
-
-		done <- nil
+		done <- publishRoomEvents(broker, roomID, eventsCount)
 	}()
 
+	assertPublishBlocks(t, done)
+	assertPublishedEventOrder(t, events, eventsCount)
+	assertPublishCompletes(t, done)
+}
+
+func publishRoomEvents(broker *RoomEventBroker, roomID int64, eventsCount int) error {
+	for i := range eventsCount {
+		if err := broker.Publish(context.Background(), domain.RoomEvent{
+			Type:        "sync_state",
+			RoomID:      roomID,
+			ActorUserID: int64(i),
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func assertPublishBlocks(t *testing.T, done <-chan error) {
+	t.Helper()
+
 	select {
-	case err = <-done:
+	case err := <-done:
 		t.Fatalf("publish finished early, expected blocking after buffer fill: %v", err)
 	case <-time.After(50 * time.Millisecond):
 	}
+}
 
-	for i := 0; i < eventsCount; i++ {
+func assertPublishedEventOrder(t *testing.T, events <-chan domain.RoomEvent, eventsCount int) {
+	t.Helper()
+
+	for i := range eventsCount {
 		event := readEvent(t, events)
 		if event.ActorUserID != int64(i) {
 			t.Fatalf("unexpected event order at index %d: got actor_user_id=%d want=%d", i, event.ActorUserID, i)
 		}
 	}
+}
+
+func assertPublishCompletes(t *testing.T, done <-chan error) {
+	t.Helper()
 
 	select {
-	case err = <-done:
+	case err := <-done:
 		if err != nil {
 			t.Fatalf("publish after drain: %v", err)
 		}

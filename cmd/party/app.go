@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	deliverygrpc "github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/delivery/grpc"
 	memoryrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/repository/memory"
@@ -56,41 +57,11 @@ func Run(configPath string) error {
 
 	appLogger.Info("successfully connected to postgres")
 
-	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
-		Address:        cfg.AuthGRPC.Address,
-		RequestTimeout: cfg.AuthGRPC.RequestTimeout,
-	})
+	authConn, movieConn, userConn, closeConns, err := openPartyConns(cfg)
 	if err != nil {
-		return fmt.Errorf("init auth grpc client: %w", err)
+		return err
 	}
-
-	defer func() {
-		_ = authConn.Close()
-	}()
-
-	movieConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
-		Address:        cfg.MovieGRPC.Address,
-		RequestTimeout: cfg.MovieGRPC.RequestTimeout,
-	})
-	if err != nil {
-		return fmt.Errorf("init movie grpc client: %w", err)
-	}
-
-	defer func() {
-		_ = movieConn.Close()
-	}()
-
-	userConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
-		Address:        cfg.UserGRPC.Address,
-		RequestTimeout: cfg.UserGRPC.RequestTimeout,
-	})
-	if err != nil {
-		return fmt.Errorf("init user grpc client: %w", err)
-	}
-
-	defer func() {
-		_ = userConn.Close()
-	}()
+	defer closeConns()
 
 	partyRepo := postgresrepo.NewPartyRepo(pgDB)
 	eventBroker := memoryrepo.NewRoomEventBroker()
@@ -122,4 +93,46 @@ func Run(configPath string) error {
 		grpcServer.GracefulStop,
 		grpcServer.Stop,
 	)
+}
+
+func openPartyConns(
+	cfg Config,
+) (authConn, movieConn, userConn *grpc.ClientConn, closeFn func(), err error) {
+	authConn, err = dialNamedGRPCConn("auth", cfg.AuthGRPC.Address, cfg.AuthGRPC.RequestTimeout)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	movieConn, err = dialNamedGRPCConn("movie", cfg.MovieGRPC.Address, cfg.MovieGRPC.RequestTimeout)
+	if err != nil {
+		_ = authConn.Close()
+
+		return nil, nil, nil, nil, err
+	}
+
+	userConn, err = dialNamedGRPCConn("user", cfg.UserGRPC.Address, cfg.UserGRPC.RequestTimeout)
+	if err != nil {
+		_ = movieConn.Close()
+		_ = authConn.Close()
+
+		return nil, nil, nil, nil, err
+	}
+
+	return authConn, movieConn, userConn, func() {
+		_ = userConn.Close()
+		_ = movieConn.Close()
+		_ = authConn.Close()
+	}, nil
+}
+
+func dialNamedGRPCConn(name, address string, timeout time.Duration) (*grpc.ClientConn, error) {
+	conn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
+		Address:        address,
+		RequestTimeout: timeout,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("init %s grpc client: %w", name, err)
+	}
+
+	return conn, nil
 }

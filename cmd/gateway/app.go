@@ -42,41 +42,11 @@ func Run(configPath string) error {
 		return fmt.Errorf("start metrics server: %w", err)
 	}
 
-	authConn, err := newGRPCConn(cfg.AuthGRPC)
+	authConn, userConn, movieConn, partyConn, closeConns, err := openGatewayConns(cfg)
 	if err != nil {
-		return fmt.Errorf("init auth grpc client: %w", err)
+		return err
 	}
-
-	defer func() {
-		_ = authConn.Close()
-	}()
-
-	userConn, err := newGRPCConn(cfg.UserGRPC)
-	if err != nil {
-		return fmt.Errorf("init user grpc client: %w", err)
-	}
-
-	defer func() {
-		_ = userConn.Close()
-	}()
-
-	movieConn, err := newGRPCConn(cfg.MovieGRPC)
-	if err != nil {
-		return fmt.Errorf("init movie grpc client: %w", err)
-	}
-
-	defer func() {
-		_ = movieConn.Close()
-	}()
-
-	partyConn, err := newGRPCConn(cfg.PartyGRPC)
-	if err != nil {
-		return fmt.Errorf("init party grpc client: %w", err)
-	}
-
-	defer func() {
-		_ = partyConn.Close()
-	}()
+	defer closeConns()
 
 	server := httpserver.New(append(serverOptions(cfg, appLogger), routes.Register(
 		cfg,
@@ -95,6 +65,55 @@ func Run(configPath string) error {
 		server.Run,
 		server.Shutdown,
 	)
+}
+
+func openGatewayConns(
+	cfg *Config,
+) (authConn, userConn, movieConn, partyConn *grpc.ClientConn, closeFn func(), err error) {
+	authConn, err = openNamedGRPCConn("auth", cfg.AuthGRPC)
+	if err != nil {
+		return nil, nil, nil, nil, nil, err
+	}
+
+	userConn, err = openNamedGRPCConn("user", cfg.UserGRPC)
+	if err != nil {
+		_ = authConn.Close()
+
+		return nil, nil, nil, nil, nil, err
+	}
+
+	movieConn, err = openNamedGRPCConn("movie", cfg.MovieGRPC)
+	if err != nil {
+		_ = userConn.Close()
+		_ = authConn.Close()
+
+		return nil, nil, nil, nil, nil, err
+	}
+
+	partyConn, err = openNamedGRPCConn("party", cfg.PartyGRPC)
+	if err != nil {
+		_ = movieConn.Close()
+		_ = userConn.Close()
+		_ = authConn.Close()
+
+		return nil, nil, nil, nil, nil, err
+	}
+
+	return authConn, userConn, movieConn, partyConn, func() {
+		_ = partyConn.Close()
+		_ = movieConn.Close()
+		_ = userConn.Close()
+		_ = authConn.Close()
+	}, nil
+}
+
+func openNamedGRPCConn(name string, cfg ServiceGRPCConfig) (*grpc.ClientConn, error) {
+	conn, err := newGRPCConn(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("init %s grpc client: %w", name, err)
+	}
+
+	return conn, nil
 }
 
 func newGRPCConn(cfg ServiceGRPCConfig) (*grpc.ClientConn, error) {

@@ -349,8 +349,7 @@ func TestUserRoutes_CreateTicket(t *testing.T) {
 
 	handler := newUserHandler(t, testConfig{}, client)
 	rr := doRequest(handler, http.MethodPost, "/support/tickets",
-		bytes.NewReader([]byte(`{"category":"billing","title":"Help","description":"Details","user_email":" 
-		user@example.com ","attachment_file_key":"file"}`)))
+		bytes.NewReader([]byte(`{"category":"billing","title":"Help","description":"Details","user_email":"user@example.com","attachment_file_key":"file"}`)))
 
 	require.Equal(t, http.StatusCreated, rr.Code)
 }

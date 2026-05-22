@@ -52,7 +52,6 @@ func TestIsAvatarReferencePayload(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -67,24 +66,7 @@ func TestIsAvatarReferencePayload(t *testing.T) {
 func TestReadUpdateProfilePayload_IgnoresNullAvatarField(t *testing.T) {
 	t.Parallel()
 
-	var body bytes.Buffer
-
-	writer := multipart.NewWriter(&body)
-
-	if err := writer.WriteField("birthdate", "2004-03-01"); err != nil {
-		t.Fatalf("WriteField birthdate: %v", err)
-	}
-
-	if err := writer.WriteField("avatar", "null"); err != nil {
-		t.Fatalf("WriteField avatar: %v", err)
-	}
-
-	if err := writer.Close(); err != nil {
-		t.Fatalf("writer.Close: %v", err)
-	}
-
-	req := httptest.NewRequest(http.MethodPut, "/user/profile", &body)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req := newUpdateProfileMultipartRequest(t)
 
 	rr := httptest.NewRecorder()
 
@@ -103,6 +85,33 @@ func TestReadUpdateProfilePayload_IgnoresNullAvatarField(t *testing.T) {
 
 	if payload.AvatarContentType != "" {
 		t.Fatalf("avatar content-type = %q, want empty", payload.AvatarContentType)
+	}
+}
+
+func newUpdateProfileMultipartRequest(t *testing.T) *http.Request {
+	t.Helper()
+
+	var body bytes.Buffer
+
+	writer := multipart.NewWriter(&body)
+	writeUpdateProfileField(t, writer, "birthdate", "2004-03-01")
+	writeUpdateProfileField(t, writer, "avatar", "null")
+
+	if err := writer.Close(); err != nil {
+		t.Fatalf("writer.Close: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPut, "/user/profile", &body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	return req
+}
+
+func writeUpdateProfileField(t *testing.T, writer *multipart.Writer, field, value string) {
+	t.Helper()
+
+	if err := writer.WriteField(field, value); err != nil {
+		t.Fatalf("WriteField %s: %v", field, err)
 	}
 }
 

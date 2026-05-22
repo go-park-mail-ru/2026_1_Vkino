@@ -87,6 +87,7 @@ func newMovieSearchHandler(cfg Config, movieClient moviev1.MovieServiceClient) h
 		query := strings.TrimSpace(r.URL.Query().Get("query"))
 		if query == "" {
 			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid search query")
+
 			return
 		}
 
@@ -96,6 +97,7 @@ func newMovieSearchHandler(cfg Config, movieClient moviev1.MovieServiceClient) h
 		resp, err := movieClient.SearchMovies(r.Context(), &moviev1.SearchMoviesRequest{Query: query})
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 
@@ -111,17 +113,20 @@ func newGenreByIDHandler(cfg Config, movieClient moviev1.MovieServiceClient) htt
 		genreID, ok, err := resolveGenreID(r.Context(), movieClient, r.PathValue("id"))
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 
 		if !ok || genreID <= 0 {
 			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid genre id")
+
 			return
 		}
 
 		resp, err := movieClient.GetGenreByID(r.Context(), &moviev1.GetGenreByIDRequest{GenreId: genreID})
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 
@@ -142,6 +147,7 @@ func newMovieByIDHandler(cfg Config, movieClient moviev1.MovieServiceClient) htt
 		resp, err := movieClient.GetMovieByID(r.Context(), &moviev1.GetMovieByIDRequest{MovieId: movieID})
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 
@@ -162,6 +168,7 @@ func newActorByIDHandler(cfg Config, movieClient moviev1.MovieServiceClient) htt
 		resp, err := movieClient.GetActorByID(r.Context(), &moviev1.GetActorByIDRequest{ActorId: actorID})
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 
@@ -182,6 +189,7 @@ func newEpisodePlaybackHandler(cfg Config, movieClient moviev1.MovieServiceClien
 		resp, err := movieClient.GetEpisodePlayback(r.Context(), &moviev1.GetEpisodePlaybackRequest{EpisodeId: episodeID})
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 
@@ -202,6 +210,7 @@ func newEpisodeProgressHandler(cfg Config, movieClient moviev1.MovieServiceClien
 		resp, err := movieClient.GetEpisodeProgress(r.Context(), &moviev1.GetEpisodeProgressRequest{EpisodeId: episodeID})
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 
@@ -231,6 +240,7 @@ func newSaveEpisodeProgressHandler(cfg Config, movieClient moviev1.MovieServiceC
 		})
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 
