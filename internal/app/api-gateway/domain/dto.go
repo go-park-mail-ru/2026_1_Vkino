@@ -1,8 +1,10 @@
 package domain
 
-import "encoding/json"
+import (
+	"encoding/json"
 
-import moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+)
 
 type SignInRequest struct {
 	Email      string `json:"email"`
