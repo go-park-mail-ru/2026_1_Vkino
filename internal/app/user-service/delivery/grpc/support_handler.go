@@ -1,4 +1,3 @@
-//nolint:gocyclo // Stream handling stays explicit for readability.
 package grpc
 
 import (
@@ -265,6 +264,14 @@ func (s *SupportServer) SubscribeTicket(
 	}
 	defer unsubscribe()
 
+	return forwardTicketEvents(stream.Context(), stream, events)
+}
+
+func forwardTicketEvents(
+	ctx context.Context,
+	stream grpc.ServerStreamingServer[supportv1.TicketEvent],
+	events <-chan domain.SupportTicketEventResponse,
+) error {
 	for {
 		select {
 		case event, ok := <-events:
@@ -272,24 +279,26 @@ func (s *SupportServer) SubscribeTicket(
 				return nil
 			}
 
-			pbEvent := &supportv1.TicketEvent{Type: event.Type}
-
-			if event.Ticket != nil {
-				pbEvent.Ticket = toProtoTicket(*event.Ticket)
-			}
-
-			if event.Message != nil {
-				pbEvent.Message = toProtoTicketMessage(*event.Message)
-			}
-
-			if err := stream.Send(pbEvent); err != nil {
+			if err := stream.Send(toProtoSupportEvent(event)); err != nil {
 				return err
 			}
-
-		case <-stream.Context().Done():
+		case <-ctx.Done():
 			return nil
 		}
 	}
+}
+
+func toProtoSupportEvent(event domain.SupportTicketEventResponse) *supportv1.TicketEvent {
+	pbEvent := &supportv1.TicketEvent{Type: event.Type}
+	if event.Ticket != nil {
+		pbEvent.Ticket = toProtoTicket(*event.Ticket)
+	}
+
+	if event.Message != nil {
+		pbEvent.Message = toProtoTicketMessage(*event.Message)
+	}
+
+	return pbEvent
 }
 
 func toProtoTicket(t domain.SupportTicketResponse) *supportv1.Ticket {

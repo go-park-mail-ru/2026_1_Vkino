@@ -24,81 +24,30 @@ const (
 	componentName = "movie"
 )
 
-//nolint:gocyclo,cyclop // Service wiring intentionally stays explicit in the entrypoint.
 func Run(configPath string) error {
-	cfg := Config{}
-	if err := Load(configPath, &cfg); err != nil {
-		return fmt.Errorf("unable to load config: %w", err)
-	}
-
-	baseLogger, err := logger.New(cfg.Logger)
+	cfg, appLogger, runCtx, err := bootstrapApp(configPath)
 	if err != nil {
-		return fmt.Errorf("init logger: %w", err)
+		return err
 	}
+	defer runCtx.cancel()
 
-	appLogger := baseLogger.WithField("component", componentName)
-
-	runCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	if err = metrics.StartServer(runCtx, serviceName, cfg.Metrics, appLogger); err != nil {
-		return fmt.Errorf("start metrics server: %w", err)
-	}
-
-	options := corepostgres.BuildPostgresOptions(&cfg.Postgres)
-
-	pgDB, err := corepostgres.New(cfg.Postgres, options...)
+	pgDB, err := openPostgres(cfg.Postgres, appLogger)
 	if err != nil {
-		return fmt.Errorf("failed to connect to postgres: %w", err)
+		return err
 	}
 	defer pgDB.Close()
 
-	appLogger.Info("successfully connected to postgres")
-
-	posterStore, err := storage.NewS3Storage(context.Background(), cfg.S3.Config().WithBucket(cfg.S3.BucketPosters))
+	stores, err := initMovieStores(cfg)
 	if err != nil {
-		return fmt.Errorf("init poster storage: %w", err)
+		return err
 	}
-
-	if err = posterStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
-		return fmt.Errorf("ensure poster bucket: %w", err)
-	}
-
-	cardStore, err := storage.NewS3Storage(context.Background(), cfg.S3.Config().WithBucket(cfg.S3.BucketCards))
-	if err != nil {
-		return fmt.Errorf("init card storage: %w", err)
-	}
-
-	if err = cardStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
-		return fmt.Errorf("ensure card bucket: %w", err)
-	}
-
-	actorStore, err := storage.NewS3Storage(context.Background(), cfg.S3.Config().WithBucket(cfg.S3.BucketActors))
-	if err != nil {
-		return fmt.Errorf("init actor storage: %w", err)
-	}
-
-	if err = actorStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
-		return fmt.Errorf("ensure actor bucket: %w", err)
-	}
-
-	videoStore, err := storage.NewS3Storage(context.Background(), cfg.S3.Config().WithBucket(cfg.S3.BucketVideos))
-	if err != nil {
-		return fmt.Errorf("init video storage: %w", err)
-	}
-
-	if err = videoStore.EnsureBucket(context.Background(), cfg.S3.Region); err != nil {
-		return fmt.Errorf("ensure video bucket: %w", err)
-	}
-
-	movieRepo := postgresrepo.NewMovieRepo(pgDB)
 
 	movieUC := movieusecase.NewMovieUsecase(
-		movieRepo,
-		posterStore,
-		cardStore,
-		actorStore,
-		videoStore,
+		postgresrepo.NewMovieRepo(pgDB),
+		stores.poster,
+		stores.card,
+		stores.actor,
+		stores.video,
 	)
 
 	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
@@ -109,11 +58,7 @@ func Run(configPath string) error {
 		return fmt.Errorf("init auth grpc client: %w", err)
 	}
 
-	defer func() {
-		_ = authConn.Close()
-	}()
-
-	authClient := authv1.NewAuthServiceClient(authConn)
+	defer func() { _ = authConn.Close() }()
 
 	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {
@@ -121,13 +66,13 @@ func Run(configPath string) error {
 	}
 
 	grpcServer := grpcx.NewServer(appLogger, serviceName, func(server *grpc.Server) {
-		moviev1.RegisterMovieServiceServer(server, deliverygrpc.NewServer(movieUC, authClient))
+		moviev1.RegisterMovieServiceServer(server, deliverygrpc.NewServer(movieUC, authv1.NewAuthServiceClient(authConn)))
 	})
 
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")
 
 	return serverrunner.RunGRPC(
-		runCtx,
+		runCtx.ctx,
 		appLogger,
 		serviceName,
 		func() error {
@@ -136,4 +81,88 @@ func Run(configPath string) error {
 		grpcServer.GracefulStop,
 		grpcServer.Stop,
 	)
+}
+
+type appRunContext struct {
+	ctx    context.Context
+	cancel context.CancelFunc
+}
+
+type movieStores struct {
+	poster *storage.S3Storage
+	card   *storage.S3Storage
+	actor  *storage.S3Storage
+	video  *storage.S3Storage
+}
+
+func bootstrapApp(configPath string) (Config, *logger.Logger, appRunContext, error) {
+	cfg := Config{}
+	if err := Load(configPath, &cfg); err != nil {
+		return Config{}, nil, appRunContext{}, fmt.Errorf("unable to load config: %w", err)
+	}
+
+	baseLogger, err := logger.New(cfg.Logger)
+	if err != nil {
+		return Config{}, nil, appRunContext{}, fmt.Errorf("init logger: %w", err)
+	}
+
+	appLogger := baseLogger.WithField("component", componentName)
+	ctx, cancel := context.WithCancel(context.Background())
+	runCtx := appRunContext{ctx: ctx, cancel: cancel}
+
+	if err := metrics.StartServer(runCtx.ctx, serviceName, cfg.Metrics, appLogger); err != nil {
+		cancel()
+
+		return Config{}, nil, appRunContext{}, fmt.Errorf("start metrics server: %w", err)
+	}
+
+	return cfg, appLogger, runCtx, nil
+}
+
+func openPostgres(cfg corepostgres.Config, log *logger.Logger) (*corepostgres.Client, error) {
+	pgDB, err := corepostgres.New(cfg, corepostgres.BuildPostgresOptions(&cfg)...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
+	}
+
+	log.Info("successfully connected to postgres")
+
+	return pgDB, nil
+}
+
+func initMovieStores(cfg Config) (movieStores, error) {
+	poster, err := newEnsuredStore(cfg.S3.Config().WithBucket(cfg.S3.BucketPosters), cfg.S3.Region, "poster")
+	if err != nil {
+		return movieStores{}, err
+	}
+
+	card, err := newEnsuredStore(cfg.S3.Config().WithBucket(cfg.S3.BucketCards), cfg.S3.Region, "card")
+	if err != nil {
+		return movieStores{}, err
+	}
+
+	actor, err := newEnsuredStore(cfg.S3.Config().WithBucket(cfg.S3.BucketActors), cfg.S3.Region, "actor")
+	if err != nil {
+		return movieStores{}, err
+	}
+
+	video, err := newEnsuredStore(cfg.S3.Config().WithBucket(cfg.S3.BucketVideos), cfg.S3.Region, "video")
+	if err != nil {
+		return movieStores{}, err
+	}
+
+	return movieStores{poster: poster, card: card, actor: actor, video: video}, nil
+}
+
+func newEnsuredStore(cfg storage.Config, region, name string) (*storage.S3Storage, error) {
+	store, err := storage.NewS3Storage(context.Background(), cfg)
+	if err != nil {
+		return nil, fmt.Errorf("init %s storage: %w", name, err)
+	}
+
+	if err := store.EnsureBucket(context.Background(), region); err != nil {
+		return nil, fmt.Errorf("ensure %s bucket: %w", name, err)
+	}
+
+	return store, nil
 }

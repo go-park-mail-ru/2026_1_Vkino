@@ -1,4 +1,3 @@
-//nolint:gocyclo,lll // Profile update flow stays explicit for validation clarity.
 package usecase
 
 import (
@@ -73,7 +72,6 @@ func (u *UserUsecase) updateBirthdateIfProvided(
 	return updatedUser, nil
 }
 
-//nolint:cyclop // Avatar update validation intentionally stays explicit.
 func (u *UserUsecase) updateAvatarIfProvided(
 	ctx context.Context,
 	userID int64,
@@ -98,22 +96,12 @@ func (u *UserUsecase) updateAvatarIfProvided(
 	}
 
 	avatarBytes, err := io.ReadAll(body)
-	if err != nil || len(avatarBytes) == 0 {
-		if err != nil {
-			requestLogger.
-				WithField("error", err).
-				Error("failed to read avatar body")
-		}
-
+	if shouldIgnoreEmptyAvatar(err, avatarBytes, requestLogger) {
 		return user, nil
 	}
 
 	if shouldIgnoreAvatarPayload(avatarBytes, contentType) {
-		requestLogger.
-			WithField("avatar_content_type", contentType).
-			WithField("avatar_size", len(avatarBytes)).
-			WithField("avatar_preview", string(bytes.TrimSpace(avatarBytes))).
-			Info("ignoring avatar payload during profile update")
+		logIgnoredAvatarPayload(requestLogger, contentType, avatarBytes)
 
 		return user, nil
 	}
@@ -131,7 +119,10 @@ func (u *UserUsecase) updateAvatarIfProvided(
 		return user, nil
 	}
 
-	sanitizedAvatarBytes, normalizedContentType, ext, err := sanitize.SanitizeAvatarUpload(avatarBytes, requestedContentType)
+	sanitizedAvatarBytes, normalizedContentType, ext, err := sanitize.SanitizeAvatarUpload(
+		avatarBytes,
+		requestedContentType,
+	)
 	if err != nil {
 		requestLogger.
 			WithField("original_content_type", contentType).
@@ -145,20 +136,9 @@ func (u *UserUsecase) updateAvatarIfProvided(
 		return nil, err
 	}
 
-	avatarKey, err := sanitize.NewAvatarObjectKey(userID, ext)
+	avatarKey, err := u.storeAvatar(ctx, userID, sanitizedAvatarBytes, normalizedContentType, ext)
 	if err != nil {
-		return nil, fmt.Errorf("%w: generate avatar object key: %w", domain.ErrInternal, err)
-	}
-
-	err = u.avatarStore.PutObject(
-		ctx,
-		avatarKey,
-		bytes.NewReader(sanitizedAvatarBytes),
-		int64(len(sanitizedAvatarBytes)),
-		normalizedContentType,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("%w: upload avatar object key=%q: %w", domain.ErrInternal, avatarKey, err)
+		return nil, err
 	}
 
 	updatedUser, err := u.userRepo.UpdateAvatarFileKey(ctx, userID, &avatarKey)
@@ -209,4 +189,48 @@ func shouldIgnoreAvatarPayload(body []byte, contentType string) bool {
 	trimmedType := strings.ToLower(strings.TrimSpace(contentType))
 
 	return !strings.HasPrefix(trimmedType, "image/")
+}
+
+func shouldIgnoreEmptyAvatar(err error, avatarBytes []byte, log *logger.Logger) bool {
+	if err == nil && len(avatarBytes) > 0 {
+		return false
+	}
+
+	if err != nil {
+		log.WithField("error", err).Error("failed to read avatar body")
+	}
+
+	return true
+}
+
+func logIgnoredAvatarPayload(log *logger.Logger, contentType string, avatarBytes []byte) {
+	log.
+		WithField("avatar_content_type", contentType).
+		WithField("avatar_size", len(avatarBytes)).
+		WithField("avatar_preview", string(bytes.TrimSpace(avatarBytes))).
+		Info("ignoring avatar payload during profile update")
+}
+
+func (u *UserUsecase) storeAvatar(
+	ctx context.Context,
+	userID int64,
+	sanitizedAvatarBytes []byte,
+	normalizedContentType, ext string,
+) (string, error) {
+	avatarKey, err := sanitize.NewAvatarObjectKey(userID, ext)
+	if err != nil {
+		return "", fmt.Errorf("%w: generate avatar object key: %w", domain.ErrInternal, err)
+	}
+
+	if err := u.avatarStore.PutObject(
+		ctx,
+		avatarKey,
+		bytes.NewReader(sanitizedAvatarBytes),
+		int64(len(sanitizedAvatarBytes)),
+		normalizedContentType,
+	); err != nil {
+		return "", fmt.Errorf("%w: upload avatar object key=%q: %w", domain.ErrInternal, avatarKey, err)
+	}
+
+	return avatarKey, nil
 }

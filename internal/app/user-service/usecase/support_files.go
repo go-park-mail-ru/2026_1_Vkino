@@ -1,4 +1,3 @@
-//nolint:gocyclo // Validation flow is intentionally explicit for support files.
 package usecase
 
 import (
@@ -28,12 +27,8 @@ func (u *supportUsecase) UploadSupportFile(
 	req.ContentType = strings.TrimSpace(req.ContentType)
 	req.Filename = strings.TrimSpace(req.Filename)
 
-	if len(req.Content) == 0 || req.SizeBytes <= 0 || int64(len(req.Content)) != req.SizeBytes {
-		return domain2.SupportFileResponse{}, domain2.ErrInvalidSupportFilePayload
-	}
-
-	if req.SizeBytes > maxSupportFileSize {
-		return domain2.SupportFileResponse{}, storagepkg.ErrFileTooLarge
+	if err := validateSupportFilePayload(req); err != nil {
+		return domain2.SupportFileResponse{}, err
 	}
 
 	normalizedContentType := normalizeSupportFileContentType(req.ContentType)
@@ -80,26 +75,26 @@ func (u *supportUsecase) UploadSupportFile(
 	}, nil
 }
 
+func validateSupportFilePayload(req domain2.UploadSupportFileRequest) error {
+	if len(req.Content) == 0 || req.SizeBytes <= 0 || int64(len(req.Content)) != req.SizeBytes {
+		return domain2.ErrInvalidSupportFilePayload
+	}
+
+	if req.SizeBytes > maxSupportFileSize {
+		return storagepkg.ErrFileTooLarge
+	}
+
+	return nil
+}
+
 func (u *supportUsecase) GetSupportFileURL(
 	ctx context.Context,
 	actorUserID int64,
 	req domain2.GetSupportFileURLRequest,
 ) (domain2.SupportFileResponse, error) {
-	if u.supportFileStore == nil {
-		return domain2.SupportFileResponse{}, storagepkg.ErrStorageUnavailable
-	}
-
 	req.FileKey = strings.TrimSpace(req.FileKey)
-	if req.TicketID <= 0 || req.FileKey == "" {
-		return domain2.SupportFileResponse{}, domain2.ErrInvalidSupportFilePayload
-	}
-
-	if actorUserID <= 0 {
-		return domain2.SupportFileResponse{}, domain2.ErrInvalidToken
-	}
-
-	if !strings.HasPrefix(req.FileKey, "support/") {
-		return domain2.SupportFileResponse{}, domain2.ErrInvalidSupportFilePayload
+	if err := u.validateSupportFileLookup(actorUserID, req); err != nil {
+		return domain2.SupportFileResponse{}, err
 	}
 
 	if err := u.checkTicketAccess(ctx, actorUserID, req.TicketID); err != nil {
@@ -130,6 +125,24 @@ func (u *supportUsecase) GetSupportFileURL(
 		FileKey: req.FileKey,
 		FileURL: fileURL,
 	}, nil
+}
+
+func (u *supportUsecase) validateSupportFileLookup(
+	actorUserID int64,
+	req domain2.GetSupportFileURLRequest,
+) error {
+	switch {
+	case u.supportFileStore == nil:
+		return storagepkg.ErrStorageUnavailable
+	case req.TicketID <= 0 || req.FileKey == "":
+		return domain2.ErrInvalidSupportFilePayload
+	case actorUserID <= 0:
+		return domain2.ErrInvalidToken
+	case !strings.HasPrefix(req.FileKey, "support/"):
+		return domain2.ErrInvalidSupportFilePayload
+	default:
+		return nil
+	}
 }
 
 func supportFileExtensionByContentType(contentType string) (string, bool) {

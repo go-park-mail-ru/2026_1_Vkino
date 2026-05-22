@@ -1,4 +1,3 @@
-//nolint:gocyclo // Access checks stay explicit for support messaging.
 package usecase
 
 import (
@@ -80,19 +79,8 @@ func (u *supportUsecase) checkTicketAccess(ctx context.Context, actorUserID, tic
 		return domain.ErrInvalidToken
 	}
 
-	switch {
-	case role == "user":
-		if ticket.UserID == actorUserID {
-			return nil
-		}
-
-	case isAdmin(role):
+	if ticketAccessible(role, actorUserID, ticket) {
 		return nil
-
-	case isStaff(role):
-		if canAccessCategory(role, ticket.Category) {
-			return nil
-		}
 	}
 
 	if ticket.UserID != actorUserID {
@@ -100,4 +88,16 @@ func (u *supportUsecase) checkTicketAccess(ctx context.Context, actorUserID, tic
 	}
 
 	return nil
+}
+
+func ticketAccessible(role string, actorUserID int64, ticket *domain.SupportTicketResponse) bool {
+	if isAdmin(role) {
+		return true
+	}
+
+	if role == "user" {
+		return ticket.UserID == actorUserID
+	}
+
+	return isStaff(role) && canAccessCategory(role, ticket.Category)
 }

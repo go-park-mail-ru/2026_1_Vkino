@@ -349,63 +349,7 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 
 	switch {
 	case strings.HasPrefix(contentType, "multipart/form-data"):
-		// лимит тела запроса, чтобы не тащить бесконечный файл в память
-		r.Body = http.MaxBytesReader(w, r.Body, maxProfileMultipartSize)
-
-		if err := r.ParseMultipartForm(maxProfileMultipartSize); err != nil {
-			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid multipart form body")
-
-			return updateProfilePayload{}, false
-		}
-
-		payload := updateProfilePayload{
-			Birthdate: strings.TrimSpace(r.FormValue("birthdate")),
-		}
-
-		header, ok := firstMultipartFile(r.MultipartForm, "avatar")
-		if !ok {
-			return payload, true
-		}
-
-		if shouldIgnoreMultipartAvatarHeader(header) {
-			return payload, true
-		}
-
-		file, err := header.Open()
-		if err != nil {
-			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid avatar file")
-
-			return updateProfilePayload{}, false
-		}
-
-		defer func() {
-			_ = file.Close()
-		}()
-
-		avatarBytes, err := io.ReadAll(file)
-		if err != nil {
-			httppkg.ErrResponse(w, http.StatusBadRequest, "failed to read avatar file")
-
-			return updateProfilePayload{}, false
-		}
-
-		if header != nil {
-			payload.AvatarContentType = header.Header.Get("Content-Type")
-		}
-
-		if isAvatarReferencePayload(avatarBytes, payload.AvatarContentType) {
-			logger.FromContext(r.Context()).
-				WithField("avatar_content_type", payload.AvatarContentType).
-				WithField("avatar_size", len(avatarBytes)).
-				WithField("avatar_preview", string(bytes.TrimSpace(avatarBytes))).
-				Info("ignoring avatar reference payload")
-
-			return payload, true
-		}
-
-		payload.Avatar = avatarBytes
-
-		return payload, true
+		return readMultipartUpdateProfilePayload(w, r)
 
 	default:
 		var req updateProfileJSONRequest
@@ -417,6 +361,68 @@ func readUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updatePro
 			Birthdate: strings.TrimSpace(req.Birthdate),
 		}, true
 	}
+}
+
+func readMultipartUpdateProfilePayload(w http.ResponseWriter, r *http.Request) (updateProfilePayload, bool) {
+	r.Body = http.MaxBytesReader(w, r.Body, maxProfileMultipartSize)
+	if err := r.ParseMultipartForm(maxProfileMultipartSize); err != nil {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid multipart form body")
+
+		return updateProfilePayload{}, false
+	}
+
+	payload := updateProfilePayload{Birthdate: strings.TrimSpace(r.FormValue("birthdate"))}
+
+	header, ok := firstMultipartFile(r.MultipartForm, "avatar")
+	if !ok || shouldIgnoreMultipartAvatarHeader(header) {
+		return payload, true
+	}
+
+	avatarBytes, contentType, ok := readMultipartAvatarFile(w, header)
+	if !ok {
+		return updateProfilePayload{}, false
+	}
+
+	payload.AvatarContentType = contentType
+	if isAvatarReferencePayload(avatarBytes, payload.AvatarContentType) {
+		logIgnoredAvatarReference(r.Context(), payload.AvatarContentType, avatarBytes)
+
+		return payload, true
+	}
+
+	payload.Avatar = avatarBytes
+
+	return payload, true
+}
+
+func readMultipartAvatarFile(w http.ResponseWriter, header *multipart.FileHeader) ([]byte, string, bool) {
+	file, err := header.Open()
+	if err != nil {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid avatar file")
+
+		return nil, "", false
+	}
+
+	defer func() {
+		_ = file.Close()
+	}()
+
+	avatarBytes, err := io.ReadAll(file)
+	if err != nil {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "failed to read avatar file")
+
+		return nil, "", false
+	}
+
+	return avatarBytes, header.Header.Get("Content-Type"), true
+}
+
+func logIgnoredAvatarReference(ctx context.Context, contentType string, avatarBytes []byte) {
+	logger.FromContext(ctx).
+		WithField("avatar_content_type", contentType).
+		WithField("avatar_size", len(avatarBytes)).
+		WithField("avatar_preview", string(bytes.TrimSpace(avatarBytes))).
+		Info("ignoring avatar reference payload")
 }
 
 func isAvatarReferencePayload(body []byte, contentType string) bool {

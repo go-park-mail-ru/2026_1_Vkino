@@ -1,4 +1,3 @@
-//nolint:gocyclo // HTTP route registration remains intentionally flat for readability.
 package routes
 
 import (
@@ -15,154 +14,141 @@ func Auth(
 	authClient authv1.AuthServiceClient,
 ) []httpserver.Option {
 	return []httpserver.Option{
-		route("POST /user/sign-up", func(w http.ResponseWriter, r *http.Request) {
-			var req dto.SignUpRequest
-			if !readJSON(w, r, &req) {
-				return
-			}
-
-			cancel := grpcContext(r, cfg.AuthRequestTimeout())
-			defer cancel()
-
-			resp, err := authClient.SignUp(r.Context(), &authv1.SignUpRequest{
-				Email:    req.Email,
-				Password: req.Password,
-			})
-			if err != nil {
-				writeGRPCError(w, err)
-
-				return
-			}
-
-			http.SetCookie(w, &http.Cookie{
-				Name:     cfg.RefreshCookieName(),
-				Value:    resp.GetRefreshToken(),
-				Path:     "/",
-				HttpOnly: true,
-				Secure:   cfg.CookieSecure(),
-				SameSite: http.SameSiteLaxMode,
-			})
-
-			httppkg.Response(w, http.StatusCreated, map[string]string{
-				"access_token": resp.GetAccessToken(),
-			})
-		}),
-
-		route("POST /user/sign-in", func(w http.ResponseWriter, r *http.Request) {
-			var req dto.SignInRequest
-			if !readJSON(w, r, &req) {
-				return
-			}
-
-			cancel := grpcContext(r, cfg.AuthRequestTimeout())
-			defer cancel()
-
-			resp, err := authClient.SignIn(r.Context(), &authv1.SignInRequest{
-				Email:    req.Email,
-				Password: req.Password,
-			})
-			if err != nil {
-				writeGRPCError(w, err)
-
-				return
-			}
-
-			http.SetCookie(w, &http.Cookie{
-				Name:     cfg.RefreshCookieName(),
-				Value:    resp.GetRefreshToken(),
-				Path:     "/",
-				HttpOnly: true,
-				Secure:   cfg.CookieSecure(),
-				SameSite: http.SameSiteLaxMode,
-			})
-
-			httppkg.Response(w, http.StatusOK, map[string]string{
-				"access_token": resp.GetAccessToken(),
-			})
-		}),
-
-		route("POST /user/refresh", func(w http.ResponseWriter, r *http.Request) {
-			cookie, err := r.Cookie(cfg.RefreshCookieName())
-			if err != nil {
-				httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
-
-				return
-			}
-
-			cancel := grpcContext(r, cfg.AuthRequestTimeout())
-			defer cancel()
-
-			resp, err := authClient.Refresh(r.Context(), &authv1.RefreshRequest{
-				RefreshToken: cookie.Value,
-			})
-			if err != nil {
-				writeGRPCError(w, err)
-
-				return
-			}
-
-			http.SetCookie(w, &http.Cookie{
-				Name:     cfg.RefreshCookieName(),
-				Value:    resp.GetRefreshToken(),
-				Path:     "/",
-				HttpOnly: true,
-				Secure:   cfg.CookieSecure(),
-				SameSite: http.SameSiteLaxMode,
-			})
-
-			httppkg.Response(w, http.StatusOK, map[string]string{
-				"access_token": resp.GetAccessToken(),
-			})
-		}),
-
-		route("POST /user/logout", func(w http.ResponseWriter, r *http.Request) {
-			cancel := grpcContext(r, cfg.AuthRequestTimeout())
-			defer cancel()
-
-			_, err := authClient.Logout(r.Context(), &authv1.LogoutRequest{})
-			if err != nil {
-				writeGRPCError(w, err)
-
-				return
-			}
-
-			http.SetCookie(w, &http.Cookie{
-				Name:     cfg.RefreshCookieName(),
-				Value:    "",
-				Path:     "/",
-				HttpOnly: true,
-				Secure:   cfg.CookieSecure(),
-				SameSite: http.SameSiteLaxMode,
-				MaxAge:   -1,
-			})
-
-			httppkg.Response(w, http.StatusOK, map[string]string{
-				"message": "successfully log out",
-			})
-		}),
-
-		route("POST /user/change-password", func(w http.ResponseWriter, r *http.Request) {
-			var req dto.ChangePasswordRequest
-			if !readJSON(w, r, &req) {
-				return
-			}
-
-			cancel := grpcContext(r, cfg.AuthRequestTimeout())
-			defer cancel()
-
-			_, err := authClient.ChangePassword(r.Context(), &authv1.ChangePasswordRequest{
-				OldPassword: req.OldPassword,
-				NewPassword: req.NewPassword,
-			})
-			if err != nil {
-				writeGRPCError(w, err)
-
-				return
-			}
-
-			httppkg.Response(w, http.StatusOK, map[string]string{
-				"message": "password updated",
-			})
-		}),
+		route("POST /user/sign-up", newSignUpHandler(cfg, authClient)),
+		route("POST /user/sign-in", newSignInHandler(cfg, authClient)),
+		route("POST /user/refresh", newRefreshHandler(cfg, authClient)),
+		route("POST /user/logout", newLogoutHandler(cfg, authClient)),
+		route("POST /user/change-password", newChangePasswordHandler(cfg, authClient)),
 	}
+}
+
+func newSignUpHandler(cfg Config, authClient authv1.AuthServiceClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req dto.SignUpRequest
+		if !readJSON(w, r, &req) {
+			return
+		}
+
+		cancel := grpcContext(r, cfg.AuthRequestTimeout())
+		defer cancel()
+
+		resp, err := authClient.SignUp(r.Context(), &authv1.SignUpRequest{
+			Email:    req.Email,
+			Password: req.Password,
+		})
+		if err != nil {
+			writeGRPCError(w, err)
+
+			return
+		}
+
+		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
+		httppkg.Response(w, http.StatusCreated, map[string]string{"access_token": resp.GetAccessToken()})
+	}
+}
+
+func newSignInHandler(cfg Config, authClient authv1.AuthServiceClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req dto.SignInRequest
+		if !readJSON(w, r, &req) {
+			return
+		}
+
+		cancel := grpcContext(r, cfg.AuthRequestTimeout())
+		defer cancel()
+
+		resp, err := authClient.SignIn(r.Context(), &authv1.SignInRequest{
+			Email:    req.Email,
+			Password: req.Password,
+		})
+		if err != nil {
+			writeGRPCError(w, err)
+
+			return
+		}
+
+		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
+		httppkg.Response(w, http.StatusOK, map[string]string{"access_token": resp.GetAccessToken()})
+	}
+}
+
+func newRefreshHandler(cfg Config, authClient authv1.AuthServiceClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie(cfg.RefreshCookieName())
+		if err != nil {
+			httppkg.ErrResponse(w, http.StatusUnauthorized, "unauthorized")
+
+			return
+		}
+
+		cancel := grpcContext(r, cfg.AuthRequestTimeout())
+		defer cancel()
+
+		resp, err := authClient.Refresh(r.Context(), &authv1.RefreshRequest{
+			RefreshToken: cookie.Value,
+		})
+		if err != nil {
+			writeGRPCError(w, err)
+
+			return
+		}
+
+		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
+		httppkg.Response(w, http.StatusOK, map[string]string{"access_token": resp.GetAccessToken()})
+	}
+}
+
+func newLogoutHandler(cfg Config, authClient authv1.AuthServiceClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cancel := grpcContext(r, cfg.AuthRequestTimeout())
+		defer cancel()
+
+		if _, err := authClient.Logout(r.Context(), &authv1.LogoutRequest{}); err != nil {
+			writeGRPCError(w, err)
+
+			return
+		}
+
+		writeAuthCookie(w, cfg, "", true)
+		httppkg.Response(w, http.StatusOK, map[string]string{"message": "successfully log out"})
+	}
+}
+
+func newChangePasswordHandler(cfg Config, authClient authv1.AuthServiceClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req dto.ChangePasswordRequest
+		if !readJSON(w, r, &req) {
+			return
+		}
+
+		cancel := grpcContext(r, cfg.AuthRequestTimeout())
+		defer cancel()
+
+		if _, err := authClient.ChangePassword(r.Context(), &authv1.ChangePasswordRequest{
+			OldPassword: req.OldPassword,
+			NewPassword: req.NewPassword,
+		}); err != nil {
+			writeGRPCError(w, err)
+
+			return
+		}
+
+		httppkg.Response(w, http.StatusOK, map[string]string{"message": "password updated"})
+	}
+}
+
+func writeAuthCookie(w http.ResponseWriter, cfg Config, refreshToken string, expired bool) {
+	cookie := &http.Cookie{
+		Name:     cfg.RefreshCookieName(),
+		Value:    refreshToken,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   cfg.CookieSecure(),
+		SameSite: http.SameSiteLaxMode,
+	}
+	if expired {
+		cookie.MaxAge = -1
+	}
+
+	http.SetCookie(w, cookie)
 }

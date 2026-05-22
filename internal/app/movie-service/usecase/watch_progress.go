@@ -1,4 +1,3 @@
-//nolint:lll // Verbose signatures mirror the domain types directly.
 package usecase
 
 import (
@@ -7,7 +6,11 @@ import (
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
 )
 
-func (u *MovieUsecase) GetContinueWatching(ctx context.Context, userID int64, limit int32) ([]domain.WatchProgressItemResponse, error) {
+func (u *MovieUsecase) GetContinueWatching(
+	ctx context.Context,
+	userID int64,
+	limit int32,
+) ([]domain.WatchProgressItemResponse, error) {
 	if userID <= 0 {
 		return nil, domain.ErrInternal
 	}
@@ -21,15 +24,15 @@ func (u *MovieUsecase) GetContinueWatching(ctx context.Context, userID int64, li
 		return nil, domain.ErrInternal
 	}
 
-	resp := make([]domain.WatchProgressItemResponse, 0, len(items))
-	for _, item := range items {
-		resp = append(resp, domain.WatchProgressItemResponse(item))
-	}
-
-	return resp, nil
+	return buildWatchProgressResponses(items), nil
 }
 
-func (u *MovieUsecase) GetWatchHistory(ctx context.Context, userID int64, limit int32, minProgress float64) ([]domain.WatchProgressItemResponse, error) {
+func (u *MovieUsecase) GetWatchHistory(
+	ctx context.Context,
+	userID int64,
+	limit int32,
+	minProgress float64,
+) ([]domain.WatchProgressItemResponse, error) {
 	if userID <= 0 {
 		return nil, domain.ErrInternal
 	}
@@ -43,10 +46,14 @@ func (u *MovieUsecase) GetWatchHistory(ctx context.Context, userID int64, limit 
 		return nil, domain.ErrInternal
 	}
 
+	return buildWatchProgressResponses(items), nil
+}
+
+func buildWatchProgressResponses(items []domain.WatchProgressItem) []domain.WatchProgressItemResponse {
 	resp := make([]domain.WatchProgressItemResponse, 0, len(items))
 	for _, item := range items {
 		resp = append(resp, domain.WatchProgressItemResponse(item))
 	}
 
-	return resp, nil
+	return resp
 }
