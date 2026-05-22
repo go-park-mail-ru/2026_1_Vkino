@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -116,7 +117,7 @@ func TestAuthRoutes_Refresh(t *testing.T) {
 
 	handler := newAuthHandler(t, cfg, client)
 
-	req := httptest.NewRequest(http.MethodPost, "/user/refresh", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/user/refresh", nil)
 	req.AddCookie(&http.Cookie{Name: "refresh", Value: "refresh-token"})
 
 	rr := httptest.NewRecorder()

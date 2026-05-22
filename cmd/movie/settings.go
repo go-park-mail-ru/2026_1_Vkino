@@ -23,6 +23,7 @@ type ServiceGRPCConfig struct {
 type Config struct {
 	GRPC     GRPCConfig          `mapstructure:"grpc"`
 	AuthGRPC ServiceGRPCConfig   `mapstructure:"auth_grpc"`
+	UserGRPC ServiceGRPCConfig   `mapstructure:"user_grpc"`
 	Logger   logger.Config       `mapstructure:"logger"`
 	Metrics  metrics.Config      `mapstructure:"metrics"`
 	Postgres corepostgres.Config `mapstructure:"postgres"`

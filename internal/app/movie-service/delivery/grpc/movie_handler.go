@@ -29,6 +29,7 @@ func (s *Server) GetMovieByID(
 		Director:           movie.Director,
 		TrailerUrl:         movie.TrailerURL,
 		ContentType:        movie.ContentType,
+		IsPaid:             movie.IsPaid,
 		ReleaseYear:        i32(movie.ReleaseYear),
 		DurationSeconds:    i32(movie.DurationSeconds),
 		AgeLimit:           i32(movie.AgeLimit),
@@ -159,6 +160,10 @@ func (s *Server) GetEpisodePlayback(
 	ctx context.Context,
 	req *moviev1.GetEpisodePlaybackRequest,
 ) (*moviev1.GetEpisodePlaybackResponse, error) {
+	if authCtx, err := s.authorize(ctx); err == nil {
+		ctx = authctx.WithContext(ctx, authCtx)
+	}
+
 	playback, err := s.usecase.GetEpisodePlayback(ctx, req.GetEpisodeId())
 	if err != nil {
 		return nil, mapError(err)
@@ -172,6 +177,8 @@ func (s *Server) GetEpisodePlayback(
 		Title:           playback.Title,
 		DurationSeconds: i32(playback.DurationSeconds),
 		PlaybackUrl:     playback.PlaybackURL,
+		AdPolicy:        playback.AdPolicy,
+		IsPaid:          playback.IsPaid,
 	}, nil
 }
 
@@ -229,7 +236,7 @@ func (s *Server) GetContinueWatching(
 		return nil, err
 	}
 
-	items, err := s.usecase.GetContinueWatching(ctx, authCtx.UserID, req.GetLimit())
+	items, err := s.usecase.GetContinueWatching(authctx.WithContext(ctx, authCtx), authCtx.UserID, req.GetLimit())
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -248,7 +255,12 @@ func (s *Server) GetWatchHistory(
 		return nil, err
 	}
 
-	items, err := s.usecase.GetWatchHistory(ctx, authCtx.UserID, req.GetLimit(), req.GetMinProgress())
+	items, err := s.usecase.GetWatchHistory(
+		authctx.WithContext(ctx, authCtx),
+		authCtx.UserID,
+		req.GetLimit(),
+		req.GetMinProgress(),
+	)
 	if err != nil {
 		return nil, mapError(err)
 	}
@@ -291,6 +303,7 @@ func mapEpisodeShorts(episodes []domain.EpisodeResponse) []*moviev1.EpisodeShort
 			Description:     episode.Description,
 			DurationSeconds: i32(episode.DurationSeconds),
 			ImgUrl:          episode.PictureFileKey,
+			IsPaid:          episode.IsPaid,
 		})
 	}
 

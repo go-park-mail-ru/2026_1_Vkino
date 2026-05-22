@@ -49,6 +49,61 @@ func (s *Server) GetFriend(ctx context.Context, req *userv1.GetFriendRequest) (*
 	}, nil
 }
 
+func (s *Server) GetSubscriptionCapabilities(
+	ctx context.Context,
+	req *userv1.GetSubscriptionCapabilitiesRequest,
+) (*userv1.GetSubscriptionCapabilitiesResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	targetUserID := authCtx.UserID
+	if req.GetUserId() > 0 {
+		targetUserID = req.GetUserId()
+	}
+
+	state, err := s.usecase.GetSubscriptionCapabilities(ctx, targetUserID)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	resp := &userv1.GetSubscriptionCapabilitiesResponse{
+		Subscription: &userv1.SubscriptionInfo{
+			Id:    state.Subscription.ID,
+			Code:  state.Subscription.Code,
+			Name:  state.Subscription.Name,
+			Level: state.Subscription.Level,
+		},
+		Capabilities: &userv1.SubscriptionCapabilities{
+			CanWatchPaidContent: state.Capabilities.CanWatchPaidContent,
+			CanUseSmartContinue: state.Capabilities.CanUseSmartContinue,
+			AdPolicy:            string(state.Capabilities.AdPolicy),
+			DailyCoinsLimit:     state.Capabilities.DailyCoinsLimit,
+			MaxRoomMembers:      state.Capabilities.MaxRoomMembers,
+		},
+		Usage: &userv1.SubscriptionUsage{
+			CoinsReceivedToday:    state.Usage.CoinsReceivedToday,
+			CoinsRemainingToday:   state.Usage.CoinsRemainingToday,
+			RoomsCreatedThisMonth: state.Usage.RoomsCreatedThisMonth,
+		},
+	}
+
+	if state.Subscription.ActiveUntil != nil {
+		resp.Subscription.ActiveUntil = state.Subscription.ActiveUntil
+	}
+
+	if state.Capabilities.MonthlyRoomLimit != nil {
+		resp.Capabilities.MonthlyRoomLimit = state.Capabilities.MonthlyRoomLimit
+	}
+
+	if state.Usage.RoomsRemainingThisMonth != nil {
+		resp.Usage.RoomsRemainingThisMonth = state.Usage.RoomsRemainingThisMonth
+	}
+
+	return resp, nil
+}
+
 func (s *Server) UpdateProfile(
 	ctx context.Context,
 	req *userv1.UpdateProfileRequest,

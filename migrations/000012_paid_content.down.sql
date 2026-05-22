@@ -1,0 +1,9 @@
+BEGIN;
+
+ALTER TABLE episode
+    DROP COLUMN IF EXISTS is_paid;
+
+ALTER TABLE movie
+    DROP COLUMN IF EXISTS is_paid;
+
+COMMIT;

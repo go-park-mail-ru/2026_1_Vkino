@@ -7,6 +7,7 @@ option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1;use
 service UserService {
   rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
   rpc GetFriend(GetFriendRequest) returns (GetFriendResponse);
+  rpc GetSubscriptionCapabilities(GetSubscriptionCapabilitiesRequest) returns (GetSubscriptionCapabilitiesResponse);
   rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
   rpc SearchUsersByEmail(SearchUsersByEmailRequest) returns (SearchUsersByEmailResponse);
   rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
@@ -46,6 +47,40 @@ message GetFriendResponse {
   int64 id = 1;
   string email = 2;
   string avatar_url = 3;
+}
+
+message GetSubscriptionCapabilitiesRequest {
+  int64 user_id = 1;
+}
+
+message SubscriptionInfo {
+  int64 id = 1;
+  string code = 2;
+  string name = 3;
+  int32 level = 4;
+  optional string active_until = 5;
+}
+
+message SubscriptionCapabilities {
+  bool can_watch_paid_content = 1;
+  bool can_use_smart_continue = 2;
+  string ad_policy = 3;
+  int32 daily_coins_limit = 4;
+  optional int32 monthly_room_limit = 5;
+  int32 max_room_members = 6;
+}
+
+message SubscriptionUsage {
+  int32 coins_received_today = 1;
+  int32 coins_remaining_today = 2;
+  int32 rooms_created_this_month = 3;
+  optional int32 rooms_remaining_this_month = 4;
+}
+
+message GetSubscriptionCapabilitiesResponse {
+  SubscriptionInfo subscription = 1;
+  SubscriptionCapabilities capabilities = 2;
+  SubscriptionUsage usage = 3;
 }
 
 message UpdateProfileRequest {

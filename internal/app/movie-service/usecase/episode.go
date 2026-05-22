@@ -20,6 +20,15 @@ func (u *MovieUsecase) GetEpisodePlayback(
 		return domain.EpisodePlaybackResponse{}, err
 	}
 
+	if err = u.ensurePaidContentAllowed(ctx, episode); err != nil {
+		return domain.EpisodePlaybackResponse{}, err
+	}
+
+	state, err := u.viewerSubscriptionState(ctx)
+	if err != nil {
+		return domain.EpisodePlaybackResponse{}, err
+	}
+
 	playbackURL, err := u.presignVideo(ctx, episode.VideoFileKey)
 	if err != nil {
 		return domain.EpisodePlaybackResponse{}, err
@@ -33,6 +42,8 @@ func (u *MovieUsecase) GetEpisodePlayback(
 		Title:           episode.Title,
 		DurationSeconds: episode.DurationSeconds,
 		PlaybackURL:     playbackURL,
+		AdPolicy:        string(state.Capabilities.AdPolicy),
+		IsPaid:          episode.IsPaid || episode.MovieIsPaid,
 	}, nil
 }
 

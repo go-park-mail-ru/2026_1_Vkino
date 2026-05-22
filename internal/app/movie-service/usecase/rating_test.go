@@ -12,7 +12,7 @@ import (
 func TestBuildMovieResponse_IncludesExternalRatings(t *testing.T) {
 	t.Parallel()
 
-	usecase := NewMovieUsecase(nil, stubFileStorage{}, stubFileStorage{}, stubFileStorage{}, stubFileStorage{})
+	usecase := NewMovieUsecase(nil, nil, stubFileStorage{}, stubFileStorage{}, stubFileStorage{}, stubFileStorage{})
 
 	resp, err := usecase.buildMovieResponse(context.Background(), testMovieWithExternalRatings())
 	if err != nil {
@@ -87,7 +87,7 @@ func TestGetSelectionByTitle_ReturnsComputedRating(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	repo := repomocks.NewMockMovieRepo(ctrl)
-	usecase := NewMovieUsecase(repo, nil, stubFileStorage{}, nil, nil)
+	usecase := NewMovieUsecase(repo, nil, nil, stubFileStorage{}, nil, nil)
 
 	rating := 8.25
 

@@ -92,6 +92,10 @@ func (s *service) InviteFriendToRoom(
 		return domain.InviteFriendToRoomResponse{}, err
 	}
 
+	if err = s.ensureRoomMemberCapacity(ctx, room, req.InvitedUserID); err != nil {
+		return domain.InviteFriendToRoomResponse{}, err
+	}
+
 	if err = s.partyRepo.InviteMember(ctx, req.RoomID, req.InvitedUserID); err != nil {
 		return domain.InviteFriendToRoomResponse{}, err
 	}
@@ -189,6 +193,10 @@ func (s *service) CreateRoom(
 	req.Name = strings.TrimSpace(req.Name)
 	req.Visibility = strings.TrimSpace(strings.ToLower(req.Visibility))
 
+	if err := s.ensureRoomCreationAllowed(ctx, userID); err != nil {
+		return domain.RoomResponse{}, err
+	}
+
 	room, err := s.partyRepo.CreateRoom(ctx, userID, req)
 	if err != nil {
 		return domain.RoomResponse{}, err
@@ -202,29 +210,20 @@ func (s *service) JoinRoom(
 	userID int64,
 	req domain.JoinRoomRequest,
 ) (domain.RoomResponse, error) {
-	if userID <= 0 {
-		return domain.RoomResponse{}, domain.ErrInvalidUserID
+	if err := validateJoinRoomRequest(userID, req, s.partyRepo); err != nil {
+		return domain.RoomResponse{}, err
 	}
 
-	if req.InviteLink == "" {
-		return domain.RoomResponse{}, domain.ErrInvalidInviteLink
-	}
-
-	if s.partyRepo == nil {
-		return domain.RoomResponse{}, domain.ErrInternal
-	}
-
-	inviteCode := normalizeInviteLink(req.InviteLink)
-	if inviteCode == "" {
-		return domain.RoomResponse{}, domain.ErrInvalidInviteLink
-	}
-
-	invite, err := s.partyRepo.GetInvite(ctx, inviteCode)
+	invite, room, err := s.joinRoomTarget(ctx, req.InviteLink)
 	if err != nil {
 		return domain.RoomResponse{}, err
 	}
 
-	room, err := s.partyRepo.AddMember(ctx, invite.RoomID, userID)
+	if err = s.ensureRoomMemberCapacity(ctx, room, userID); err != nil {
+		return domain.RoomResponse{}, err
+	}
+
+	room, err = s.partyRepo.AddMember(ctx, invite.RoomID, userID)
 	if err != nil {
 		return domain.RoomResponse{}, err
 	}
@@ -232,6 +231,44 @@ func (s *service) JoinRoom(
 	maskRoomInviteLink(room, userID)
 
 	return domain.RoomResponse{Room: *room}, nil
+}
+
+func validateJoinRoomRequest(userID int64, req domain.JoinRoomRequest, repo any) error {
+	if userID <= 0 {
+		return domain.ErrInvalidUserID
+	}
+
+	if req.InviteLink == "" {
+		return domain.ErrInvalidInviteLink
+	}
+
+	if repo == nil {
+		return domain.ErrInternal
+	}
+
+	return nil
+}
+
+func (s *service) joinRoomTarget(
+	ctx context.Context,
+	inviteLink string,
+) (*domain.Invite, *domain.Room, error) {
+	inviteCode := normalizeInviteLink(inviteLink)
+	if inviteCode == "" {
+		return nil, nil, domain.ErrInvalidInviteLink
+	}
+
+	invite, err := s.partyRepo.GetInvite(ctx, inviteCode)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	room, err := s.partyRepo.GetRoomByID(ctx, invite.RoomID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return invite, room, nil
 }
 
 func (s *service) DeleteRoom(ctx context.Context, userID, roomID int64) (domain.DeleteRoomResponse, error) {
@@ -271,16 +308,8 @@ func (s *service) SubscribeRoom(
 	userID int64,
 	req domain.SubscribeRoomRequest,
 ) (<-chan domain.RoomEvent, func(), error) {
-	if userID <= 0 {
-		return nil, nil, domain.ErrInvalidUserID
-	}
-
-	if req.RoomID <= 0 {
-		return nil, nil, domain.ErrInvalidRoomID
-	}
-
-	if s.eventBroker == nil {
-		return nil, nil, domain.ErrNotImplemented
+	if err := validateSubscribeRoomRequest(userID, req, s.eventBroker); err != nil {
+		return nil, nil, err
 	}
 
 	room, err := s.partyRepo.GetRoomByID(ctx, req.RoomID)
@@ -288,15 +317,39 @@ func (s *service) SubscribeRoom(
 		return nil, nil, err
 	}
 
-	if !isRoomMember(room.Members, userID) {
-		return nil, nil, domain.ErrAccessDenied
-	}
-
-	if _, err = s.activatePendingMemberIfNeeded(ctx, req.RoomID, userID, room.Members); err != nil {
+	if err := s.ensureRoomSubscriptionAllowed(ctx, room, userID); err != nil {
 		return nil, nil, err
 	}
 
-	return s.eventBroker.Subscribe(ctx, req.RoomID)
+	return s.eventBroker.Subscribe(ctx, req.RoomID, userID)
+}
+
+func validateSubscribeRoomRequest(userID int64, req domain.SubscribeRoomRequest, broker any) error {
+	if userID <= 0 {
+		return domain.ErrInvalidUserID
+	}
+
+	if req.RoomID <= 0 {
+		return domain.ErrInvalidRoomID
+	}
+
+	if broker == nil {
+		return domain.ErrNotImplemented
+	}
+
+	return nil
+}
+
+func (s *service) ensureRoomSubscriptionAllowed(ctx context.Context, room *domain.Room, userID int64) error {
+	if !isRoomMember(room.Members, userID) {
+		return domain.ErrAccessDenied
+	}
+
+	if _, err := s.activatePendingMemberIfNeeded(ctx, room.ID, userID, room.Members); err != nil {
+		return err
+	}
+
+	return s.ensureRoomMemberCapacity(ctx, room, userID)
 }
 
 func isRoomMember(members []domain.RoomMember, userID int64) bool {

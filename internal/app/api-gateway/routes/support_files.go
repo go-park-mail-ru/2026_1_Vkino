@@ -125,6 +125,8 @@ func readSupportFileUploadPayload(w http.ResponseWriter, r *http.Request) (suppo
 }
 
 func parseSupportMultipartForm(w http.ResponseWriter, r *http.Request) bool {
+	r.Body = http.MaxBytesReader(w, r.Body, maxSupportFileSize)
+
 	if err := r.ParseMultipartForm(maxSupportFileSize); err != nil {
 		var maxBytesErr *http.MaxBytesError
 		if errors.As(err, &maxBytesErr) {

@@ -5,13 +5,14 @@ import (
 	"testing"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/repository/mocks"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 	"go.uber.org/mock/gomock"
 )
 
 func TestGetContinueWatching_CallsRepoWithUserAndLimit(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mr := mocks.NewMockMovieRepo(ctrl)
-	u := NewMovieUsecase(mr, nil, nil, nil, nil)
+	u := NewMovieUsecase(mr, smartContinueStateReader{}, nil, nil, nil, nil)
 
 	mr.EXPECT().GetContinueWatching(gomock.Any(), int64(42), int32(7)).Return(nil, nil)
 
@@ -24,7 +25,7 @@ func TestGetContinueWatching_CallsRepoWithUserAndLimit(t *testing.T) {
 func TestGetWatchHistory_CallsRepoWithMinProgress(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mr := mocks.NewMockMovieRepo(ctrl)
-	u := NewMovieUsecase(mr, nil, nil, nil, nil)
+	u := NewMovieUsecase(mr, smartContinueStateReader{}, nil, nil, nil, nil)
 
 	mr.EXPECT().GetWatchHistory(gomock.Any(), int64(3), int32(10), 0.95).Return(nil, nil)
 
@@ -32,4 +33,13 @@ func TestGetWatchHistory_CallsRepoWithMinProgress(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetWatchHistory: %v", err)
 	}
+}
+
+type smartContinueStateReader struct{}
+
+func (smartContinueStateReader) GetSubscriptionState(context.Context, int64) (subscription.State, error) {
+	state := subscription.DefaultState()
+	state.Capabilities.CanUseSmartContinue = true
+
+	return state, nil
 }

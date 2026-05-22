@@ -3,6 +3,7 @@ package memory
 import (
 	"context"
 	"errors"
+	"math"
 	"sync"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
@@ -15,12 +16,17 @@ var errInvalidRoomID = errors.New("invalid room id")
 type RoomEventBroker struct {
 	mu          sync.RWMutex
 	nextID      int64
-	subscribers map[int64]map[int64]chan domain.RoomEvent
+	subscribers map[int64]map[int64]roomSubscriber
+}
+
+type roomSubscriber struct {
+	userID int64
+	ch     chan domain.RoomEvent
 }
 
 func NewRoomEventBroker() *RoomEventBroker {
 	return &RoomEventBroker{
-		subscribers: make(map[int64]map[int64]chan domain.RoomEvent),
+		subscribers: make(map[int64]map[int64]roomSubscriber),
 	}
 }
 
@@ -28,19 +34,23 @@ func (b *RoomEventBroker) Publish(ctx context.Context, event domain.RoomEvent) e
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
-	for _, ch := range b.subscribers[event.RoomID] {
+	for _, subscriber := range b.subscribers[event.RoomID] {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case ch <- event:
+		case subscriber.ch <- event:
 		}
 	}
 
 	return nil
 }
 
-func (b *RoomEventBroker) Subscribe(_ context.Context, roomID int64) (<-chan domain.RoomEvent, func(), error) {
-	if roomID <= 0 {
+func (b *RoomEventBroker) Subscribe(
+	_ context.Context,
+	roomID int64,
+	userID int64,
+) (<-chan domain.RoomEvent, func(), error) {
+	if roomID <= 0 || userID <= 0 {
 		return nil, nil, errInvalidRoomID
 	}
 
@@ -51,10 +61,10 @@ func (b *RoomEventBroker) Subscribe(_ context.Context, roomID int64) (<-chan dom
 	subID := b.nextID
 
 	if _, ok := b.subscribers[roomID]; !ok {
-		b.subscribers[roomID] = make(map[int64]chan domain.RoomEvent)
+		b.subscribers[roomID] = make(map[int64]roomSubscriber)
 	}
 
-	b.subscribers[roomID][subID] = ch
+	b.subscribers[roomID][subID] = roomSubscriber{userID: userID, ch: ch}
 	b.mu.Unlock()
 
 	unsubscribe := func() {
@@ -66,9 +76,9 @@ func (b *RoomEventBroker) Subscribe(_ context.Context, roomID int64) (<-chan dom
 			return
 		}
 
-		if subCh, ok := roomSubs[subID]; ok {
+		if sub, ok := roomSubs[subID]; ok {
 			delete(roomSubs, subID)
-			close(subCh)
+			close(sub.ch)
 		}
 
 		if len(roomSubs) == 0 {
@@ -77,4 +87,38 @@ func (b *RoomEventBroker) Subscribe(_ context.Context, roomID int64) (<-chan dom
 	}
 
 	return ch, unsubscribe, nil
+}
+
+func (b *RoomEventBroker) ActiveUsers(roomID int64) int32 {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	users := make(map[int64]struct{})
+	for _, subscriber := range b.subscribers[roomID] {
+		users[subscriber.userID] = struct{}{}
+	}
+
+	var count int32
+	for range users {
+		if count == math.MaxInt32 {
+			return math.MaxInt32
+		}
+
+		count++
+	}
+
+	return count
+}
+
+func (b *RoomEventBroker) IsUserActive(roomID, userID int64) bool {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	for _, subscriber := range b.subscribers[roomID] {
+		if subscriber.userID == userID {
+			return true
+		}
+	}
+
+	return false
 }

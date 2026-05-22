@@ -41,7 +41,7 @@ func (stubFileStorage) GetObject(ctx context.Context, key string) (io.ReadCloser
 func TestSearchMovies_ReturnsMoviesAndActors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mr := repomocks.NewMockMovieRepo(ctrl)
-	u := NewMovieUsecase(mr, nil, stubFileStorage{}, stubFileStorage{}, nil)
+	u := NewMovieUsecase(mr, nil, nil, stubFileStorage{}, stubFileStorage{}, nil)
 
 	mr.EXPECT().SearchMovies(gomock.Any(), "matrix").Return([]domain.MovieCard{
 		{ID: 1, Title: "The Matrix", PictureFileKey: "movies/matrix.jpg"},
@@ -75,7 +75,7 @@ func TestSearchMovies_ReturnsMoviesAndActors(t *testing.T) {
 func TestSearchMovies_InvalidQuery(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mr := repomocks.NewMockMovieRepo(ctrl)
-	u := NewMovieUsecase(mr, nil, nil, nil, nil)
+	u := NewMovieUsecase(mr, nil, nil, nil, nil, nil)
 
 	_, err := u.SearchMovies(context.Background(), "   ")
 	if !errors.Is(err, domain.ErrInvalidSearchQuery) {

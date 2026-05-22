@@ -4,6 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/repository/postgres"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/errmap/grpcx"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 	"google.golang.org/grpc/codes"
 )
 
@@ -65,5 +66,9 @@ var movieGRPCErrorMapper = grpcx.New(
 )
 
 func mapError(err error) error {
+	if subscriptionErr, ok := subscription.ToGRPCError(err); ok {
+		return subscriptionErr
+	}
+
 	return movieGRPCErrorMapper.Map(err)
 }

@@ -44,5 +44,7 @@ type PartyRepo interface {
 
 type RoomEventBroker interface {
 	Publish(ctx context.Context, event domain.RoomEvent) error
-	Subscribe(ctx context.Context, roomID int64) (<-chan domain.RoomEvent, func(), error)
+	Subscribe(ctx context.Context, roomID, userID int64) (<-chan domain.RoomEvent, func(), error)
+	ActiveUsers(roomID int64) int32
+	IsUserActive(roomID, userID int64) bool
 }

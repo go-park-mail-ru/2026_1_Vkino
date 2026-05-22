@@ -23,7 +23,7 @@ func TestApplyRoomActionAllowsNonHostParticipantPlaybackActions(t *testing.T) {
 
 			repo := newPlaybackActionRepo()
 			broker := &playbackActionBroker{}
-			svc := New(repo, broker)
+			svc := New(repo, broker, nil)
 
 			playback, err := svc.ApplyRoomAction(context.Background(), 2, domain.ApplyRoomActionRequest{
 				RoomID:          5,
@@ -58,7 +58,7 @@ func TestApplyRoomActionAllowsNonHostParticipantSeek(t *testing.T) {
 
 	repo := newPlaybackActionRepo()
 	broker := &playbackActionBroker{}
-	svc := New(repo, broker)
+	svc := New(repo, broker, nil)
 
 	playback, err := svc.ApplyRoomAction(context.Background(), 2, domain.ApplyRoomActionRequest{
 		RoomID:          5,
@@ -87,7 +87,7 @@ func TestApplyRoomActionAllowsNonHostParticipantSyncState(t *testing.T) {
 
 	repo := newPlaybackActionRepo()
 	broker := &playbackActionBroker{}
-	svc := New(repo, broker)
+	svc := New(repo, broker, nil)
 
 	playback, err := svc.ApplyRoomAction(context.Background(), 2, domain.ApplyRoomActionRequest{
 		RoomID:          5,
@@ -121,7 +121,7 @@ func TestApplyRoomActionRejectsNonMember(t *testing.T) {
 
 	repo := newPlaybackActionRepo()
 	broker := &playbackActionBroker{}
-	svc := New(repo, broker)
+	svc := New(repo, broker, nil)
 
 	_, err := svc.ApplyRoomAction(context.Background(), 3, domain.ApplyRoomActionRequest{
 		RoomID:          5,
@@ -141,7 +141,7 @@ func TestApplyRoomActionKeepsMovieSelectionHostOnly(t *testing.T) {
 
 	repo := newPlaybackActionRepo()
 	broker := &playbackActionBroker{}
-	svc := New(repo, broker)
+	svc := New(repo, broker, nil)
 
 	_, err := svc.ApplyRoomAction(context.Background(), 2, domain.ApplyRoomActionRequest{
 		RoomID:  5,
@@ -264,6 +264,15 @@ func (b *playbackActionBroker) Publish(_ context.Context, event domain.RoomEvent
 func (b *playbackActionBroker) Subscribe(
 	context.Context,
 	int64,
+	int64,
 ) (<-chan domain.RoomEvent, func(), error) {
 	return nil, nil, domain.ErrNotImplemented
+}
+
+func (b *playbackActionBroker) ActiveUsers(int64) int32 {
+	return 0
+}
+
+func (b *playbackActionBroker) IsUserActive(int64, int64) bool {
+	return false
 }

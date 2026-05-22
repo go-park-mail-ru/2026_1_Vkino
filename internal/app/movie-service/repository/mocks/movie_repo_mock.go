@@ -17,6 +17,366 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
+// MockMovieCatalogReader is a mock of MovieCatalogReader interface.
+type MockMovieCatalogReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockMovieCatalogReaderMockRecorder
+	isgomock struct{}
+}
+
+// MockMovieCatalogReaderMockRecorder is the mock recorder for MockMovieCatalogReader.
+type MockMovieCatalogReaderMockRecorder struct {
+	mock *MockMovieCatalogReader
+}
+
+// NewMockMovieCatalogReader creates a new mock instance.
+func NewMockMovieCatalogReader(ctrl *gomock.Controller) *MockMovieCatalogReader {
+	mock := &MockMovieCatalogReader{ctrl: ctrl}
+	mock.recorder = &MockMovieCatalogReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMovieCatalogReader) EXPECT() *MockMovieCatalogReaderMockRecorder {
+	return m.recorder
+}
+
+// GetActorByID mocks base method.
+func (m *MockMovieCatalogReader) GetActorByID(ctx context.Context, actorID int64) (*domain.Actor, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetActorByID", ctx, actorID)
+	ret0, _ := ret[0].(*domain.Actor)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetActorByID indicates an expected call of GetActorByID.
+func (mr *MockMovieCatalogReaderMockRecorder) GetActorByID(ctx, actorID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActorByID", reflect.TypeOf((*MockMovieCatalogReader)(nil).GetActorByID), ctx, actorID)
+}
+
+// GetAllGenres mocks base method.
+func (m *MockMovieCatalogReader) GetAllGenres(ctx context.Context) ([]domain.GenreShort, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllGenres", ctx)
+	ret0, _ := ret[0].([]domain.GenreShort)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllGenres indicates an expected call of GetAllGenres.
+func (mr *MockMovieCatalogReaderMockRecorder) GetAllGenres(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllGenres", reflect.TypeOf((*MockMovieCatalogReader)(nil).GetAllGenres), ctx)
+}
+
+// GetAllSelections mocks base method.
+func (m *MockMovieCatalogReader) GetAllSelections(ctx context.Context) ([]domain.Selection, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllSelections", ctx)
+	ret0, _ := ret[0].([]domain.Selection)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllSelections indicates an expected call of GetAllSelections.
+func (mr *MockMovieCatalogReaderMockRecorder) GetAllSelections(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllSelections", reflect.TypeOf((*MockMovieCatalogReader)(nil).GetAllSelections), ctx)
+}
+
+// GetGenreByID mocks base method.
+func (m *MockMovieCatalogReader) GetGenreByID(ctx context.Context, genreID int64) (domain.Genre, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGenreByID", ctx, genreID)
+	ret0, _ := ret[0].(domain.Genre)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGenreByID indicates an expected call of GetGenreByID.
+func (mr *MockMovieCatalogReaderMockRecorder) GetGenreByID(ctx, genreID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGenreByID", reflect.TypeOf((*MockMovieCatalogReader)(nil).GetGenreByID), ctx, genreID)
+}
+
+// GetMovieByID mocks base method.
+func (m *MockMovieCatalogReader) GetMovieByID(ctx context.Context, movieID int64) (*domain.Movie, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMovieByID", ctx, movieID)
+	ret0, _ := ret[0].(*domain.Movie)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMovieByID indicates an expected call of GetMovieByID.
+func (mr *MockMovieCatalogReaderMockRecorder) GetMovieByID(ctx, movieID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieByID", reflect.TypeOf((*MockMovieCatalogReader)(nil).GetMovieByID), ctx, movieID)
+}
+
+// GetMovieCardsByIDs mocks base method.
+func (m *MockMovieCatalogReader) GetMovieCardsByIDs(ctx context.Context, movieIDs []int64) ([]domain.MovieCard, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMovieCardsByIDs", ctx, movieIDs)
+	ret0, _ := ret[0].([]domain.MovieCard)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMovieCardsByIDs indicates an expected call of GetMovieCardsByIDs.
+func (mr *MockMovieCatalogReaderMockRecorder) GetMovieCardsByIDs(ctx, movieIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieCardsByIDs", reflect.TypeOf((*MockMovieCatalogReader)(nil).GetMovieCardsByIDs), ctx, movieIDs)
+}
+
+// GetSelectionByTitle mocks base method.
+func (m *MockMovieCatalogReader) GetSelectionByTitle(ctx context.Context, title string) (domain.Selection, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSelectionByTitle", ctx, title)
+	ret0, _ := ret[0].(domain.Selection)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSelectionByTitle indicates an expected call of GetSelectionByTitle.
+func (mr *MockMovieCatalogReaderMockRecorder) GetSelectionByTitle(ctx, title any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSelectionByTitle", reflect.TypeOf((*MockMovieCatalogReader)(nil).GetSelectionByTitle), ctx, title)
+}
+
+// MockMovieSearchReader is a mock of MovieSearchReader interface.
+type MockMovieSearchReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockMovieSearchReaderMockRecorder
+	isgomock struct{}
+}
+
+// MockMovieSearchReaderMockRecorder is the mock recorder for MockMovieSearchReader.
+type MockMovieSearchReaderMockRecorder struct {
+	mock *MockMovieSearchReader
+}
+
+// NewMockMovieSearchReader creates a new mock instance.
+func NewMockMovieSearchReader(ctrl *gomock.Controller) *MockMovieSearchReader {
+	mock := &MockMovieSearchReader{ctrl: ctrl}
+	mock.recorder = &MockMovieSearchReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMovieSearchReader) EXPECT() *MockMovieSearchReaderMockRecorder {
+	return m.recorder
+}
+
+// SearchActors mocks base method.
+func (m *MockMovieSearchReader) SearchActors(ctx context.Context, query string) ([]domain.ActorShort, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchActors", ctx, query)
+	ret0, _ := ret[0].([]domain.ActorShort)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchActors indicates an expected call of SearchActors.
+func (mr *MockMovieSearchReaderMockRecorder) SearchActors(ctx, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchActors", reflect.TypeOf((*MockMovieSearchReader)(nil).SearchActors), ctx, query)
+}
+
+// SearchMovies mocks base method.
+func (m *MockMovieSearchReader) SearchMovies(ctx context.Context, query string) ([]domain.MovieCard, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchMovies", ctx, query)
+	ret0, _ := ret[0].([]domain.MovieCard)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchMovies indicates an expected call of SearchMovies.
+func (mr *MockMovieSearchReaderMockRecorder) SearchMovies(ctx, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchMovies", reflect.TypeOf((*MockMovieSearchReader)(nil).SearchMovies), ctx, query)
+}
+
+// MockEpisodeProgressReader is a mock of EpisodeProgressReader interface.
+type MockEpisodeProgressReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockEpisodeProgressReaderMockRecorder
+	isgomock struct{}
+}
+
+// MockEpisodeProgressReaderMockRecorder is the mock recorder for MockEpisodeProgressReader.
+type MockEpisodeProgressReaderMockRecorder struct {
+	mock *MockEpisodeProgressReader
+}
+
+// NewMockEpisodeProgressReader creates a new mock instance.
+func NewMockEpisodeProgressReader(ctrl *gomock.Controller) *MockEpisodeProgressReader {
+	mock := &MockEpisodeProgressReader{ctrl: ctrl}
+	mock.recorder = &MockEpisodeProgressReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockEpisodeProgressReader) EXPECT() *MockEpisodeProgressReaderMockRecorder {
+	return m.recorder
+}
+
+// GetEpisodePlayback mocks base method.
+func (m *MockEpisodeProgressReader) GetEpisodePlayback(ctx context.Context, episodeID int64) (*domain.Episode, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEpisodePlayback", ctx, episodeID)
+	ret0, _ := ret[0].(*domain.Episode)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEpisodePlayback indicates an expected call of GetEpisodePlayback.
+func (mr *MockEpisodeProgressReaderMockRecorder) GetEpisodePlayback(ctx, episodeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEpisodePlayback", reflect.TypeOf((*MockEpisodeProgressReader)(nil).GetEpisodePlayback), ctx, episodeID)
+}
+
+// GetEpisodeProgress mocks base method.
+func (m *MockEpisodeProgressReader) GetEpisodeProgress(ctx context.Context, userID, episodeID int64) (domain.EpisodeProgress, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEpisodeProgress", ctx, userID, episodeID)
+	ret0, _ := ret[0].(domain.EpisodeProgress)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEpisodeProgress indicates an expected call of GetEpisodeProgress.
+func (mr *MockEpisodeProgressReaderMockRecorder) GetEpisodeProgress(ctx, userID, episodeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEpisodeProgress", reflect.TypeOf((*MockEpisodeProgressReader)(nil).GetEpisodeProgress), ctx, userID, episodeID)
+}
+
+// SaveEpisodeProgress mocks base method.
+func (m *MockEpisodeProgressReader) SaveEpisodeProgress(ctx context.Context, userID, episodeID, positionSec int64) (domain.EpisodeProgress, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveEpisodeProgress", ctx, userID, episodeID, positionSec)
+	ret0, _ := ret[0].(domain.EpisodeProgress)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SaveEpisodeProgress indicates an expected call of SaveEpisodeProgress.
+func (mr *MockEpisodeProgressReaderMockRecorder) SaveEpisodeProgress(ctx, userID, episodeID, positionSec any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveEpisodeProgress", reflect.TypeOf((*MockEpisodeProgressReader)(nil).SaveEpisodeProgress), ctx, userID, episodeID, positionSec)
+}
+
+// MockMovieInteractionReader is a mock of MovieInteractionReader interface.
+type MockMovieInteractionReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockMovieInteractionReaderMockRecorder
+	isgomock struct{}
+}
+
+// MockMovieInteractionReaderMockRecorder is the mock recorder for MockMovieInteractionReader.
+type MockMovieInteractionReaderMockRecorder struct {
+	mock *MockMovieInteractionReader
+}
+
+// NewMockMovieInteractionReader creates a new mock instance.
+func NewMockMovieInteractionReader(ctrl *gomock.Controller) *MockMovieInteractionReader {
+	mock := &MockMovieInteractionReader{ctrl: ctrl}
+	mock.recorder = &MockMovieInteractionReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMovieInteractionReader) EXPECT() *MockMovieInteractionReaderMockRecorder {
+	return m.recorder
+}
+
+// GetMovieReviews mocks base method.
+func (m *MockMovieInteractionReader) GetMovieReviews(ctx context.Context, movieID, viewerUserID int64) ([]domain.MovieReview, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMovieReviews", ctx, movieID, viewerUserID)
+	ret0, _ := ret[0].([]domain.MovieReview)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMovieReviews indicates an expected call of GetMovieReviews.
+func (mr *MockMovieInteractionReaderMockRecorder) GetMovieReviews(ctx, movieID, viewerUserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieReviews", reflect.TypeOf((*MockMovieInteractionReader)(nil).GetMovieReviews), ctx, movieID, viewerUserID)
+}
+
+// IsFavorite mocks base method.
+func (m *MockMovieInteractionReader) IsFavorite(ctx context.Context, userID, movieID int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsFavorite", ctx, userID, movieID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsFavorite indicates an expected call of IsFavorite.
+func (mr *MockMovieInteractionReaderMockRecorder) IsFavorite(ctx, userID, movieID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsFavorite", reflect.TypeOf((*MockMovieInteractionReader)(nil).IsFavorite), ctx, userID, movieID)
+}
+
+// MockWatchProgressReader is a mock of WatchProgressReader interface.
+type MockWatchProgressReader struct {
+	ctrl     *gomock.Controller
+	recorder *MockWatchProgressReaderMockRecorder
+	isgomock struct{}
+}
+
+// MockWatchProgressReaderMockRecorder is the mock recorder for MockWatchProgressReader.
+type MockWatchProgressReaderMockRecorder struct {
+	mock *MockWatchProgressReader
+}
+
+// NewMockWatchProgressReader creates a new mock instance.
+func NewMockWatchProgressReader(ctrl *gomock.Controller) *MockWatchProgressReader {
+	mock := &MockWatchProgressReader{ctrl: ctrl}
+	mock.recorder = &MockWatchProgressReaderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockWatchProgressReader) EXPECT() *MockWatchProgressReaderMockRecorder {
+	return m.recorder
+}
+
+// GetContinueWatching mocks base method.
+func (m *MockWatchProgressReader) GetContinueWatching(ctx context.Context, userID int64, limit int32) ([]domain.WatchProgressItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetContinueWatching", ctx, userID, limit)
+	ret0, _ := ret[0].([]domain.WatchProgressItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetContinueWatching indicates an expected call of GetContinueWatching.
+func (mr *MockWatchProgressReaderMockRecorder) GetContinueWatching(ctx, userID, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContinueWatching", reflect.TypeOf((*MockWatchProgressReader)(nil).GetContinueWatching), ctx, userID, limit)
+}
+
+// GetWatchHistory mocks base method.
+func (m *MockWatchProgressReader) GetWatchHistory(ctx context.Context, userID int64, limit int32, minProgress float64) ([]domain.WatchProgressItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWatchHistory", ctx, userID, limit, minProgress)
+	ret0, _ := ret[0].([]domain.WatchProgressItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWatchHistory indicates an expected call of GetWatchHistory.
+func (mr *MockWatchProgressReaderMockRecorder) GetWatchHistory(ctx, userID, limit, minProgress any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWatchHistory", reflect.TypeOf((*MockWatchProgressReader)(nil).GetWatchHistory), ctx, userID, limit, minProgress)
+}
+
 // MockMovieRepo is a mock of MovieRepo interface.
 type MockMovieRepo struct {
 	ctrl     *gomock.Controller
@@ -56,21 +416,6 @@ func (mr *MockMovieRepoMockRecorder) GetActorByID(ctx, actorID any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActorByID", reflect.TypeOf((*MockMovieRepo)(nil).GetActorByID), ctx, actorID)
 }
 
-// GetAllSelections mocks base method.
-func (m *MockMovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllSelections", ctx)
-	ret0, _ := ret[0].([]domain.Selection)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAllSelections indicates an expected call of GetAllSelections.
-func (mr *MockMovieRepoMockRecorder) GetAllSelections(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllSelections", reflect.TypeOf((*MockMovieRepo)(nil).GetAllSelections), ctx)
-}
-
 // GetAllGenres mocks base method.
 func (m *MockMovieRepo) GetAllGenres(ctx context.Context) ([]domain.GenreShort, error) {
 	m.ctrl.T.Helper()
@@ -84,6 +429,21 @@ func (m *MockMovieRepo) GetAllGenres(ctx context.Context) ([]domain.GenreShort, 
 func (mr *MockMovieRepoMockRecorder) GetAllGenres(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllGenres", reflect.TypeOf((*MockMovieRepo)(nil).GetAllGenres), ctx)
+}
+
+// GetAllSelections mocks base method.
+func (m *MockMovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllSelections", ctx)
+	ret0, _ := ret[0].([]domain.Selection)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllSelections indicates an expected call of GetAllSelections.
+func (mr *MockMovieRepoMockRecorder) GetAllSelections(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllSelections", reflect.TypeOf((*MockMovieRepo)(nil).GetAllSelections), ctx)
 }
 
 // GetContinueWatching mocks base method.
@@ -177,7 +537,7 @@ func (mr *MockMovieRepoMockRecorder) GetMovieCardsByIDs(ctx, movieIDs any) *gomo
 }
 
 // GetMovieReviews mocks base method.
-func (m *MockMovieRepo) GetMovieReviews(ctx context.Context, movieID int64, viewerUserID int64) ([]domain.MovieReview, error) {
+func (m *MockMovieRepo) GetMovieReviews(ctx context.Context, movieID, viewerUserID int64) ([]domain.MovieReview, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMovieReviews", ctx, movieID, viewerUserID)
 	ret0, _ := ret[0].([]domain.MovieReview)
@@ -251,21 +611,6 @@ func (mr *MockMovieRepoMockRecorder) SaveEpisodeProgress(ctx, userID, episodeID,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveEpisodeProgress", reflect.TypeOf((*MockMovieRepo)(nil).SaveEpisodeProgress), ctx, userID, episodeID, positionSec)
 }
 
-// SearchMovies mocks base method.
-func (m *MockMovieRepo) SearchMovies(ctx context.Context, query string) ([]domain.MovieCard, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchMovies", ctx, query)
-	ret0, _ := ret[0].([]domain.MovieCard)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SearchMovies indicates an expected call of SearchMovies.
-func (mr *MockMovieRepoMockRecorder) SearchMovies(ctx, query any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchMovies", reflect.TypeOf((*MockMovieRepo)(nil).SearchMovies), ctx, query)
-}
-
 // SearchActors mocks base method.
 func (m *MockMovieRepo) SearchActors(ctx context.Context, query string) ([]domain.ActorShort, error) {
 	m.ctrl.T.Helper()
@@ -279,4 +624,19 @@ func (m *MockMovieRepo) SearchActors(ctx context.Context, query string) ([]domai
 func (mr *MockMovieRepoMockRecorder) SearchActors(ctx, query any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchActors", reflect.TypeOf((*MockMovieRepo)(nil).SearchActors), ctx, query)
+}
+
+// SearchMovies mocks base method.
+func (m *MockMovieRepo) SearchMovies(ctx context.Context, query string) ([]domain.MovieCard, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchMovies", ctx, query)
+	ret0, _ := ret[0].([]domain.MovieCard)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchMovies indicates an expected call of SearchMovies.
+func (mr *MockMovieRepoMockRecorder) SearchMovies(ctx, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchMovies", reflect.TypeOf((*MockMovieRepo)(nil).SearchMovies), ctx, query)
 }

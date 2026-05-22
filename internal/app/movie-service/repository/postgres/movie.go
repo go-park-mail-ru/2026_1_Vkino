@@ -38,6 +38,7 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, movieID int64) (*domain.Mo
 		&movie.Director,
 		&movie.TrailerURL,
 		&movie.ContentType,
+		&movie.IsPaid,
 		&movie.ReleaseYear,
 		&movie.DurationSeconds,
 		&movie.AgeLimit,
@@ -416,6 +417,8 @@ func (r *MovieRepo) GetEpisodePlayback(ctx context.Context, episodeID int64) (*d
 		&episode.EpisodeNumber,
 		&episode.Title,
 		&episode.DurationSeconds,
+		&episode.IsPaid,
+		&episode.MovieIsPaid,
 		&episode.VideoFileKey,
 	)
 	if err != nil {
@@ -609,6 +612,7 @@ func (r *MovieRepo) getMovieEpisodes(ctx context.Context, movieID int64) ([]doma
 			&episode.Title,
 			&episode.Description,
 			&episode.DurationSeconds,
+			&episode.IsPaid,
 			&episode.PictureFileKey,
 			&episode.VideoFileKey,
 		); err != nil {

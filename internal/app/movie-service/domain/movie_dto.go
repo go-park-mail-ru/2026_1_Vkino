@@ -7,6 +7,7 @@ type MovieResponse struct {
 	Director           string               `json:"director"`
 	TrailerURL         string               `json:"trailer_url"`
 	ContentType        string               `json:"content_type"`
+	IsPaid             bool                 `json:"is_paid"`
 	ReleaseYear        int                  `json:"release_year"`
 	DurationSeconds    int                  `json:"duration_seconds"`
 	AgeLimit           int                  `json:"age_limit"`
@@ -61,6 +62,7 @@ type EpisodeResponse struct {
 	Title           string `json:"title"`
 	Description     string `json:"description"`
 	DurationSeconds int    `json:"duration_seconds"`
+	IsPaid          bool   `json:"is_paid"`
 	PictureFileKey  string `json:"img_url"`
 	VideoURL        string `json:"video_url"`
 }
@@ -101,6 +103,8 @@ type EpisodePlaybackResponse struct {
 	Title           string `json:"title"`
 	DurationSeconds int    `json:"duration_seconds"`
 	PlaybackURL     string `json:"playback_url"`
+	AdPolicy        string `json:"ad_policy"`
+	IsPaid          bool   `json:"is_paid"`
 	PositionSeconds int64  `json:"position_seconds"`
 }
 

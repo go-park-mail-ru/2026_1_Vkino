@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bytes"
+	"context"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -100,7 +101,7 @@ func newUpdateProfileMultipartRequest(t *testing.T) *http.Request {
 		t.Fatalf("writer.Close: %v", err)
 	}
 
-	req := httptest.NewRequest(http.MethodPut, "/user/profile", &body)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodPut, "/user/profile", &body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	return req

@@ -9,6 +9,7 @@ import (
 
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -76,6 +77,105 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 	}
 
 	return &user, nil
+}
+
+func (r *UserRepo) GetActiveSubscription(ctx context.Context, userID int64) (subscription.Info, error) {
+	var (
+		info      subscription.Info
+		expiresAt time.Time
+	)
+
+	err := r.db.QueryRow(ctx, sqlGetActiveSubscription, userID).Scan(
+		&info.ID,
+		&info.Code,
+		&info.Name,
+		&info.Level,
+		&expiresAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return subscription.Info{}, nil
+		}
+
+		return subscription.Info{}, fmt.Errorf("get active subscription: %w", err)
+	}
+
+	activeUntil := expiresAt.Format(time.RFC3339)
+	info.ActiveUntil = &activeUntil
+
+	return info, nil
+}
+
+func (r *UserRepo) GetSubscriptionTariffByCode(ctx context.Context, code string) (subscription.Info, error) {
+	var info subscription.Info
+
+	err := r.db.QueryRow(ctx, sqlGetSubscriptionTariffByCode, code).Scan(
+		&info.ID,
+		&info.Code,
+		&info.Name,
+		&info.Level,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return subscription.Info{}, nil
+		}
+
+		return subscription.Info{}, fmt.Errorf("get subscription tariff by code: %w", err)
+	}
+
+	return info, nil
+}
+
+func (r *UserRepo) GetSubscriptionTariffOptions(ctx context.Context, tariffID int64) ([]subscription.Option, error) {
+	rows, err := r.db.Query(ctx, sqlGetSubscriptionTariffOptions, tariffID)
+	if err != nil {
+		return nil, fmt.Errorf("get subscription tariff options: %w", err)
+	}
+	defer rows.Close()
+
+	options := make([]subscription.Option, 0)
+
+	for rows.Next() {
+		var (
+			option subscription.Option
+			value  sql.NullString
+		)
+
+		if err = rows.Scan(&option.Code, &value); err != nil {
+			return nil, fmt.Errorf("scan subscription tariff option: %w", err)
+		}
+
+		if value.Valid {
+			optionValue := value.String
+			option.Value = &optionValue
+		}
+
+		options = append(options, option)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate subscription tariff options: %w", err)
+	}
+
+	return options, nil
+}
+
+func (r *UserRepo) GetCoinsReceivedToday(ctx context.Context, userID int64) (int32, error) {
+	var total int32
+	if err := r.db.QueryRow(ctx, sqlGetCoinsReceivedToday, userID).Scan(&total); err != nil {
+		return 0, fmt.Errorf("get coins received today: %w", err)
+	}
+
+	return total, nil
+}
+
+func (r *UserRepo) GetRoomsCreatedThisMonth(ctx context.Context, userID int64) (int32, error) {
+	var total int32
+	if err := r.db.QueryRow(ctx, sqlGetRoomsCreatedThisMonth, userID).Scan(&total); err != nil {
+		return 0, fmt.Errorf("get rooms created this month: %w", err)
+	}
+
+	return total, nil
 }
 
 func (r *UserRepo) GetFriend(ctx context.Context, userID, friendID int64) (*domain.User, error) {
