@@ -27,9 +27,13 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: Show Go version
+        run: go version
+
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
+          version: v2.11.4
           args: --config build/ci/golangci.yml ./...
 
       - name: Run tests
