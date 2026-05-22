@@ -12,8 +12,12 @@ import (
 
 type stubMovieClient struct {
 	moviev1.MovieServiceClient
-	getAllGenres func(context.Context, *moviev1.GetAllGenresRequest,
-		...grpc.CallOption) (*moviev1.GetAllGenresResponse, error)
+
+	getAllGenres func(
+		context.Context,
+		*moviev1.GetAllGenresRequest,
+		...grpc.CallOption,
+	) (*moviev1.GetAllGenresResponse, error)
 }
 
 func (s stubMovieClient) GetAllGenres(
@@ -28,8 +32,11 @@ func TestResolveGenreID(t *testing.T) {
 	t.Parallel()
 
 	client := stubMovieClient{
-		getAllGenres: func(context.Context, *moviev1.GetAllGenresRequest,
-			...grpc.CallOption) (*moviev1.GetAllGenresResponse, error) {
+		getAllGenres: func(
+			context.Context,
+			*moviev1.GetAllGenresRequest,
+			...grpc.CallOption,
+		) (*moviev1.GetAllGenresResponse, error) {
 			return &moviev1.GetAllGenresResponse{
 				Genres: []*moviev1.GenreShort{
 					{Id: 1, Title: "Комедия"},
@@ -53,7 +60,6 @@ func TestResolveGenreID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -84,7 +90,6 @@ func TestParseInt32Query(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 

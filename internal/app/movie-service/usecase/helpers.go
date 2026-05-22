@@ -1,4 +1,3 @@
-//nolint:gocyclo // DTO building stays explicit to mirror response structure.
 package usecase
 
 import (
@@ -43,61 +42,18 @@ func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Mov
 		return domain.MovieResponse{}, err
 	}
 
-	for _, actor := range movie.Actors {
-		pictureURL, pictureErr := u.presignActor(ctx, actor.PictureFileKey)
-		if pictureErr != nil {
-			return domain.MovieResponse{}, pictureErr
-		}
-
-		resp.Actors = append(resp.Actors, domain.ActorShortResponse{
-			ID:             actor.ID,
-			FullName:       actor.FullName,
-			PictureFileKey: pictureURL,
-		})
+	resp.Actors, err = u.buildMovieActorResponses(ctx, movie.Actors)
+	if err != nil {
+		return domain.MovieResponse{}, err
 	}
 
-	for _, episode := range movie.Episodes {
-		episodeImageURL, imgErr := u.presignCard(ctx, episode.PictureFileKey)
-		if imgErr != nil {
-			return domain.MovieResponse{}, imgErr
-		}
-
-		videoURL, videoErr := u.presignVideo(ctx, episode.VideoFileKey)
-		if videoErr != nil {
-			return domain.MovieResponse{}, videoErr
-		}
-
-		resp.Episodes = append(resp.Episodes, domain.EpisodeResponse{
-			ID:              episode.ID,
-			MovieID:         episode.MovieID,
-			SeasonNumber:    episode.SeasonNumber,
-			EpisodeNumber:   episode.EpisodeNumber,
-			Title:           episode.Title,
-			Description:     episode.Description,
-			DurationSeconds: episode.DurationSeconds,
-			PictureFileKey:  episodeImageURL,
-			VideoURL:        videoURL,
-		})
+	resp.Episodes, err = u.buildEpisodeResponses(ctx, movie.Episodes)
+	if err != nil {
+		return domain.MovieResponse{}, err
 	}
 
-	for _, rating := range movie.ExternalRatings {
-		resp.ExternalRatings = append(resp.ExternalRatings, rating)
-	}
-
-	for _, review := range movie.Reviews {
-		resp.Reviews = append(resp.Reviews, domain.MovieReviewDTO{
-			ID:             review.ID,
-			AuthorUserID:   review.AuthorUserID,
-			Author:         maskEmail(review.AuthorEmail),
-			Rating:         review.Rating,
-			Comment:        review.Comment,
-			LikesCount:     review.LikesCount,
-			DislikesCount:  review.DislikesCount,
-			ViewerReaction: review.ViewerReaction,
-			CreatedAt:      review.CreatedAt.Format(time.RFC3339),
-			UpdatedAt:      review.UpdatedAt.Format(time.RFC3339),
-		})
-	}
+	resp.ExternalRatings = append(resp.ExternalRatings, movie.ExternalRatings...)
+	resp.Reviews = buildMovieReviewDTOs(movie.Reviews)
 
 	return resp, nil
 }
@@ -183,6 +139,99 @@ func (u *MovieUsecase) buildGenreShortResponses(genres []domain.GenreShort) []do
 	result := make([]domain.GenreShortResponse, 0, len(genres))
 	for _, genre := range genres {
 		result = append(result, domain.GenreShortResponse(genre))
+	}
+
+	return result
+}
+
+func (u *MovieUsecase) buildMovieCardResponses(
+	ctx context.Context,
+	movies []domain.MovieCard,
+) ([]domain.MovieCardResponse, error) {
+	result := make([]domain.MovieCardResponse, 0, len(movies))
+	for _, movie := range movies {
+		card, err := u.buildMovieCardResponse(ctx, movie)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, card)
+	}
+
+	return result, nil
+}
+
+func (u *MovieUsecase) buildActorShortResponses(
+	ctx context.Context,
+	actors []domain.ActorShort,
+) ([]domain.ActorShortResponse, error) {
+	result := make([]domain.ActorShortResponse, 0, len(actors))
+	for _, actor := range actors {
+		item, err := u.buildActorShortResponse(ctx, actor)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, item)
+	}
+
+	return result, nil
+}
+
+func (u *MovieUsecase) buildMovieActorResponses(
+	ctx context.Context,
+	actors []domain.ActorShort,
+) ([]domain.ActorShortResponse, error) {
+	return u.buildActorShortResponses(ctx, actors)
+}
+
+func (u *MovieUsecase) buildEpisodeResponses(
+	ctx context.Context,
+	episodes []domain.Episode,
+) ([]domain.EpisodeResponse, error) {
+	result := make([]domain.EpisodeResponse, 0, len(episodes))
+	for _, episode := range episodes {
+		episodeImageURL, err := u.presignCard(ctx, episode.PictureFileKey)
+		if err != nil {
+			return nil, err
+		}
+
+		videoURL, err := u.presignVideo(ctx, episode.VideoFileKey)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, domain.EpisodeResponse{
+			ID:              episode.ID,
+			MovieID:         episode.MovieID,
+			SeasonNumber:    episode.SeasonNumber,
+			EpisodeNumber:   episode.EpisodeNumber,
+			Title:           episode.Title,
+			Description:     episode.Description,
+			DurationSeconds: episode.DurationSeconds,
+			PictureFileKey:  episodeImageURL,
+			VideoURL:        videoURL,
+		})
+	}
+
+	return result, nil
+}
+
+func buildMovieReviewDTOs(reviews []domain.MovieReview) []domain.MovieReviewDTO {
+	result := make([]domain.MovieReviewDTO, 0, len(reviews))
+	for _, review := range reviews {
+		result = append(result, domain.MovieReviewDTO{
+			ID:             review.ID,
+			AuthorUserID:   review.AuthorUserID,
+			Author:         maskEmail(review.AuthorEmail),
+			Rating:         review.Rating,
+			Comment:        review.Comment,
+			LikesCount:     review.LikesCount,
+			DislikesCount:  review.DislikesCount,
+			ViewerReaction: review.ViewerReaction,
+			CreatedAt:      review.CreatedAt.Format(time.RFC3339),
+			UpdatedAt:      review.UpdatedAt.Format(time.RFC3339),
+		})
 	}
 
 	return result

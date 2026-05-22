@@ -1,8 +1,8 @@
-//nolint:gocyclo // The write loop intentionally keeps control flow explicit.
 package ws
 
 import (
 	"context"
+	"errors"
 	"sync"
 )
 
@@ -69,35 +69,19 @@ func (c *Client) Send(payload []byte) error {
 	}
 }
 
-//nolint:cyclop // The write loop intentionally keeps control flow explicit.
 func (c *Client) WriteLoop(ctx context.Context) error {
 	for {
-		select {
-		case payload := <-c.send:
-			if err := c.conn.Write(ctx, payload); err != nil {
-				return err
-			}
-
-			continue
-		default:
+		if wrote, err := c.tryWritePending(ctx); wrote || err != nil {
+			return err
 		}
 
-		select {
-		case payload := <-c.send:
-			if err := c.conn.Write(ctx, payload); err != nil {
-				return err
+		err := c.waitForWriteOrShutdown(ctx)
+		if err != nil {
+			if errors.Is(err, ctx.Err()) {
+				return c.flushOnContextDone(ctx)
 			}
-		case <-c.done:
-			return nil
-		case <-ctx.Done():
-			select {
-			case payload := <-c.send:
-				if err := c.conn.Write(ctx, payload); err != nil {
-					return err
-				}
-			default:
-				return ctx.Err()
-			}
+
+			return err
 		}
 	}
 }
@@ -111,4 +95,33 @@ func (c *Client) Close() error {
 	})
 
 	return err
+}
+
+func (c *Client) tryWritePending(ctx context.Context) (bool, error) {
+	select {
+	case payload := <-c.send:
+		return true, c.conn.Write(ctx, payload)
+	default:
+		return false, nil
+	}
+}
+
+func (c *Client) waitForWriteOrShutdown(ctx context.Context) error {
+	select {
+	case payload := <-c.send:
+		return c.conn.Write(ctx, payload)
+	case <-c.done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func (c *Client) flushOnContextDone(ctx context.Context) error {
+	select {
+	case payload := <-c.send:
+		return c.conn.Write(ctx, payload)
+	default:
+		return ctx.Err()
+	}
 }

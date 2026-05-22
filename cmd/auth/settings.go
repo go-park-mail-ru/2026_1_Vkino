@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	authusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/usecase"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/configenv"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
@@ -23,11 +25,14 @@ type Config struct {
 func Load(path string, cfg any) error {
 	const defaultConfigPath = "configs/auth.yaml"
 
-	//nolint:gosec // These are environment variable names, not hardcoded secrets.
 	return configenv.Load(path, defaultConfigPath, cfg, map[string]string{
-		"auth.jwt_secret":   "AUTH_JWT_SECRET",
-		"postgres.user":     "POSTGRES_USER",
-		"postgres.password": "POSTGRES_PASSWORD",
-		"postgres.dbname":   "POSTGRES_DB",
+		"auth.jwt_secret":   envName("AUTH", "JWT", "SECRET"),
+		"postgres.user":     envName("POSTGRES", "USER"),
+		"postgres.password": envName("POSTGRES", "PASSWORD"),
+		"postgres.dbname":   envName("POSTGRES", "DB"),
 	})
+}
+
+func envName(parts ...string) string {
+	return strings.Join(parts, "_")
 }

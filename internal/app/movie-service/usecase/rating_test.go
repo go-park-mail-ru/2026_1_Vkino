@@ -13,9 +13,20 @@ func TestBuildMovieResponse_IncludesExternalRatings(t *testing.T) {
 	t.Parallel()
 
 	usecase := NewMovieUsecase(nil, stubFileStorage{}, stubFileStorage{}, stubFileStorage{}, stubFileStorage{})
+
+	resp, err := usecase.buildMovieResponse(context.Background(), testMovieWithExternalRatings())
+	if err != nil {
+		t.Fatalf("buildMovieResponse() error = %v", err)
+	}
+
+	assertExternalRatings(t, resp)
+	assertMovieReviews(t, resp)
+}
+
+func testMovieWithExternalRatings() *domain.Movie {
 	reviewRating := 9.0
 
-	resp, err := usecase.buildMovieResponse(context.Background(), &domain.Movie{
+	return &domain.Movie{
 		ID:              1,
 		Title:           "Interstellar",
 		ContentType:     "film",
@@ -39,10 +50,11 @@ func TestBuildMovieResponse_IncludesExternalRatings(t *testing.T) {
 				ViewerReaction: "like",
 			},
 		},
-	})
-	if err != nil {
-		t.Fatalf("buildMovieResponse() error = %v", err)
 	}
+}
+
+func assertExternalRatings(t *testing.T, resp domain.MovieResponse) {
+	t.Helper()
 
 	if len(resp.ExternalRatings) != 2 {
 		t.Fatalf("external ratings len = %d, want 2", len(resp.ExternalRatings))
@@ -52,6 +64,10 @@ func TestBuildMovieResponse_IncludesExternalRatings(t *testing.T) {
 		resp.ExternalRatings[0].Scale != 10 {
 		t.Fatalf("unexpected first external rating: %+v", resp.ExternalRatings[0])
 	}
+}
+
+func assertMovieReviews(t *testing.T, resp domain.MovieResponse) {
+	t.Helper()
 
 	if len(resp.Reviews) != 1 {
 		t.Fatalf("reviews len = %d, want 1", len(resp.Reviews))

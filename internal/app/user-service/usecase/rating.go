@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
@@ -12,6 +13,8 @@ const (
 	maxMovieRating     = 10
 	maxMovieCommentLen = 4096
 )
+
+var errEmptyMovieReviewComment = errors.New("empty movie review comment")
 
 func (u *UserUsecase) SetMovieRating(
 	ctx context.Context,
@@ -39,21 +42,21 @@ func (u *UserUsecase) SetMovieReview(
 	rating *float64,
 	comment *string,
 ) (domain.MovieReviewResponse, error) {
-	if movieID <= 0 {
-		return domain.MovieReviewResponse{}, domain.ErrInvalidMovieID
+	if err := validateMovieReviewInput(movieID, rating); err != nil {
+		return domain.MovieReviewResponse{}, err
 	}
 
-	if rating != nil && (*rating < minMovieRating || *rating > maxMovieRating) {
-		return domain.MovieReviewResponse{}, domain.ErrInvalidMovieRating
-	}
-
-	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
+	if err := ensureValidReviewActor(ctx, u, userID); err != nil {
 		return domain.MovieReviewResponse{}, domain.ErrInvalidToken
 	}
 
 	normalizedComment, err := normalizeMovieReviewComment(comment)
 	if err != nil {
-		return domain.MovieReviewResponse{}, err
+		if !errors.Is(err, errEmptyMovieReviewComment) {
+			return domain.MovieReviewResponse{}, err
+		}
+
+		normalizedComment = nil
 	}
 
 	if rating == nil && normalizedComment == nil {
@@ -61,6 +64,24 @@ func (u *UserUsecase) SetMovieReview(
 	}
 
 	return u.userRepo.SetMovieReview(ctx, userID, movieID, rating, normalizedComment)
+}
+
+func validateMovieReviewInput(movieID int64, rating *float64) error {
+	if movieID <= 0 {
+		return domain.ErrInvalidMovieID
+	}
+
+	if rating != nil && (*rating < minMovieRating || *rating > maxMovieRating) {
+		return domain.ErrInvalidMovieRating
+	}
+
+	return nil
+}
+
+func ensureValidReviewActor(ctx context.Context, u *UserUsecase, userID int64) error {
+	_, err := u.userRepo.GetUserByID(ctx, userID)
+
+	return err
 }
 
 func (u *UserUsecase) DeleteMovieReview(ctx context.Context, userID, movieID int64) error {
@@ -117,12 +138,12 @@ func (u *UserUsecase) DeleteReviewReaction(ctx context.Context, userID, reviewID
 
 func normalizeMovieReviewComment(comment *string) (*string, error) {
 	if comment == nil {
-		return nil, nil
+		return nil, errEmptyMovieReviewComment
 	}
 
 	trimmed := strings.TrimSpace(*comment)
 	if trimmed == "" {
-		return nil, nil
+		return nil, errEmptyMovieReviewComment
 	}
 
 	if len(trimmed) > maxMovieCommentLen {

@@ -2,11 +2,15 @@ package memory
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"sync"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
 )
+
+const subscriberBufferSize = 16
+
+var errInvalidRoomID = errors.New("invalid room id")
 
 type RoomEventBroker struct {
 	mu          sync.RWMutex
@@ -37,10 +41,10 @@ func (b *RoomEventBroker) Publish(ctx context.Context, event domain.RoomEvent) e
 
 func (b *RoomEventBroker) Subscribe(_ context.Context, roomID int64) (<-chan domain.RoomEvent, func(), error) {
 	if roomID <= 0 {
-		return nil, nil, fmt.Errorf("invalid room id")
+		return nil, nil, errInvalidRoomID
 	}
 
-	ch := make(chan domain.RoomEvent, 16)
+	ch := make(chan domain.RoomEvent, subscriberBufferSize)
 
 	b.mu.Lock()
 	b.nextID++

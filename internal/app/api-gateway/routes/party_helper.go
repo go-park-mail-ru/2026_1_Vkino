@@ -86,8 +86,10 @@ type movieOverviewMeta struct {
 	imageURL *string
 }
 
-func mapOverviewResponse(resp *partyv1.GetOverviewResponse,
-	movieImages map[int64]movieOverviewMeta) domain.PartyOverviewResponse {
+func mapOverviewResponse(
+	resp *partyv1.GetOverviewResponse,
+	movieImages map[int64]movieOverviewMeta,
+) domain.PartyOverviewResponse {
 	return domain.PartyOverviewResponse{
 		ActiveRooms:   mapRoomCardsHTTP(resp.GetActiveRooms(), movieImages),
 		MyRooms:       mapRoomCardsHTTP(resp.GetMyRooms(), movieImages),
@@ -118,8 +120,10 @@ func mapRoomCardsHTTP(items []*partyv1.RoomCard, movieImages map[int64]movieOver
 	return result
 }
 
-func mapPlaybackHTTP(item *partyv1.PlaybackState,
-	movieImages map[int64]movieOverviewMeta) *domain.PartyPlaybackStateHTTP {
+func mapPlaybackHTTP(
+	item *partyv1.PlaybackState,
+	movieImages map[int64]movieOverviewMeta,
+) *domain.PartyPlaybackStateHTTP {
 	if item == nil {
 		return nil
 	}
@@ -139,10 +143,10 @@ func mapPlaybackHTTP(item *partyv1.PlaybackState,
 	}
 }
 
-func parseRoomPathID(w http.ResponseWriter, r *http.Request, message string) (int64, bool) {
+func parseRoomPathID(w http.ResponseWriter, r *http.Request) (int64, bool) {
 	value := strings.TrimSpace(r.PathValue("id"))
 	if value == "" {
-		httppkg.ErrResponse(w, http.StatusBadRequest, message)
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid room id")
 
 		return 0, false
 	}
@@ -151,7 +155,7 @@ func parseRoomPathID(w http.ResponseWriter, r *http.Request, message string) (in
 
 	roomID, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
-		httppkg.ErrResponse(w, http.StatusBadRequest, message)
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid room id")
 
 		return 0, false
 	}

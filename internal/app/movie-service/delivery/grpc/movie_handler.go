@@ -388,13 +388,15 @@ func mapMovieReviews(reviews []domain.MovieReviewDTO) []*moviev1.MovieReview {
 	return result
 }
 
-//nolint:gosec // Values are bounded to int32 range before conversion.
 func i32(v int) int32 {
-	if v > math.MaxInt32 {
+	switch {
+	case v > math.MaxInt32:
 		return math.MaxInt32
+	case v < math.MinInt32:
+		return math.MinInt32
+	default:
+		return int32(v)
 	}
-
-	return int32(v)
 }
 
 func mapWatchProgressItems(items []domain.WatchProgressItemResponse) []*moviev1.WatchProgressItem {

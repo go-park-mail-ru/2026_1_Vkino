@@ -1,15 +1,69 @@
 package domain
 
-import moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+import (
+	"encoding/json"
+
+	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+)
 
 type SignInRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email      string `json:"email"`
+	passphrase string
 }
 
 type SignUpRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email      string `json:"email"`
+	passphrase string
+}
+
+func (r *SignInRequest) Password() string {
+	return r.passphrase
+}
+
+func (r *SignInRequest) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	if value, ok := raw["email"]; ok {
+		if err := json.Unmarshal(value, &r.Email); err != nil {
+			return err
+		}
+	}
+
+	if value, ok := raw["password"]; ok {
+		if err := json.Unmarshal(value, &r.passphrase); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *SignUpRequest) Password() string {
+	return r.passphrase
+}
+
+func (r *SignUpRequest) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	if value, ok := raw["email"]; ok {
+		if err := json.Unmarshal(value, &r.Email); err != nil {
+			return err
+		}
+	}
+
+	if value, ok := raw["password"]; ok {
+		if err := json.Unmarshal(value, &r.passphrase); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 type ChangePasswordRequest struct {

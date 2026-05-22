@@ -16,7 +16,7 @@ func (u *AuthUsecase) ChangePassword(ctx context.Context, userID int64, oldPassw
 		return domain.ErrInvalidToken
 	}
 
-	err = u.passwordService.Compare(user.Password, oldPassword)
+	err = u.passwordService.Compare(user.CredentialHash, oldPassword)
 	if err != nil {
 		return domain.ErrPasswordMismatch
 	}

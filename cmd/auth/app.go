@@ -61,8 +61,8 @@ func Run(configPath string) error {
 	clockService := clocksvc.New()
 	passwordService := passwordsvc.New()
 	jwtService := jwtsvc.New(jwtsvc.Config{
-		Secret: cfg.Auth.JWTSecret,
-		Issuer: cfg.Auth.Issuer,
+		SigningKey: cfg.Auth.JWTSigningKey,
+		Issuer:     cfg.Auth.Issuer,
 	})
 
 	authUC := authusecase.NewAuthUsecase(

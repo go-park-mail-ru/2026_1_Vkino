@@ -1,4 +1,3 @@
-//nolint:gocyclo,lll // Friend flows stay explicit to keep branching readable.
 package usecase
 
 import (
@@ -90,16 +89,8 @@ func (u *UserUsecase) SearchUsers(
 }
 
 func (u *UserUsecase) AddFriend(ctx context.Context, userID int64, friendID int64) (domain.FriendResponse, error) {
-	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return domain.FriendResponse{}, domain.ErrUserNotFound
-		}
-
-		return domain.FriendResponse{}, fmt.Errorf("get user by id: %w", err)
-	}
-
-	if userID == friendID {
-		return domain.FriendResponse{}, domain.ErrSelfFriendship
+	if err := u.ensureFriendActionAllowed(ctx, userID, friendID); err != nil {
+		return domain.FriendResponse{}, err
 	}
 
 	friend, err := u.userRepo.GetUserByID(ctx, friendID)
@@ -151,16 +142,8 @@ func (u *UserUsecase) DeleteFriend(ctx context.Context, userID int64, friendID i
 }
 
 func (u *UserUsecase) SendFriendRequest(ctx context.Context, userID, toUserID int64) (int64, error) {
-	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return 0, domain.ErrUserNotFound
-		}
-
-		return 0, fmt.Errorf("get user by id: %w", err)
-	}
-
-	if userID == toUserID {
-		return 0, domain.ErrSelfFriendship
+	if err := u.ensureFriendActionAllowed(ctx, userID, toUserID); err != nil {
+		return 0, err
 	}
 
 	requestID, err := u.userRepo.SendFriendRequest(ctx, userID, toUserID)
@@ -176,12 +159,8 @@ func (u *UserUsecase) SendFriendRequest(ctx context.Context, userID, toUserID in
 }
 
 func (u *UserUsecase) RespondToFriendRequest(ctx context.Context, userID, requestID int64, action string) error {
-	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return domain.ErrUserNotFound
-		}
-
-		return fmt.Errorf("get user by id: %w", err)
+	if err := u.ensureUserExists(ctx, userID); err != nil {
+		return err
 	}
 
 	if action != "accept" && action != "decline" && action != "cancel" {
@@ -200,12 +179,8 @@ func (u *UserUsecase) RespondToFriendRequest(ctx context.Context, userID, reques
 }
 
 func (u *UserUsecase) DeleteOutgoingFriendRequest(ctx context.Context, userID, requestID int64) error {
-	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return domain.ErrUserNotFound
-		}
-
-		return fmt.Errorf("get user by id: %w", err)
+	if err := u.ensureUserExists(ctx, userID); err != nil {
+		return err
 	}
 
 	if err := u.userRepo.DeleteOutgoingFriendRequest(ctx, requestID, userID); err != nil {
@@ -219,13 +194,14 @@ func (u *UserUsecase) DeleteOutgoingFriendRequest(ctx context.Context, userID, r
 	return nil
 }
 
-func (u *UserUsecase) GetFriendRequests(ctx context.Context, userID int64, direction string, limit int32) ([]domain.FriendRequestItem, error) {
-	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return nil, domain.ErrUserNotFound
-		}
-
-		return nil, fmt.Errorf("get user by id: %w", err)
+func (u *UserUsecase) GetFriendRequests(
+	ctx context.Context,
+	userID int64,
+	direction string,
+	limit int32,
+) ([]domain.FriendRequestItem, error) {
+	if err := u.ensureUserExists(ctx, userID); err != nil {
+		return nil, err
 	}
 
 	if direction != "incoming" && direction != "outgoing" {
@@ -244,13 +220,13 @@ func (u *UserUsecase) GetFriendRequests(ctx context.Context, userID int64, direc
 	return items, nil
 }
 
-func (u *UserUsecase) GetFriendsList(ctx context.Context, userID int64, limit, offset int32) (domain.FriendsListResponse, error) {
-	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return domain.FriendsListResponse{}, domain.ErrUserNotFound
-		}
-
-		return domain.FriendsListResponse{}, fmt.Errorf("get user by id: %w", err)
+func (u *UserUsecase) GetFriendsList(
+	ctx context.Context,
+	userID int64,
+	limit, offset int32,
+) (domain.FriendsListResponse, error) {
+	if err := u.ensureUserExists(ctx, userID); err != nil {
+		return domain.FriendsListResponse{}, err
 	}
 
 	if limit <= 0 {
@@ -272,4 +248,28 @@ func (u *UserUsecase) GetFriendsList(ctx context.Context, userID int64, limit, o
 		Friends:    friends,
 		TotalCount: total,
 	}, nil
+}
+
+func (u *UserUsecase) ensureUserExists(ctx context.Context, userID int64) error {
+	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) {
+			return domain.ErrUserNotFound
+		}
+
+		return fmt.Errorf("get user by id: %w", err)
+	}
+
+	return nil
+}
+
+func (u *UserUsecase) ensureFriendActionAllowed(ctx context.Context, userID, friendID int64) error {
+	if err := u.ensureUserExists(ctx, userID); err != nil {
+		return err
+	}
+
+	if userID == friendID {
+		return domain.ErrSelfFriendship
+	}
+
+	return nil
 }

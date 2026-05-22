@@ -17,10 +17,7 @@ func (u *MovieUsecase) GetMovieByID(ctx context.Context, movieID int64) (domain.
 		return domain.MovieResponse{}, err
 	}
 
-	viewerUserID := int64(0)
-	if authCtx, err := authctx.FromContext(ctx); err == nil {
-		viewerUserID = authCtx.UserID
-	}
+	viewerUserID := viewerIDFromContext(ctx)
 
 	movie.Reviews, err = u.movieRepo.GetMovieReviews(ctx, movieID, viewerUserID)
 	if err != nil {
@@ -32,14 +29,33 @@ func (u *MovieUsecase) GetMovieByID(ctx context.Context, movieID int64) (domain.
 		return domain.MovieResponse{}, err
 	}
 
-	if viewerUserID > 0 {
-		isFavorite, err := u.movieRepo.IsFavorite(ctx, viewerUserID, movieID)
-		if err == nil {
-			resp.IsFavorite = isFavorite
-		}
-	}
+	u.applyFavoriteFlag(ctx, &resp, viewerUserID, movieID)
 
 	return resp, nil
+}
+
+func viewerIDFromContext(ctx context.Context) int64 {
+	authCtx, err := authctx.FromContext(ctx)
+	if err != nil {
+		return 0
+	}
+
+	return authCtx.UserID
+}
+
+func (u *MovieUsecase) applyFavoriteFlag(
+	ctx context.Context,
+	resp *domain.MovieResponse,
+	viewerUserID, movieID int64,
+) {
+	if viewerUserID <= 0 {
+		return
+	}
+
+	isFavorite, err := u.movieRepo.IsFavorite(ctx, viewerUserID, movieID)
+	if err == nil {
+		resp.IsFavorite = isFavorite
+	}
 }
 
 func (u *MovieUsecase) GetMoviesByIDs(ctx context.Context, movieIDs []int64) ([]domain.MovieCardResponse, error) {
@@ -48,15 +64,5 @@ func (u *MovieUsecase) GetMoviesByIDs(ctx context.Context, movieIDs []int64) ([]
 		return nil, err
 	}
 
-	result := make([]domain.MovieCardResponse, 0, len(movies))
-	for _, movie := range movies {
-		card, err := u.buildMovieCardResponse(ctx, movie)
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, card)
-	}
-
-	return result, nil
+	return u.buildMovieCardResponses(ctx, movies)
 }

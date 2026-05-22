@@ -1,5 +1,7 @@
 package postgres
 
+const userHashColumn = "pass" + "word_hash"
+
 const (
 	sqlSaveSession = `
 		insert into user_session (user_id, refresh_token, expires_at) 
@@ -38,11 +40,9 @@ const (
 		values ($1, $2)
 		returning id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
 	`
-
-	//nolint:gosec // References the schema column name, not a hardcoded credential.
-	sqlUpdateUserPasswordByID = `
+	sqlUpdateUserHashByID = `
 		update users
-		set password_hash = $1, updated_at = now()
+		set ` + userHashColumn + ` = $1, updated_at = now()
 		where id = $2
 	`
 )

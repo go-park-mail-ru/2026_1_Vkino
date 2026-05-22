@@ -1,4 +1,3 @@
-//nolint:gocyclo // Search aggregation stays explicit for readability.
 package usecase
 
 import (
@@ -24,28 +23,15 @@ func (u *MovieUsecase) SearchMovies(ctx context.Context, query string) (domain.S
 		return domain.SearchResponse{}, err
 	}
 
-	result := domain.SearchResponse{
-		Movies: make([]domain.MovieCardResponse, 0, len(movies)),
-		Actors: make([]domain.ActorShortResponse, 0, len(actors)),
+	resultMovies, err := u.buildMovieCardResponses(ctx, movies)
+	if err != nil {
+		return domain.SearchResponse{}, err
 	}
 
-	for _, movie := range movies {
-		card, buildErr := u.buildMovieCardResponse(ctx, movie)
-		if buildErr != nil {
-			return domain.SearchResponse{}, buildErr
-		}
-
-		result.Movies = append(result.Movies, card)
+	resultActors, err := u.buildActorShortResponses(ctx, actors)
+	if err != nil {
+		return domain.SearchResponse{}, err
 	}
 
-	for _, actor := range actors {
-		item, buildErr := u.buildActorShortResponse(ctx, actor)
-		if buildErr != nil {
-			return domain.SearchResponse{}, buildErr
-		}
-
-		result.Actors = append(result.Actors, item)
-	}
-
-	return result, nil
+	return domain.SearchResponse{Movies: resultMovies, Actors: resultActors}, nil
 }

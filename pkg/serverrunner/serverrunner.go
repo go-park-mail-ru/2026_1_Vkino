@@ -1,4 +1,3 @@
-//nolint:gocyclo // Graceful shutdown flows stay explicit for readability.
 package serverrunner
 
 import (
@@ -30,28 +29,13 @@ func RunHTTP(
 	}
 
 	runLog := runnerLogger(ctx, log, name)
-	errCh := make(chan error, 1)
+	errCh := startRunner(run)
 
-	go func() {
-		errCh <- run()
-	}()
-
-	stopCh := make(chan os.Signal, 1)
-
-	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
+	stopCh := notifyStopSignals()
 	defer signal.Stop(stopCh)
 
-	select {
-	case err := <-errCh:
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			return fmt.Errorf("http server %s stopped with error: %w", name, err)
-		}
-
-		return nil
-	case sig := <-stopCh:
-		runLog.WithField("signal", sig.String()).Info("shutting down http server")
-	case <-ctx.Done():
-		runLog.Info("shutting down http server")
+	if done, err := waitHTTPStop(ctx, runLog, errCh, stopCh, name); done {
+		return err
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), DefaultShutdownTimeout)
@@ -61,15 +45,9 @@ func RunHTTP(
 		return fmt.Errorf("shutdown http server %s: %w", name, err)
 	}
 
-	err := <-errCh
-	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("http server %s stopped with error: %w", name, err)
-	}
-
-	return nil
+	return wrapHTTPServeErr(name, <-errCh)
 }
 
-//nolint:cyclop // Graceful shutdown flow intentionally stays explicit.
 func RunGRPC(
 	ctx context.Context,
 	log *logger.Logger,
@@ -83,28 +61,13 @@ func RunGRPC(
 	}
 
 	runLog := runnerLogger(ctx, log, name)
-	errCh := make(chan error, 1)
+	errCh := startRunner(serve)
 
-	go func() {
-		errCh <- serve()
-	}()
-
-	stopCh := make(chan os.Signal, 1)
-
-	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
+	stopCh := notifyStopSignals()
 	defer signal.Stop(stopCh)
 
-	select {
-	case err := <-errCh:
-		if err != nil {
-			return fmt.Errorf("grpc server %s stopped with error: %w", name, err)
-		}
-
-		return nil
-	case sig := <-stopCh:
-		runLog.WithField("signal", sig.String()).Info("shutting down grpc server")
-	case <-ctx.Done():
-		runLog.Info("shutting down grpc server")
+	if done, err := waitGRPCStop(ctx, runLog, errCh, stopCh, name); done {
+		return err
 	}
 
 	gracefulDone := make(chan struct{})
@@ -117,31 +80,7 @@ func RunGRPC(
 	timer := time.NewTimer(DefaultShutdownTimeout)
 	defer timer.Stop()
 
-	select {
-	case err := <-errCh:
-		if err != nil {
-			return fmt.Errorf("grpc server %s stopped with error: %w", name, err)
-		}
-
-		return nil
-	case <-gracefulDone:
-		err := <-errCh
-		if err != nil {
-			return fmt.Errorf("grpc server %s stopped with error: %w", name, err)
-		}
-
-		return nil
-	case <-timer.C:
-		runLog.Warn("grpc graceful shutdown timed out, forcing stop")
-		stop()
-
-		err := <-errCh
-		if err != nil {
-			return fmt.Errorf("grpc server %s stopped with error: %w", name, err)
-		}
-
-		return nil
-	}
+	return awaitGRPCShutdown(name, runLog, errCh, gracefulDone, timer.C, stop)
 }
 
 func runnerLogger(ctx context.Context, log *logger.Logger, name string) *logger.Logger {
@@ -151,4 +90,96 @@ func runnerLogger(ctx context.Context, log *logger.Logger, name string) *logger.
 	}
 
 	return runLog.WithField("service", name)
+}
+
+func startRunner(run func() error) chan error {
+	errCh := make(chan error, 1)
+
+	go func() {
+		errCh <- run()
+	}()
+
+	return errCh
+}
+
+func notifyStopSignals() chan os.Signal {
+	stopCh := make(chan os.Signal, 1)
+	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
+
+	return stopCh
+}
+
+func waitHTTPStop(
+	ctx context.Context,
+	log *logger.Logger,
+	errCh <-chan error,
+	stopCh <-chan os.Signal,
+	name string,
+) (bool, error) {
+	select {
+	case err := <-errCh:
+		return true, wrapHTTPServeErr(name, err)
+	case sig := <-stopCh:
+		log.WithField("signal", sig.String()).Info("shutting down http server")
+	case <-ctx.Done():
+		log.Info("shutting down http server")
+	}
+
+	return false, nil
+}
+
+func wrapHTTPServeErr(name string, err error) error {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return fmt.Errorf("http server %s stopped with error: %w", name, err)
+	}
+
+	return nil
+}
+
+func waitGRPCStop(
+	ctx context.Context,
+	log *logger.Logger,
+	errCh <-chan error,
+	stopCh <-chan os.Signal,
+	name string,
+) (bool, error) {
+	select {
+	case err := <-errCh:
+		return true, wrapGRPCServeErr(name, err)
+	case sig := <-stopCh:
+		log.WithField("signal", sig.String()).Info("shutting down grpc server")
+	case <-ctx.Done():
+		log.Info("shutting down grpc server")
+	}
+
+	return false, nil
+}
+
+func awaitGRPCShutdown(
+	name string,
+	log *logger.Logger,
+	errCh <-chan error,
+	gracefulDone <-chan struct{},
+	timerC <-chan time.Time,
+	stop func(),
+) error {
+	select {
+	case err := <-errCh:
+		return wrapGRPCServeErr(name, err)
+	case <-gracefulDone:
+		return wrapGRPCServeErr(name, <-errCh)
+	case <-timerC:
+		log.Warn("grpc graceful shutdown timed out, forcing stop")
+		stop()
+
+		return wrapGRPCServeErr(name, <-errCh)
+	}
+}
+
+func wrapGRPCServeErr(name string, err error) error {
+	if err != nil {
+		return fmt.Errorf("grpc server %s stopped with error: %w", name, err)
+	}
+
+	return nil
 }

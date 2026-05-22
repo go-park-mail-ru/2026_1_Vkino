@@ -1,4 +1,3 @@
-//nolint:gocyclo // Startup and shutdown orchestration stays explicit.
 package metrics
 
 import (
@@ -22,12 +21,8 @@ type Config struct {
 var errMetricsContextRequired = errors.New("metrics context is required")
 
 func StartServer(ctx context.Context, service string, cfg Config, log *logger.Logger) error {
-	if !cfg.Enabled {
-		return nil
-	}
-
-	addr := strings.TrimSpace(cfg.Address)
-	if addr == "" {
+	addr, ok := metricsAddress(cfg)
+	if !ok {
 		return nil
 	}
 
@@ -64,6 +59,26 @@ func StartServer(ctx context.Context, service string, cfg Config, log *logger.Lo
 		WithField("service", labelValue(service)).
 		WithField("address", addr)
 
+	startMetricsShutdown(ctx, server, metricsLog)
+	startMetricsServe(server, lis, metricsLog)
+
+	return nil
+}
+
+func metricsAddress(cfg Config) (string, bool) {
+	if !cfg.Enabled {
+		return "", false
+	}
+
+	addr := strings.TrimSpace(cfg.Address)
+	if addr == "" {
+		return "", false
+	}
+
+	return addr, true
+}
+
+func startMetricsShutdown(ctx context.Context, server *http.Server, log *logger.Logger) {
 	go func() {
 		<-ctx.Done()
 
@@ -74,17 +89,17 @@ func StartServer(ctx context.Context, service string, cfg Config, log *logger.Lo
 		defer cancel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			metricsLog.WithField("error", err.Error()).Error("metrics shutdown failed")
+			log.WithField("error", err.Error()).Error("metrics shutdown failed")
 		}
 	}()
+}
 
+func startMetricsServe(server *http.Server, lis net.Listener, log *logger.Logger) {
 	go func() {
-		metricsLog.Info("starting metrics server")
+		log.Info("starting metrics server")
 
 		if err := server.Serve(lis); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			metricsLog.WithField("error", err.Error()).Error("metrics server stopped with error")
+			log.WithField("error", err.Error()).Error("metrics server stopped with error")
 		}
 	}()
-
-	return nil
 }

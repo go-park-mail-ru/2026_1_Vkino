@@ -1,4 +1,3 @@
-//nolint:gocyclo // Binary format parsing requires explicit branch-heavy validation.
 package sanitize
 
 import (
@@ -201,15 +200,9 @@ func validateWebPAvatar(avatarBytes []byte) error {
 	return validateAvatarDimensions(width, height)
 }
 
-//nolint:gocognit,gocyclo,cyclop // WebP container parsing needs explicit chunk-by-chunk validation.
 func webpDimensions(avatarBytes []byte) (int, int, error) {
-	if !hasWebPHeader(avatarBytes) || len(avatarBytes) < 20 {
-		return 0, 0, errInvalidWebPHeader
-	}
-
-	riffSize := int(binary.LittleEndian.Uint32(avatarBytes[4:8]))
-	if riffSize+8 != len(avatarBytes) {
-		return 0, 0, errInvalidWebPRIFFSize
+	if err := validateWebPContainer(avatarBytes); err != nil {
+		return 0, 0, err
 	}
 
 	var (
@@ -218,65 +211,26 @@ func webpDimensions(avatarBytes []byte) (int, int, error) {
 	)
 
 	for offset := 12; offset < len(avatarBytes); {
-		if offset+webpChunkHeaderLen > len(avatarBytes) {
-			return 0, 0, errInvalidWebPChunkHeader
+		chunkType, chunkSize, chunkPayload, nextOffset, err := readWebPChunk(avatarBytes, offset)
+		if err != nil {
+			return 0, 0, err
 		}
 
-		chunkType := string(avatarBytes[offset : offset+4])
-		chunkSize := int(binary.LittleEndian.Uint32(avatarBytes[offset+4 : offset+8]))
-		offset += webpChunkHeaderLen
+		offset = nextOffset
 
-		if chunkSize < 0 || offset+chunkSize > len(avatarBytes) {
-			return 0, 0, errInvalidWebPChunkSize
+		width, height, done, err := processWebPChunk(
+			chunkType,
+			chunkSize,
+			chunkPayload,
+			&canvasWidth,
+			&canvasHeight,
+		)
+		if err != nil {
+			return 0, 0, err
 		}
 
-		chunkPayload := avatarBytes[offset : offset+chunkSize]
-
-		switch chunkType {
-		case "VP8X":
-			if chunkSize < vp8xChunkMinSize {
-				return 0, 0, errInvalidWebPVP8XChunk
-			}
-
-			if chunkPayload[0]&webpAnimationFlag != 0 {
-				return 0, 0, errAnimatedWebPNotAllowed
-			}
-
-			canvasWidth = 1 + int(uint32(chunkPayload[4])|uint32(chunkPayload[5])<<8|uint32(chunkPayload[6])<<16)
-			canvasHeight = 1 + int(uint32(chunkPayload[7])|uint32(chunkPayload[8])<<8|uint32(chunkPayload[9])<<16)
-		case "VP8 ":
-			width, height, err := vp8Dimensions(chunkPayload)
-			if err != nil {
-				return 0, 0, err
-			}
-
-			if canvasWidth > 0 && (width > canvasWidth || height > canvasHeight) {
-				return 0, 0, errWebPFrameExceedsCanvas
-			}
-
-			if canvasWidth > 0 && canvasHeight > 0 {
-				return canvasWidth, canvasHeight, nil
-			}
-
+		if done {
 			return width, height, nil
-		case "VP8L":
-			width, height, err := vp8LDimensions(chunkPayload)
-			if err != nil {
-				return 0, 0, err
-			}
-
-			if canvasWidth > 0 && (width > canvasWidth || height > canvasHeight) {
-				return 0, 0, errWebPFrameExceedsCanvas
-			}
-
-			if canvasWidth > 0 && canvasHeight > 0 {
-				return canvasWidth, canvasHeight, nil
-			}
-
-			return width, height, nil
-		case "ALPH":
-		default:
-			return 0, 0, fmt.Errorf("%w: %q", errUnsupportedWebPChunk, chunkType)
 		}
 
 		offset += chunkSize
@@ -286,6 +240,102 @@ func webpDimensions(avatarBytes []byte) (int, int, error) {
 	}
 
 	return 0, 0, errMissingWebPImageChunk
+}
+
+func validateWebPContainer(avatarBytes []byte) error {
+	if !hasWebPHeader(avatarBytes) || len(avatarBytes) < 20 {
+		return errInvalidWebPHeader
+	}
+
+	riffSize := int(binary.LittleEndian.Uint32(avatarBytes[4:8]))
+	if riffSize+8 != len(avatarBytes) {
+		return errInvalidWebPRIFFSize
+	}
+
+	return nil
+}
+
+func readWebPChunk(avatarBytes []byte, offset int) (string, int, []byte, int, error) {
+	if offset+webpChunkHeaderLen > len(avatarBytes) {
+		return "", 0, nil, 0, errInvalidWebPChunkHeader
+	}
+
+	chunkType := string(avatarBytes[offset : offset+4])
+	chunkSize := int(binary.LittleEndian.Uint32(avatarBytes[offset+4 : offset+8]))
+	offset += webpChunkHeaderLen
+
+	if chunkSize < 0 || offset+chunkSize > len(avatarBytes) {
+		return "", 0, nil, 0, errInvalidWebPChunkSize
+	}
+
+	return chunkType, chunkSize, avatarBytes[offset : offset+chunkSize], offset, nil
+}
+
+func processWebPChunk(
+	chunkType string,
+	chunkSize int,
+	chunkPayload []byte,
+	canvasWidth *int,
+	canvasHeight *int,
+) (int, int, bool, error) {
+	switch chunkType {
+	case "VP8X":
+		return 0, 0, false, updateWebPCanvas(chunkSize, chunkPayload, canvasWidth, canvasHeight)
+	case "VP8 ":
+		width, height, err := vp8Dimensions(chunkPayload)
+
+		return resolveWebPImageChunk(width, height, err, *canvasWidth, *canvasHeight)
+	case "VP8L":
+		width, height, err := vp8LDimensions(chunkPayload)
+
+		return resolveWebPImageChunk(width, height, err, *canvasWidth, *canvasHeight)
+	case "ALPH":
+		return 0, 0, false, nil
+	default:
+		return 0, 0, false, fmt.Errorf("%w: %q", errUnsupportedWebPChunk, chunkType)
+	}
+}
+
+func updateWebPCanvas(
+	chunkSize int,
+	chunkPayload []byte,
+	canvasWidth *int,
+	canvasHeight *int,
+) error {
+	if chunkSize < vp8xChunkMinSize {
+		return errInvalidWebPVP8XChunk
+	}
+
+	if chunkPayload[0]&webpAnimationFlag != 0 {
+		return errAnimatedWebPNotAllowed
+	}
+
+	*canvasWidth = 1 + int(uint32(chunkPayload[4])|uint32(chunkPayload[5])<<8|uint32(chunkPayload[6])<<16)
+	*canvasHeight = 1 + int(uint32(chunkPayload[7])|uint32(chunkPayload[8])<<8|uint32(chunkPayload[9])<<16)
+
+	return nil
+}
+
+func resolveWebPImageChunk(
+	width int,
+	height int,
+	err error,
+	canvasWidth int,
+	canvasHeight int,
+) (int, int, bool, error) {
+	if err != nil {
+		return 0, 0, false, err
+	}
+
+	if canvasWidth > 0 && (width > canvasWidth || height > canvasHeight) {
+		return 0, 0, false, errWebPFrameExceedsCanvas
+	}
+
+	if canvasWidth > 0 && canvasHeight > 0 {
+		return canvasWidth, canvasHeight, true, nil
+	}
+
+	return width, height, true, nil
 }
 
 func hasWebPHeader(avatarBytes []byte) bool {

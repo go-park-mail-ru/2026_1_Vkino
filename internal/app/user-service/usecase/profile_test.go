@@ -18,6 +18,10 @@ type stubAvatarStore struct {
 	presign func(ctx context.Context, key string, ttl time.Duration) (string, error)
 }
 
+const testAvatarKey = "users/42/avatar/current.png"
+
+var errPresignFailed = errors.New("presign failed")
+
 func (s stubAvatarStore) PutObject(context.Context, string, io.Reader, int64, string) error {
 	return nil
 }
@@ -35,7 +39,7 @@ func (s stubAvatarStore) PresignGetObject(ctx context.Context, key string, ttl t
 }
 
 func (s stubAvatarStore) GetObject(context.Context, string) (io.ReadCloser, error) {
-	return nil, nil
+	return io.NopCloser(bytes.NewReader(nil)), nil
 }
 
 func TestUpdateProfile_IgnoresAvatarPresignFailureAfterBirthdateUpdate(t *testing.T) {
@@ -45,7 +49,6 @@ func TestUpdateProfile_IgnoresAvatarPresignFailureAfterBirthdateUpdate(t *testin
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockUserRepo(ctrl)
-	avatarKey := "users/42/avatar/current.png"
 	oldBirthdate := time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC)
 	newBirthdate := time.Date(1991, 2, 3, 0, 0, 0, 0, time.UTC)
 
@@ -56,7 +59,7 @@ func TestUpdateProfile_IgnoresAvatarPresignFailureAfterBirthdateUpdate(t *testin
 			Email:         "user@example.com",
 			Role:          "user",
 			Birthdate:     &oldBirthdate,
-			AvatarFileKey: &avatarKey,
+			AvatarFileKey: ptrToTestAvatarKey(),
 		}, nil)
 
 	repo.EXPECT().
@@ -71,7 +74,7 @@ func TestUpdateProfile_IgnoresAvatarPresignFailureAfterBirthdateUpdate(t *testin
 				Email:         "user@example.com",
 				Role:          "user",
 				Birthdate:     &newBirthdate,
-				AvatarFileKey: &avatarKey,
+				AvatarFileKey: ptrToTestAvatarKey(),
 			}, nil
 		})
 
@@ -79,7 +82,7 @@ func TestUpdateProfile_IgnoresAvatarPresignFailureAfterBirthdateUpdate(t *testin
 		repo,
 		stubAvatarStore{
 			presign: func(context.Context, string, time.Duration) (string, error) {
-				return "", errors.New("presign failed")
+				return "", errPresignFailed
 			},
 		},
 		nil,
@@ -101,126 +104,58 @@ func TestUpdateProfile_IgnoresAvatarPresignFailureAfterBirthdateUpdate(t *testin
 
 func TestUpdateProfile_IgnoresNullAvatarPayload(t *testing.T) {
 	t.Parallel()
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	repo := mocks.NewMockUserRepo(ctrl)
-	avatarKey := "users/42/avatar/current.png"
-	oldBirthdate := time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC)
-	newBirthdate := time.Date(2000, 10, 7, 0, 0, 0, 0, time.UTC)
-
-	repo.EXPECT().
-		GetUserByID(gomock.Any(), int64(42)).
-		Return(&domain.User{
-			ID:            42,
-			Email:         "user@example.com",
-			Role:          "user",
-			Birthdate:     &oldBirthdate,
-			AvatarFileKey: &avatarKey,
-		}, nil)
-
-	repo.EXPECT().
-		UpdateBirthdate(gomock.Any(), int64(42), gomock.Any()).
-		DoAndReturn(func(_ context.Context, _ int64, got *time.Time) (*domain.User, error) {
-			if got == nil || !got.Equal(newBirthdate) {
-				t.Fatalf("birthdate = %v, want %v", got, newBirthdate)
-			}
-
-			return &domain.User{
-				ID:            42,
-				Email:         "user@example.com",
-				Role:          "user",
-				Birthdate:     &newBirthdate,
-				AvatarFileKey: &avatarKey,
-			}, nil
-		})
-
-	u := NewUserUsecase(repo, stubAvatarStore{}, nil)
-
-	resp, err := u.UpdateProfile(
-		context.Background(),
-		42,
-		"2000-10-07",
-		bytes.NewReader([]byte("null")),
-		int64(len("null")),
-		"",
-	)
-	if err != nil {
-		t.Fatalf("UpdateProfile returned error: %v", err)
-	}
-
-	if resp.Birthdate == nil || *resp.Birthdate != "2000-10-07" {
-		t.Fatalf("birthdate = %v, want %q", resp.Birthdate, "2000-10-07")
-	}
+	assertAvatarPayloadIgnored(t, "2000-10-07", []byte("null"), "")
 }
 
 func TestUpdateProfile_IgnoresNullAvatarPayloadWithImageContentType(t *testing.T) {
 	t.Parallel()
+	assertAvatarPayloadIgnored(t, "2004-10-07", []byte("null"), "image/png")
+}
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+func ptrToTestAvatarKey() *string {
+	key := testAvatarKey
 
-	repo := mocks.NewMockUserRepo(ctrl)
-	avatarKey := "users/42/avatar/current.png"
-	oldBirthdate := time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC)
-	newBirthdate := time.Date(2004, 10, 7, 0, 0, 0, 0, time.UTC)
-
-	repo.EXPECT().
-		GetUserByID(gomock.Any(), int64(42)).
-		Return(&domain.User{
-			ID:            42,
-			Email:         "user@example.com",
-			Role:          "user",
-			Birthdate:     &oldBirthdate,
-			AvatarFileKey: &avatarKey,
-		}, nil)
-
-	repo.EXPECT().
-		UpdateBirthdate(gomock.Any(), int64(42), gomock.Any()).
-		DoAndReturn(func(_ context.Context, _ int64, got *time.Time) (*domain.User, error) {
-			if got == nil || !got.Equal(newBirthdate) {
-				t.Fatalf("birthdate = %v, want %v", got, newBirthdate)
-			}
-
-			return &domain.User{
-				ID:            42,
-				Email:         "user@example.com",
-				Role:          "user",
-				Birthdate:     &newBirthdate,
-				AvatarFileKey: &avatarKey,
-			}, nil
-		})
-
-	u := NewUserUsecase(repo, stubAvatarStore{}, nil)
-
-	resp, err := u.UpdateProfile(
-		context.Background(),
-		42,
-		"2004-10-07",
-		bytes.NewReader([]byte("null")),
-		int64(len("null")),
-		"image/png",
-	)
-	if err != nil {
-		t.Fatalf("UpdateProfile returned error: %v", err)
-	}
-
-	if resp.Birthdate == nil || *resp.Birthdate != "2004-10-07" {
-		t.Fatalf("birthdate = %v, want %q", resp.Birthdate, "2004-10-07")
-	}
+	return &key
 }
 
 func TestUpdateProfile_IgnoresUnsupportedAvatarPayloadWithImageContentType(t *testing.T) {
 	t.Parallel()
+	assertAvatarPayloadIgnored(t, "2005-03-05", []byte("garbage-avatar-payload"), "image/png")
+}
+
+func assertAvatarPayloadIgnored(t *testing.T, birthdate string, avatarPayload []byte, contentType string) {
+	t.Helper()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockUserRepo(ctrl)
-	avatarKey := "users/42/avatar/current.png"
 	oldBirthdate := time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC)
-	newBirthdate := time.Date(2005, 3, 5, 0, 0, 0, 0, time.UTC)
+	newBirthdate := mustParseBirthdate(t, birthdate)
+
+	expectProfileBirthdateUpdate(t, repo, oldBirthdate, newBirthdate)
+
+	u := NewUserUsecase(repo, stubAvatarStore{}, nil)
+
+	resp, err := u.UpdateProfile(
+		context.Background(),
+		42,
+		birthdate,
+		bytes.NewReader(avatarPayload),
+		int64(len(avatarPayload)),
+		contentType,
+	)
+	if err != nil {
+		t.Fatalf("UpdateProfile returned error: %v", err)
+	}
+
+	if resp.Birthdate == nil || *resp.Birthdate != birthdate {
+		t.Fatalf("birthdate = %v, want %q", resp.Birthdate, birthdate)
+	}
+}
+
+func expectProfileBirthdateUpdate(t *testing.T, repo *mocks.MockUserRepo, oldBirthdate, newBirthdate time.Time) {
+	t.Helper()
 
 	repo.EXPECT().
 		GetUserByID(gomock.Any(), int64(42)).
@@ -229,7 +164,7 @@ func TestUpdateProfile_IgnoresUnsupportedAvatarPayloadWithImageContentType(t *te
 			Email:         "user@example.com",
 			Role:          "user",
 			Birthdate:     &oldBirthdate,
-			AvatarFileKey: &avatarKey,
+			AvatarFileKey: ptrToTestAvatarKey(),
 		}, nil)
 
 	repo.EXPECT().
@@ -244,25 +179,18 @@ func TestUpdateProfile_IgnoresUnsupportedAvatarPayloadWithImageContentType(t *te
 				Email:         "user@example.com",
 				Role:          "user",
 				Birthdate:     &newBirthdate,
-				AvatarFileKey: &avatarKey,
+				AvatarFileKey: ptrToTestAvatarKey(),
 			}, nil
 		})
+}
 
-	u := NewUserUsecase(repo, stubAvatarStore{}, nil)
+func mustParseBirthdate(t *testing.T, value string) time.Time {
+	t.Helper()
 
-	resp, err := u.UpdateProfile(
-		context.Background(),
-		42,
-		"2005-03-05",
-		bytes.NewReader([]byte("garbage-avatar-payload")),
-		int64(len("garbage-avatar-payload")),
-		"image/png",
-	)
+	birthdate, err := time.Parse("2006-01-02", value)
 	if err != nil {
-		t.Fatalf("UpdateProfile returned error: %v", err)
+		t.Fatalf("time.Parse(%q): %v", value, err)
 	}
 
-	if resp.Birthdate == nil || *resp.Birthdate != "2005-03-05" {
-		t.Fatalf("birthdate = %v, want %q", resp.Birthdate, "2005-03-05")
-	}
+	return birthdate
 }

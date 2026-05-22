@@ -30,7 +30,7 @@ func TestNormalizeEmpty(t *testing.T) {
 func TestContextWithID(t *testing.T) {
 	t.Parallel()
 
-	ctx := ContextWithID(nil, "custom")
+	ctx := ContextWithID(context.TODO(), "custom")
 
 	got, ok := FromContext(ctx)
 	if !ok {

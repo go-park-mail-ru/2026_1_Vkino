@@ -8,6 +8,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var errUnknown = errors.New("unknown")
+
 func TestMapStatusError(t *testing.T) {
 	t.Parallel()
 
@@ -26,7 +28,7 @@ func TestMapDefault(t *testing.T) {
 
 	m := New([]codes.Code{codes.NotFound}, map[codes.Code]ErrResponse{}, 500, "internal")
 
-	statusCode, message := m.Map(errors.New("unknown"))
+	statusCode, message := m.Map(errUnknown)
 	if statusCode != 500 || message != "internal" {
 		t.Fatalf("unexpected default: %d %q", statusCode, message)
 	}

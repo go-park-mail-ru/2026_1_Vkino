@@ -87,12 +87,15 @@ func TestSupportFileUploadHandler(t *testing.T) {
 	client := NewMockUserClient(ctrl)
 
 	client.EXPECT().UploadSupportFile(gomock.Any(), gomock.Any()).
-		DoAndReturn(func(_ any, req *supportv1.UploadSupportFileRequest,
-			_ ...any) (*supportv1.UploadSupportFileResponse, error) {
-			require.Equal(t, []byte("hello"), req.Content)
-			require.Equal(t, "note.txt", req.Filename)
-			require.Equal(t, "text/plain", req.ContentType)
-			require.Equal(t, int64(5), req.SizeBytes)
+		DoAndReturn(func(
+			_ any,
+			req *supportv1.UploadSupportFileRequest,
+			_ ...any,
+		) (*supportv1.UploadSupportFileResponse, error) {
+			require.Equal(t, []byte("hello"), req.GetContent())
+			require.Equal(t, "note.txt", req.GetFilename())
+			require.Equal(t, "text/plain", req.GetContentType())
+			require.Equal(t, int64(5), req.GetSizeBytes())
 
 			return &supportv1.UploadSupportFileResponse{FileKey: "file-key"}, nil
 		})

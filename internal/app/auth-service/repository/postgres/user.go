@@ -30,7 +30,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 	err := r.db.QueryRow(ctx, sqlGetUserByEmail, email).Scan(
 		&user.ID,
 		&user.Email,
-		&user.Password,
+		&user.CredentialHash,
 		&user.Birthdate,
 		&user.AvatarFileKey,
 		&user.RegistrationDate,
@@ -55,7 +55,7 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 	err := r.db.QueryRow(ctx, sqlGetUserByID, id).Scan(
 		&user.ID,
 		&user.Email,
-		&user.Password,
+		&user.CredentialHash,
 		&user.Birthdate,
 		&user.AvatarFileKey,
 		&user.RegistrationDate,
@@ -80,7 +80,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (
 	err := r.db.QueryRow(ctx, sqlCreateUser, email, passwordHash).Scan(
 		&user.ID,
 		&user.Email,
-		&user.Password,
+		&user.CredentialHash,
 		&user.Birthdate,
 		&user.AvatarFileKey,
 		&user.RegistrationDate,
@@ -101,7 +101,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (
 }
 
 func (r *UserRepo) UpdatePassword(ctx context.Context, userID int64, passwordHash string) error {
-	tag, err := r.db.Exec(ctx, sqlUpdateUserPasswordByID, passwordHash, userID)
+	tag, err := r.db.Exec(ctx, sqlUpdateUserHashByID, passwordHash, userID)
 	if err != nil {
 		return fmt.Errorf("update user password by id: %w", err)
 	}

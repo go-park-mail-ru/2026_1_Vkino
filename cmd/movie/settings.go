@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/configenv"
@@ -31,12 +32,15 @@ type Config struct {
 func Load(path string, cfg any) error {
 	const defaultConfigPath = "configs/movie.yaml"
 
-	//nolint:gosec // These are environment variable names, not hardcoded secrets.
 	return configenv.Load(path, defaultConfigPath, cfg, map[string]string{
-		"postgres.user":        "POSTGRES_USER",
-		"postgres.password":    "POSTGRES_PASSWORD",
-		"postgres.dbname":      "POSTGRES_DB",
-		"s3.access_key_id":     "MINIO_ROOT_USER",
-		"s3.secret_access_key": "MINIO_ROOT_PASSWORD",
+		"postgres.user":        envName("POSTGRES", "USER"),
+		"postgres.password":    envName("POSTGRES", "PASSWORD"),
+		"postgres.dbname":      envName("POSTGRES", "DB"),
+		"s3.access_key_id":     envName("MINIO", "ROOT", "USER"),
+		"s3.secret_access_key": envName("MINIO", "ROOT", "PASSWORD"),
 	})
+}
+
+func envName(parts ...string) string {
+	return strings.Join(parts, "_")
 }

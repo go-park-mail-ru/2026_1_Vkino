@@ -1,4 +1,3 @@
-//nolint:gocyclo,wsl_v5 // Multipart parsing is easier to follow when kept explicit.
 package routes
 
 import (
@@ -85,16 +84,8 @@ func newSupportFileURLHandler(cfg Config, userClient UserClient) http.HandlerFun
 
 func readSupportFileUploadPayload(w http.ResponseWriter, r *http.Request) (supportFileUploadPayload, bool) {
 	r.Body = http.MaxBytesReader(w, r.Body, maxSupportFileSize+maxSupportMultipartOverhead)
-	if err := r.ParseMultipartForm(maxSupportFileSize); err != nil {
-		var maxBytesErr *http.MaxBytesError
-		if errors.As(err, &maxBytesErr) {
-			httppkg.ErrResponse(w, http.StatusRequestEntityTooLarge, "support file exceeds the size limit")
 
-			return supportFileUploadPayload{}, false
-		}
-
-		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid multipart form body")
-
+	if !parseSupportMultipartForm(w, r) {
 		return supportFileUploadPayload{}, false
 	}
 
@@ -110,26 +101,13 @@ func readSupportFileUploadPayload(w http.ResponseWriter, r *http.Request) (suppo
 
 		return supportFileUploadPayload{}, false
 	}
+
 	defer func() {
 		_ = file.Close()
 	}()
 
-	content, err := io.ReadAll(io.LimitReader(file, maxSupportFileSize+1))
-	if err != nil {
-		httppkg.ErrResponse(w, http.StatusBadRequest, "failed to read support file")
-
-		return supportFileUploadPayload{}, false
-	}
-
-	if int64(len(content)) > maxSupportFileSize {
-		httppkg.ErrResponse(w, http.StatusRequestEntityTooLarge, "support file exceeds the size limit")
-
-		return supportFileUploadPayload{}, false
-	}
-
-	if len(content) == 0 {
-		httppkg.ErrResponse(w, http.StatusBadRequest, "failed to read support file")
-
+	content, ok := readSupportUploadContent(w, file)
+	if !ok {
 		return supportFileUploadPayload{}, false
 	}
 
@@ -144,6 +122,40 @@ func readSupportFileUploadPayload(w http.ResponseWriter, r *http.Request) (suppo
 	}
 
 	return payload, true
+}
+
+func parseSupportMultipartForm(w http.ResponseWriter, r *http.Request) bool {
+	if err := r.ParseMultipartForm(maxSupportFileSize); err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			httppkg.ErrResponse(w, http.StatusRequestEntityTooLarge, "support file exceeds the size limit")
+
+			return false
+		}
+
+		httppkg.ErrResponse(w, http.StatusBadRequest, "invalid multipart form body")
+
+		return false
+	}
+
+	return true
+}
+
+func readSupportUploadContent(w http.ResponseWriter, file io.Reader) ([]byte, bool) {
+	content, err := io.ReadAll(io.LimitReader(file, maxSupportFileSize+1))
+	if err != nil || len(content) == 0 {
+		httppkg.ErrResponse(w, http.StatusBadRequest, "failed to read support file")
+
+		return nil, false
+	}
+
+	if int64(len(content)) > maxSupportFileSize {
+		httppkg.ErrResponse(w, http.StatusRequestEntityTooLarge, "support file exceeds the size limit")
+
+		return nil, false
+	}
+
+	return content, true
 }
 
 func ignoreMultipartFormCleanupError(err error) {

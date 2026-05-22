@@ -33,7 +33,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.11.4
+          version: v2.10.1
           args: --config build/ci/golangci.yml ./...
 
       - name: Run tests

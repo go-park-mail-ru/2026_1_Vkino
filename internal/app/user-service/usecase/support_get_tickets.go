@@ -1,4 +1,3 @@
-//nolint:gocyclo // Access checks and filter assembly stay explicit.
 package usecase
 
 import (
@@ -10,7 +9,6 @@ import (
 	validator "github.com/go-park-mail-ru/2026_1_VKino/pkg/validatex"
 )
 
-//nolint:cyclop // Access checks and filter assembly stay explicit.
 func (u *supportUsecase) GetTickets(
 	ctx context.Context,
 	actorUserID int64,
@@ -20,20 +18,8 @@ func (u *supportUsecase) GetTickets(
 	req.Category = strings.TrimSpace(req.Category)
 	req.UserEmail = strings.TrimSpace(req.UserEmail)
 
-	if !isValidTicketStatus(req.Status) {
-		return nil, domain.ErrInvalidTicketPayload
-	}
-
-	if !isValidTicketCategory(req.Category) {
-		return nil, domain.ErrInvalidTicketPayload
-	}
-
-	if !isValidSupportLine(req.SupportLine) {
-		return nil, domain.ErrInvalidTicketPayload
-	}
-
-	if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {
-		return nil, domain.ErrInvalidEmail
+	if err := validateTicketFilters(req); err != nil {
+		return nil, err
 	}
 
 	role, err := u.userRepo.GetUserRole(ctx, actorUserID)
@@ -41,14 +27,7 @@ func (u *supportUsecase) GetTickets(
 		return nil, domain.ErrInvalidToken
 	}
 
-	userIDFilter := actorUserID
-	if isStaff(role) {
-		userIDFilter = 0
-		req.AllowedCategories = allowedCategoriesForRole(role)
-	} else {
-		req.SupportLine = 0
-		req.UserEmail = ""
-	}
+	userIDFilter := applyTicketRoleFilters(role, actorUserID, &req)
 
 	if req.Category != "" && !canAccessCategory(role, req.Category) {
 		return []domain.SupportTicketResponse{}, nil
@@ -60,4 +39,33 @@ func (u *supportUsecase) GetTickets(
 	}
 
 	return tickets, nil
+}
+
+func validateTicketFilters(req domain.GetSupportTicketsRequest) error {
+	if !isValidTicketStatus(req.Status) || !isValidTicketCategory(req.Category) || !isValidSupportLine(req.SupportLine) {
+		return domain.ErrInvalidTicketPayload
+	}
+
+	if req.UserEmail != "" && !validator.ValidateEmail(req.UserEmail) {
+		return domain.ErrInvalidEmail
+	}
+
+	return nil
+}
+
+func applyTicketRoleFilters(
+	role string,
+	actorUserID int64,
+	req *domain.GetSupportTicketsRequest,
+) int64 {
+	if isStaff(role) {
+		req.AllowedCategories = allowedCategoriesForRole(role)
+
+		return 0
+	}
+
+	req.SupportLine = 0
+	req.UserEmail = ""
+
+	return actorUserID
 }

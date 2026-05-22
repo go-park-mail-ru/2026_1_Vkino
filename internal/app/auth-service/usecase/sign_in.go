@@ -12,7 +12,7 @@ func (u *AuthUsecase) SignIn(ctx context.Context, email, password string) (domai
 		return domain.TokenPair{}, domain.ErrInvalidCredentials
 	}
 
-	err = u.passwordService.Compare(user.Password, password)
+	err = u.passwordService.Compare(user.CredentialHash, password)
 	if err != nil {
 		return domain.TokenPair{}, domain.ErrInvalidCredentials
 	}

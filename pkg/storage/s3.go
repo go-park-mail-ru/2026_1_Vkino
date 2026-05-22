@@ -1,4 +1,3 @@
-//nolint:gocyclo // Storage config validation remains intentionally explicit.
 package storage
 
 import (
@@ -61,26 +60,9 @@ var (
 	errTTLInvalid               = errors.New("storage: ttl must be positive")
 )
 
-//nolint:cyclop // Config validation intentionally stays explicit.
 func NewS3Storage(_ context.Context, cfg Config) (*S3Storage, error) {
-	if cfg.Bucket == "" {
-		return nil, errBucketRequired
-	}
-
-	if cfg.AccessKeyID == "" {
-		return nil, errAccessKeyRequired
-	}
-
-	if cfg.SecretAccessKey == "" {
-		return nil, errSecretKeyRequired
-	}
-
-	if cfg.InternalEndpoint == "" {
-		return nil, errInternalEndpointRequired
-	}
-
-	if cfg.PublicEndpoint == "" {
-		return nil, errPublicEndpointRequired
+	if err := validateS3Config(cfg); err != nil {
+		return nil, err
 	}
 
 	if cfg.PresignTTL == 0 {
@@ -96,30 +78,26 @@ func NewS3Storage(_ context.Context, cfg Config) (*S3Storage, error) {
 		bucketLookup = minio.BucketLookupPath
 	}
 
-	internalClient, err := minio.New(cfg.InternalEndpoint, &minio.Options{
-		Creds: credentials.NewStaticV4(
-			cfg.AccessKeyID,
-			cfg.SecretAccessKey,
-			"",
-		),
-		Secure:       cfg.InternalUseSSL,
-		Region:       cfg.Region,
-		BucketLookup: bucketLookup,
-	})
+	internalClient, err := newMinioStorageClient(
+		cfg.InternalEndpoint,
+		cfg.AccessKeyID,
+		cfg.SecretAccessKey,
+		cfg.InternalUseSSL,
+		cfg.Region,
+		bucketLookup,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("storage: init internal minio client: %w", err)
 	}
 
-	presignClient, err := minio.New(cfg.PublicEndpoint, &minio.Options{
-		Creds: credentials.NewStaticV4(
-			cfg.AccessKeyID,
-			cfg.SecretAccessKey,
-			"",
-		),
-		Secure:       cfg.PublicUseSSL,
-		Region:       cfg.Region,
-		BucketLookup: bucketLookup,
-	})
+	presignClient, err := newMinioStorageClient(
+		cfg.PublicEndpoint,
+		cfg.AccessKeyID,
+		cfg.SecretAccessKey,
+		cfg.PublicUseSSL,
+		cfg.Region,
+		bucketLookup,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("storage: init public minio client: %w", err)
 	}
@@ -130,6 +108,41 @@ func NewS3Storage(_ context.Context, cfg Config) (*S3Storage, error) {
 		client:        &minioClient{client: internalClient},
 		presignClient: &minioClient{client: presignClient},
 	}, nil
+}
+
+func validateS3Config(cfg Config) error {
+	switch {
+	case cfg.Bucket == "":
+		return errBucketRequired
+	case cfg.AccessKeyID == "":
+		return errAccessKeyRequired
+	case cfg.SecretAccessKey == "":
+		return errSecretKeyRequired
+	case cfg.InternalEndpoint == "":
+		return errInternalEndpointRequired
+	case cfg.PublicEndpoint == "":
+		return errPublicEndpointRequired
+	default:
+		return nil
+	}
+}
+
+func newMinioStorageClient(
+	endpoint, accessKeyID, secretAccessKey string,
+	secure bool,
+	region string,
+	bucketLookup minio.BucketLookupType,
+) (*minio.Client, error) {
+	return minio.New(endpoint, &minio.Options{
+		Creds: credentials.NewStaticV4(
+			accessKeyID,
+			secretAccessKey,
+			"",
+		),
+		Secure:       secure,
+		Region:       region,
+		BucketLookup: bucketLookup,
+	})
 }
 
 func (s *S3Storage) EnsureBucket(ctx context.Context, region string) error {

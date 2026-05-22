@@ -8,6 +8,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var (
+	errSentinel = errors.New("sentinel")
+	errUnknown  = errors.New("unknown")
+)
+
 func TestMapNil(t *testing.T) {
 	t.Parallel()
 
@@ -20,12 +25,11 @@ func TestMapNil(t *testing.T) {
 func TestMapKnownError(t *testing.T) {
 	t.Parallel()
 
-	sentinel := errors.New("sentinel")
-	m := New([]error{sentinel}, map[error]ErrResponse{
-		sentinel: {Code: codes.NotFound, Message: "not found"},
+	m := New([]error{errSentinel}, map[error]ErrResponse{
+		errSentinel: {Code: codes.NotFound, Message: "not found"},
 	}, codes.Internal, "internal")
 
-	err := m.Map(sentinel)
+	err := m.Map(errSentinel)
 
 	st, ok := status.FromError(err)
 	if !ok {
@@ -41,7 +45,7 @@ func TestMapDefault(t *testing.T) {
 	t.Parallel()
 
 	m := New([]error{}, map[error]ErrResponse{}, codes.Internal, "internal")
-	err := m.Map(errors.New("unknown"))
+	err := m.Map(errUnknown)
 
 	st, _ := status.FromError(err)
 	if st.Code() != codes.Internal {

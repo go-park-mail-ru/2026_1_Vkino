@@ -84,74 +84,87 @@ type partyClientStub struct {
 }
 
 func (s *partyClientStub) GetOverview(context.Context, *partyv1.GetOverviewRequest,
-	...grpc.CallOption) (*partyv1.GetOverviewResponse, error) {
+	...grpc.CallOption,
+) (*partyv1.GetOverviewResponse, error) {
 	panic("unexpected call")
 }
 
 func (s *partyClientStub) GetRoom(context.Context, *partyv1.GetRoomRequest,
-	...grpc.CallOption) (*partyv1.GetRoomResponse, error) {
+	...grpc.CallOption,
+) (*partyv1.GetRoomResponse, error) {
 	panic("unexpected call")
 }
 
 func (s *partyClientStub) GetRoomInvite(_ context.Context, in *partyv1.GetRoomInviteRequest,
-	_ ...grpc.CallOption) (*partyv1.GetRoomInviteResponse, error) {
+	_ ...grpc.CallOption,
+) (*partyv1.GetRoomInviteResponse, error) {
 	s.inviteReq = in
 
 	return s.inviteResp, nil
 }
 
 func (s *partyClientStub) InviteFriendToRoom(_ context.Context, in *partyv1.InviteFriendToRoomRequest,
-	_ ...grpc.CallOption) (*partyv1.InviteFriendToRoomResponse, error) {
+	_ ...grpc.CallOption,
+) (*partyv1.InviteFriendToRoomResponse, error) {
 	s.inviteFriendReq = in
 
 	return s.inviteFriendResp, nil
 }
 
 func (s *partyClientStub) CreateRoom(context.Context, *partyv1.CreateRoomRequest,
-	...grpc.CallOption) (*partyv1.CreateRoomResponse, error) {
+	...grpc.CallOption,
+) (*partyv1.CreateRoomResponse, error) {
 	panic("unexpected call")
 }
 
 func (s *partyClientStub) GetFriend(_ context.Context, in *userv1.GetFriendRequest,
-	_ ...grpc.CallOption) (*userv1.GetFriendResponse, error) {
+	_ ...grpc.CallOption,
+) (*userv1.GetFriendResponse, error) {
 	s.friendReq = in
 
 	return s.friendResp, nil
 }
 
 func (s *partyClientStub) JoinRoom(_ context.Context, in *partyv1.JoinRoomRequest,
-	_ ...grpc.CallOption) (*partyv1.JoinRoomResponse, error) {
+	_ ...grpc.CallOption,
+) (*partyv1.JoinRoomResponse, error) {
 	s.joinReq = in
 
 	return s.joinResp, nil
 }
 
 func (s *partyClientStub) DeleteRoom(context.Context, *partyv1.DeleteRoomRequest,
-	...grpc.CallOption) (*partyv1.DeleteRoomResponse, error) {
+	...grpc.CallOption,
+) (*partyv1.DeleteRoomResponse, error) {
 	panic("unexpected call")
 }
 
 func (s *partyClientStub) ApplyRoomAction(context.Context, *partyv1.ApplyRoomActionRequest,
-	...grpc.CallOption) (*partyv1.ApplyRoomActionResponse, error) {
+	...grpc.CallOption,
+) (*partyv1.ApplyRoomActionResponse, error) {
 	panic("unexpected call")
 }
 
 func (s *partyClientStub) SendRoomMessage(context.Context, *partyv1.SendRoomMessageRequest,
-	...grpc.CallOption) (*partyv1.SendRoomMessageResponse, error) {
+	...grpc.CallOption,
+) (*partyv1.SendRoomMessageResponse, error) {
 	panic("unexpected call")
 }
 
 func (s *partyClientStub) CreateRoomPoll(context.Context, *partyv1.CreateRoomPollRequest,
-	...grpc.CallOption) (*partyv1.CreateRoomPollResponse, error) {
+	...grpc.CallOption,
+) (*partyv1.CreateRoomPollResponse, error) {
 	panic("unexpected call")
 }
 
 func (s *partyClientStub) VoteRoomPoll(context.Context, *partyv1.VoteRoomPollRequest,
-	...grpc.CallOption) (*partyv1.VoteRoomPollResponse, error) {
+	...grpc.CallOption,
+) (*partyv1.VoteRoomPollResponse, error) {
 	panic("unexpected call")
 }
 
 func (s *partyClientStub) SubscribeRoom(context.Context, *partyv1.SubscribeRoomRequest,
-	...grpc.CallOption) (grpc.ServerStreamingClient[partyv1.RoomEvent], error) {
+	...grpc.CallOption,
+) (grpc.ServerStreamingClient[partyv1.RoomEvent], error) {
 	panic("unexpected call")
 }
