@@ -7,12 +7,16 @@ import (
 	"testing"
 )
 
+var errBoom = errors.New("boom")
+
 func TestRunHTTPRequiresContext(t *testing.T) {
 	t.Parallel()
 
-	if err := RunHTTP(nil, nil, "svc", func() error { return nil },
-		func(context.Context) error { return nil }); err == nil {
-		t.Fatal("expected error for nil context")
+	var runnerCtx context.Context
+
+	if err := RunHTTP(runnerCtx, nil, "svc", func() error { return nil },
+		func(context.Context) error { return nil }); !errors.Is(err, errRunnerContextRequired) {
+		t.Fatalf("expected errRunnerContextRequired, got %v", err)
 	}
 }
 
@@ -24,7 +28,7 @@ func TestRunHTTPContextCancel(t *testing.T) {
 
 	runCh := make(chan struct{})
 
-	err := RunHTTP(ctx, nil, "svc", func() error {
+	if err := RunHTTP(ctx, nil, "svc", func() error {
 		<-runCh
 
 		return http.ErrServerClosed
@@ -32,9 +36,7 @@ func TestRunHTTPContextCancel(t *testing.T) {
 		close(runCh)
 
 		return nil
-	})
-
-	if err != nil {
+	}); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -47,15 +49,13 @@ func TestRunGRPCContextCancel(t *testing.T) {
 
 	runCh := make(chan struct{})
 
-	err := RunGRPC(ctx, nil, "svc", func() error {
+	if err := RunGRPC(ctx, nil, "svc", func() error {
 		<-runCh
 
 		return nil
 	}, func() {
 		close(runCh)
-	}, func() {})
-
-	if err != nil {
+	}, func() {}); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -65,10 +65,8 @@ func TestRunGRPCServeError(t *testing.T) {
 
 	ctx := context.Background()
 
-	expected := errors.New("boom")
-
 	err := RunGRPC(ctx, nil, "svc", func() error {
-		return expected
+		return errBoom
 	}, func() {}, func() {})
 	if err == nil {
 		t.Fatal("expected error")

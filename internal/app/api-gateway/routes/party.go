@@ -110,7 +110,7 @@ func newPartyOverviewHandler(
 
 func newPartyRoomHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		roomID, ok := parseRoomPathID(w, r, "invalid room id")
+		roomID, ok := parseRoomPathID(w, r)
 		if !ok {
 			return
 		}
@@ -159,7 +159,7 @@ func newCreatePartyRoomHandler(cfg Config, partyClient PartyClient) http.Handler
 
 func newPartyInviteHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		roomID, ok := parseRoomPathID(w, r, "invalid room id")
+		roomID, ok := parseRoomPathID(w, r)
 		if !ok {
 			return
 		}
@@ -266,7 +266,7 @@ func joinParty(w http.ResponseWriter, r *http.Request, cfg Config, partyClient P
 
 func newDeletePartyRoomHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		roomID, ok := parseRoomPathID(w, r, "invalid room id")
+		roomID, ok := parseRoomPathID(w, r)
 		if !ok {
 			return
 		}
@@ -287,7 +287,7 @@ func newDeletePartyRoomHandler(cfg Config, partyClient PartyClient) http.Handler
 
 func newPartyActionHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		roomID, ok := parseRoomPathID(w, r, "invalid room id")
+		roomID, ok := parseRoomPathID(w, r)
 		if !ok {
 			return
 		}
@@ -325,7 +325,7 @@ func newPartyActionHandler(cfg Config, partyClient PartyClient) http.HandlerFunc
 
 func newPartyMessageHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		roomID, ok := parseRoomPathID(w, r, "invalid room id")
+		roomID, ok := parseRoomPathID(w, r)
 		if !ok {
 			return
 		}
@@ -355,7 +355,7 @@ func newPartyMessageHandler(cfg Config, partyClient PartyClient) http.HandlerFun
 
 func newPartyPollHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		roomID, ok := parseRoomPathID(w, r, "invalid room id")
+		roomID, ok := parseRoomPathID(w, r)
 		if !ok {
 			return
 		}
@@ -386,7 +386,7 @@ func newPartyPollHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 
 func newPartyVoteHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		roomID, ok := parseRoomPathID(w, r, "invalid room id")
+		roomID, ok := parseRoomPathID(w, r)
 		if !ok {
 			return
 		}

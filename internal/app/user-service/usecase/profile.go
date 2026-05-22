@@ -84,7 +84,7 @@ func (u *UserUsecase) updateAvatarIfProvided(
 	requestLogger := logger.FromContext(ctx).
 		WithField("usecase", "UserUsecase.UpdateProfile")
 
-	if err := validateAvatarUpdateInput(body, size, u.avatarStore); err != nil {
+	if err := handleAvatarUpdatePreconditions(body, size, u.avatarStore); err != nil {
 		if shouldSkipAvatarUpdate(err) {
 			return user, nil
 		}
@@ -92,22 +92,7 @@ func (u *UserUsecase) updateAvatarIfProvided(
 		return nil, err
 	}
 
-	avatarBytes, err := readAvatarPayload(body, requestLogger, contentType)
-	if err != nil {
-		if shouldSkipAvatarUpdate(err) {
-			return user, nil
-		}
-
-		return nil, err
-	}
-
-	avatarKey, err := u.processAvatarPayload(
-		ctx,
-		userID,
-		requestLogger,
-		avatarBytes,
-		contentType,
-	)
+	avatarKey, err := u.resolveAvatarKey(ctx, userID, requestLogger, body, contentType)
 	if err != nil {
 		if shouldSkipAvatarUpdate(err) {
 			return user, nil
@@ -129,7 +114,7 @@ var (
 	errIgnoreAvatarPayload = errors.New("ignore avatar payload")
 )
 
-func validateAvatarUpdateInput(body io.Reader, size int64, avatarStore any) error {
+func handleAvatarUpdatePreconditions(body io.Reader, size int64, avatarStore any) error {
 	if body == nil || size <= 0 {
 		return errSkipAvatarUpdate
 	}
@@ -160,6 +145,21 @@ func validateDetectedAvatarType(log *logger.Logger, contentType string, avatarBy
 
 func shouldSkipAvatarUpdate(err error) bool {
 	return errors.Is(err, errSkipAvatarUpdate) || errors.Is(err, errIgnoreAvatarPayload)
+}
+
+func (u *UserUsecase) resolveAvatarKey(
+	ctx context.Context,
+	userID int64,
+	log *logger.Logger,
+	body io.Reader,
+	contentType string,
+) (string, error) {
+	avatarBytes, err := readAvatarPayload(body, log, contentType)
+	if err != nil {
+		return "", err
+	}
+
+	return u.processAvatarPayload(ctx, userID, log, avatarBytes, contentType)
 }
 
 func sanitizeAvatarPayload(

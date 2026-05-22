@@ -22,7 +22,7 @@ func newPartyRoomSubscribeHandler(partyClient PartyClient) http.HandlerFunc {
 	streamCancels := &sync.Map{}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		roomID, ok := parseRoomPathID(w, r, "invalid room id")
+		roomID, ok := parseRoomPathID(w, r)
 		if !ok {
 			return
 		}

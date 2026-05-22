@@ -47,10 +47,10 @@ func newMovieHandler(t *testing.T, client moviev1.MovieServiceClient) http.Handl
 	return server.Handler()
 }
 
-func newUserHandler(t *testing.T, cfg Config, client UserClient) http.Handler {
+func newUserHandler(t *testing.T, client UserClient) http.Handler {
 	t.Helper()
 
-	server := httpserver.New(User(cfg, client)...)
+	server := httpserver.New(User(testConfig{}, client)...)
 
 	return server.Handler()
 }
