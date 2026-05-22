@@ -1,7 +1,7 @@
 version: "2"
 
 run:
-  modules-download-mode: vendor
+  modules-download-mode: readonly
 
 output:
   path-mode: abs
