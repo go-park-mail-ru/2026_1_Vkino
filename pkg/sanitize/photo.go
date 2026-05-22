@@ -201,13 +201,8 @@ func validateWebPAvatar(avatarBytes []byte) error {
 }
 
 func webpDimensions(avatarBytes []byte) (int, int, error) {
-	if !hasWebPHeader(avatarBytes) || len(avatarBytes) < 20 {
-		return 0, 0, errInvalidWebPHeader
-	}
-
-	riffSize := int(binary.LittleEndian.Uint32(avatarBytes[4:8]))
-	if riffSize+8 != len(avatarBytes) {
-		return 0, 0, errInvalidWebPRIFFSize
+	if err := validateWebPContainer(avatarBytes); err != nil {
+		return 0, 0, err
 	}
 
 	var (
@@ -245,6 +240,19 @@ func webpDimensions(avatarBytes []byte) (int, int, error) {
 	}
 
 	return 0, 0, errMissingWebPImageChunk
+}
+
+func validateWebPContainer(avatarBytes []byte) error {
+	if !hasWebPHeader(avatarBytes) || len(avatarBytes) < 20 {
+		return errInvalidWebPHeader
+	}
+
+	riffSize := int(binary.LittleEndian.Uint32(avatarBytes[4:8]))
+	if riffSize+8 != len(avatarBytes) {
+		return errInvalidWebPRIFFSize
+	}
+
+	return nil
 }
 
 func readWebPChunk(avatarBytes []byte, offset int) (string, int, []byte, int, error) {

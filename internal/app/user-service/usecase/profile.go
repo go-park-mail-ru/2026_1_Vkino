@@ -3,6 +3,7 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -83,40 +84,94 @@ func (u *UserUsecase) updateAvatarIfProvided(
 	requestLogger := logger.FromContext(ctx).
 		WithField("usecase", "UserUsecase.UpdateProfile")
 
-	if body == nil {
-		return user, nil
+	if err := validateAvatarUpdateInput(body, size, u.avatarStore); err != nil {
+		if shouldSkipAvatarUpdate(err) {
+			return user, nil
+		}
+
+		return nil, err
 	}
 
-	if u.avatarStore == nil {
-		return nil, fmt.Errorf("%w: avatar storage is not configured", domain.ErrInternal)
+	avatarBytes, err := readAvatarPayload(body, requestLogger, contentType)
+	if err != nil {
+		if shouldSkipAvatarUpdate(err) {
+			return user, nil
+		}
+
+		return nil, err
 	}
 
-	if size <= 0 {
-		return user, nil
+	avatarKey, err := u.processAvatarPayload(
+		ctx,
+		userID,
+		requestLogger,
+		avatarBytes,
+		contentType,
+	)
+	if err != nil {
+		if shouldSkipAvatarUpdate(err) {
+			return user, nil
+		}
+
+		return nil, err
 	}
 
-	avatarBytes, err := io.ReadAll(body)
-	if shouldIgnoreEmptyAvatar(err, avatarBytes, requestLogger) {
-		return user, nil
+	updatedUser, err := u.persistAvatarUpdate(ctx, userID, user, avatarKey, requestLogger)
+	if err != nil {
+		return nil, err
 	}
 
-	if shouldIgnoreAvatarPayload(avatarBytes, contentType) {
-		logIgnoredAvatarPayload(requestLogger, contentType, avatarBytes)
+	return updatedUser, nil
+}
 
-		return user, nil
+var (
+	errSkipAvatarUpdate    = errors.New("skip avatar update")
+	errIgnoreAvatarPayload = errors.New("ignore avatar payload")
+)
+
+func validateAvatarUpdateInput(body io.Reader, size int64, avatarStore any) error {
+	if body == nil || size <= 0 {
+		return errSkipAvatarUpdate
 	}
 
+	if avatarStore == nil {
+		return fmt.Errorf("%w: avatar storage is not configured", domain.ErrInternal)
+	}
+
+	return nil
+}
+
+func validateDetectedAvatarType(log *logger.Logger, contentType string, avatarBytes []byte) (string, bool) {
 	requestedContentType := sanitize.NormalizeAvatarContentType(contentType)
-
 	detectedContentType := sanitize.DetectAvatarContentType(avatarBytes)
-	if _, ok := sanitize.AvatarExtensionByContentType(detectedContentType); !ok {
-		requestLogger.
-			WithField("avatar_content_type", contentType).
-			WithField("detected_content_type", detectedContentType).
-			WithField("avatar_size", len(avatarBytes)).
-			Warn("ignoring unsupported avatar payload during profile update")
 
-		return user, nil
+	if _, ok := sanitize.AvatarExtensionByContentType(detectedContentType); ok {
+		return requestedContentType, true
+	}
+
+	log.
+		WithField("avatar_content_type", contentType).
+		WithField("detected_content_type", detectedContentType).
+		WithField("avatar_size", len(avatarBytes)).
+		Warn("ignoring unsupported avatar payload during profile update")
+
+	return "", false
+}
+
+func shouldSkipAvatarUpdate(err error) bool {
+	return errors.Is(err, errSkipAvatarUpdate) || errors.Is(err, errIgnoreAvatarPayload)
+}
+
+func sanitizeAvatarPayload(
+	log *logger.Logger,
+	contentType string,
+	avatarBytes []byte,
+) ([]byte, string, string, error) {
+	detectedContentType := sanitize.DetectAvatarContentType(avatarBytes)
+	requestedContentType, ok := validateDetectedAvatarType(log, contentType, avatarBytes)
+
+	if !ok {
+		return nil, "", "", errIgnoreAvatarPayload
 	}
 
 	sanitizedAvatarBytes, normalizedContentType, ext, err := sanitize.SanitizeAvatarUpload(
@@ -124,7 +179,7 @@ func (u *UserUsecase) updateAvatarIfProvided(
 		requestedContentType,
 	)
 	if err != nil {
-		requestLogger.
+		log.
 			WithField("original_content_type", contentType).
 			WithField("requested_content_type", requestedContentType).
 			WithField("detected_content_type", detectedContentType).
@@ -133,27 +188,34 @@ func (u *UserUsecase) updateAvatarIfProvided(
 			WithField("error", err).
 			Error("invalid avatar payload")
 
-		return nil, err
+		return nil, "", "", err
 	}
 
-	avatarKey, err := u.storeAvatar(ctx, userID, sanitizedAvatarBytes, normalizedContentType, ext)
-	if err != nil {
-		return nil, err
-	}
+	return sanitizedAvatarBytes, normalizedContentType, ext, nil
+}
 
+func (u *UserUsecase) persistAvatarUpdate(
+	ctx context.Context,
+	userID int64,
+	user *domain.User,
+	avatarKey string,
+	log *logger.Logger,
+) (*domain.User, error) {
 	updatedUser, err := u.userRepo.UpdateAvatarFileKey(ctx, userID, &avatarKey)
 	if err != nil {
 		return nil, fmt.Errorf("%w: update avatar key in repository key=%q: %w", domain.ErrInternal, avatarKey, err)
 	}
 
 	oldAvatarKey := stringValue(user.AvatarFileKey)
-	if oldAvatarKey != "" {
-		if err = u.avatarStore.DeleteObject(ctx, oldAvatarKey); err != nil {
-			requestLogger.
-				WithField("avatar_key", oldAvatarKey).
-				WithField("error", err).
-				Warn("failed to delete previous avatar")
-		}
+	if oldAvatarKey == "" {
+		return updatedUser, nil
+	}
+
+	if err = u.avatarStore.DeleteObject(ctx, oldAvatarKey); err != nil {
+		log.
+			WithField("avatar_key", oldAvatarKey).
+			WithField("error", err).
+			Warn("failed to delete previous avatar")
 	}
 
 	return updatedUser, nil
@@ -166,6 +228,40 @@ func parseBirthdate(rawBirthdate string) (*time.Time, error) {
 	}
 
 	return &parsed, nil
+}
+
+func readAvatarPayload(body io.Reader, log *logger.Logger, contentType string) ([]byte, error) {
+	avatarBytes, err := io.ReadAll(body)
+	if shouldIgnoreEmptyAvatar(err, avatarBytes, log) {
+		return nil, errIgnoreAvatarPayload
+	}
+
+	if ignore := shouldIgnoreAvatarPayload(avatarBytes, contentType); ignore {
+		logIgnoredAvatarPayload(log, contentType, avatarBytes)
+
+		return nil, errIgnoreAvatarPayload
+	}
+
+	return avatarBytes, nil
+}
+
+func (u *UserUsecase) processAvatarPayload(
+	ctx context.Context,
+	userID int64,
+	log *logger.Logger,
+	avatarBytes []byte,
+	contentType string,
+) (string, error) {
+	sanitizedAvatarBytes, normalizedContentType, ext, err := sanitizeAvatarPayload(
+		log,
+		contentType,
+		avatarBytes,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return u.storeAvatar(ctx, userID, sanitizedAvatarBytes, normalizedContentType, ext)
 }
 
 func shouldIgnoreAvatarPayload(body []byte, contentType string) bool {

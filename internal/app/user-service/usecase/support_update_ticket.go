@@ -18,12 +18,7 @@ func (u *supportUsecase) UpdateTicket(
 	actorUserID int64,
 	req domain.UpdateSupportTicketRequest,
 ) (domain.SupportTicketResponse, error) {
-	req.Category = strings.TrimSpace(req.Category)
-	req.Status = strings.TrimSpace(req.Status)
-	req.Title = strings.TrimSpace(req.Title)
-	req.UserEmail = strings.TrimSpace(req.UserEmail)
-	req.Description = strings.TrimSpace(req.Description)
-	req.AttachmentFileKey = strings.TrimSpace(req.AttachmentFileKey)
+	req = normalizeTicketUpdateRequest(req)
 
 	if err := validateTicketUpdateRequest(req); err != nil {
 		return domain.SupportTicketResponse{}, err
@@ -43,16 +38,7 @@ func (u *supportUsecase) UpdateTicket(
 		return domain.SupportTicketResponse{}, permErr
 	}
 
-	if req.Category != "" {
-		derivedSupportLine := supportLineForCategory(req.Category)
-		if req.SupportLine != 0 && req.SupportLine != derivedSupportLine {
-			return domain.SupportTicketResponse{}, domain.ErrInvalidTicketPayload
-		}
-
-		req.SupportLine = derivedSupportLine
-	}
-
-	ticket, err := u.supportRepo.UpdateTicket(ctx, req)
+	ticket, err := u.updateTicketRecord(ctx, req)
 	if err != nil {
 		if errors.Is(err, postgresrepo.ErrTicketNotFound) {
 			return domain.SupportTicketResponse{}, domain.ErrTicketNotFound
@@ -67,6 +53,43 @@ func (u *supportUsecase) UpdateTicket(
 	})
 
 	return *ticket, nil
+}
+
+func (u *supportUsecase) updateTicketRecord(
+	ctx context.Context,
+	req domain.UpdateSupportTicketRequest,
+) (*domain.SupportTicketResponse, error) {
+	if err := applyDerivedSupportLine(&req); err != nil {
+		return nil, err
+	}
+
+	return u.supportRepo.UpdateTicket(ctx, req)
+}
+
+func normalizeTicketUpdateRequest(req domain.UpdateSupportTicketRequest) domain.UpdateSupportTicketRequest {
+	req.Category = strings.TrimSpace(req.Category)
+	req.Status = strings.TrimSpace(req.Status)
+	req.Title = strings.TrimSpace(req.Title)
+	req.UserEmail = strings.TrimSpace(req.UserEmail)
+	req.Description = strings.TrimSpace(req.Description)
+	req.AttachmentFileKey = strings.TrimSpace(req.AttachmentFileKey)
+
+	return req
+}
+
+func applyDerivedSupportLine(req *domain.UpdateSupportTicketRequest) error {
+	if req.Category == "" {
+		return nil
+	}
+
+	derivedSupportLine := supportLineForCategory(req.Category)
+	if req.SupportLine != 0 && req.SupportLine != derivedSupportLine {
+		return domain.ErrInvalidTicketPayload
+	}
+
+	req.SupportLine = derivedSupportLine
+
+	return nil
 }
 
 func validateTicketUpdateRequest(req domain.UpdateSupportTicketRequest) error {
