@@ -27,6 +27,7 @@ func TestLoadWithBindings(t *testing.T) {
 	t.Setenv("AUTH_JWT_SECRET", "env-secret")
 
 	var cfg loadConfig
+
 	err := Load(path, "unused", &cfg,
 		map[string]string{
 			"auth.jwt_secret": "AUTH_JWT_SECRET",

@@ -1,4 +1,3 @@
-//nolint:interfacebloat,lll // Central usecase contract intentionally groups movie-facing operations.
 package usecase
 
 import (
@@ -9,7 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
-type Usecase interface {
+type MovieCatalogUsecase interface {
 	GetMovieByID(ctx context.Context, movieID int64) (domain.MovieResponse, error)
 	GetMoviesByIDs(ctx context.Context, movieIDs []int64) ([]domain.MovieCardResponse, error)
 	GetActorByID(ctx context.Context, actorID int64) (domain.ActorResponse, error)
@@ -17,13 +16,33 @@ type Usecase interface {
 	GetAllGenres(ctx context.Context) ([]domain.GenreShortResponse, error)
 	GetSelectionByTitle(ctx context.Context, title string) (domain.SelectionResponse, error)
 	GetAllSelections(ctx context.Context) ([]domain.SelectionResponse, error)
+}
 
+type MovieSearchUsecase interface {
 	SearchMovies(ctx context.Context, query string) (domain.SearchResponse, error)
+}
+
+type EpisodeProgressUsecase interface {
 	GetEpisodePlayback(ctx context.Context, episodeID int64) (domain.EpisodePlaybackResponse, error)
 	GetEpisodeProgress(ctx context.Context, userID, episodeID int64) (domain.EpisodeProgressResponse, error)
 	SaveEpisodeProgress(ctx context.Context, userID, episodeID, positionSec int64) (domain.EpisodeProgressResponse, error)
+}
+
+type WatchProgressUsecase interface {
 	GetContinueWatching(ctx context.Context, userID int64, limit int32) ([]domain.WatchProgressItemResponse, error)
-	GetWatchHistory(ctx context.Context, userID int64, limit int32, minProgress float64) ([]domain.WatchProgressItemResponse, error)
+	GetWatchHistory(
+		ctx context.Context,
+		userID int64,
+		limit int32,
+		minProgress float64,
+	) ([]domain.WatchProgressItemResponse, error)
+}
+
+type Usecase interface {
+	MovieCatalogUsecase
+	MovieSearchUsecase
+	EpisodeProgressUsecase
+	WatchProgressUsecase
 }
 
 type MovieUsecase struct {

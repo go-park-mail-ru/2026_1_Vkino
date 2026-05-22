@@ -378,6 +378,7 @@ func (r *UserRepo) GetFavorites(ctx context.Context, userID int64, limit, offset
 	defer rows.Close()
 
 	movieIDs := make([]int64, 0, limit)
+
 	var total int32
 
 	for rows.Next() {
@@ -390,6 +391,7 @@ func (r *UserRepo) GetFavorites(ctx context.Context, userID int64, limit, offset
 		}
 
 		total = count
+
 		if movieID.Valid {
 			movieIDs = append(movieIDs, movieID.Int64)
 		}

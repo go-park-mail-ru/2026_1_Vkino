@@ -1,4 +1,3 @@
-//nolint:interfacebloat,lll // Central usecase contracts intentionally group related user/support operations.
 package usecase
 
 import (
@@ -11,15 +10,24 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
 )
 
-type Usecase interface {
+type UserProfileUsecase interface {
 	GetProfile(ctx context.Context, userID int64) (domain.ProfileResponse, error)
 	GetFriend(ctx context.Context, userID, friendID int64) (domain.FriendResponse, error)
 	SearchUsersByEmail(ctx context.Context, userID int64, emailQuery string) ([]domain.UserSearchResult, error)
 	SearchUsers(ctx context.Context, userID int64, query string, limit int32) ([]domain.UserSearchResult, error)
 	AddFriend(ctx context.Context, userID int64, friendID int64) (domain.FriendResponse, error)
 	DeleteFriend(ctx context.Context, userID int64, friendID int64) error
-	UpdateProfile(ctx context.Context, userID int64, birthdate string, body io.Reader, size int64,
-		contentType string) (domain.ProfileResponse, error)
+	UpdateProfile(
+		ctx context.Context,
+		userID int64,
+		birthdate string,
+		body io.Reader,
+		size int64,
+		contentType string,
+	) (domain.ProfileResponse, error)
+}
+
+type UserMovieUsecase interface {
 	AddMovieToFavorites(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error)
 	SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) (domain.MovieRatingResponse, error)
 	SetMovieReview(
@@ -33,6 +41,9 @@ type Usecase interface {
 	DeleteReviewReaction(ctx context.Context, userID, reviewID int64) error
 	ToggleFavorite(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error)
 	GetFavorites(ctx context.Context, userID int64, limit, offset int32) (domain.FavoritesResponse, error)
+}
+
+type UserFriendUsecase interface {
 	SendFriendRequest(ctx context.Context, userID, toUserID int64) (int64, error)
 	RespondToFriendRequest(ctx context.Context, userID, requestID int64, action string) error
 	DeleteOutgoingFriendRequest(ctx context.Context, userID, requestID int64) error
@@ -40,14 +51,28 @@ type Usecase interface {
 	GetFriendsList(ctx context.Context, userID int64, limit, offset int32) (domain.FriendsListResponse, error)
 }
 
+type Usecase interface {
+	UserProfileUsecase
+	UserMovieUsecase
+	UserFriendUsecase
+}
+
 type SupportUsecase interface {
-	CreateTicket(ctx context.Context, actorUserID int64, req domain.CreateSupportTicketRequest) (domain.SupportTicketResponse, error)
+	CreateTicket(
+		ctx context.Context,
+		actorUserID int64,
+		req domain.CreateSupportTicketRequest,
+	) (domain.SupportTicketResponse, error)
 	GetTickets(
 		ctx context.Context,
 		actorUserID int64,
 		req domain.GetSupportTicketsRequest,
 	) ([]domain.SupportTicketResponse, error)
-	UpdateTicket(ctx context.Context, actorUserID int64, req domain.UpdateSupportTicketRequest) (domain.SupportTicketResponse, error)
+	UpdateTicket(
+		ctx context.Context,
+		actorUserID int64,
+		req domain.UpdateSupportTicketRequest,
+	) (domain.SupportTicketResponse, error)
 	UploadSupportFile(
 		ctx context.Context,
 		actorUserID int64,

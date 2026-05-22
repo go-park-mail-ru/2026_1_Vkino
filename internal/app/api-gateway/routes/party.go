@@ -16,8 +16,17 @@ import (
 )
 
 type PartyClient interface {
+	PartyOverviewClient
+	PartyRoomClient
+	PartyRealtimeClient
+}
+
+type PartyOverviewClient interface {
 	GetOverview(ctx context.Context, in *partyv1.GetOverviewRequest,
 		opts ...grpc.CallOption) (*partyv1.GetOverviewResponse, error)
+}
+
+type PartyRoomClient interface {
 	GetRoom(ctx context.Context, in *partyv1.GetRoomRequest,
 		opts ...grpc.CallOption) (*partyv1.GetRoomResponse, error)
 	GetRoomInvite(ctx context.Context, in *partyv1.GetRoomInviteRequest,
@@ -30,6 +39,9 @@ type PartyClient interface {
 		opts ...grpc.CallOption) (*partyv1.JoinRoomResponse, error)
 	DeleteRoom(ctx context.Context, in *partyv1.DeleteRoomRequest,
 		opts ...grpc.CallOption) (*partyv1.DeleteRoomResponse, error)
+}
+
+type PartyRealtimeClient interface {
 	ApplyRoomAction(ctx context.Context, in *partyv1.ApplyRoomActionRequest,
 		opts ...grpc.CallOption) (*partyv1.ApplyRoomActionResponse, error)
 	SendRoomMessage(ctx context.Context, in *partyv1.SendRoomMessageRequest,
