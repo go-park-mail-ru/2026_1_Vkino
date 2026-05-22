@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -33,7 +34,7 @@ func TestChainOrder(t *testing.T) {
 		order = append(order, "handler")
 	}), mw1, mw2)
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
 	h.ServeHTTP(rr, req)
 
@@ -58,7 +59,7 @@ func TestCorsMiddlewareOptions(t *testing.T) {
 		w.WriteHeader(http.StatusTeapot)
 	}))
 
-	req := httptest.NewRequest(http.MethodOptions, "/", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodOptions, "/", nil)
 	req.Header.Set("Origin", "https://example.com")
 
 	rr := httptest.NewRecorder()
@@ -81,7 +82,7 @@ func TestLoggerMiddlewareAddsRequestID(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	}))
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
 
 	h.ServeHTTP(rr, req)
@@ -102,7 +103,7 @@ func TestRecoveryMiddleware(t *testing.T) {
 		panic("boom")
 	}))
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
 	rr := httptest.NewRecorder()
 
 	h.ServeHTTP(rr, req)
@@ -119,7 +120,7 @@ func TestRequestIDMiddleware(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
 	req.Header.Set(requestid.HeaderName, "abc")
 
 	rr := httptest.NewRecorder()

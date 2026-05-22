@@ -84,6 +84,7 @@ func newSupportFileURLHandler(cfg Config, userClient UserClient) http.HandlerFun
 
 func readSupportFileUploadPayload(w http.ResponseWriter, r *http.Request) (supportFileUploadPayload, bool) {
 	r.Body = http.MaxBytesReader(w, r.Body, maxSupportFileSize+maxSupportMultipartOverhead)
+
 	if !parseSupportMultipartForm(w, r) {
 		return supportFileUploadPayload{}, false
 	}
