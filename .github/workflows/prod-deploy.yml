@@ -3,15 +3,45 @@ name: Production Deploy
 on:
   push:
     branches:
-      - main
+      - '**'
+  pull_request:
+    branches:
+      - master
 
 concurrency:
-  group: production-deploy
+  group: ${{ github.ref == 'refs/heads/master' && 'production-deploy' || format('ci-{0}', github.ref) }}
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  ci:
+    name: Lint and test
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          args: --config build/ci/golangci.yml ./...
+
+      - name: Run tests
+        run: go test ./...
+
+  deploy:
+    name: Deploy production
+    runs-on: ubuntu-latest
+    needs:
+      - ci
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     steps:
       - name: Deploy on production server
@@ -23,5 +53,6 @@ jobs:
           port: ${{ secrets.PROD_SSH_PORT }}
           command_timeout: 60m
           script: |
+            set -e
             cd "${{ secrets.PROD_PROJECT_PATH }}"
             ./deployments/prod/deploy-prod.sh
