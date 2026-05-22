@@ -1,4 +1,3 @@
-//nolint:lll // SQL definitions are kept close to scan order for readability.
 package postgres
 
 const (

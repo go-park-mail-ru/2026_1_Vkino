@@ -1,4 +1,3 @@
-//nolint:lll // SQL column lists are kept aligned with scan targets for readability.
 package postgres
 
 const (
@@ -7,19 +6,25 @@ const (
 	`
 
 	sqlGetUserByEmail = `
-		select id, email, password_hash, role, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+		select
+			id, email, password_hash, role, birthdate, avatar_file_key,
+			registration_date, is_active, created_at, updated_at
 		from users
 		where email = $1
 	`
 
 	sqlGetUserByID = `
-		select id, email, password_hash, role, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+		select
+			id, email, password_hash, role, birthdate, avatar_file_key,
+			registration_date, is_active, created_at, updated_at
 		from users
 		where id = $1
 	`
 
 	sqlGetFriendByID = `
-		select u.id, u.email, u.password_hash, u.role, u.birthdate, u.avatar_file_key, u.registration_date, u.is_active, u.created_at, u.updated_at
+		select
+			u.id, u.email, u.password_hash, u.role, u.birthdate, u.avatar_file_key,
+			u.registration_date, u.is_active, u.created_at, u.updated_at
 		from users u
 		join friend f on
 			((f.user1_id = $1 and f.user2_id = u.id) or (f.user2_id = $1 and f.user1_id = u.id))
@@ -51,14 +56,18 @@ const (
 		update users
 		set birthdate = $1, updated_at = now()
 		where id = $2
-		returning id, email, password_hash, role, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+		returning
+			id, email, password_hash, role, birthdate, avatar_file_key,
+			registration_date, is_active, created_at, updated_at
 	`
 
 	sqlUpdateUserAvatarFileKey = `
 		update users
 		set avatar_file_key = $1, updated_at = now()
 		where id = $2
-		returning id, email, password_hash, role, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
+		returning
+			id, email, password_hash, role, birthdate, avatar_file_key,
+			registration_date, is_active, created_at, updated_at
 	`
 
 	sqlUpsertUserFavoriteMovie = `

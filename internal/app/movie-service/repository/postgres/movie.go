@@ -1,4 +1,3 @@
-//nolint:lll,wsl_v5 // Repository methods are kept close to SQL/query parameters for readability.
 package postgres
 
 import (
@@ -80,7 +79,11 @@ func (r *MovieRepo) GetMovieByID(ctx context.Context, movieID int64) (*domain.Mo
 	return &movie, nil
 }
 
-func (r *MovieRepo) GetMovieReviews(ctx context.Context, movieID int64, viewerUserID int64) ([]domain.MovieReview, error) {
+func (r *MovieRepo) GetMovieReviews(
+	ctx context.Context,
+	movieID int64,
+	viewerUserID int64,
+) ([]domain.MovieReview, error) {
 	rows, err := r.db.Query(ctx, sqlGetMovieReviewsByMovieID, movieID, viewerUserID)
 	if err != nil {
 		return nil, fmt.Errorf("get movie reviews: %w", err)
@@ -188,6 +191,7 @@ func (r *MovieRepo) GetAllGenres(ctx context.Context) ([]domain.GenreShort, erro
 	defer rows.Close()
 
 	genres := make([]domain.GenreShort, 0)
+
 	for rows.Next() {
 		var genre domain.GenreShort
 		if err = rows.Scan(&genre.ID, &genre.Title); err != nil {
@@ -235,6 +239,7 @@ func (r *MovieRepo) GetSelectionByTitle(ctx context.Context, title string) (doma
 		} else {
 			selection.Rating = nil
 		}
+
 		selection.Movies = append(selection.Movies, movie)
 	}
 
@@ -278,14 +283,7 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, e
 
 		selection, ok := selectionMap[title]
 		if !ok {
-			selection = &domain.Selection{
-				Title:  title,
-				Movies: make([]domain.MovieCard, 0),
-			}
-			if rating.Valid {
-				selectionRating := rating.Float64
-				selection.Rating = &selectionRating
-			}
+			selection = newSelection(title, rating)
 			selectionMap[title] = selection
 			order = append(order, title)
 		}
@@ -303,6 +301,20 @@ func (r *MovieRepo) GetAllSelections(ctx context.Context) ([]domain.Selection, e
 	}
 
 	return result, nil
+}
+
+func newSelection(title string, rating sql.NullFloat64) *domain.Selection {
+	selection := &domain.Selection{
+		Title:  title,
+		Movies: make([]domain.MovieCard, 0),
+	}
+
+	if rating.Valid {
+		selectionRating := rating.Float64
+		selection.Rating = &selectionRating
+	}
+
+	return selection
 }
 
 func (r *MovieRepo) GetMovieCardsByIDs(ctx context.Context, movieIDs []int64) ([]domain.MovieCard, error) {
@@ -464,15 +476,30 @@ func (r *MovieRepo) IsFavorite(ctx context.Context, userID, movieID int64) (bool
 	return isFavorite, nil
 }
 
-func (r *MovieRepo) GetContinueWatching(ctx context.Context, userID int64, limit int32) ([]domain.WatchProgressItem, error) {
+func (r *MovieRepo) GetContinueWatching(
+	ctx context.Context,
+	userID int64,
+	limit int32,
+) ([]domain.WatchProgressItem, error) {
 	return r.getWatchProgressItems(ctx, sqlGetContinueWatching, userID, limit, 0)
 }
 
-func (r *MovieRepo) GetWatchHistory(ctx context.Context, userID int64, limit int32, minProgress float64) ([]domain.WatchProgressItem, error) {
+func (r *MovieRepo) GetWatchHistory(
+	ctx context.Context,
+	userID int64,
+	limit int32,
+	minProgress float64,
+) ([]domain.WatchProgressItem, error) {
 	return r.getWatchProgressItems(ctx, sqlGetWatchHistory, userID, limit, minProgress)
 }
 
-func (r *MovieRepo) getWatchProgressItems(ctx context.Context, query string, userID int64, limit int32, minProgress float64) ([]domain.WatchProgressItem, error) {
+func (r *MovieRepo) getWatchProgressItems(
+	ctx context.Context,
+	query string,
+	userID int64,
+	limit int32,
+	minProgress float64,
+) ([]domain.WatchProgressItem, error) {
 	rows, err := r.db.Query(ctx, query, userID, limit, minProgress)
 	if err != nil {
 		return nil, fmt.Errorf("get watch progress: %w", err)

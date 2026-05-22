@@ -35,6 +35,7 @@ func newAllGenresHandler(cfg Config, movieClient moviev1.MovieServiceClient) htt
 		resp, err := movieClient.GetAllGenres(r.Context(), &moviev1.GetAllGenresRequest{})
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 
@@ -50,6 +51,7 @@ func newAllSelectionsHandler(cfg Config, movieClient moviev1.MovieServiceClient)
 		resp, err := movieClient.GetAllSelections(r.Context(), &moviev1.GetAllSelectionsRequest{})
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 
@@ -62,6 +64,7 @@ func newSelectionByTitleHandler(cfg Config, movieClient moviev1.MovieServiceClie
 		title := strings.TrimSpace(r.PathValue("selection"))
 		if title == "" {
 			httppkg.ErrResponse(w, http.StatusBadRequest, "invalid selection title")
+
 			return
 		}
 
@@ -71,6 +74,7 @@ func newSelectionByTitleHandler(cfg Config, movieClient moviev1.MovieServiceClie
 		resp, err := movieClient.GetSelectionByTitle(r.Context(), &moviev1.GetSelectionByTitleRequest{Title: title})
 		if err != nil {
 			writeGRPCError(w, err)
+
 			return
 		}
 

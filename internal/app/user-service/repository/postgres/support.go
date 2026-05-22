@@ -1,4 +1,4 @@
-//nolint:gocyclo,lll // Repository methods are kept explicit and close to their SQL contracts.
+//nolint:gocyclo // Repository methods are kept explicit and close to their SQL contracts.
 package postgres
 
 import (
@@ -83,40 +83,6 @@ func scanTicket(
 	}
 
 	return ticket
-}
-
-//nolint:funcorder // Scan helper is kept near the ticket row schema for maintainability.
-func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain.SupportTicketResponse, error) {
-	var (
-		id                int64
-		userID            *int64
-		userEmail         *string
-		senderEmail       *string
-		category          string
-		status            string
-		supportLine       int64
-		title             string
-		description       string
-		attachmentFileKey *string
-		rating            *int64
-		createdAt         time.Time
-		updatedAt         time.Time
-		closedAt          *time.Time
-	)
-
-	err := row.Scan(
-		&id, &userID, &userEmail, &senderEmail, &category, &status, &supportLine,
-		&title, &description, &attachmentFileKey, &rating,
-		&createdAt, &updatedAt, &closedAt,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	ticket := scanTicket(id, userID, userEmail, senderEmail, category, status, supportLine, title, description,
-		attachmentFileKey, rating, createdAt, updatedAt, closedAt)
-
-	return &ticket, nil
 }
 
 func (r *SupportRepo) CreateTicket(
@@ -212,8 +178,22 @@ func (r *SupportRepo) GetTickets(
 			return nil, fmt.Errorf("scan support ticket: %w", err)
 		}
 
-		tickets = append(tickets, scanTicket(id, uID, userEmail, senderEmail, category, status, supportLine, title, description,
-			attachmentFileKey, rating, createdAt, updatedAt, closedAt))
+		tickets = append(tickets, scanTicket(
+			id,
+			uID,
+			userEmail,
+			senderEmail,
+			category,
+			status,
+			supportLine,
+			title,
+			description,
+			attachmentFileKey,
+			rating,
+			createdAt,
+			updatedAt,
+			closedAt,
+		))
 	}
 
 	if err = rows.Err(); err != nil {
@@ -369,4 +349,51 @@ func (r *SupportRepo) GetTicketStatistics(
 	}
 
 	return &stats, nil
+}
+
+func (r *SupportRepo) scanTicketRow(row pgx.Row) (*domain.SupportTicketResponse, error) {
+	var (
+		id                int64
+		userID            *int64
+		userEmail         *string
+		senderEmail       *string
+		category          string
+		status            string
+		supportLine       int64
+		title             string
+		description       string
+		attachmentFileKey *string
+		rating            *int64
+		createdAt         time.Time
+		updatedAt         time.Time
+		closedAt          *time.Time
+	)
+
+	err := row.Scan(
+		&id, &userID, &userEmail, &senderEmail, &category, &status, &supportLine,
+		&title, &description, &attachmentFileKey, &rating,
+		&createdAt, &updatedAt, &closedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	ticket := scanTicket(
+		id,
+		userID,
+		userEmail,
+		senderEmail,
+		category,
+		status,
+		supportLine,
+		title,
+		description,
+		attachmentFileKey,
+		rating,
+		createdAt,
+		updatedAt,
+		closedAt,
+	)
+
+	return &ticket, nil
 }

@@ -1,4 +1,3 @@
-//nolint:gocyclo // WS lifecycle orchestration stays explicit for readability.
 package ws
 
 import (
@@ -26,51 +25,8 @@ type ServeOptions struct {
 
 func ServeWS(upgrader Upgrader, hub *Hub, opts ServeOptions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if upgrader == nil {
-			http.Error(w, ErrNilUpgrader.Error(), http.StatusInternalServerError)
-
-			return
-		}
-
-		if hub == nil {
-			http.Error(w, ErrNilHub.Error(), http.StatusInternalServerError)
-
-			return
-		}
-
-		conn, err := upgrader.Upgrade(w, r)
-		if err != nil {
-			return
-		}
-
-		clientID, err := resolveClientID(r, opts.ClientID)
-		if err != nil {
-			_ = conn.Close()
-
-			http.Error(w, err.Error(), http.StatusBadRequest)
-
-			return
-		}
-
-		client, err := NewClient(clientID, conn, opts.SendBuffer)
-		if err != nil {
-			_ = conn.Close()
-
-			http.Error(w, err.Error(), http.StatusBadRequest)
-
-			return
-		}
-
-		if err := hub.Subscribe(client); err != nil {
-			_ = client.Close()
-
-			status := http.StatusConflict
-			if errors.Is(err, ErrHubClosed) {
-				status = http.StatusServiceUnavailable
-			}
-
-			http.Error(w, err.Error(), status)
-
+		client, ok := setupWSClient(w, r, upgrader, hub, opts)
+		if !ok {
 			return
 		}
 
@@ -89,11 +45,7 @@ func ServeWS(upgrader Upgrader, hub *Hub, opts ServeOptions) http.HandlerFunc {
 			}
 		}
 
-		writeErrCh := make(chan error, 1)
-
-		go func() {
-			writeErrCh <- client.WriteLoop(ctx)
-		}()
+		writeErrCh := startWriteLoop(ctx, client)
 
 		readErr := readLoop(ctx, client, opts.OnMessage)
 
@@ -103,6 +55,85 @@ func ServeWS(upgrader Upgrader, hub *Hub, opts ServeOptions) http.HandlerFunc {
 		closeErr := firstNonNil(readErr, suppressContextError(writeErr))
 		notifyClose(opts.OnClose, ctx, client, closeErr)
 	}
+}
+
+func setupWSClient(
+	w http.ResponseWriter,
+	r *http.Request,
+	upgrader Upgrader,
+	hub *Hub,
+	opts ServeOptions,
+) (*Client, bool) {
+	if !validateServeWSDeps(w, upgrader, hub) {
+		return nil, false
+	}
+
+	conn, err := upgrader.Upgrade(w, r)
+	if err != nil {
+		return nil, false
+	}
+
+	client, err := buildWSClient(r, conn, opts)
+	if err != nil {
+		_ = conn.Close()
+
+		http.Error(w, err.Error(), http.StatusBadRequest)
+
+		return nil, false
+	}
+
+	if err := hub.Subscribe(client); err != nil {
+		_ = client.Close()
+
+		http.Error(w, err.Error(), subscribeHTTPStatus(err))
+
+		return nil, false
+	}
+
+	return client, true
+}
+
+func validateServeWSDeps(w http.ResponseWriter, upgrader Upgrader, hub *Hub) bool {
+	if upgrader == nil {
+		http.Error(w, ErrNilUpgrader.Error(), http.StatusInternalServerError)
+
+		return false
+	}
+
+	if hub == nil {
+		http.Error(w, ErrNilHub.Error(), http.StatusInternalServerError)
+
+		return false
+	}
+
+	return true
+}
+
+func buildWSClient(r *http.Request, conn Conn, opts ServeOptions) (*Client, error) {
+	clientID, err := resolveClientID(r, opts.ClientID)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewClient(clientID, conn, opts.SendBuffer)
+}
+
+func subscribeHTTPStatus(err error) int {
+	if errors.Is(err, ErrHubClosed) {
+		return http.StatusServiceUnavailable
+	}
+
+	return http.StatusConflict
+}
+
+func startWriteLoop(ctx context.Context, client *Client) chan error {
+	writeErrCh := make(chan error, 1)
+
+	go func() {
+		writeErrCh <- client.WriteLoop(ctx)
+	}()
+
+	return writeErrCh
 }
 
 func readLoop(ctx context.Context, client *Client, onMessage MessageHandler) error {

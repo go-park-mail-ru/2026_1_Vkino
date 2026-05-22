@@ -1,4 +1,4 @@
-//nolint:gocyclo,lll // Repository methods are kept explicit and close to their SQL contracts.
+//nolint:gocyclo // Repository methods are kept explicit and close to their SQL contracts.
 package postgres
 
 import (
@@ -249,26 +249,49 @@ func (r *UserRepo) SetMovieReview(
 	}
 
 	if !dbComment.Valid || dbComment.String == "" {
-		if _, err = tx.Exec(ctx, sqlDeleteReviewReactionsByReviewID, reviewResp.ReviewID); err != nil {
+		if err = deleteReviewReactionsIfCommentMissing(ctx, tx, dbComment, reviewResp.ReviewID); err != nil {
 			return domain.MovieReviewResponse{}, fmt.Errorf("cleanup review reactions: %w", err)
 		}
 	}
 
-	if dbRating.Valid {
-		ratingValue := dbRating.Float64
-		reviewResp.Rating = &ratingValue
-	}
-
-	if dbComment.Valid && dbComment.String != "" {
-		commentValue := dbComment.String
-		reviewResp.Comment = &commentValue
-	}
+	assignMovieReviewResponseFields(&reviewResp, dbRating, dbComment)
 
 	if err = tx.Commit(ctx); err != nil {
 		return domain.MovieReviewResponse{}, fmt.Errorf("commit set movie review tx: %w", err)
 	}
 
 	return reviewResp, nil
+}
+
+func deleteReviewReactionsIfCommentMissing(
+	ctx context.Context,
+	tx pgx.Tx,
+	comment sql.NullString,
+	reviewID int64,
+) error {
+	if comment.Valid && comment.String != "" {
+		return nil
+	}
+
+	_, err := tx.Exec(ctx, sqlDeleteReviewReactionsByReviewID, reviewID)
+
+	return err
+}
+
+func assignMovieReviewResponseFields(
+	reviewResp *domain.MovieReviewResponse,
+	rating sql.NullFloat64,
+	comment sql.NullString,
+) {
+	if rating.Valid {
+		ratingValue := rating.Float64
+		reviewResp.Rating = &ratingValue
+	}
+
+	if comment.Valid && comment.String != "" {
+		commentValue := comment.String
+		reviewResp.Comment = &commentValue
+	}
 }
 
 func (r *UserRepo) DeleteMovieReview(ctx context.Context, userID, movieID int64) error {
@@ -474,44 +497,6 @@ func (r *UserRepo) SendFriendRequest(ctx context.Context, fromUserID, toUserID i
 	return requestID, nil
 }
 
-//nolint:funcorder // Transaction helper is intentionally kept next to the calling flow.
-func (r *UserRepo) acceptFriendRequestTx(ctx context.Context, requestID, toUserID int64) error {
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("begin accept friend request tx: %w", err)
-	}
-
-	defer func() {
-		ignoreRollbackError(tx.Rollback(ctx))
-	}()
-
-	var fromUserID, rowToUserID int64
-
-	err = tx.QueryRow(ctx, sqlAcceptFriendRequestUpdate, requestID, toUserID).Scan(&fromUserID, &rowToUserID)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.ErrFriendNotFound
-		}
-
-		return fmt.Errorf("accept friend request update: %w", err)
-	}
-
-	u1, u2 := orderedFriendPair(fromUserID, rowToUserID)
-	if _, err := tx.Exec(ctx, sqlAcceptFriendInsert, u1, u2); err != nil {
-		return fmt.Errorf("accept friend request insert friend: %w", err)
-	}
-
-	if _, err := tx.Exec(ctx, sqlAcceptFriendDeleteRequest, requestID); err != nil {
-		return fmt.Errorf("accept friend request delete row: %w", err)
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("accept friend request commit: %w", err)
-	}
-
-	return nil
-}
-
 func (r *UserRepo) RespondToFriendRequest(ctx context.Context, requestID, userID int64, action string) error {
 	if action == "accept" {
 		return r.acceptFriendRequestTx(ctx, requestID, userID)
@@ -550,7 +535,12 @@ func (r *UserRepo) DeleteOutgoingFriendRequest(ctx context.Context, requestID, f
 	return nil
 }
 
-func (r *UserRepo) GetFriendRequests(ctx context.Context, userID int64, direction string, limit int32) ([]domain.FriendRequestItem, error) {
+func (r *UserRepo) GetFriendRequests(
+	ctx context.Context,
+	userID int64,
+	direction string,
+	limit int32,
+) ([]domain.FriendRequestItem, error) {
 	query := sqlGetIncomingRequests
 	if direction == "outgoing" {
 		query = sqlGetOutgoingRequests
@@ -584,7 +574,11 @@ func (r *UserRepo) GetFriendRequests(ctx context.Context, userID int64, directio
 	return items, nil
 }
 
-func (r *UserRepo) GetFriendsList(ctx context.Context, userID int64, limit, offset int32) ([]domain.UserSearchResult, int32, error) {
+func (r *UserRepo) GetFriendsList(
+	ctx context.Context,
+	userID int64,
+	limit, offset int32,
+) ([]domain.UserSearchResult, int32, error) {
 	rows, err := r.db.Query(ctx, sqlGetFriends, userID, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("get friends list: %w", err)
@@ -628,6 +622,43 @@ func (r *UserRepo) GetUserRole(ctx context.Context, userID int64) (string, error
 	}
 
 	return role, nil
+}
+
+func (r *UserRepo) acceptFriendRequestTx(ctx context.Context, requestID, toUserID int64) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin accept friend request tx: %w", err)
+	}
+
+	defer func() {
+		ignoreRollbackError(tx.Rollback(ctx))
+	}()
+
+	var fromUserID, rowToUserID int64
+
+	err = tx.QueryRow(ctx, sqlAcceptFriendRequestUpdate, requestID, toUserID).Scan(&fromUserID, &rowToUserID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrFriendNotFound
+		}
+
+		return fmt.Errorf("accept friend request update: %w", err)
+	}
+
+	u1, u2 := orderedFriendPair(fromUserID, rowToUserID)
+	if _, err := tx.Exec(ctx, sqlAcceptFriendInsert, u1, u2); err != nil {
+		return fmt.Errorf("accept friend request insert friend: %w", err)
+	}
+
+	if _, err := tx.Exec(ctx, sqlAcceptFriendDeleteRequest, requestID); err != nil {
+		return fmt.Errorf("accept friend request delete row: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("accept friend request commit: %w", err)
+	}
+
+	return nil
 }
 
 func ignoreRollbackError(err error) {

@@ -1,4 +1,3 @@
-//nolint:gocyclo // Protocol parsing and deadline management are intentionally explicit.
 package ws
 
 import (
@@ -43,61 +42,26 @@ var (
 	errFragmentedWebSocketFrames     = errors.New("fragmented websocket frames are not supported")
 	errUnmaskedWebSocketFrames       = errors.New("client websocket frames must be masked")
 	errWebSocketPayloadTooLarge      = errors.New("websocket payload exceeds limit")
+	errInlinePayloadLengthOutOfRange = errors.New("inline websocket payload length out of range")
 )
 
 type HTTPUpgrader struct{}
 
-//nolint:gocyclo // The upgrade flow validates the WebSocket protocol step by step.
 func (HTTPUpgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error) {
-	if !headerContainsToken(r.Header, "Connection", "Upgrade") ||
-		!strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
-		http.Error(w, "websocket upgrade required", http.StatusUpgradeRequired)
-
-		return nil, errWebSocketUpgradeRequired
-	}
-
-	if strings.TrimSpace(r.Header.Get("Sec-WebSocket-Version")) != "13" {
-		http.Error(w, "unsupported websocket version", http.StatusUpgradeRequired)
-
-		return nil, errUnsupportedWebSocketVersion
-	}
-
-	secKey := strings.TrimSpace(r.Header.Get("Sec-WebSocket-Key"))
-	if secKey == "" {
-		http.Error(w, "missing websocket key", http.StatusBadRequest)
-
-		return nil, errMissingWebSocketKey
-	}
-
-	hijacker, ok := w.(http.Hijacker)
-	if !ok {
-		http.Error(w, "websocket hijacking is not supported", http.StatusInternalServerError)
-
-		return nil, errWebSocketHijackingUnsupported
-	}
-
-	conn, rw, err := hijacker.Hijack()
+	secKey, err := validateUpgradeRequest(w, r)
 	if err != nil {
-		return nil, fmt.Errorf("hijack websocket connection: %w", err)
+		return nil, err
 	}
 
-	accept := buildWebSocketAccept(secKey)
-
-	if _, err = rw.WriteString(
-		"HTTP/1.1 101 Switching Protocols\r\n" +
-			"Upgrade: websocket\r\n" +
-			"Connection: Upgrade\r\n" +
-			"Sec-WebSocket-Accept: " + accept + "\r\n\r\n",
-	); err != nil {
-		_ = conn.Close()
-
-		return nil, fmt.Errorf("write websocket handshake: %w", err)
+	conn, rw, err := hijackUpgradeConnection(w)
+	if err != nil {
+		return nil, err
 	}
 
-	if err = rw.Flush(); err != nil {
+	if err = writeHandshakeResponse(conn, rw, secKey); err != nil {
 		_ = conn.Close()
 
-		return nil, fmt.Errorf("flush websocket handshake: %w", err)
+		return nil, err
 	}
 
 	return &httpConn{
@@ -125,23 +89,9 @@ func (c *httpConn) Read(ctx context.Context) ([]byte, error) {
 			return nil, err
 		}
 
-		switch opcode {
-		case websocketOpcodeText:
-			return payload, nil
-		case websocketOpcodePing:
-			if err = c.writeControlFrame(ctx, websocketOpcodePong, payload); err != nil {
-				return nil, err
-			}
-		case websocketOpcodePong:
-			continue
-		case websocketOpcodeClose:
-			if err = c.writeControlFrame(ctx, websocketOpcodeClose, nil); err != nil {
-				return nil, err
-			}
-
-			return nil, io.EOF
-		default:
-			return nil, fmt.Errorf("%w: %d", errUnsupportedWebSocketOpcode, opcode)
+		message, done, err := c.handleFrame(ctx, opcode, payload)
+		if done || err != nil {
+			return message, err
 		}
 	}
 }
@@ -167,27 +117,7 @@ func (c *httpConn) Close() error {
 }
 
 func (c *httpConn) readFrame() (byte, []byte, error) {
-	firstByte, err := c.reader.ReadByte()
-	if err != nil {
-		return 0, nil, err
-	}
-
-	if firstByte&0x80 == 0 {
-		return 0, nil, errFragmentedWebSocketFrames
-	}
-
-	opcode := firstByte & websocketOpcodeMask
-
-	secondByte, err := c.reader.ReadByte()
-	if err != nil {
-		return 0, nil, err
-	}
-
-	if secondByte&websocketMaskBit == 0 {
-		return 0, nil, errUnmaskedWebSocketFrames
-	}
-
-	payloadLength, err := readWebSocketPayloadLength(c.reader, secondByte&websocketPayloadMask)
+	opcode, payloadLength, err := c.readFrameHeader()
 	if err != nil {
 		return 0, nil, err
 	}
@@ -196,18 +126,9 @@ func (c *httpConn) readFrame() (byte, []byte, error) {
 		return 0, nil, errWebSocketPayloadTooLarge
 	}
 
-	var maskKey [4]byte
-	if _, err = io.ReadFull(c.reader, maskKey[:]); err != nil {
+	payload, err := c.readMaskedPayload(payloadLength)
+	if err != nil {
 		return 0, nil, err
-	}
-
-	payload := make([]byte, payloadLength)
-	if _, err = io.ReadFull(c.reader, payload); err != nil {
-		return 0, nil, err
-	}
-
-	for idx := range payload {
-		payload[idx] ^= maskKey[idx%len(maskKey)]
 	}
 
 	return opcode, payload, nil
@@ -223,40 +144,13 @@ func (c *httpConn) writeControlFrame(ctx context.Context, opcode byte, payload [
 	return c.writeFrameLocked(opcode, payload)
 }
 
-//nolint:cyclop // WebSocket frame encoding stays explicit to mirror the protocol.
 func (c *httpConn) writeFrameLocked(opcode byte, payload []byte) error {
 	if err := c.writer.WriteByte(websocketFinalBit | opcode); err != nil {
 		return err
 	}
 
-	payloadLength := len(payload)
-	switch {
-	case payloadLength <= websocketPayloadInline:
-		if err := c.writer.WriteByte(byte(payloadLength)); err != nil {
-			return err
-		}
-	case payloadLength <= math.MaxUint16:
-		if err := c.writer.WriteByte(websocketPayload126); err != nil {
-			return err
-		}
-
-		var rawLength [2]byte
-		binary.BigEndian.PutUint16(rawLength[:], uint16(payloadLength))
-
-		if _, err := c.writer.Write(rawLength[:]); err != nil {
-			return err
-		}
-	default:
-		if err := c.writer.WriteByte(websocketPayload127); err != nil {
-			return err
-		}
-
-		var rawLength [8]byte
-		binary.BigEndian.PutUint64(rawLength[:], uint64(payloadLength))
-
-		if _, err := c.writer.Write(rawLength[:]); err != nil {
-			return err
-		}
+	if err := writePayloadLength(c.writer, len(payload)); err != nil {
+		return err
 	}
 
 	if _, err := c.writer.Write(payload); err != nil {
@@ -264,6 +158,182 @@ func (c *httpConn) writeFrameLocked(opcode byte, payload []byte) error {
 	}
 
 	return c.writer.Flush()
+}
+
+func validateUpgradeRequest(w http.ResponseWriter, r *http.Request) (string, error) {
+	if !headerContainsToken(r.Header, "Connection", "Upgrade") ||
+		!strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
+		http.Error(w, "websocket upgrade required", http.StatusUpgradeRequired)
+
+		return "", errWebSocketUpgradeRequired
+	}
+
+	if strings.TrimSpace(r.Header.Get("Sec-WebSocket-Version")) != "13" {
+		http.Error(w, "unsupported websocket version", http.StatusUpgradeRequired)
+
+		return "", errUnsupportedWebSocketVersion
+	}
+
+	secKey := strings.TrimSpace(r.Header.Get("Sec-WebSocket-Key"))
+	if secKey == "" {
+		http.Error(w, "missing websocket key", http.StatusBadRequest)
+
+		return "", errMissingWebSocketKey
+	}
+
+	return secKey, nil
+}
+
+func hijackUpgradeConnection(w http.ResponseWriter) (net.Conn, *bufio.ReadWriter, error) {
+	hijacker, ok := w.(http.Hijacker)
+	if !ok {
+		http.Error(w, "websocket hijacking is not supported", http.StatusInternalServerError)
+
+		return nil, nil, errWebSocketHijackingUnsupported
+	}
+
+	conn, rw, err := hijacker.Hijack()
+	if err != nil {
+		return nil, nil, fmt.Errorf("hijack websocket connection: %w", err)
+	}
+
+	return conn, rw, nil
+}
+
+func writeHandshakeResponse(conn net.Conn, rw *bufio.ReadWriter, secKey string) error {
+	accept := buildWebSocketAccept(secKey)
+
+	if _, err := rw.WriteString(
+		"HTTP/1.1 101 Switching Protocols\r\n" +
+			"Upgrade: websocket\r\n" +
+			"Connection: Upgrade\r\n" +
+			"Sec-WebSocket-Accept: " + accept + "\r\n\r\n",
+	); err != nil {
+		_ = conn.Close()
+
+		return fmt.Errorf("write websocket handshake: %w", err)
+	}
+
+	if err := rw.Flush(); err != nil {
+		_ = conn.Close()
+
+		return fmt.Errorf("flush websocket handshake: %w", err)
+	}
+
+	return nil
+}
+
+func (c *httpConn) readFrameHeader() (byte, int, error) {
+	firstByte, err := c.reader.ReadByte()
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if firstByte&websocketFinalBit == 0 {
+		return 0, 0, errFragmentedWebSocketFrames
+	}
+
+	secondByte, err := c.reader.ReadByte()
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if secondByte&websocketMaskBit == 0 {
+		return 0, 0, errUnmaskedWebSocketFrames
+	}
+
+	payloadLength, err := readWebSocketPayloadLength(c.reader, secondByte&websocketPayloadMask)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return firstByte & websocketOpcodeMask, payloadLength, nil
+}
+
+func (c *httpConn) handleFrame(ctx context.Context, opcode byte, payload []byte) ([]byte, bool, error) {
+	switch opcode {
+	case websocketOpcodeText:
+		return payload, true, nil
+	case websocketOpcodePing:
+		if err := c.writeControlFrame(ctx, websocketOpcodePong, payload); err != nil {
+			return nil, true, err
+		}
+
+		return nil, false, nil
+	case websocketOpcodePong:
+		return nil, false, nil
+	case websocketOpcodeClose:
+		if err := c.writeControlFrame(ctx, websocketOpcodeClose, nil); err != nil {
+			return nil, true, err
+		}
+
+		return nil, true, io.EOF
+	default:
+		return nil, true, fmt.Errorf("%w: %d", errUnsupportedWebSocketOpcode, opcode)
+	}
+}
+
+func (c *httpConn) readMaskedPayload(payloadLength int) ([]byte, error) {
+	var maskKey [4]byte
+	if _, err := io.ReadFull(c.reader, maskKey[:]); err != nil {
+		return nil, err
+	}
+
+	payload := make([]byte, payloadLength)
+	if _, err := io.ReadFull(c.reader, payload); err != nil {
+		return nil, err
+	}
+
+	for idx := range payload {
+		payload[idx] ^= maskKey[idx%len(maskKey)]
+	}
+
+	return payload, nil
+}
+
+func writePayloadLength(writer *bufio.Writer, payloadLength int) error {
+	switch {
+	case payloadLength <= websocketPayloadInline:
+		return writeInlinePayloadLength(writer, payloadLength)
+	case payloadLength <= math.MaxUint16:
+		if err := writer.WriteByte(websocketPayload126); err != nil {
+			return err
+		}
+
+		return writeUint16(writer, uint16(payloadLength))
+	default:
+		if err := writer.WriteByte(websocketPayload127); err != nil {
+			return err
+		}
+
+		return writeUint64(writer, uint64(payloadLength))
+	}
+}
+
+func writeInlinePayloadLength(writer *bufio.Writer, payloadLength int) error {
+	if payloadLength < 0 || payloadLength > websocketPayloadInline {
+		return fmt.Errorf("%w: %d", errInlinePayloadLengthOutOfRange, payloadLength)
+	}
+
+	return writer.WriteByte(uint8(payloadLength))
+}
+
+func writeUint16(writer *bufio.Writer, value uint16) error {
+	var rawLength [2]byte
+	binary.BigEndian.PutUint16(rawLength[:], value)
+
+	_, err := writer.Write(rawLength[:])
+
+	return err
+}
+
+func writeUint64(writer *bufio.Writer, value uint64) error {
+	var rawLength [8]byte
+	binary.BigEndian.PutUint64(rawLength[:], value)
+
+	_, err := writer.Write(rawLength[:])
+
+	return err
 }
 
 func headerContainsToken(header http.Header, key, want string) bool {

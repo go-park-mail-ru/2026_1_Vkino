@@ -1,4 +1,3 @@
-//nolint:gocyclo // Handler flow stays explicit and close to proto contracts.
 package grpc
 
 import (
@@ -270,6 +269,14 @@ func (s *Server) SubscribeRoom(
 	}
 	defer unsubscribe()
 
+	return forwardRoomEvents(stream.Context(), stream, events)
+}
+
+func forwardRoomEvents(
+	ctx context.Context,
+	stream grpc.ServerStreamingServer[partyv1.RoomEvent],
+	events <-chan domain.RoomEvent,
+) error {
 	for {
 		select {
 		case event, ok := <-events:
@@ -280,7 +287,7 @@ func (s *Server) SubscribeRoom(
 			if err := stream.Send(toProtoRoomEvent(event)); err != nil {
 				return err
 			}
-		case <-stream.Context().Done():
+		case <-ctx.Done():
 			return nil
 		}
 	}

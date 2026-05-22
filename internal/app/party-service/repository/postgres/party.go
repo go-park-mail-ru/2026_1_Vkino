@@ -1,4 +1,4 @@
-//nolint:gocyclo,lll // Repository methods stay close to SQL contracts for readability.
+//nolint:gocyclo // Repository methods stay close to SQL contracts for readability.
 package postgres
 
 import (
@@ -316,7 +316,12 @@ func (r *PartyRepo) SavePoll(ctx context.Context, poll domain.Poll) (*domain.Pol
 	}
 
 	for i := range poll.Options {
-		if err = tx.QueryRow(ctx, sqlInsertRoomPollOption, poll.ID, poll.Options[i].Title).Scan(&poll.Options[i].ID); err != nil {
+		if err = tx.QueryRow(
+			ctx,
+			sqlInsertRoomPollOption,
+			poll.ID,
+			poll.Options[i].Title,
+		).Scan(&poll.Options[i].ID); err != nil {
 			return nil, fmt.Errorf("insert poll option: %w", err)
 		}
 	}
