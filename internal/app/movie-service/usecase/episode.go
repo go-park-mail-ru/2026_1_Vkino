@@ -42,7 +42,7 @@ func (u *MovieUsecase) GetEpisodePlayback(
 		Title:           episode.Title,
 		DurationSeconds: episode.DurationSeconds,
 		PlaybackURL:     playbackURL,
-		AdPolicy:        string(state.Capabilities.AdPolicy),
+		AdPolicy:        state.GetCapabilities().GetAdPolicy(),
 		IsPaid:          episode.IsPaid || episode.MovieIsPaid,
 	}, nil
 }

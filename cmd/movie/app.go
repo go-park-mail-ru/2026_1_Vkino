@@ -16,7 +16,6 @@ import (
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serverrunner"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/storage"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 
 	"google.golang.org/grpc"
 )
@@ -66,7 +65,7 @@ func Run(configPath string) error {
 
 	movieUC := movieusecase.NewMovieUsecase(
 		postgresrepo.NewMovieRepo(pgDB),
-		subscription.NewStateReader(userv1.NewUserServiceClient(userConn)),
+		movieusecase.NewSubscriptionReader(userv1.NewUserServiceClient(userConn)),
 		stores.poster,
 		stores.card,
 		stores.actor,

@@ -1,4 +1,4 @@
-package subscription
+package capabilityerr
 
 import (
 	"errors"
@@ -12,17 +12,17 @@ func TestToGRPCErrorRoundTripFeatureForbidden(t *testing.T) {
 
 	currentLevel := int32(1)
 	requiredLevel := int32(2)
-	detail := mustSubscriptionDetail(t, NewFeatureForbidden(
-		CodePaidContentForbidden,
-		FeaturePaidContent,
-		1,
-		2,
-		"Платный контент недоступен на вашем уровне подписки.",
-	))
+	detail := mustSubscriptionDetail(t, New(Detail{
+		Code:          "SUBSCRIPTION_FEATURE_FORBIDDEN",
+		Feature:       "paid_content",
+		Message:       "Платный контент недоступен на вашем уровне подписки.",
+		CurrentLevel:  &currentLevel,
+		RequiredLevel: &requiredLevel,
+	}))
 
 	assertSubscriptionDetail(t, detail, Detail{
-		Code:          CodeSubscriptionFeatureForbidden,
-		Feature:       FeaturePaidContent,
+		Code:          "SUBSCRIPTION_FEATURE_FORBIDDEN",
+		Feature:       "paid_content",
 		Message:       "Платный контент недоступен на вашем уровне подписки.",
 		CurrentLevel:  &currentLevel,
 		RequiredLevel: &requiredLevel,
@@ -35,17 +35,18 @@ func TestToGRPCErrorRoundTripLimitExceeded(t *testing.T) {
 	limit := int32(4)
 	used := int32(4)
 	remaining := int32(0)
-	detail := mustSubscriptionDetail(t, NewLimitExceeded(
-		CodeRoomMembersLimitExceeded,
-		FeatureWatchPartyUsers,
-		4,
-		4,
-		"Лимит активных участников комнаты по подписке владельца исчерпан.",
-	))
+	detail := mustSubscriptionDetail(t, New(Detail{
+		Code:      "ROOM_MEMBERS_LIMIT_EXCEEDED",
+		Feature:   "watch_party_members",
+		Message:   "Лимит активных участников комнаты по подписке владельца исчерпан.",
+		Limit:     &limit,
+		Used:      &used,
+		Remaining: &remaining,
+	}))
 
 	assertSubscriptionDetail(t, detail, Detail{
-		Code:      CodeRoomMembersLimitExceeded,
-		Feature:   FeatureWatchPartyUsers,
+		Code:      "ROOM_MEMBERS_LIMIT_EXCEEDED",
+		Feature:   "watch_party_members",
 		Message:   "Лимит активных участников комнаты по подписке владельца исчерпан.",
 		Limit:     &limit,
 		Used:      &used,

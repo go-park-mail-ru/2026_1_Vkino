@@ -3,8 +3,8 @@ package routes
 import (
 	"net/http"
 
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/common/capabilityerr"
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 )
 
 type subscriptionHTTPErrorResponse struct {
@@ -23,15 +23,15 @@ type subscriptionHTTPError struct {
 }
 
 func writeSubscriptionGRPCError(w http.ResponseWriter, err error) bool {
-	detail, ok := subscription.DetailFromGRPCError(err)
+	detail, ok := capabilityerr.DetailFromGRPCError(err)
 	if !ok {
 		return false
 	}
 
 	httppkg.Response(w, http.StatusForbidden, subscriptionHTTPErrorResponse{
 		Error: subscriptionHTTPError{
-			Code:          string(detail.Code),
-			Feature:       string(detail.Feature),
+			Code:          detail.Code,
+			Feature:       detail.Feature,
 			Message:       detail.Message,
 			CurrentLevel:  detail.CurrentLevel,
 			RequiredLevel: detail.RequiredLevel,

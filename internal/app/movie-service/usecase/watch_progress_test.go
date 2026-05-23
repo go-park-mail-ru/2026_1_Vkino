@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/repository/mocks"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	"go.uber.org/mock/gomock"
 )
 
@@ -37,8 +37,11 @@ func TestGetWatchHistory_CallsRepoWithMinProgress(t *testing.T) {
 
 type smartContinueStateReader struct{}
 
-func (smartContinueStateReader) GetSubscriptionState(context.Context, int64) (subscription.State, error) {
-	state := subscription.DefaultState()
+func (smartContinueStateReader) GetSubscriptionState(
+	context.Context,
+	int64,
+) (*userv1.GetSubscriptionCapabilitiesResponse, error) {
+	state := defaultSubscriptionState()
 	state.Capabilities.CanUseSmartContinue = true
 
 	return state, nil

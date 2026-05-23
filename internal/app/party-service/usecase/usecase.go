@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/repository"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 )
 
 type PartyOverviewUsecase interface {
@@ -43,5 +42,5 @@ type Usecase interface {
 type service struct {
 	partyRepo          repository.PartyRepo
 	eventBroker        repository.RoomEventBroker
-	subscriptionReader subscription.StateReader
+	subscriptionReader SubscriptionReader
 }

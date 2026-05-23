@@ -4,18 +4,32 @@ import (
 	"context"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/common/capabilityerr"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 )
 
-func (u *MovieUsecase) subscriptionState(ctx context.Context, userID int64) (subscription.State, error) {
+const (
+	subscriptionFeatureForbiddenCode       = "SUBSCRIPTION_FEATURE_FORBIDDEN"
+	paidContentFeatureCode                 = "paid_content"
+	smartContinueFeatureCode               = "smart_continue"
+	requiredPaidContentLevel         int32 = 2
+	requiredSmartContinueLevel       int32 = 2
+)
+
+func (u *MovieUsecase) subscriptionState(
+	ctx context.Context,
+	userID int64,
+) (*userv1.GetSubscriptionCapabilitiesResponse, error) {
 	if userID <= 0 || u.subscriptionReader == nil {
-		return subscription.DefaultState(), nil
+		return defaultSubscriptionState(), nil
 	}
 
 	return u.subscriptionReader.GetSubscriptionState(ctx, userID)
 }
 
-func (u *MovieUsecase) viewerSubscriptionState(ctx context.Context) (subscription.State, error) {
+func (u *MovieUsecase) viewerSubscriptionState(
+	ctx context.Context,
+) (*userv1.GetSubscriptionCapabilitiesResponse, error) {
 	return u.subscriptionState(ctx, viewerIDFromContext(ctx))
 }
 
@@ -29,15 +43,15 @@ func (u *MovieUsecase) ensurePaidContentAllowed(ctx context.Context, episode *do
 		return err
 	}
 
-	if state.Capabilities.CanWatchPaidContent {
+	if state.GetCapabilities().GetCanWatchPaidContent() {
 		return nil
 	}
 
-	return subscription.NewFeatureForbidden(
-		subscription.CodePaidContentForbidden,
-		subscription.FeaturePaidContent,
-		state.Subscription.Level,
-		2,
+	return newFeatureForbidden(
+		subscriptionFeatureForbiddenCode,
+		paidContentFeatureCode,
+		state.GetSubscription().GetLevel(),
+		requiredPaidContentLevel,
 		"Платный контент недоступен на вашем уровне подписки.",
 	)
 }
@@ -48,15 +62,34 @@ func (u *MovieUsecase) ensureSmartContinueAllowed(ctx context.Context, userID in
 		return err
 	}
 
-	if state.Capabilities.CanUseSmartContinue {
+	if state.GetCapabilities().GetCanUseSmartContinue() {
 		return nil
 	}
 
-	return subscription.NewFeatureForbidden(
-		subscription.CodeSmartContinueForbidden,
-		subscription.FeatureSmartContinue,
-		state.Subscription.Level,
-		2,
+	return newFeatureForbidden(
+		subscriptionFeatureForbiddenCode,
+		smartContinueFeatureCode,
+		state.GetSubscription().GetLevel(),
+		requiredSmartContinueLevel,
 		"Умное продолжение просмотра недоступно на вашем уровне подписки.",
 	)
+}
+
+func newFeatureForbidden(
+	code string,
+	feature string,
+	currentLevel int32,
+	requiredLevel int32,
+	message string,
+) error {
+	currentLevelValue := currentLevel
+	requiredLevelValue := requiredLevel
+
+	return capabilityerr.New(capabilityerr.Detail{
+		Code:          code,
+		Feature:       feature,
+		Message:       message,
+		CurrentLevel:  &currentLevelValue,
+		RequiredLevel: &requiredLevelValue,
+	})
 }

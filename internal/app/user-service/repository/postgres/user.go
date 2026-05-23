@@ -9,7 +9,6 @@ import (
 
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -79,9 +78,12 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 	return &user, nil
 }
 
-func (r *UserRepo) GetActiveSubscription(ctx context.Context, userID int64) (subscription.Info, error) {
+func (r *UserRepo) GetActiveSubscription(
+	ctx context.Context,
+	userID int64,
+) (domain.SubscriptionInfo, error) {
 	var (
-		info      subscription.Info
+		info      domain.SubscriptionInfo
 		expiresAt time.Time
 	)
 
@@ -94,10 +96,10 @@ func (r *UserRepo) GetActiveSubscription(ctx context.Context, userID int64) (sub
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return subscription.Info{}, nil
+			return domain.SubscriptionInfo{}, nil
 		}
 
-		return subscription.Info{}, fmt.Errorf("get active subscription: %w", err)
+		return domain.SubscriptionInfo{}, fmt.Errorf("get active subscription: %w", err)
 	}
 
 	activeUntil := expiresAt.Format(time.RFC3339)
@@ -106,8 +108,11 @@ func (r *UserRepo) GetActiveSubscription(ctx context.Context, userID int64) (sub
 	return info, nil
 }
 
-func (r *UserRepo) GetSubscriptionTariffByCode(ctx context.Context, code string) (subscription.Info, error) {
-	var info subscription.Info
+func (r *UserRepo) GetSubscriptionTariffByCode(
+	ctx context.Context,
+	code string,
+) (domain.SubscriptionInfo, error) {
+	var info domain.SubscriptionInfo
 
 	err := r.db.QueryRow(ctx, sqlGetSubscriptionTariffByCode, code).Scan(
 		&info.ID,
@@ -117,27 +122,30 @@ func (r *UserRepo) GetSubscriptionTariffByCode(ctx context.Context, code string)
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return subscription.Info{}, nil
+			return domain.SubscriptionInfo{}, nil
 		}
 
-		return subscription.Info{}, fmt.Errorf("get subscription tariff by code: %w", err)
+		return domain.SubscriptionInfo{}, fmt.Errorf("get subscription tariff by code: %w", err)
 	}
 
 	return info, nil
 }
 
-func (r *UserRepo) GetSubscriptionTariffOptions(ctx context.Context, tariffID int64) ([]subscription.Option, error) {
+func (r *UserRepo) GetSubscriptionTariffOptions(
+	ctx context.Context,
+	tariffID int64,
+) ([]domain.SubscriptionOption, error) {
 	rows, err := r.db.Query(ctx, sqlGetSubscriptionTariffOptions, tariffID)
 	if err != nil {
 		return nil, fmt.Errorf("get subscription tariff options: %w", err)
 	}
 	defer rows.Close()
 
-	options := make([]subscription.Option, 0)
+	options := make([]domain.SubscriptionOption, 0)
 
 	for rows.Next() {
 		var (
-			option subscription.Option
+			option domain.SubscriptionOption
 			value  sql.NullString
 		)
 

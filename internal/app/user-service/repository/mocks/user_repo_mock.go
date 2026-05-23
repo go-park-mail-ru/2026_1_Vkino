@@ -15,7 +15,6 @@ import (
 	time "time"
 
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
-	subscription "github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -197,10 +196,10 @@ func (m *MockUserSubscriptionRepo) EXPECT() *MockUserSubscriptionRepoMockRecorde
 }
 
 // GetActiveSubscription mocks base method.
-func (m *MockUserSubscriptionRepo) GetActiveSubscription(ctx context.Context, userID int64) (subscription.Info, error) {
+func (m *MockUserSubscriptionRepo) GetActiveSubscription(ctx context.Context, userID int64) (domain.SubscriptionInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetActiveSubscription", ctx, userID)
-	ret0, _ := ret[0].(subscription.Info)
+	ret0, _ := ret[0].(domain.SubscriptionInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -242,10 +241,10 @@ func (mr *MockUserSubscriptionRepoMockRecorder) GetRoomsCreatedThisMonth(ctx, us
 }
 
 // GetSubscriptionTariffByCode mocks base method.
-func (m *MockUserSubscriptionRepo) GetSubscriptionTariffByCode(ctx context.Context, code string) (subscription.Info, error) {
+func (m *MockUserSubscriptionRepo) GetSubscriptionTariffByCode(ctx context.Context, code string) (domain.SubscriptionInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubscriptionTariffByCode", ctx, code)
-	ret0, _ := ret[0].(subscription.Info)
+	ret0, _ := ret[0].(domain.SubscriptionInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -257,10 +256,13 @@ func (mr *MockUserSubscriptionRepoMockRecorder) GetSubscriptionTariffByCode(ctx,
 }
 
 // GetSubscriptionTariffOptions mocks base method.
-func (m *MockUserSubscriptionRepo) GetSubscriptionTariffOptions(ctx context.Context, tariffID int64) ([]subscription.Option, error) {
+func (m *MockUserSubscriptionRepo) GetSubscriptionTariffOptions(
+	ctx context.Context,
+	tariffID int64,
+) ([]domain.SubscriptionOption, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubscriptionTariffOptions", ctx, tariffID)
-	ret0, _ := ret[0].([]subscription.Option)
+	ret0, _ := ret[0].([]domain.SubscriptionOption)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -646,10 +648,10 @@ func (mr *MockUserRepoMockRecorder) DeleteReviewReaction(ctx, userID, reviewID a
 }
 
 // GetActiveSubscription mocks base method.
-func (m *MockUserRepo) GetActiveSubscription(ctx context.Context, userID int64) (subscription.Info, error) {
+func (m *MockUserRepo) GetActiveSubscription(ctx context.Context, userID int64) (domain.SubscriptionInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetActiveSubscription", ctx, userID)
-	ret0, _ := ret[0].(subscription.Info)
+	ret0, _ := ret[0].(domain.SubscriptionInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -753,10 +755,10 @@ func (mr *MockUserRepoMockRecorder) GetRoomsCreatedThisMonth(ctx, userID any) *g
 }
 
 // GetSubscriptionTariffByCode mocks base method.
-func (m *MockUserRepo) GetSubscriptionTariffByCode(ctx context.Context, code string) (subscription.Info, error) {
+func (m *MockUserRepo) GetSubscriptionTariffByCode(ctx context.Context, code string) (domain.SubscriptionInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubscriptionTariffByCode", ctx, code)
-	ret0, _ := ret[0].(subscription.Info)
+	ret0, _ := ret[0].(domain.SubscriptionInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -768,10 +770,13 @@ func (mr *MockUserRepoMockRecorder) GetSubscriptionTariffByCode(ctx, code any) *
 }
 
 // GetSubscriptionTariffOptions mocks base method.
-func (m *MockUserRepo) GetSubscriptionTariffOptions(ctx context.Context, tariffID int64) ([]subscription.Option, error) {
+func (m *MockUserRepo) GetSubscriptionTariffOptions(
+	ctx context.Context,
+	tariffID int64,
+) ([]domain.SubscriptionOption, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubscriptionTariffOptions", ctx, tariffID)
-	ret0, _ := ret[0].([]subscription.Option)
+	ret0, _ := ret[0].([]domain.SubscriptionOption)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 )
 
 type UserReadRepo interface {
@@ -24,9 +23,9 @@ type UserProfileMutationRepo interface {
 }
 
 type UserSubscriptionRepo interface {
-	GetActiveSubscription(ctx context.Context, userID int64) (subscription.Info, error)
-	GetSubscriptionTariffByCode(ctx context.Context, code string) (subscription.Info, error)
-	GetSubscriptionTariffOptions(ctx context.Context, tariffID int64) ([]subscription.Option, error)
+	GetActiveSubscription(ctx context.Context, userID int64) (domain.SubscriptionInfo, error)
+	GetSubscriptionTariffByCode(ctx context.Context, code string) (domain.SubscriptionInfo, error)
+	GetSubscriptionTariffOptions(ctx context.Context, tariffID int64) ([]domain.SubscriptionOption, error)
 	GetCoinsReceivedToday(ctx context.Context, userID int64) (int32, error)
 	GetRoomsCreatedThisMonth(ctx context.Context, userID int64) (int32, error)
 }

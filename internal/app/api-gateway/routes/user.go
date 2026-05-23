@@ -11,7 +11,6 @@ import (
 
 	dto "github.com/go-park-mail-ru/2026_1_VKino/internal/app/api-gateway/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	supportv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/support/v1"
@@ -559,7 +558,7 @@ func newUserSubscriptionCapabilitiesHandler(cfg Config, userClient UserClient) h
 			return
 		}
 
-		httppkg.Response(w, http.StatusOK, subscription.StateFromProto(resp))
+		httppkg.Response(w, http.StatusOK, subscriptionStateFromProto(resp))
 	}
 }
 

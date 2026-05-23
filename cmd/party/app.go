@@ -18,7 +18,6 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/serverrunner"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
 
 	"google.golang.org/grpc"
 )
@@ -69,7 +68,7 @@ func Run(configPath string) error {
 	partyUC := partyusecase.New(
 		partyRepo,
 		eventBroker,
-		subscription.NewStateReader(userv1.NewUserServiceClient(userConn)),
+		partyusecase.NewSubscriptionReader(userv1.NewUserServiceClient(userConn)),
 	)
 
 	lis, err := grpcx.Listen(cfg.GRPC.Port)

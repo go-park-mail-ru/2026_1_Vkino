@@ -4,7 +4,14 @@ import (
 	"context"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
-	"github.com/go-park-mail-ru/2026_1_VKino/pkg/subscription"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/common/capabilityerr"
+)
+
+const (
+	roomMonthlyLimitExceededCode = "ROOM_MONTHLY_LIMIT_EXCEEDED"
+	roomMembersLimitExceededCode = "ROOM_MEMBERS_LIMIT_EXCEEDED"
+	watchPartyRoomsFeatureCode   = "watch_party_rooms"
+	watchPartyUsersFeatureCode   = "watch_party_members"
 )
 
 func (s *service) ensureRoomCreationAllowed(ctx context.Context, userID int64) error {
@@ -17,20 +24,20 @@ func (s *service) ensureRoomCreationAllowed(ctx context.Context, userID int64) e
 		return err
 	}
 
-	limit := state.Capabilities.MonthlyRoomLimit
+	limit := state.GetCapabilities().MonthlyRoomLimit
 	if limit == nil {
 		return nil
 	}
 
-	if state.Usage.RoomsCreatedThisMonth < *limit {
+	if state.GetUsage().GetRoomsCreatedThisMonth() < *limit {
 		return nil
 	}
 
-	return subscription.NewLimitExceeded(
-		subscription.CodeRoomMonthlyLimitExceeded,
-		subscription.FeatureWatchPartyRooms,
+	return newLimitExceeded(
+		roomMonthlyLimitExceededCode,
+		watchPartyRoomsFeatureCode,
 		*limit,
-		state.Usage.RoomsCreatedThisMonth,
+		state.GetUsage().GetRoomsCreatedThisMonth(),
 		"Лимит комнат совместного просмотра за месяц исчерпан.",
 	)
 }
@@ -50,15 +57,36 @@ func (s *service) ensureRoomMemberCapacity(ctx context.Context, room *domain.Roo
 	}
 
 	activeUsers := s.eventBroker.ActiveUsers(room.ID)
-	if activeUsers < state.Capabilities.MaxRoomMembers {
+	if activeUsers < state.GetCapabilities().GetMaxRoomMembers() {
 		return nil
 	}
 
-	return subscription.NewLimitExceeded(
-		subscription.CodeRoomMembersLimitExceeded,
-		subscription.FeatureWatchPartyUsers,
-		state.Capabilities.MaxRoomMembers,
+	return newLimitExceeded(
+		roomMembersLimitExceededCode,
+		watchPartyUsersFeatureCode,
+		state.GetCapabilities().GetMaxRoomMembers(),
 		activeUsers,
 		"Лимит активных участников комнаты по подписке владельца исчерпан.",
 	)
+}
+
+func newLimitExceeded(
+	code string,
+	feature string,
+	limit int32,
+	used int32,
+	message string,
+) error {
+	remaining := int32(0)
+	limitValue := limit
+	usedValue := used
+
+	return capabilityerr.New(capabilityerr.Detail{
+		Code:      code,
+		Feature:   feature,
+		Message:   message,
+		Limit:     &limitValue,
+		Used:      &usedValue,
+		Remaining: &remaining,
+	})
 }
