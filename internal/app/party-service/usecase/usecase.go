@@ -40,6 +40,7 @@ type Usecase interface {
 }
 
 type service struct {
-	partyRepo   repository.PartyRepo
-	eventBroker repository.RoomEventBroker
+	partyRepo          repository.PartyRepo
+	eventBroker        repository.RoomEventBroker
+	subscriptionReader SubscriptionReader
 }

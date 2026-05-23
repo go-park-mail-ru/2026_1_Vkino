@@ -40,6 +40,7 @@ message EpisodeShort {
   string description = 6;
   int32 duration_seconds = 7;
   string img_url = 8;
+  bool is_paid = 9;
 }
 
 message ExternalRating {
@@ -83,6 +84,7 @@ message GetMovieByIDResponse {
   bool is_favorite = 19;
   repeated ExternalRating external_ratings = 20;
   repeated MovieReview reviews = 21;
+  bool is_paid = 22;
 }
 
 message GetMoviesByIDsRequest {
@@ -178,6 +180,8 @@ message GetEpisodePlaybackResponse {
   string title = 5;
   int32 duration_seconds = 6;
   string playback_url = 7;
+  string ad_policy = 8;
+  bool is_paid = 9;
 }
 
 message GetEpisodeProgressRequest {

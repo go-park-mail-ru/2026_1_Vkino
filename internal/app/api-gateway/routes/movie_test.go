@@ -93,7 +93,7 @@ func TestParseInt32Query(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			req := httptest.NewRequest(http.MethodGet, "/?"+tt.query, nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/?"+tt.query, nil)
 			got := parseInt32Query(req, "limit", tt.defaultValue)
 
 			if got != tt.want {

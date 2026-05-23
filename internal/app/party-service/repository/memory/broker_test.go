@@ -13,13 +13,13 @@ func TestRoomEventBrokerPublishDeliversToAllSubscribers(t *testing.T) {
 
 	broker := NewRoomEventBroker()
 
-	first, unsubFirst, err := broker.Subscribe(context.Background(), 42)
+	first, unsubFirst, err := broker.Subscribe(context.Background(), 42, 1)
 	if err != nil {
 		t.Fatalf("subscribe first: %v", err)
 	}
 	defer unsubFirst()
 
-	second, unsubSecond, err := broker.Subscribe(context.Background(), 42)
+	second, unsubSecond, err := broker.Subscribe(context.Background(), 42, 2)
 	if err != nil {
 		t.Fatalf("subscribe second: %v", err)
 	}
@@ -48,7 +48,7 @@ func TestRoomEventBrokerPublishWaitsInsteadOfDropping(t *testing.T) {
 
 	broker := NewRoomEventBroker()
 
-	events, unsubscribe, err := broker.Subscribe(context.Background(), roomID)
+	events, unsubscribe, err := broker.Subscribe(context.Background(), roomID, 1)
 	if err != nil {
 		t.Fatalf("subscribe: %v", err)
 	}

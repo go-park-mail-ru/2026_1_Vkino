@@ -65,7 +65,11 @@ func Run(configPath string) error {
 
 	partyRepo := postgresrepo.NewPartyRepo(pgDB)
 	eventBroker := memoryrepo.NewRoomEventBroker()
-	partyUC := partyusecase.New(partyRepo, eventBroker)
+	partyUC := partyusecase.New(
+		partyRepo,
+		eventBroker,
+		partyusecase.NewSubscriptionReader(userv1.NewUserServiceClient(userConn)),
+	)
 
 	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {

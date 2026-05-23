@@ -9,6 +9,7 @@ import (
 	movieusecase "github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/usecase"
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/metrics"
@@ -42,14 +43,6 @@ func Run(configPath string) error {
 		return err
 	}
 
-	movieUC := movieusecase.NewMovieUsecase(
-		postgresrepo.NewMovieRepo(pgDB),
-		stores.poster,
-		stores.card,
-		stores.actor,
-		stores.video,
-	)
-
 	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
 		Address:        cfg.AuthGRPC.Address,
 		RequestTimeout: cfg.AuthGRPC.RequestTimeout,
@@ -59,6 +52,25 @@ func Run(configPath string) error {
 	}
 
 	defer func() { _ = authConn.Close() }()
+
+	userConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
+		Address:        cfg.UserGRPC.Address,
+		RequestTimeout: cfg.UserGRPC.RequestTimeout,
+	})
+	if err != nil {
+		return fmt.Errorf("init user grpc client: %w", err)
+	}
+
+	defer func() { _ = userConn.Close() }()
+
+	movieUC := movieusecase.NewMovieUsecase(
+		postgresrepo.NewMovieRepo(pgDB),
+		movieusecase.NewSubscriptionReader(userv1.NewUserServiceClient(userConn)),
+		stores.poster,
+		stores.card,
+		stores.actor,
+		stores.video,
+	)
 
 	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {

@@ -9,14 +9,25 @@ import (
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 )
 
-type UserProfileRepo interface {
+type UserReadRepo interface {
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
 	GetFriend(ctx context.Context, userID, friendID int64) (*domain.User, error)
 	GetUserRole(ctx context.Context, userID int64) (string, error)
 	SearchUsersByEmail(ctx context.Context, userID int64, query string) ([]domain.UserSearchResult, error)
+}
+
+type UserProfileMutationRepo interface {
 	UpdateBirthdate(ctx context.Context, userID int64, birthdate *time.Time) (*domain.User, error)
 	UpdateAvatarFileKey(ctx context.Context, userID int64, avatarFileKey *string) (*domain.User, error)
+}
+
+type UserSubscriptionRepo interface {
+	GetActiveSubscription(ctx context.Context, userID int64) (domain.SubscriptionInfo, error)
+	GetSubscriptionTariffByCode(ctx context.Context, code string) (domain.SubscriptionInfo, error)
+	GetSubscriptionTariffOptions(ctx context.Context, tariffID int64) ([]domain.SubscriptionOption, error)
+	GetCoinsReceivedToday(ctx context.Context, userID int64) (int32, error)
+	GetRoomsCreatedThisMonth(ctx context.Context, userID int64) (int32, error)
 }
 
 type UserMovieRepo interface {
@@ -55,7 +66,9 @@ type UserFriendRepo interface {
 }
 
 type UserRepo interface {
-	UserProfileRepo
+	UserReadRepo
+	UserProfileMutationRepo
+	UserSubscriptionRepo
 	UserMovieRepo
 	UserFriendRepo
 }

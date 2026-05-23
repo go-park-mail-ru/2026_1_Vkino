@@ -9,6 +9,7 @@ const (
 			coalesce(m.director, ''),
 			coalesce(m.trailer_url, ''),
 			m.content_type,
+			m.is_paid,
 			m.release_year,
 			m.duration_seconds,
 			m.age_limit,
@@ -52,6 +53,7 @@ const (
 			coalesce(e.title, ''),
 			coalesce(e.description, ''),
 			e.duration_seconds,
+			e.is_paid,
 			e.picture_file_key,
 			e.video_file_key
 		from episode e
@@ -325,8 +327,11 @@ const (
 			e.episode_number,
 			coalesce(e.title, ''),
 			e.duration_seconds,
+			e.is_paid,
+			m.is_paid,
 			e.video_file_key
 		from episode e
+		join movie m on m.id = e.movie_id
 		where e.id = $1
 	`
 

@@ -21,6 +21,64 @@ const (
 		where id = $1
 	`
 
+	sqlGetActiveSubscription = `
+		select
+			st.id,
+			st.code,
+			st.title,
+			st.level,
+			us.expires_at
+		from user_subscription us
+		join subscription_tariff st on st.id = us.subscription_tariff_id
+		where us.user_id = $1
+			and us.is_active = true
+			and us.starts_at <= now()
+			and us.expires_at > now()
+			and st.is_active = true
+		order by us.expires_at desc, us.id desc
+		limit 1
+	`
+
+	sqlGetSubscriptionTariffByCode = `
+		select
+			st.id,
+			st.code,
+			st.title,
+			st.level
+		from subscription_tariff st
+		where st.code = $1
+			and st.is_active = true
+		limit 1
+	`
+
+	sqlGetSubscriptionTariffOptions = `
+		select
+			so.code,
+			sto.value
+		from subscription_tariff_option sto
+		join subscription_option so on so.id = sto.subscription_option_id
+		where sto.subscription_tariff_id = $1
+			and so.is_active = true
+		order by so.code
+	`
+
+	sqlGetCoinsReceivedToday = `
+		select coalesce(sum(vkino_coins_count), 0)::int
+		from vkino_coins_history
+		where user_id = $1
+			and operation_type = 'daily'
+			and created_at >= date_trunc('day', now())
+			and created_at < date_trunc('day', now()) + interval '1 day'
+	`
+
+	sqlGetRoomsCreatedThisMonth = `
+		select count(*)::int
+		from vkino_room
+		where user_creator_id = $1
+			and created_at >= now() - interval '1 month'
+			and created_at <= now()
+	`
+
 	sqlGetFriendByID = `
 		select
 			u.id, u.email, u.password_hash, u.role, u.birthdate, u.avatar_file_key,

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"mime/multipart"
 	"net/http"
@@ -36,7 +37,7 @@ func newMultipartFileRequest(t *testing.T, path, field, filename, contentType st
 
 	require.NoError(t, writer.Close())
 
-	req := httptest.NewRequest(http.MethodPost, path, &body)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, path, &body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	return req
@@ -70,7 +71,12 @@ func TestReadSupportFileUploadPayload_EmptyFile(t *testing.T) {
 func TestReadSupportFileUploadPayload_NotMultipart(t *testing.T) {
 	t.Parallel()
 
-	req := httptest.NewRequest(http.MethodPost, "/support/files", bytes.NewReader([]byte("raw")))
+	req := httptest.NewRequestWithContext(
+		context.Background(),
+		http.MethodPost,
+		"/support/files",
+		bytes.NewReader([]byte("raw")),
+	)
 	req.Header.Set("Content-Type", "text/plain")
 
 	rr := httptest.NewRecorder()

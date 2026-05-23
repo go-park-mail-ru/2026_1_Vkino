@@ -7,16 +7,18 @@ import (
 
 func NewMovieUsecase(
 	movieRepo repository.MovieRepo,
+	subscriptionReader SubscriptionReader,
 	posterStore storage.FileStorage,
 	cardStore storage.FileStorage,
 	actorStore storage.FileStorage,
 	videoStore storage.FileStorage,
 ) *MovieUsecase {
 	return &MovieUsecase{
-		movieRepo:   movieRepo,
-		posterStore: posterStore,
-		cardStore:   cardStore,
-		actorStore:  actorStore,
-		videoStore:  videoStore,
+		movieRepo:          movieRepo,
+		subscriptionReader: subscriptionReader,
+		posterStore:        posterStore,
+		cardStore:          cardStore,
+		actorStore:         actorStore,
+		videoStore:         videoStore,
 	}
 }

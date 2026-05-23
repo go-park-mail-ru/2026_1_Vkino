@@ -32,6 +32,12 @@ type UserClient interface {
 	userv1.UserServiceClient
 	supportRPC
 	movieRPC
+
+	GetSubscriptionCapabilities(
+		ctx context.Context,
+		in *userv1.GetSubscriptionCapabilitiesRequest,
+		opts ...grpc.CallOption,
+	) (*userv1.GetSubscriptionCapabilitiesResponse, error)
 }
 
 type movieRPC interface {
@@ -93,6 +99,14 @@ func (c grpcUserClient) GetFriend(
 	opts ...grpc.CallOption,
 ) (*userv1.GetFriendResponse, error) {
 	return c.user.GetFriend(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GetSubscriptionCapabilities(
+	ctx context.Context,
+	in *userv1.GetSubscriptionCapabilitiesRequest,
+	opts ...grpc.CallOption,
+) (*userv1.GetSubscriptionCapabilitiesResponse, error) {
+	return c.user.GetSubscriptionCapabilities(ctx, in, opts...)
 }
 
 func (c grpcUserClient) SearchUsersByEmail(
@@ -482,6 +496,7 @@ func shouldIgnoreMultipartAvatarHeader(header *multipart.FileHeader) bool {
 func User(cfg Config, userClient UserClient) []httpserver.Option {
 	return []httpserver.Option{
 		route("GET /user/me", newUserProfileHandler(cfg, userClient)),
+		route("GET /user/subscription/capabilities", newUserSubscriptionCapabilitiesHandler(cfg, userClient)),
 		route("GET /user/search", newUserSearchHandler(cfg, userClient)),
 		route("PUT /user/profile", newUserUpdateProfileHandler(cfg, userClient)),
 		route("POST /user/friends/{id}", newUserSendFriendRequestHandler(cfg, userClient)),
@@ -525,6 +540,25 @@ func newUserProfileHandler(cfg Config, userClient UserClient) http.HandlerFunc {
 		}
 
 		httppkg.Response(w, http.StatusOK, resp)
+	}
+}
+
+func newUserSubscriptionCapabilitiesHandler(cfg Config, userClient UserClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cancel := grpcContext(r, cfg.UserRequestTimeout())
+		defer cancel()
+
+		resp, err := userClient.GetSubscriptionCapabilities(
+			r.Context(),
+			&userv1.GetSubscriptionCapabilitiesRequest{},
+		)
+		if err != nil {
+			writeGRPCError(w, err)
+
+			return
+		}
+
+		httppkg.Response(w, http.StatusOK, subscriptionStateFromProto(resp))
 	}
 }
 

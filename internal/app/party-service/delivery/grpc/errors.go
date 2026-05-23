@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/common/capabilityerr"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/errmap/grpcx"
 	"google.golang.org/grpc/codes"
 )
@@ -52,5 +53,9 @@ var partyGRPCErrorMapper = grpcx.New(
 )
 
 func mapError(err error) error {
+	if subscriptionGRPCErr, ok := capabilityerr.ToGRPCError(err); ok {
+		return subscriptionGRPCErr
+	}
+
 	return partyGRPCErrorMapper.Map(err)
 }

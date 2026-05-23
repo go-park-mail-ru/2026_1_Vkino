@@ -59,4 +59,4 @@ jobs:
           script: |
             set -e
             cd "${{ secrets.PROD_PROJECT_PATH }}"
-            ./deployments/prod/deploy-prod.sh
+            sudo ./deployments/prod/deploy-prod.sh

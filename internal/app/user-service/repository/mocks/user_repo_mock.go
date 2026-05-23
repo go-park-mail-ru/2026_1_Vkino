@@ -18,6 +18,527 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
+// MockUserReadRepo is a mock of UserReadRepo interface.
+type MockUserReadRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockUserReadRepoMockRecorder
+	isgomock struct{}
+}
+
+// MockUserReadRepoMockRecorder is the mock recorder for MockUserReadRepo.
+type MockUserReadRepoMockRecorder struct {
+	mock *MockUserReadRepo
+}
+
+// NewMockUserReadRepo creates a new mock instance.
+func NewMockUserReadRepo(ctrl *gomock.Controller) *MockUserReadRepo {
+	mock := &MockUserReadRepo{ctrl: ctrl}
+	mock.recorder = &MockUserReadRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUserReadRepo) EXPECT() *MockUserReadRepoMockRecorder {
+	return m.recorder
+}
+
+// GetFriend mocks base method.
+func (m *MockUserReadRepo) GetFriend(ctx context.Context, userID, friendID int64) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFriend", ctx, userID, friendID)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFriend indicates an expected call of GetFriend.
+func (mr *MockUserReadRepoMockRecorder) GetFriend(ctx, userID, friendID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriend", reflect.TypeOf((*MockUserReadRepo)(nil).GetFriend), ctx, userID, friendID)
+}
+
+// GetUserByEmail mocks base method.
+func (m *MockUserReadRepo) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, email)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByEmail indicates an expected call of GetUserByEmail.
+func (mr *MockUserReadRepoMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserReadRepo)(nil).GetUserByEmail), ctx, email)
+}
+
+// GetUserByID mocks base method.
+func (m *MockUserReadRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByID", ctx, id)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByID indicates an expected call of GetUserByID.
+func (mr *MockUserReadRepoMockRecorder) GetUserByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserReadRepo)(nil).GetUserByID), ctx, id)
+}
+
+// GetUserRole mocks base method.
+func (m *MockUserReadRepo) GetUserRole(ctx context.Context, userID int64) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserRole", ctx, userID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserRole indicates an expected call of GetUserRole.
+func (mr *MockUserReadRepoMockRecorder) GetUserRole(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserRole", reflect.TypeOf((*MockUserReadRepo)(nil).GetUserRole), ctx, userID)
+}
+
+// SearchUsersByEmail mocks base method.
+func (m *MockUserReadRepo) SearchUsersByEmail(ctx context.Context, userID int64, query string) ([]domain.UserSearchResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchUsersByEmail", ctx, userID, query)
+	ret0, _ := ret[0].([]domain.UserSearchResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchUsersByEmail indicates an expected call of SearchUsersByEmail.
+func (mr *MockUserReadRepoMockRecorder) SearchUsersByEmail(ctx, userID, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUsersByEmail", reflect.TypeOf((*MockUserReadRepo)(nil).SearchUsersByEmail), ctx, userID, query)
+}
+
+// MockUserProfileMutationRepo is a mock of UserProfileMutationRepo interface.
+type MockUserProfileMutationRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockUserProfileMutationRepoMockRecorder
+	isgomock struct{}
+}
+
+// MockUserProfileMutationRepoMockRecorder is the mock recorder for MockUserProfileMutationRepo.
+type MockUserProfileMutationRepoMockRecorder struct {
+	mock *MockUserProfileMutationRepo
+}
+
+// NewMockUserProfileMutationRepo creates a new mock instance.
+func NewMockUserProfileMutationRepo(ctrl *gomock.Controller) *MockUserProfileMutationRepo {
+	mock := &MockUserProfileMutationRepo{ctrl: ctrl}
+	mock.recorder = &MockUserProfileMutationRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUserProfileMutationRepo) EXPECT() *MockUserProfileMutationRepoMockRecorder {
+	return m.recorder
+}
+
+// UpdateAvatarFileKey mocks base method.
+func (m *MockUserProfileMutationRepo) UpdateAvatarFileKey(ctx context.Context, userID int64, avatarFileKey *string) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAvatarFileKey", ctx, userID, avatarFileKey)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateAvatarFileKey indicates an expected call of UpdateAvatarFileKey.
+func (mr *MockUserProfileMutationRepoMockRecorder) UpdateAvatarFileKey(ctx, userID, avatarFileKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAvatarFileKey", reflect.TypeOf((*MockUserProfileMutationRepo)(nil).UpdateAvatarFileKey), ctx, userID, avatarFileKey)
+}
+
+// UpdateBirthdate mocks base method.
+func (m *MockUserProfileMutationRepo) UpdateBirthdate(ctx context.Context, userID int64, birthdate *time.Time) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateBirthdate", ctx, userID, birthdate)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateBirthdate indicates an expected call of UpdateBirthdate.
+func (mr *MockUserProfileMutationRepoMockRecorder) UpdateBirthdate(ctx, userID, birthdate any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBirthdate", reflect.TypeOf((*MockUserProfileMutationRepo)(nil).UpdateBirthdate), ctx, userID, birthdate)
+}
+
+// MockUserSubscriptionRepo is a mock of UserSubscriptionRepo interface.
+type MockUserSubscriptionRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockUserSubscriptionRepoMockRecorder
+	isgomock struct{}
+}
+
+// MockUserSubscriptionRepoMockRecorder is the mock recorder for MockUserSubscriptionRepo.
+type MockUserSubscriptionRepoMockRecorder struct {
+	mock *MockUserSubscriptionRepo
+}
+
+// NewMockUserSubscriptionRepo creates a new mock instance.
+func NewMockUserSubscriptionRepo(ctrl *gomock.Controller) *MockUserSubscriptionRepo {
+	mock := &MockUserSubscriptionRepo{ctrl: ctrl}
+	mock.recorder = &MockUserSubscriptionRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUserSubscriptionRepo) EXPECT() *MockUserSubscriptionRepoMockRecorder {
+	return m.recorder
+}
+
+// GetActiveSubscription mocks base method.
+func (m *MockUserSubscriptionRepo) GetActiveSubscription(ctx context.Context, userID int64) (domain.SubscriptionInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetActiveSubscription", ctx, userID)
+	ret0, _ := ret[0].(domain.SubscriptionInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetActiveSubscription indicates an expected call of GetActiveSubscription.
+func (mr *MockUserSubscriptionRepoMockRecorder) GetActiveSubscription(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActiveSubscription", reflect.TypeOf((*MockUserSubscriptionRepo)(nil).GetActiveSubscription), ctx, userID)
+}
+
+// GetCoinsReceivedToday mocks base method.
+func (m *MockUserSubscriptionRepo) GetCoinsReceivedToday(ctx context.Context, userID int64) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCoinsReceivedToday", ctx, userID)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCoinsReceivedToday indicates an expected call of GetCoinsReceivedToday.
+func (mr *MockUserSubscriptionRepoMockRecorder) GetCoinsReceivedToday(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCoinsReceivedToday", reflect.TypeOf((*MockUserSubscriptionRepo)(nil).GetCoinsReceivedToday), ctx, userID)
+}
+
+// GetRoomsCreatedThisMonth mocks base method.
+func (m *MockUserSubscriptionRepo) GetRoomsCreatedThisMonth(ctx context.Context, userID int64) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRoomsCreatedThisMonth", ctx, userID)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRoomsCreatedThisMonth indicates an expected call of GetRoomsCreatedThisMonth.
+func (mr *MockUserSubscriptionRepoMockRecorder) GetRoomsCreatedThisMonth(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoomsCreatedThisMonth", reflect.TypeOf((*MockUserSubscriptionRepo)(nil).GetRoomsCreatedThisMonth), ctx, userID)
+}
+
+// GetSubscriptionTariffByCode mocks base method.
+func (m *MockUserSubscriptionRepo) GetSubscriptionTariffByCode(ctx context.Context, code string) (domain.SubscriptionInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubscriptionTariffByCode", ctx, code)
+	ret0, _ := ret[0].(domain.SubscriptionInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSubscriptionTariffByCode indicates an expected call of GetSubscriptionTariffByCode.
+func (mr *MockUserSubscriptionRepoMockRecorder) GetSubscriptionTariffByCode(ctx, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionTariffByCode", reflect.TypeOf((*MockUserSubscriptionRepo)(nil).GetSubscriptionTariffByCode), ctx, code)
+}
+
+// GetSubscriptionTariffOptions mocks base method.
+func (m *MockUserSubscriptionRepo) GetSubscriptionTariffOptions(
+	ctx context.Context,
+	tariffID int64,
+) ([]domain.SubscriptionOption, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubscriptionTariffOptions", ctx, tariffID)
+	ret0, _ := ret[0].([]domain.SubscriptionOption)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSubscriptionTariffOptions indicates an expected call of GetSubscriptionTariffOptions.
+func (mr *MockUserSubscriptionRepoMockRecorder) GetSubscriptionTariffOptions(ctx, tariffID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionTariffOptions", reflect.TypeOf((*MockUserSubscriptionRepo)(nil).GetSubscriptionTariffOptions), ctx, tariffID)
+}
+
+// MockUserMovieRepo is a mock of UserMovieRepo interface.
+type MockUserMovieRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockUserMovieRepoMockRecorder
+	isgomock struct{}
+}
+
+// MockUserMovieRepoMockRecorder is the mock recorder for MockUserMovieRepo.
+type MockUserMovieRepoMockRecorder struct {
+	mock *MockUserMovieRepo
+}
+
+// NewMockUserMovieRepo creates a new mock instance.
+func NewMockUserMovieRepo(ctrl *gomock.Controller) *MockUserMovieRepo {
+	mock := &MockUserMovieRepo{ctrl: ctrl}
+	mock.recorder = &MockUserMovieRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUserMovieRepo) EXPECT() *MockUserMovieRepoMockRecorder {
+	return m.recorder
+}
+
+// AddMovieToFavorites mocks base method.
+func (m *MockUserMovieRepo) AddMovieToFavorites(ctx context.Context, userID, movieID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddMovieToFavorites", ctx, userID, movieID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddMovieToFavorites indicates an expected call of AddMovieToFavorites.
+func (mr *MockUserMovieRepoMockRecorder) AddMovieToFavorites(ctx, userID, movieID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMovieToFavorites", reflect.TypeOf((*MockUserMovieRepo)(nil).AddMovieToFavorites), ctx, userID, movieID)
+}
+
+// DeleteMovieReview mocks base method.
+func (m *MockUserMovieRepo) DeleteMovieReview(ctx context.Context, userID, movieID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMovieReview", ctx, userID, movieID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteMovieReview indicates an expected call of DeleteMovieReview.
+func (mr *MockUserMovieRepoMockRecorder) DeleteMovieReview(ctx, userID, movieID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMovieReview", reflect.TypeOf((*MockUserMovieRepo)(nil).DeleteMovieReview), ctx, userID, movieID)
+}
+
+// DeleteReviewReaction mocks base method.
+func (m *MockUserMovieRepo) DeleteReviewReaction(ctx context.Context, userID, reviewID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteReviewReaction", ctx, userID, reviewID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteReviewReaction indicates an expected call of DeleteReviewReaction.
+func (mr *MockUserMovieRepoMockRecorder) DeleteReviewReaction(ctx, userID, reviewID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReviewReaction", reflect.TypeOf((*MockUserMovieRepo)(nil).DeleteReviewReaction), ctx, userID, reviewID)
+}
+
+// GetFavorites mocks base method.
+func (m *MockUserMovieRepo) GetFavorites(ctx context.Context, userID int64, limit, offset int32) ([]int64, int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFavorites", ctx, userID, limit, offset)
+	ret0, _ := ret[0].([]int64)
+	ret1, _ := ret[1].(int32)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetFavorites indicates an expected call of GetFavorites.
+func (mr *MockUserMovieRepoMockRecorder) GetFavorites(ctx, userID, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavorites", reflect.TypeOf((*MockUserMovieRepo)(nil).GetFavorites), ctx, userID, limit, offset)
+}
+
+// SetMovieRating mocks base method.
+func (m *MockUserMovieRepo) SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetMovieRating", ctx, userID, movieID, rating)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetMovieRating indicates an expected call of SetMovieRating.
+func (mr *MockUserMovieRepoMockRecorder) SetMovieRating(ctx, userID, movieID, rating any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieRating", reflect.TypeOf((*MockUserMovieRepo)(nil).SetMovieRating), ctx, userID, movieID, rating)
+}
+
+// SetMovieReview mocks base method.
+func (m *MockUserMovieRepo) SetMovieReview(ctx context.Context, userID, movieID int64, rating *float64, comment *string) (domain.MovieReviewResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetMovieReview", ctx, userID, movieID, rating, comment)
+	ret0, _ := ret[0].(domain.MovieReviewResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetMovieReview indicates an expected call of SetMovieReview.
+func (mr *MockUserMovieRepoMockRecorder) SetMovieReview(ctx, userID, movieID, rating, comment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieReview", reflect.TypeOf((*MockUserMovieRepo)(nil).SetMovieReview), ctx, userID, movieID, rating, comment)
+}
+
+// SetReviewReaction mocks base method.
+func (m *MockUserMovieRepo) SetReviewReaction(ctx context.Context, userID, reviewID int64, reaction string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetReviewReaction", ctx, userID, reviewID, reaction)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetReviewReaction indicates an expected call of SetReviewReaction.
+func (mr *MockUserMovieRepoMockRecorder) SetReviewReaction(ctx, userID, reviewID, reaction any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetReviewReaction", reflect.TypeOf((*MockUserMovieRepo)(nil).SetReviewReaction), ctx, userID, reviewID, reaction)
+}
+
+// ToggleFavorite mocks base method.
+func (m *MockUserMovieRepo) ToggleFavorite(ctx context.Context, userID, movieID int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToggleFavorite", ctx, userID, movieID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToggleFavorite indicates an expected call of ToggleFavorite.
+func (mr *MockUserMovieRepoMockRecorder) ToggleFavorite(ctx, userID, movieID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToggleFavorite", reflect.TypeOf((*MockUserMovieRepo)(nil).ToggleFavorite), ctx, userID, movieID)
+}
+
+// MockUserFriendRepo is a mock of UserFriendRepo interface.
+type MockUserFriendRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockUserFriendRepoMockRecorder
+	isgomock struct{}
+}
+
+// MockUserFriendRepoMockRecorder is the mock recorder for MockUserFriendRepo.
+type MockUserFriendRepoMockRecorder struct {
+	mock *MockUserFriendRepo
+}
+
+// NewMockUserFriendRepo creates a new mock instance.
+func NewMockUserFriendRepo(ctrl *gomock.Controller) *MockUserFriendRepo {
+	mock := &MockUserFriendRepo{ctrl: ctrl}
+	mock.recorder = &MockUserFriendRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUserFriendRepo) EXPECT() *MockUserFriendRepoMockRecorder {
+	return m.recorder
+}
+
+// AddFriend mocks base method.
+func (m *MockUserFriendRepo) AddFriend(ctx context.Context, userID, friendID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddFriend", ctx, userID, friendID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddFriend indicates an expected call of AddFriend.
+func (mr *MockUserFriendRepoMockRecorder) AddFriend(ctx, userID, friendID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFriend", reflect.TypeOf((*MockUserFriendRepo)(nil).AddFriend), ctx, userID, friendID)
+}
+
+// DeleteFriend mocks base method.
+func (m *MockUserFriendRepo) DeleteFriend(ctx context.Context, userID, friendID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteFriend", ctx, userID, friendID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFriend indicates an expected call of DeleteFriend.
+func (mr *MockUserFriendRepoMockRecorder) DeleteFriend(ctx, userID, friendID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFriend", reflect.TypeOf((*MockUserFriendRepo)(nil).DeleteFriend), ctx, userID, friendID)
+}
+
+// DeleteOutgoingFriendRequest mocks base method.
+func (m *MockUserFriendRepo) DeleteOutgoingFriendRequest(ctx context.Context, requestID, fromUserID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOutgoingFriendRequest", ctx, requestID, fromUserID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOutgoingFriendRequest indicates an expected call of DeleteOutgoingFriendRequest.
+func (mr *MockUserFriendRepoMockRecorder) DeleteOutgoingFriendRequest(ctx, requestID, fromUserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOutgoingFriendRequest", reflect.TypeOf((*MockUserFriendRepo)(nil).DeleteOutgoingFriendRequest), ctx, requestID, fromUserID)
+}
+
+// GetFriendRequests mocks base method.
+func (m *MockUserFriendRepo) GetFriendRequests(ctx context.Context, userID int64, direction string, limit int32) ([]domain.FriendRequestItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFriendRequests", ctx, userID, direction, limit)
+	ret0, _ := ret[0].([]domain.FriendRequestItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFriendRequests indicates an expected call of GetFriendRequests.
+func (mr *MockUserFriendRepoMockRecorder) GetFriendRequests(ctx, userID, direction, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriendRequests", reflect.TypeOf((*MockUserFriendRepo)(nil).GetFriendRequests), ctx, userID, direction, limit)
+}
+
+// GetFriendsList mocks base method.
+func (m *MockUserFriendRepo) GetFriendsList(ctx context.Context, userID int64, limit, offset int32) ([]domain.UserSearchResult, int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFriendsList", ctx, userID, limit, offset)
+	ret0, _ := ret[0].([]domain.UserSearchResult)
+	ret1, _ := ret[1].(int32)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetFriendsList indicates an expected call of GetFriendsList.
+func (mr *MockUserFriendRepoMockRecorder) GetFriendsList(ctx, userID, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriendsList", reflect.TypeOf((*MockUserFriendRepo)(nil).GetFriendsList), ctx, userID, limit, offset)
+}
+
+// RespondToFriendRequest mocks base method.
+func (m *MockUserFriendRepo) RespondToFriendRequest(ctx context.Context, requestID, userID int64, action string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RespondToFriendRequest", ctx, requestID, userID, action)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RespondToFriendRequest indicates an expected call of RespondToFriendRequest.
+func (mr *MockUserFriendRepoMockRecorder) RespondToFriendRequest(ctx, requestID, userID, action any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RespondToFriendRequest", reflect.TypeOf((*MockUserFriendRepo)(nil).RespondToFriendRequest), ctx, requestID, userID, action)
+}
+
+// SendFriendRequest mocks base method.
+func (m *MockUserFriendRepo) SendFriendRequest(ctx context.Context, fromUserID, toUserID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendFriendRequest", ctx, fromUserID, toUserID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SendFriendRequest indicates an expected call of SendFriendRequest.
+func (mr *MockUserFriendRepoMockRecorder) SendFriendRequest(ctx, fromUserID, toUserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendFriendRequest", reflect.TypeOf((*MockUserFriendRepo)(nil).SendFriendRequest), ctx, fromUserID, toUserID)
+}
+
 // MockUserRepo is a mock of UserRepo interface.
 type MockUserRepo struct {
 	ctrl     *gomock.Controller
@@ -70,35 +591,6 @@ func (mr *MockUserRepoMockRecorder) AddMovieToFavorites(ctx, userID, movieID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMovieToFavorites", reflect.TypeOf((*MockUserRepo)(nil).AddMovieToFavorites), ctx, userID, movieID)
 }
 
-// SetMovieRating mocks base method.
-func (m *MockUserRepo) SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetMovieRating", ctx, userID, movieID, rating)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetMovieRating indicates an expected call of SetMovieRating.
-func (mr *MockUserRepoMockRecorder) SetMovieRating(ctx, userID, movieID, rating any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieRating", reflect.TypeOf((*MockUserRepo)(nil).SetMovieRating), ctx, userID, movieID, rating)
-}
-
-// SetMovieReview mocks base method.
-func (m *MockUserRepo) SetMovieReview(ctx context.Context, userID, movieID int64, rating *float64, comment *string) (domain.MovieReviewResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetMovieReview", ctx, userID, movieID, rating, comment)
-	ret0, _ := ret[0].(domain.MovieReviewResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SetMovieReview indicates an expected call of SetMovieReview.
-func (mr *MockUserRepoMockRecorder) SetMovieReview(ctx, userID, movieID, rating, comment any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieReview", reflect.TypeOf((*MockUserRepo)(nil).SetMovieReview), ctx, userID, movieID, rating, comment)
-}
-
 // DeleteFriend mocks base method.
 func (m *MockUserRepo) DeleteFriend(ctx context.Context, userID, friendID int64) error {
 	m.ctrl.T.Helper()
@@ -111,20 +603,6 @@ func (m *MockUserRepo) DeleteFriend(ctx context.Context, userID, friendID int64)
 func (mr *MockUserRepoMockRecorder) DeleteFriend(ctx, userID, friendID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFriend", reflect.TypeOf((*MockUserRepo)(nil).DeleteFriend), ctx, userID, friendID)
-}
-
-// DeleteOutgoingFriendRequest mocks base method.
-func (m *MockUserRepo) DeleteOutgoingFriendRequest(ctx context.Context, requestID, fromUserID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteOutgoingFriendRequest", ctx, requestID, fromUserID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteOutgoingFriendRequest indicates an expected call of DeleteOutgoingFriendRequest.
-func (mr *MockUserRepoMockRecorder) DeleteOutgoingFriendRequest(ctx, requestID, fromUserID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOutgoingFriendRequest", reflect.TypeOf((*MockUserRepo)(nil).DeleteOutgoingFriendRequest), ctx, requestID, fromUserID)
 }
 
 // DeleteMovieReview mocks base method.
@@ -141,6 +619,20 @@ func (mr *MockUserRepoMockRecorder) DeleteMovieReview(ctx, userID, movieID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMovieReview", reflect.TypeOf((*MockUserRepo)(nil).DeleteMovieReview), ctx, userID, movieID)
 }
 
+// DeleteOutgoingFriendRequest mocks base method.
+func (m *MockUserRepo) DeleteOutgoingFriendRequest(ctx context.Context, requestID, fromUserID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOutgoingFriendRequest", ctx, requestID, fromUserID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOutgoingFriendRequest indicates an expected call of DeleteOutgoingFriendRequest.
+func (mr *MockUserRepoMockRecorder) DeleteOutgoingFriendRequest(ctx, requestID, fromUserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOutgoingFriendRequest", reflect.TypeOf((*MockUserRepo)(nil).DeleteOutgoingFriendRequest), ctx, requestID, fromUserID)
+}
+
 // DeleteReviewReaction mocks base method.
 func (m *MockUserRepo) DeleteReviewReaction(ctx context.Context, userID, reviewID int64) error {
 	m.ctrl.T.Helper()
@@ -153,6 +645,36 @@ func (m *MockUserRepo) DeleteReviewReaction(ctx context.Context, userID, reviewI
 func (mr *MockUserRepoMockRecorder) DeleteReviewReaction(ctx, userID, reviewID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReviewReaction", reflect.TypeOf((*MockUserRepo)(nil).DeleteReviewReaction), ctx, userID, reviewID)
+}
+
+// GetActiveSubscription mocks base method.
+func (m *MockUserRepo) GetActiveSubscription(ctx context.Context, userID int64) (domain.SubscriptionInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetActiveSubscription", ctx, userID)
+	ret0, _ := ret[0].(domain.SubscriptionInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetActiveSubscription indicates an expected call of GetActiveSubscription.
+func (mr *MockUserRepoMockRecorder) GetActiveSubscription(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActiveSubscription", reflect.TypeOf((*MockUserRepo)(nil).GetActiveSubscription), ctx, userID)
+}
+
+// GetCoinsReceivedToday mocks base method.
+func (m *MockUserRepo) GetCoinsReceivedToday(ctx context.Context, userID int64) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCoinsReceivedToday", ctx, userID)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCoinsReceivedToday indicates an expected call of GetCoinsReceivedToday.
+func (mr *MockUserRepoMockRecorder) GetCoinsReceivedToday(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCoinsReceivedToday", reflect.TypeOf((*MockUserRepo)(nil).GetCoinsReceivedToday), ctx, userID)
 }
 
 // GetFavorites mocks base method.
@@ -171,21 +693,6 @@ func (mr *MockUserRepoMockRecorder) GetFavorites(ctx, userID, limit, offset any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavorites", reflect.TypeOf((*MockUserRepo)(nil).GetFavorites), ctx, userID, limit, offset)
 }
 
-// GetFriendRequests mocks base method.
-func (m *MockUserRepo) GetFriendRequests(ctx context.Context, userID int64, direction string, limit int32) ([]domain.FriendRequestItem, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFriendRequests", ctx, userID, direction, limit)
-	ret0, _ := ret[0].([]domain.FriendRequestItem)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetFriendRequests indicates an expected call of GetFriendRequests.
-func (mr *MockUserRepoMockRecorder) GetFriendRequests(ctx, userID, direction, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriendRequests", reflect.TypeOf((*MockUserRepo)(nil).GetFriendRequests), ctx, userID, direction, limit)
-}
-
 // GetFriend mocks base method.
 func (m *MockUserRepo) GetFriend(ctx context.Context, userID, friendID int64) (*domain.User, error) {
 	m.ctrl.T.Helper()
@@ -199,6 +706,21 @@ func (m *MockUserRepo) GetFriend(ctx context.Context, userID, friendID int64) (*
 func (mr *MockUserRepoMockRecorder) GetFriend(ctx, userID, friendID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriend", reflect.TypeOf((*MockUserRepo)(nil).GetFriend), ctx, userID, friendID)
+}
+
+// GetFriendRequests mocks base method.
+func (m *MockUserRepo) GetFriendRequests(ctx context.Context, userID int64, direction string, limit int32) ([]domain.FriendRequestItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFriendRequests", ctx, userID, direction, limit)
+	ret0, _ := ret[0].([]domain.FriendRequestItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFriendRequests indicates an expected call of GetFriendRequests.
+func (mr *MockUserRepoMockRecorder) GetFriendRequests(ctx, userID, direction, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriendRequests", reflect.TypeOf((*MockUserRepo)(nil).GetFriendRequests), ctx, userID, direction, limit)
 }
 
 // GetFriendsList mocks base method.
@@ -215,6 +737,54 @@ func (m *MockUserRepo) GetFriendsList(ctx context.Context, userID int64, limit, 
 func (mr *MockUserRepoMockRecorder) GetFriendsList(ctx, userID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriendsList", reflect.TypeOf((*MockUserRepo)(nil).GetFriendsList), ctx, userID, limit, offset)
+}
+
+// GetRoomsCreatedThisMonth mocks base method.
+func (m *MockUserRepo) GetRoomsCreatedThisMonth(ctx context.Context, userID int64) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRoomsCreatedThisMonth", ctx, userID)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRoomsCreatedThisMonth indicates an expected call of GetRoomsCreatedThisMonth.
+func (mr *MockUserRepoMockRecorder) GetRoomsCreatedThisMonth(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoomsCreatedThisMonth", reflect.TypeOf((*MockUserRepo)(nil).GetRoomsCreatedThisMonth), ctx, userID)
+}
+
+// GetSubscriptionTariffByCode mocks base method.
+func (m *MockUserRepo) GetSubscriptionTariffByCode(ctx context.Context, code string) (domain.SubscriptionInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubscriptionTariffByCode", ctx, code)
+	ret0, _ := ret[0].(domain.SubscriptionInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSubscriptionTariffByCode indicates an expected call of GetSubscriptionTariffByCode.
+func (mr *MockUserRepoMockRecorder) GetSubscriptionTariffByCode(ctx, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionTariffByCode", reflect.TypeOf((*MockUserRepo)(nil).GetSubscriptionTariffByCode), ctx, code)
+}
+
+// GetSubscriptionTariffOptions mocks base method.
+func (m *MockUserRepo) GetSubscriptionTariffOptions(
+	ctx context.Context,
+	tariffID int64,
+) ([]domain.SubscriptionOption, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubscriptionTariffOptions", ctx, tariffID)
+	ret0, _ := ret[0].([]domain.SubscriptionOption)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSubscriptionTariffOptions indicates an expected call of GetSubscriptionTariffOptions.
+func (mr *MockUserRepoMockRecorder) GetSubscriptionTariffOptions(ctx, tariffID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionTariffOptions", reflect.TypeOf((*MockUserRepo)(nil).GetSubscriptionTariffOptions), ctx, tariffID)
 }
 
 // GetUserByEmail mocks base method.
@@ -291,20 +861,6 @@ func (mr *MockUserRepoMockRecorder) SearchUsersByEmail(ctx, userID, query any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUsersByEmail", reflect.TypeOf((*MockUserRepo)(nil).SearchUsersByEmail), ctx, userID, query)
 }
 
-// SetReviewReaction mocks base method.
-func (m *MockUserRepo) SetReviewReaction(ctx context.Context, userID, reviewID int64, reaction string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetReviewReaction", ctx, userID, reviewID, reaction)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetReviewReaction indicates an expected call of SetReviewReaction.
-func (mr *MockUserRepoMockRecorder) SetReviewReaction(ctx, userID, reviewID, reaction any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetReviewReaction", reflect.TypeOf((*MockUserRepo)(nil).SetReviewReaction), ctx, userID, reviewID, reaction)
-}
-
 // SendFriendRequest mocks base method.
 func (m *MockUserRepo) SendFriendRequest(ctx context.Context, fromUserID, toUserID int64) (int64, error) {
 	m.ctrl.T.Helper()
@@ -318,6 +874,49 @@ func (m *MockUserRepo) SendFriendRequest(ctx context.Context, fromUserID, toUser
 func (mr *MockUserRepoMockRecorder) SendFriendRequest(ctx, fromUserID, toUserID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendFriendRequest", reflect.TypeOf((*MockUserRepo)(nil).SendFriendRequest), ctx, fromUserID, toUserID)
+}
+
+// SetMovieRating mocks base method.
+func (m *MockUserRepo) SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetMovieRating", ctx, userID, movieID, rating)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetMovieRating indicates an expected call of SetMovieRating.
+func (mr *MockUserRepoMockRecorder) SetMovieRating(ctx, userID, movieID, rating any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieRating", reflect.TypeOf((*MockUserRepo)(nil).SetMovieRating), ctx, userID, movieID, rating)
+}
+
+// SetMovieReview mocks base method.
+func (m *MockUserRepo) SetMovieReview(ctx context.Context, userID, movieID int64, rating *float64, comment *string) (domain.MovieReviewResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetMovieReview", ctx, userID, movieID, rating, comment)
+	ret0, _ := ret[0].(domain.MovieReviewResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetMovieReview indicates an expected call of SetMovieReview.
+func (mr *MockUserRepoMockRecorder) SetMovieReview(ctx, userID, movieID, rating, comment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMovieReview", reflect.TypeOf((*MockUserRepo)(nil).SetMovieReview), ctx, userID, movieID, rating, comment)
+}
+
+// SetReviewReaction mocks base method.
+func (m *MockUserRepo) SetReviewReaction(ctx context.Context, userID, reviewID int64, reaction string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetReviewReaction", ctx, userID, reviewID, reaction)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetReviewReaction indicates an expected call of SetReviewReaction.
+func (mr *MockUserRepoMockRecorder) SetReviewReaction(ctx, userID, reviewID, reaction any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetReviewReaction", reflect.TypeOf((*MockUserRepo)(nil).SetReviewReaction), ctx, userID, reviewID, reaction)
 }
 
 // ToggleFavorite mocks base method.
@@ -464,21 +1063,6 @@ func (mr *MockSupportRepoMockRecorder) GetTicketStatistics(ctx, allowedCategorie
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTicketStatistics", reflect.TypeOf((*MockSupportRepo)(nil).GetTicketStatistics), ctx, allowedCategories)
 }
 
-// HasTicketFile mocks base method.
-func (m *MockSupportRepo) HasTicketFile(ctx context.Context, ticketID int64, fileKey string) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HasTicketFile", ctx, ticketID, fileKey)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// HasTicketFile indicates an expected call of HasTicketFile.
-func (mr *MockSupportRepoMockRecorder) HasTicketFile(ctx, ticketID, fileKey any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasTicketFile", reflect.TypeOf((*MockSupportRepo)(nil).HasTicketFile), ctx, ticketID, fileKey)
-}
-
 // GetTickets mocks base method.
 func (m *MockSupportRepo) GetTickets(ctx context.Context, userID int64, req domain.GetSupportTicketsRequest) ([]domain.SupportTicketResponse, error) {
 	m.ctrl.T.Helper()
@@ -492,6 +1076,21 @@ func (m *MockSupportRepo) GetTickets(ctx context.Context, userID int64, req doma
 func (mr *MockSupportRepoMockRecorder) GetTickets(ctx, userID, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTickets", reflect.TypeOf((*MockSupportRepo)(nil).GetTickets), ctx, userID, req)
+}
+
+// HasTicketFile mocks base method.
+func (m *MockSupportRepo) HasTicketFile(ctx context.Context, ticketID int64, fileKey string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasTicketFile", ctx, ticketID, fileKey)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HasTicketFile indicates an expected call of HasTicketFile.
+func (mr *MockSupportRepoMockRecorder) HasTicketFile(ctx, ticketID, fileKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasTicketFile", reflect.TypeOf((*MockSupportRepo)(nil).HasTicketFile), ctx, ticketID, fileKey)
 }
 
 // UpdateTicket mocks base method.

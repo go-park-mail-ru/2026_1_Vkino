@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -56,7 +57,7 @@ func newUserHandler(t *testing.T, client UserClient) http.Handler {
 }
 
 func doRequest(handler http.Handler, method, path string, body io.Reader) *httptest.ResponseRecorder {
-	req := httptest.NewRequest(method, path, body)
+	req := httptest.NewRequestWithContext(context.Background(), method, path, body)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}

@@ -17,6 +17,7 @@ func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Mov
 		Director:           movie.Director,
 		TrailerURL:         movie.TrailerURL,
 		ContentType:        localizeMovieContentType(movie.ContentType),
+		IsPaid:             movie.IsPaid,
 		ReleaseYear:        movie.ReleaseYear,
 		DurationSeconds:    movie.DurationSeconds,
 		AgeLimit:           movie.AgeLimit,
@@ -209,6 +210,7 @@ func (u *MovieUsecase) buildEpisodeResponses(
 			Title:           episode.Title,
 			Description:     episode.Description,
 			DurationSeconds: episode.DurationSeconds,
+			IsPaid:          episode.IsPaid,
 			PictureFileKey:  episodeImageURL,
 			VideoURL:        videoURL,
 		})

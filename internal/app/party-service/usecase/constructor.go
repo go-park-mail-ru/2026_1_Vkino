@@ -1,10 +1,17 @@
 package usecase
 
-import "github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/repository"
+import (
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/repository"
+)
 
-func New(partyRepo repository.PartyRepo, eventBroker repository.RoomEventBroker) Usecase {
+func New(
+	partyRepo repository.PartyRepo,
+	eventBroker repository.RoomEventBroker,
+	subscriptionReader SubscriptionReader,
+) Usecase {
 	return &service{
-		partyRepo:   partyRepo,
-		eventBroker: eventBroker,
+		partyRepo:          partyRepo,
+		eventBroker:        eventBroker,
+		subscriptionReader: subscriptionReader,
 	}
 }

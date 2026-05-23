@@ -79,5 +79,9 @@ func readJSON[T any](w http.ResponseWriter, r *http.Request, dst *T) bool {
 }
 
 func writeGRPCError(w http.ResponseWriter, err error) {
+	if writeSubscriptionGRPCError(w, err) {
+		return
+	}
+
 	respond.Error(w, err)
 }

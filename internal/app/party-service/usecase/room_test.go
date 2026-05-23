@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"slices"
 	"testing"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
@@ -12,7 +13,7 @@ func TestGetRoomRequiresMembershipEvenForPublicRoom(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{})
+	svc := New(repo, &roomUsecaseBroker{}, nil)
 
 	_, err := svc.GetRoom(context.Background(), 3, 5)
 
@@ -23,7 +24,7 @@ func TestGetRoomHidesInviteForNonHost(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{})
+	svc := New(repo, &roomUsecaseBroker{}, nil)
 
 	resp, err := svc.GetRoom(context.Background(), 2, 5)
 	require.NoError(t, err)
@@ -34,7 +35,7 @@ func TestGetRoomInviteAllowsHostOnly(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{})
+	svc := New(repo, &roomUsecaseBroker{}, nil)
 
 	resp, err := svc.GetRoomInvite(context.Background(), 1, 5)
 	require.NoError(t, err)
@@ -46,7 +47,7 @@ func TestInviteFriendToRoomCreatesPendingMember(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{})
+	svc := New(repo, &roomUsecaseBroker{}, nil)
 
 	resp, err := svc.InviteFriendToRoom(context.Background(), 1, domain.InviteFriendToRoomRequest{
 		RoomID:        5,
@@ -65,7 +66,7 @@ func TestGetRoomActivatesPendingMember(t *testing.T) {
 
 	repo := newRoomUsecaseRepo()
 	repo.room.Members = append(repo.room.Members, domain.RoomMember{UserID: 9, Role: "member", Status: "pending"})
-	svc := New(repo, &roomUsecaseBroker{})
+	svc := New(repo, &roomUsecaseBroker{}, nil)
 
 	resp, err := svc.GetRoom(context.Background(), 9, 5)
 	require.NoError(t, err)
@@ -78,7 +79,7 @@ func TestJoinRoomUsesInviteOnly(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{})
+	svc := New(repo, &roomUsecaseBroker{}, nil)
 
 	_, err := svc.JoinRoom(context.Background(), 9, domain.JoinRoomRequest{})
 
@@ -89,7 +90,7 @@ func TestJoinRoomAddsMemberByInviteAndHidesInviteForNonHost(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{})
+	svc := New(repo, &roomUsecaseBroker{}, nil)
 
 	resp, err := svc.JoinRoom(context.Background(), 9, domain.JoinRoomRequest{
 		InviteLink: "https://example.com/watch-party/join/invite-123",
@@ -104,7 +105,7 @@ func TestGetOverviewHidesInviteOutsideHostRooms(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{})
+	svc := New(repo, &roomUsecaseBroker{}, nil)
 
 	resp, err := svc.GetOverview(context.Background(), 1)
 	require.NoError(t, err)
@@ -118,7 +119,7 @@ func TestSubscribeRoomRequiresMembership(t *testing.T) {
 
 	repo := newRoomUsecaseRepo()
 	broker := &roomUsecaseBroker{}
-	svc := New(repo, broker)
+	svc := New(repo, broker, nil)
 
 	_, _, err := svc.SubscribeRoom(context.Background(), 3, domain.SubscribeRoomRequest{RoomID: 5})
 
@@ -283,7 +284,7 @@ func (b *roomUsecaseBroker) Publish(context.Context, domain.RoomEvent) error {
 	return nil
 }
 
-func (b *roomUsecaseBroker) Subscribe(_ context.Context, roomID int64) (<-chan domain.RoomEvent, func(), error) {
+func (b *roomUsecaseBroker) Subscribe(_ context.Context, roomID, _ int64) (<-chan domain.RoomEvent, func(), error) {
 	b.subscribedRoomIDs = append(b.subscribedRoomIDs, roomID)
 
 	ch := make(chan domain.RoomEvent)
@@ -291,4 +292,16 @@ func (b *roomUsecaseBroker) Subscribe(_ context.Context, roomID int64) (<-chan d
 	return ch, func() {
 		close(ch)
 	}, nil
+}
+
+func (b *roomUsecaseBroker) ActiveUsers(roomID int64) int32 {
+	if slices.Contains(b.subscribedRoomIDs, roomID) {
+		return 1
+	}
+
+	return 0
+}
+
+func (b *roomUsecaseBroker) IsUserActive(int64, int64) bool {
+	return false
 }

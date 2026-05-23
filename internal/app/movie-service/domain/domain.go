@@ -11,6 +11,7 @@ type Movie struct {
 	Director           string
 	TrailerURL         string
 	ContentType        string
+	IsPaid             bool
 	ReleaseYear        int
 	DurationSeconds    int
 	AgeLimit           int
@@ -71,6 +72,8 @@ type Episode struct {
 	Title           string
 	Description     string
 	DurationSeconds int
+	IsPaid          bool
+	MovieIsPaid     bool
 	PictureFileKey  string
 	VideoFileKey    string
 }

@@ -46,9 +46,10 @@ type Usecase interface {
 }
 
 type MovieUsecase struct {
-	movieRepo   repository.MovieRepo
-	posterStore storage.FileStorage
-	cardStore   storage.FileStorage
-	actorStore  storage.FileStorage
-	videoStore  storage.FileStorage
+	movieRepo          repository.MovieRepo
+	subscriptionReader SubscriptionReader
+	posterStore        storage.FileStorage
+	cardStore          storage.FileStorage
+	actorStore         storage.FileStorage
+	videoStore         storage.FileStorage
 }

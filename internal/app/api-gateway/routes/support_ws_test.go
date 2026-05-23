@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,7 +13,12 @@ import (
 func TestSupportWSAuthorization(t *testing.T) {
 	t.Parallel()
 
-	req := httptest.NewRequest(http.MethodGet, "/support/tickets/1/subscribe", nil)
+	req := httptest.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		"/support/tickets/1/subscribe",
+		nil,
+	)
 	req.Header.Set("Authorization", "Bearer token")
 
 	got := supportWSAuthorization(req)
@@ -24,7 +30,12 @@ func TestSupportWSAuthorization(t *testing.T) {
 func TestSupportWSAuthorization_QueryToken(t *testing.T) {
 	t.Parallel()
 
-	req := httptest.NewRequest(http.MethodGet, "/support/tickets/1/subscribe?access_token=abc", nil)
+	req := httptest.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		"/support/tickets/1/subscribe?access_token=abc",
+		nil,
+	)
 	got := supportWSAuthorization(req)
 
 	if got != "Bearer abc" {
@@ -35,7 +46,12 @@ func TestSupportWSAuthorization_QueryToken(t *testing.T) {
 func TestSupportWSAuthorization_Empty(t *testing.T) {
 	t.Parallel()
 
-	req := httptest.NewRequest(http.MethodGet, "/support/tickets/1/subscribe", nil)
+	req := httptest.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		"/support/tickets/1/subscribe",
+		nil,
+	)
 	got := supportWSAuthorization(req)
 
 	if got != "" {

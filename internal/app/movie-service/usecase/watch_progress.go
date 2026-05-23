@@ -19,6 +19,10 @@ func (u *MovieUsecase) GetContinueWatching(
 		limit = 5
 	}
 
+	if err := u.ensureSmartContinueAllowed(ctx, userID); err != nil {
+		return nil, err
+	}
+
 	items, err := u.movieRepo.GetContinueWatching(ctx, userID, limit)
 	if err != nil {
 		return nil, domain.ErrInternal

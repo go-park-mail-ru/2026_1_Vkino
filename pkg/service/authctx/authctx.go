@@ -20,8 +20,9 @@ var (
 )
 
 type Context struct {
-	UserID int64
-	Email  string
+	UserID        int64
+	Email         string
+	Authorization string
 }
 
 type ctxKey string
@@ -97,8 +98,9 @@ func ValidateIncomingContext(ctx context.Context, authClient authv1.AuthServiceC
 	}
 
 	authCtx := Context{
-		UserID: resp.GetUserId(),
-		Email:  resp.GetEmail(),
+		UserID:        resp.GetUserId(),
+		Email:         resp.GetEmail(),
+		Authorization: "Bearer " + accessToken,
 	}
 
 	return authCtx, nil
