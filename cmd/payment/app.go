@@ -43,6 +43,7 @@ func Run(configPath string) error {
 	if err != nil {
 		return err
 	}
+
 	defer func() { _ = authConn.Close() }()
 	defer func() { _ = userConn.Close() }()
 

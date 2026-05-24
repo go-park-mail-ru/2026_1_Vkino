@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,11 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/payment-service/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/payment-service/repository"
+)
+
+var (
+	ErrEmptyPaymentURL = errors.New("payment request URL is empty")
+	ErrUntrustedHost   = errors.New("untrusted payment endpoint")
 )
 
 const defaultHTTPTimeout = 30 * time.Second
@@ -123,10 +129,19 @@ func (c *Client) do(
 		return err
 	}
 
+	if req.URL == nil || req.URL.Host == "" {
+		return ErrEmptyPaymentURL
+	}
+	// чтобы линтер не ругался
+	if req.URL.Host != "api.yookassa.ru" && req.URL.Host != "yookassa.ru" {
+		return fmt.Errorf("host %s: %w", req.URL.Host, ErrUntrustedHost)
+	}
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("%w: %w", domain.ErrYooKassaUnavailable, err)
 	}
+
 	defer func() { _ = resp.Body.Close() }()
 
 	return c.decodeHTTPResponse(resp, dst)
