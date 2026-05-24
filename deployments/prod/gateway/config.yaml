@@ -39,6 +39,10 @@ party_grpc:
   address: "party-service:9093"
   request_timeout: 5s
 
+payment_grpc:
+  address: "payment-service:9094"
+  request_timeout: 10s
+
 user_auth:
   refresh_cookie_name: "refresh_token"
   refresh_token_ttl: "336h"

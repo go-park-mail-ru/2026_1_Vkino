@@ -51,6 +51,37 @@ const (
 		limit 1
 	`
 
+	sqlGetSubscriptionTariffByID = `
+		select
+			st.id,
+			st.code,
+			st.title,
+			st.level,
+			st.duration_days
+		from subscription_tariff st
+		where st.id = $1
+			and st.is_active = true
+		limit 1
+	`
+
+	sqlDeactivateUserSubscriptions = `
+		update user_subscription
+		set is_active = false, updated_at = now()
+		where user_id = $1
+			and is_active = true
+	`
+
+	sqlCreateUserSubscription = `
+		insert into user_subscription (
+			user_id,
+			subscription_tariff_id,
+			starts_at,
+			expires_at,
+			is_active
+		)
+		values ($1, $2, $3, $4, true)
+	`
+
 	sqlGetSubscriptionTariffOptions = `
 		select
 			so.code,

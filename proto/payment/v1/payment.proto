@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package payment.v1;
+
+option go_package = "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/payment/v1;paymentv1";
+
+service PaymentService {
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+  rpc ListMoneyTariffs(ListMoneyTariffsRequest) returns (ListMoneyTariffsResponse);
+  rpc HandleYooKassaWebhook(HandleYooKassaWebhookRequest) returns (HandleYooKassaWebhookResponse);
+}
+
+message CreatePaymentRequest {
+  string product_type = 1;
+  int64 product_ref_id = 2;
+}
+
+message CreatePaymentResponse {
+  int64 payment_id = 1;
+  string status = 2;
+  string confirmation_url = 3;
+}
+
+message GetPaymentRequest {
+  int64 payment_id = 1;
+}
+
+message GetPaymentResponse {
+  int64 payment_id = 1;
+  string product_type = 2;
+  int64 product_ref_id = 3;
+  string status = 4;
+  string amount = 5;
+  string currency = 6;
+  optional string confirmation_url = 7;
+  optional string paid_at = 8;
+}
+
+message ListMoneyTariffsRequest {}
+
+message MoneyTariff {
+  int64 id = 1;
+  string code = 2;
+  string title = 3;
+  int32 price_money = 4;
+  int32 duration_days = 5;
+  int32 level = 6;
+}
+
+message ListMoneyTariffsResponse {
+  repeated MoneyTariff tariffs = 1;
+}
+
+message HandleYooKassaWebhookRequest {
+  bytes body = 1;
+  string client_ip = 2;
+}
+
+message HandleYooKassaWebhookResponse {}

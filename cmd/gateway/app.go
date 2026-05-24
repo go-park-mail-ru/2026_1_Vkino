@@ -8,6 +8,7 @@ import (
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	partyv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/party/v1"
+	paymentv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/payment/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/grpcx"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	rootmw "github.com/go-park-mail-ru/2026_1_VKino/pkg/httpx/middleware"
@@ -42,7 +43,7 @@ func Run(configPath string) error {
 		return fmt.Errorf("start metrics server: %w", err)
 	}
 
-	authConn, userConn, movieConn, partyConn, closeConns, err := openGatewayConns(cfg)
+	authConn, userConn, movieConn, partyConn, paymentConn, closeConns, err := openGatewayConns(cfg)
 	if err != nil {
 		return err
 	}
@@ -54,6 +55,7 @@ func Run(configPath string) error {
 		routes.NewUserClient(userConn, movieConn),
 		moviev1.NewMovieServiceClient(movieConn),
 		partyv1.NewPartyServiceClient(partyConn),
+		paymentv1.NewPaymentServiceClient(paymentConn),
 	)...)...)
 
 	appLogger.WithField("port", cfg.Server.Port).Info("starting api gateway")
@@ -69,17 +71,17 @@ func Run(configPath string) error {
 
 func openGatewayConns(
 	cfg *Config,
-) (authConn, userConn, movieConn, partyConn *grpc.ClientConn, closeFn func(), err error) {
+) (authConn, userConn, movieConn, partyConn, paymentConn *grpc.ClientConn, closeFn func(), err error) {
 	authConn, err = openNamedGRPCConn("auth", cfg.AuthGRPC)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, err
 	}
 
 	userConn, err = openNamedGRPCConn("user", cfg.UserGRPC)
 	if err != nil {
 		_ = authConn.Close()
 
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, err
 	}
 
 	movieConn, err = openNamedGRPCConn("movie", cfg.MovieGRPC)
@@ -87,7 +89,7 @@ func openGatewayConns(
 		_ = userConn.Close()
 		_ = authConn.Close()
 
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, err
 	}
 
 	partyConn, err = openNamedGRPCConn("party", cfg.PartyGRPC)
@@ -96,10 +98,21 @@ func openGatewayConns(
 		_ = userConn.Close()
 		_ = authConn.Close()
 
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, err
 	}
 
-	return authConn, userConn, movieConn, partyConn, func() {
+	paymentConn, err = openNamedGRPCConn("payment", cfg.PaymentGRPC)
+	if err != nil {
+		_ = partyConn.Close()
+		_ = movieConn.Close()
+		_ = userConn.Close()
+		_ = authConn.Close()
+
+		return nil, nil, nil, nil, nil, nil, err
+	}
+
+	return authConn, userConn, movieConn, partyConn, paymentConn, func() {
+		_ = paymentConn.Close()
 		_ = partyConn.Close()
 		_ = movieConn.Close()
 		_ = userConn.Close()

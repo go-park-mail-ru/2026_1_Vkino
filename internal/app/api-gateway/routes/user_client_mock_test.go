@@ -44,6 +44,26 @@ func (m *MockUserClient) EXPECT() *MockUserClientMockRecorder {
 	return m.recorder
 }
 
+// ActivateSubscription mocks base method.
+func (m *MockUserClient) ActivateSubscription(ctx context.Context, in *userv1.ActivateSubscriptionRequest, opts ...grpc.CallOption) (*userv1.ActivateSubscriptionResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ActivateSubscription", varargs...)
+	ret0, _ := ret[0].(*userv1.ActivateSubscriptionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActivateSubscription indicates an expected call of ActivateSubscription.
+func (mr *MockUserClientMockRecorder) ActivateSubscription(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActivateSubscription", reflect.TypeOf((*MockUserClient)(nil).ActivateSubscription), varargs...)
+}
+
 // AddFriend mocks base method.
 func (m *MockUserClient) AddFriend(ctx context.Context, in *userv1.AddFriendRequest, opts ...grpc.CallOption) (*userv1.AddFriendResponse, error) {
 	m.ctrl.T.Helper()

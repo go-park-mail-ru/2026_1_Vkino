@@ -27,8 +27,9 @@ type Config struct {
 	AuthGRPC  ServiceGRPCConfig `mapstructure:"auth_grpc"`
 	UserGRPC  ServiceGRPCConfig `mapstructure:"user_grpc"`
 	MovieGRPC ServiceGRPCConfig `mapstructure:"movie_grpc"`
-	PartyGRPC ServiceGRPCConfig `mapstructure:"party_grpc"`
-	UserAuth  UserAuthConfig    `mapstructure:"user_auth"`
+	PartyGRPC   ServiceGRPCConfig `mapstructure:"party_grpc"`
+	PaymentGRPC ServiceGRPCConfig `mapstructure:"payment_grpc"`
+	UserAuth    UserAuthConfig    `mapstructure:"user_auth"`
 }
 
 func (c *Config) AuthRequestTimeout() time.Duration {
@@ -45,6 +46,10 @@ func (c *Config) MovieRequestTimeout() time.Duration {
 
 func (c *Config) PartyRequestTimeout() time.Duration {
 	return c.PartyGRPC.RequestTimeout
+}
+
+func (c *Config) PaymentRequestTimeout() time.Duration {
+	return c.PaymentGRPC.RequestTimeout
 }
 
 func (c *Config) RefreshCookieName() string {

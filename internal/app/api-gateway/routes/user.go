@@ -109,6 +109,14 @@ func (c grpcUserClient) GetSubscriptionCapabilities(
 	return c.user.GetSubscriptionCapabilities(ctx, in, opts...)
 }
 
+func (c grpcUserClient) ActivateSubscription(
+	ctx context.Context,
+	in *userv1.ActivateSubscriptionRequest,
+	opts ...grpc.CallOption,
+) (*userv1.ActivateSubscriptionResponse, error) {
+	return c.user.ActivateSubscription(ctx, in, opts...)
+}
+
 func (c grpcUserClient) SearchUsersByEmail(
 	ctx context.Context,
 	in *userv1.SearchUsersByEmailRequest,

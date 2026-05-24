@@ -195,6 +195,34 @@ func (m *MockUserSubscriptionRepo) EXPECT() *MockUserSubscriptionRepoMockRecorde
 	return m.recorder
 }
 
+// CreateUserSubscription mocks base method.
+func (m *MockUserSubscriptionRepo) CreateUserSubscription(ctx context.Context, userID, tariffID int64, startsAt, expiresAt time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUserSubscription", ctx, userID, tariffID, startsAt, expiresAt)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateUserSubscription indicates an expected call of CreateUserSubscription.
+func (mr *MockUserSubscriptionRepoMockRecorder) CreateUserSubscription(ctx, userID, tariffID, startsAt, expiresAt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserSubscription", reflect.TypeOf((*MockUserSubscriptionRepo)(nil).CreateUserSubscription), ctx, userID, tariffID, startsAt, expiresAt)
+}
+
+// DeactivateUserSubscriptions mocks base method.
+func (m *MockUserSubscriptionRepo) DeactivateUserSubscriptions(ctx context.Context, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeactivateUserSubscriptions", ctx, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeactivateUserSubscriptions indicates an expected call of DeactivateUserSubscriptions.
+func (mr *MockUserSubscriptionRepoMockRecorder) DeactivateUserSubscriptions(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeactivateUserSubscriptions", reflect.TypeOf((*MockUserSubscriptionRepo)(nil).DeactivateUserSubscriptions), ctx, userID)
+}
+
 // GetActiveSubscription mocks base method.
 func (m *MockUserSubscriptionRepo) GetActiveSubscription(ctx context.Context, userID int64) (domain.SubscriptionInfo, error) {
 	m.ctrl.T.Helper()
@@ -255,11 +283,23 @@ func (mr *MockUserSubscriptionRepoMockRecorder) GetSubscriptionTariffByCode(ctx,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionTariffByCode", reflect.TypeOf((*MockUserSubscriptionRepo)(nil).GetSubscriptionTariffByCode), ctx, code)
 }
 
+// GetSubscriptionTariffByID mocks base method.
+func (m *MockUserSubscriptionRepo) GetSubscriptionTariffByID(ctx context.Context, tariffID int64) (domain.SubscriptionTariff, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubscriptionTariffByID", ctx, tariffID)
+	ret0, _ := ret[0].(domain.SubscriptionTariff)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSubscriptionTariffByID indicates an expected call of GetSubscriptionTariffByID.
+func (mr *MockUserSubscriptionRepoMockRecorder) GetSubscriptionTariffByID(ctx, tariffID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionTariffByID", reflect.TypeOf((*MockUserSubscriptionRepo)(nil).GetSubscriptionTariffByID), ctx, tariffID)
+}
+
 // GetSubscriptionTariffOptions mocks base method.
-func (m *MockUserSubscriptionRepo) GetSubscriptionTariffOptions(
-	ctx context.Context,
-	tariffID int64,
-) ([]domain.SubscriptionOption, error) {
+func (m *MockUserSubscriptionRepo) GetSubscriptionTariffOptions(ctx context.Context, tariffID int64) ([]domain.SubscriptionOption, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubscriptionTariffOptions", ctx, tariffID)
 	ret0, _ := ret[0].([]domain.SubscriptionOption)
@@ -591,6 +631,34 @@ func (mr *MockUserRepoMockRecorder) AddMovieToFavorites(ctx, userID, movieID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMovieToFavorites", reflect.TypeOf((*MockUserRepo)(nil).AddMovieToFavorites), ctx, userID, movieID)
 }
 
+// CreateUserSubscription mocks base method.
+func (m *MockUserRepo) CreateUserSubscription(ctx context.Context, userID, tariffID int64, startsAt, expiresAt time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUserSubscription", ctx, userID, tariffID, startsAt, expiresAt)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateUserSubscription indicates an expected call of CreateUserSubscription.
+func (mr *MockUserRepoMockRecorder) CreateUserSubscription(ctx, userID, tariffID, startsAt, expiresAt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserSubscription", reflect.TypeOf((*MockUserRepo)(nil).CreateUserSubscription), ctx, userID, tariffID, startsAt, expiresAt)
+}
+
+// DeactivateUserSubscriptions mocks base method.
+func (m *MockUserRepo) DeactivateUserSubscriptions(ctx context.Context, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeactivateUserSubscriptions", ctx, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeactivateUserSubscriptions indicates an expected call of DeactivateUserSubscriptions.
+func (mr *MockUserRepoMockRecorder) DeactivateUserSubscriptions(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeactivateUserSubscriptions", reflect.TypeOf((*MockUserRepo)(nil).DeactivateUserSubscriptions), ctx, userID)
+}
+
 // DeleteFriend mocks base method.
 func (m *MockUserRepo) DeleteFriend(ctx context.Context, userID, friendID int64) error {
 	m.ctrl.T.Helper()
@@ -769,11 +837,23 @@ func (mr *MockUserRepoMockRecorder) GetSubscriptionTariffByCode(ctx, code any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionTariffByCode", reflect.TypeOf((*MockUserRepo)(nil).GetSubscriptionTariffByCode), ctx, code)
 }
 
+// GetSubscriptionTariffByID mocks base method.
+func (m *MockUserRepo) GetSubscriptionTariffByID(ctx context.Context, tariffID int64) (domain.SubscriptionTariff, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubscriptionTariffByID", ctx, tariffID)
+	ret0, _ := ret[0].(domain.SubscriptionTariff)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSubscriptionTariffByID indicates an expected call of GetSubscriptionTariffByID.
+func (mr *MockUserRepoMockRecorder) GetSubscriptionTariffByID(ctx, tariffID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionTariffByID", reflect.TypeOf((*MockUserRepo)(nil).GetSubscriptionTariffByID), ctx, tariffID)
+}
+
 // GetSubscriptionTariffOptions mocks base method.
-func (m *MockUserRepo) GetSubscriptionTariffOptions(
-	ctx context.Context,
-	tariffID int64,
-) ([]domain.SubscriptionOption, error) {
+func (m *MockUserRepo) GetSubscriptionTariffOptions(ctx context.Context, tariffID int64) ([]domain.SubscriptionOption, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubscriptionTariffOptions", ctx, tariffID)
 	ret0, _ := ret[0].([]domain.SubscriptionOption)

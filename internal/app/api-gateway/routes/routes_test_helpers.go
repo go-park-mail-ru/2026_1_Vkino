@@ -12,6 +12,7 @@ import (
 
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
+	paymentv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/payment/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 	"github.com/stretchr/testify/require"
 )
@@ -20,16 +21,18 @@ type testConfig struct {
 	authTimeout       time.Duration
 	userTimeout       time.Duration
 	movieTimeout      time.Duration
-	partyTimeout      time.Duration
-	refreshCookieName string
+	partyTimeout        time.Duration
+	paymentTimeout      time.Duration
+	refreshCookieName   string
 	cookieSecure      bool
 }
 
 func (c testConfig) AuthRequestTimeout() time.Duration  { return c.authTimeout }
 func (c testConfig) UserRequestTimeout() time.Duration  { return c.userTimeout }
 func (c testConfig) MovieRequestTimeout() time.Duration { return c.movieTimeout }
-func (c testConfig) PartyRequestTimeout() time.Duration { return c.partyTimeout }
-func (c testConfig) RefreshCookieName() string          { return c.refreshCookieName }
+func (c testConfig) PartyRequestTimeout() time.Duration   { return c.partyTimeout }
+func (c testConfig) PaymentRequestTimeout() time.Duration { return c.paymentTimeout }
+func (c testConfig) RefreshCookieName() string            { return c.refreshCookieName }
 func (c testConfig) CookieSecure() bool                 { return c.cookieSecure }
 
 func newAuthHandler(t *testing.T, cfg Config, client authv1.AuthServiceClient) http.Handler {
@@ -44,6 +47,14 @@ func newMovieHandler(t *testing.T, client moviev1.MovieServiceClient) http.Handl
 	t.Helper()
 
 	server := httpserver.New(Movie(testConfig{}, client)...)
+
+	return server.Handler()
+}
+
+func newPaymentHandler(t *testing.T, client paymentv1.PaymentServiceClient) http.Handler {
+	t.Helper()
+
+	server := httpserver.New(Payment(testConfig{}, client)...)
 
 	return server.Handler()
 }

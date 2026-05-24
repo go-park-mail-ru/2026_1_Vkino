@@ -56,6 +56,30 @@ SELECT format(
 SELECT format('GRANT SELECT, INSERT, UPDATE ON TABLE watch_progress_episode TO %I', :'movie_user')
 \gexec
 
+SELECT format('GRANT SELECT, INSERT, UPDATE ON TABLE payment TO %I', :'payment_user')
+\gexec
+
+SELECT format('GRANT SELECT, INSERT ON TABLE payment_webhook_event TO %I', :'payment_user')
+\gexec
+
+SELECT format('GRANT SELECT ON TABLE subscription_tariff, users TO %I', :'payment_user')
+\gexec
+
+SELECT format(
+    'GRANT SELECT ON TABLE user_subscription, subscription_tariff, subscription_tariff_option, subscription_option TO %I',
+    :'user_user'
+)
+\gexec
+
+SELECT format('GRANT SELECT, INSERT, UPDATE ON TABLE user_subscription TO %I', :'user_user')
+\gexec
+
+SELECT format('GRANT SELECT, INSERT ON TABLE vkino_coins_history TO %I', :'user_user')
+\gexec
+
+SELECT format('GRANT SELECT ON TABLE vkino_room TO %I', :'user_user')
+\gexec
+
 SELECT format('GRANT ALL PRIVILEGES ON SCHEMA public TO %I', :'migrator_user')
 \gexec
 
@@ -87,4 +111,7 @@ SELECT format('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO %I', :'m
 \gexec
 
 SELECT format('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO %I', :'party_user')
+\gexec
+
+SELECT format('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO %I', :'payment_user')
 \gexec

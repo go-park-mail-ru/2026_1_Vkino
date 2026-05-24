@@ -54,6 +54,7 @@ var userGRPCErrorMapper = newGRPCErrorMapper(
 		domain.ErrAlreadyFriends,
 		domain.ErrFriendNotFound,
 		domain.ErrSelfFriendship,
+		domain.ErrSubscriptionTariffNotFound,
 		domain.ErrInternal,
 	},
 	mergeGRPCErrorRules(commonGRPCErrorRules, map[error]grpcx.ErrResponse{
@@ -72,7 +73,8 @@ var userGRPCErrorMapper = newGRPCErrorMapper(
 		domain.ErrInvalidAvatar:       {Code: codes.InvalidArgument, Message: "invalid avatar"},
 		domain.ErrAlreadyFriends:      {Code: codes.AlreadyExists, Message: "already friends"},
 		domain.ErrFriendNotFound:      {Code: codes.NotFound, Message: "friend not found"},
-		domain.ErrSelfFriendship:      {Code: codes.FailedPrecondition, Message: "self friendship is forbidden"},
+		domain.ErrSelfFriendship:              {Code: codes.FailedPrecondition, Message: "self friendship is forbidden"},
+		domain.ErrSubscriptionTariffNotFound: {Code: codes.NotFound, Message: "subscription tariff not found"},
 	}),
 )
 

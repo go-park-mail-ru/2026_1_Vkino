@@ -23,6 +23,8 @@ var (
 	ErrInvalidRequestStatus = errors.New("invalid friend request status")
 	ErrInternal             = errors.New("internal error")
 
+	ErrSubscriptionTariffNotFound = errors.New("subscription tariff not found")
+
 	ErrTicketNotFound            = errors.New("ticket not found")
 	ErrAccessDenied              = errors.New("access denied")
 	ErrInvalidTicketID           = errors.New("invalid ticket id")

@@ -36,7 +36,7 @@ cover-total:
 run-build:
 	$(MAKE) proto-gen
 	$(MAKE) init-db
-	docker compose -f deployments/dev/compose.yaml up --build
+	sudo docker compose -f deployments/dev/compose.yaml up --build
 
 run-stop:
 	docker compose -f deployments/dev/compose.yaml down -v
@@ -53,3 +53,4 @@ proto-gen:
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/movie/v1/movie.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/user/v1/user.proto
 	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/auth/v1/auth.proto
+	PATH="$(PROTOC_PLUGIN_PATH):$$PATH" protoc -I proto --go_out=./pkg/gen --go_opt=paths=source_relative --go-grpc_out=./pkg/gen --go-grpc_opt=paths=source_relative proto/payment/v1/payment.proto
