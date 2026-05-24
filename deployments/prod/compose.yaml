@@ -188,6 +188,43 @@ services:
     networks:
       - app-network
 
+  payment-service:
+    image: vkino-payment:${APP_VERSION:-prod}
+    build:
+      context: ../..
+      dockerfile: build/image/Dockerfile
+      args:
+        SERVICE_PATH: cmd/payment
+        BINARY_NAME: payment
+    platform: linux/amd64
+    restart: always
+    env_file:
+      - ./.env
+    command: ./payment -config /etc/vkino/payment.yaml
+    volumes:
+      - ./payment/config.yaml:/etc/vkino/payment.yaml:ro
+      - ./logs/app:/vkinoapi/logs/app
+    environment:
+      POSTGRES_USER: ${VKINO_PAYMENT_DB_USER}
+      POSTGRES_PASSWORD: ${VKINO_PAYMENT_DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      YOOKASSA_SHOP_ID: ${YOOKASSA_SHOP_ID}
+      YOOKASSA_SECRET_KEY: ${YOOKASSA_SECRET_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "9094"
+      - "9200"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O - http://127.0.0.1:9200/metrics >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    networks:
+      - app-network
+
   db:
     image: postgres:18.3
     env_file:

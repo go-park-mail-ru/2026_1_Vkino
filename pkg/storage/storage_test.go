@@ -16,14 +16,19 @@ import (
 
 var errUploadFailed = errors.New("upload failed")
 
+const (
+	testMinIOEndpoint = "localhost:9000"
+	testAvatarsBucket = "avatars"
+)
+
 func testS3Config() Config {
 	return Config{
-		InternalEndpoint: "localhost:9000",
-		PublicEndpoint:   "localhost:9000",
+		InternalEndpoint: testMinIOEndpoint,
+		PublicEndpoint:   testMinIOEndpoint,
 		Region:           "ru-msk",
 		AccessKeyID:      "access",
 		SecretAccessKey:  "secret",
-		Bucket:           "avatars",
+		Bucket:           testAvatarsBucket,
 		InternalUseSSL:   false,
 		PublicUseSSL:     false,
 		UsePathStyle:     true,
@@ -35,15 +40,15 @@ func TestS3Config_Config(t *testing.T) {
 	t.Parallel()
 
 	cfg := S3Config{
-		InternalEndpoint: "localhost:9000",
-		PublicEndpoint:   "localhost:9000",
+		InternalEndpoint: testMinIOEndpoint,
+		PublicEndpoint:   testMinIOEndpoint,
 		Region:           "ru-msk",
 		AccessKeyID:      "access",
 		SecretAccessKey:  "secret",
 		BucketActors:     "actors",
 		BucketPosters:    "posters",
 		BucketCards:      "cards",
-		BucketAvatars:    "avatars",
+		BucketAvatars:    testAvatarsBucket,
 		BucketVideos:     "videos",
 		UseSSL:           true,
 		UsePathStyle:     true,
@@ -108,13 +113,13 @@ func TestNewS3Storage(t *testing.T) {
 				return cfg
 			}(),
 			wantTTL:    15 * time.Minute,
-			wantBucket: "avatars",
+			wantBucket: testAvatarsBucket,
 		},
 		{
 			name:       "success with explicit ttl",
 			cfg:        testS3Config(),
 			wantTTL:    10 * time.Minute,
-			wantBucket: "avatars",
+			wantBucket: testAvatarsBucket,
 		},
 	}
 
@@ -168,12 +173,12 @@ func TestS3Storage_PutObject(t *testing.T) {
 
 		client := NewMockMinioClient(ctrl)
 		client.EXPECT().
-			PutObject(gomock.Any(), "avatars", "avatars/1.png", gomock.Any(), int64(4), minio.PutObjectOptions{
+			PutObject(gomock.Any(), testAvatarsBucket, "avatars/1.png", gomock.Any(), int64(4), minio.PutObjectOptions{
 				ContentType: "image/png",
 			}).
 			Return(minio.UploadInfo{}, errUploadFailed)
 
-		store := &S3Storage{bucket: "avatars", client: client}
+		store := &S3Storage{bucket: testAvatarsBucket, client: client}
 
 		err := store.PutObject(context.Background(), "avatars/1.png", strings.NewReader("data"), 4, "image/png")
 		if !errors.Is(err, ErrUploadFailed) {
@@ -189,12 +194,12 @@ func TestS3Storage_PutObject(t *testing.T) {
 
 		client := NewMockMinioClient(ctrl)
 		client.EXPECT().
-			PutObject(gomock.Any(), "avatars", "avatars/1.png", gomock.Any(), int64(4), minio.PutObjectOptions{
+			PutObject(gomock.Any(), testAvatarsBucket, "avatars/1.png", gomock.Any(), int64(4), minio.PutObjectOptions{
 				ContentType: "image/png",
 			}).
 			Return(minio.UploadInfo{Key: "avatars/1.png"}, nil)
 
-		store := &S3Storage{bucket: "avatars", client: client}
+		store := &S3Storage{bucket: testAvatarsBucket, client: client}
 		if err := store.PutObject(context.Background(), "avatars/1.png", strings.NewReader("data"), 4, "image/png"); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -221,10 +226,10 @@ func TestS3Storage_DeleteObject(t *testing.T) {
 
 		client := NewMockMinioClient(ctrl)
 		client.EXPECT().
-			RemoveObject(gomock.Any(), "avatars", "avatars/1.png", minio.RemoveObjectOptions{}).
+			RemoveObject(gomock.Any(), testAvatarsBucket, "avatars/1.png", minio.RemoveObjectOptions{}).
 			Return(nil)
 
-		store := &S3Storage{bucket: "avatars", client: client}
+		store := &S3Storage{bucket: testAvatarsBucket, client: client}
 		if err := store.DeleteObject(context.Background(), "avatars/1.png"); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -261,10 +266,10 @@ func TestS3Storage_PresignGetObject(t *testing.T) {
 		}
 
 		client.EXPECT().
-			PresignedGetObject(gomock.Any(), "avatars", "avatars/1.png", 5*time.Minute, nil).
+			PresignedGetObject(gomock.Any(), testAvatarsBucket, "avatars/1.png", 5*time.Minute, nil).
 			Return(wantURL, nil)
 
-		store := &S3Storage{bucket: "avatars", presignTTL: 5 * time.Minute, presignClient: client}
+		store := &S3Storage{bucket: testAvatarsBucket, presignTTL: 5 * time.Minute, presignClient: client}
 
 		got, err := store.PresignGetObject(context.Background(), "avatars/1.png", 0)
 		if err != nil {
@@ -286,10 +291,10 @@ func TestS3Storage_GetObject(t *testing.T) {
 	reader := io.NopCloser(strings.NewReader("file-body"))
 	client := NewMockMinioClient(ctrl)
 	client.EXPECT().
-		GetObject(gomock.Any(), "avatars", "avatars/1.png", minio.GetObjectOptions{}).
+		GetObject(gomock.Any(), testAvatarsBucket, "avatars/1.png", minio.GetObjectOptions{}).
 		Return(reader, nil)
 
-	store := &S3Storage{bucket: "avatars", client: client}
+	store := &S3Storage{bucket: testAvatarsBucket, client: client}
 
 	got, err := store.GetObject(context.Background(), "avatars/1.png")
 	if err != nil {

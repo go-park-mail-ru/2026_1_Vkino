@@ -7,6 +7,7 @@ type Config interface {
 	UserRequestTimeout() time.Duration
 	MovieRequestTimeout() time.Duration
 	PartyRequestTimeout() time.Duration
+	PaymentRequestTimeout() time.Duration
 	RefreshCookieName() string
 	CookieSecure() bool
 }

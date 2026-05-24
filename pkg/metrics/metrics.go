@@ -7,6 +7,12 @@ import (
 )
 
 const (
+	labelService = "service"
+	labelMethod  = "method"
+	labelRoute   = "route"
+	labelStatus  = "status"
+	labelCode    = "code"
+
 	namespace         = "vkino"
 	unknownLabelValue = "unknown"
 )
@@ -18,7 +24,7 @@ var (
 			Name:      "http_requests_total",
 			Help:      "Total number of HTTP requests.",
 		},
-		[]string{"service", "method", "route", "status"},
+		[]string{labelService, labelMethod, labelRoute, labelStatus},
 	)
 
 	HTTPRequestErrorsTotal = prometheus.NewCounterVec(
@@ -27,7 +33,7 @@ var (
 			Name:      "http_request_errors_total",
 			Help:      "Total number of HTTP requests with 5xx status.",
 		},
-		[]string{"service", "method", "route", "status"},
+		[]string{labelService, labelMethod, labelRoute, labelStatus},
 	)
 
 	HTTPRequestDurationSeconds = prometheus.NewHistogramVec(
@@ -37,7 +43,7 @@ var (
 			Help:      "HTTP request duration in seconds.",
 			Buckets:   prometheus.DefBuckets,
 		},
-		[]string{"service", "method", "route", "status"},
+		[]string{labelService, labelMethod, labelRoute, labelStatus},
 	)
 
 	GRPCRequestsTotal = prometheus.NewCounterVec(
@@ -46,7 +52,7 @@ var (
 			Name:      "grpc_requests_total",
 			Help:      "Total number of gRPC requests.",
 		},
-		[]string{"service", "method", "code"},
+		[]string{labelService, labelMethod, labelCode},
 	)
 
 	GRPCRequestErrorsTotal = prometheus.NewCounterVec(
@@ -55,7 +61,7 @@ var (
 			Name:      "grpc_request_errors_total",
 			Help:      "Total number of failed gRPC requests.",
 		},
-		[]string{"service", "method", "code"},
+		[]string{labelService, labelMethod, labelCode},
 	)
 
 	GRPCRequestDurationSeconds = prometheus.NewHistogramVec(
@@ -65,7 +71,7 @@ var (
 			Help:      "gRPC request duration in seconds.",
 			Buckets:   prometheus.DefBuckets,
 		},
-		[]string{"service", "method", "code"},
+		[]string{labelService, labelMethod, labelCode},
 	)
 
 	GRPCStreamsTotal = prometheus.NewCounterVec(
@@ -74,7 +80,7 @@ var (
 			Name:      "grpc_streams_total",
 			Help:      "Total number of gRPC streams.",
 		},
-		[]string{"service", "method", "code"},
+		[]string{labelService, labelMethod, labelCode},
 	)
 
 	GRPCStreamErrorsTotal = prometheus.NewCounterVec(
@@ -83,7 +89,7 @@ var (
 			Name:      "grpc_stream_errors_total",
 			Help:      "Total number of failed gRPC streams.",
 		},
-		[]string{"service", "method", "code"},
+		[]string{labelService, labelMethod, labelCode},
 	)
 
 	GRPCStreamDurationSeconds = prometheus.NewHistogramVec(
@@ -93,7 +99,7 @@ var (
 			Help:      "gRPC stream duration in seconds.",
 			Buckets:   prometheus.DefBuckets,
 		},
-		[]string{"service", "method", "code"},
+		[]string{labelService, labelMethod, labelCode},
 	)
 
 	ServiceInfo = prometheus.NewGaugeVec(

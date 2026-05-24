@@ -26,6 +26,7 @@ const (
 	defaultContinueWatchingLimit  = 5
 	defaultCollectionLimit        = 50
 	recentWatchHistoryMinProgress = 0.95
+	jsonKeySuccess                = "success"
 )
 
 type UserClient interface {
@@ -107,6 +108,14 @@ func (c grpcUserClient) GetSubscriptionCapabilities(
 	opts ...grpc.CallOption,
 ) (*userv1.GetSubscriptionCapabilitiesResponse, error) {
 	return c.user.GetSubscriptionCapabilities(ctx, in, opts...)
+}
+
+func (c grpcUserClient) ActivateSubscription(
+	ctx context.Context,
+	in *userv1.ActivateSubscriptionRequest,
+	opts ...grpc.CallOption,
+) (*userv1.ActivateSubscriptionResponse, error) {
+	return c.user.ActivateSubscription(ctx, in, opts...)
 }
 
 func (c grpcUserClient) SearchUsersByEmail(
@@ -649,7 +658,7 @@ func newUserDeleteFriendHandler(cfg Config, userClient UserClient) http.HandlerF
 		}
 
 		httppkg.Response(w, http.StatusOK, map[string]bool{
-			"success": true,
+			jsonKeySuccess: true,
 		})
 	}
 }
@@ -756,7 +765,7 @@ func newUserDeleteMovieReviewHandler(cfg Config, userClient UserClient) http.Han
 		}
 
 		httppkg.Response(w, http.StatusOK, map[string]bool{
-			"success": true,
+			jsonKeySuccess: true,
 		})
 	}
 }
@@ -810,7 +819,7 @@ func newUserDeleteReviewReactionHandler(cfg Config, userClient UserClient) http.
 		}
 
 		httppkg.Response(w, http.StatusOK, map[string]bool{
-			"success": true,
+			jsonKeySuccess: true,
 		})
 	}
 }
@@ -967,7 +976,7 @@ func newUserDeleteOutgoingFriendRequestHandler(cfg Config, userClient UserClient
 		}
 
 		httppkg.Response(w, http.StatusOK, map[string]bool{
-			"success": true,
+			jsonKeySuccess: true,
 		})
 	}
 }

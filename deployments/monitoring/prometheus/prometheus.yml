@@ -19,6 +19,14 @@ scrape_configs:
     static_configs:
       - targets: ["movie-service:9200"]
 
+  - job_name: "party-service"
+    static_configs:
+      - targets: ["party-service:9200"]
+
+  - job_name: "payment-service"
+    static_configs:
+      - targets: ["payment-service:9200"]
+
   - job_name: "node-exporter"
     static_configs:
       - targets: ["node-exporter:9100"]

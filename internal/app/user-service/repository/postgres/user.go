@@ -131,6 +131,52 @@ func (r *UserRepo) GetSubscriptionTariffByCode(
 	return info, nil
 }
 
+func (r *UserRepo) GetSubscriptionTariffByID(
+	ctx context.Context,
+	tariffID int64,
+) (domain.SubscriptionTariff, error) {
+	var tariff domain.SubscriptionTariff
+
+	err := r.db.QueryRow(ctx, sqlGetSubscriptionTariffByID, tariffID).Scan(
+		&tariff.ID,
+		&tariff.Code,
+		&tariff.Title,
+		&tariff.Level,
+		&tariff.DurationDays,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.SubscriptionTariff{}, domain.ErrSubscriptionTariffNotFound
+		}
+
+		return domain.SubscriptionTariff{}, fmt.Errorf("get subscription tariff by id: %w", err)
+	}
+
+	return tariff, nil
+}
+
+func (r *UserRepo) DeactivateUserSubscriptions(ctx context.Context, userID int64) error {
+	_, err := r.db.Exec(ctx, sqlDeactivateUserSubscriptions, userID)
+	if err != nil {
+		return fmt.Errorf("deactivate user subscriptions: %w", err)
+	}
+
+	return nil
+}
+
+func (r *UserRepo) CreateUserSubscription(
+	ctx context.Context,
+	userID, tariffID int64,
+	startsAt, expiresAt time.Time,
+) error {
+	_, err := r.db.Exec(ctx, sqlCreateUserSubscription, userID, tariffID, startsAt, expiresAt)
+	if err != nil {
+		return fmt.Errorf("create user subscription: %w", err)
+	}
+
+	return nil
+}
+
 func (r *UserRepo) GetSubscriptionTariffOptions(
 	ctx context.Context,
 	tariffID int64,

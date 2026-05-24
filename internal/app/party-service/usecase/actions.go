@@ -9,7 +9,17 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
 )
 
-const playbackStatusPaused = "paused"
+const (
+	playbackStatusPaused = "paused"
+	roomActionPlay       = "play"
+	roomActionPause      = "pause"
+	roomActionSeek       = "seek"
+	roomActionSyncState  = "sync_state"
+	memberRoleHost       = "host"
+	memberRoleMember     = "member"
+	memberStatusActive   = "active"
+	memberStatusPending  = "pending"
+)
 
 func (s *service) ApplyRoomAction(
 	ctx context.Context,
@@ -84,7 +94,7 @@ func applyRoomPlaybackAction(action string, state *domain.PlaybackState, req dom
 
 func isParticipantPlaybackAction(action string) bool {
 	switch action {
-	case "play", "pause", "seek", "sync_state":
+	case roomActionPlay, roomActionPause, roomActionSeek, roomActionSyncState:
 		return true
 	default:
 		return false
@@ -172,12 +182,12 @@ type roomPlaybackActionHandler func(state *domain.PlaybackState, req domain.Appl
 
 func roomPlaybackActionHandlers() map[string]roomPlaybackActionHandler {
 	return map[string]roomPlaybackActionHandler{
-		"play":           applyPlayAction,
-		"pause":          applyPauseAction,
-		"seek":           applySeekAction,
-		"select_movie":   applySelectMovieAction,
-		"select_episode": applySelectEpisodeAction,
-		"sync_state":     applySyncStateAction,
+		roomActionPlay:      applyPlayAction,
+		roomActionPause:     applyPauseAction,
+		roomActionSeek:      applySeekAction,
+		"select_movie":      applySelectMovieAction,
+		"select_episode":    applySelectEpisodeAction,
+		roomActionSyncState: applySyncStateAction,
 	}
 }
 

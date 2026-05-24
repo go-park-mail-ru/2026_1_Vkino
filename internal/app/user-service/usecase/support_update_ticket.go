@@ -115,7 +115,7 @@ func applyTicketUpdatePermissions(
 	req *domain.UpdateSupportTicketRequest,
 ) error {
 	switch {
-	case role == "user":
+	case role == roleUser:
 		return applyUserTicketUpdatePermissions(actorUserID, ticket, req)
 	case isStaff(role):
 		return applyStaffTicketUpdatePermissions(role, ticket, req)

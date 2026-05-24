@@ -81,6 +81,25 @@ SELECT format(
 
 SELECT
     CASE
+        WHEN NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'payment_user')
+        THEN format(
+            'CREATE ROLE %I LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION CONNECTION LIMIT 20',
+            :'payment_user',
+            :'payment_password'
+        )
+        ELSE 'SELECT 1'
+    END
+\gexec
+
+SELECT format(
+    'ALTER ROLE %I WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION CONNECTION LIMIT 20 PASSWORD %L',
+    :'payment_user',
+    :'payment_password'
+)
+\gexec
+
+SELECT
+    CASE
         WHEN NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'migrator_user')
         THEN format(
             'CREATE ROLE %I LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION CONNECTION LIMIT 5',
@@ -138,6 +157,9 @@ SELECT format('GRANT CONNECT ON DATABASE %I TO %I', :'db_name', :'movie_user')
 SELECT format('GRANT CONNECT ON DATABASE %I TO %I', :'db_name', :'party_user')
 \gexec
 
+SELECT format('GRANT CONNECT ON DATABASE %I TO %I', :'db_name', :'payment_user')
+\gexec
+
 SELECT format('GRANT CONNECT ON DATABASE %I TO %I', :'db_name', :'migrator_user')
 \gexec
 
@@ -157,6 +179,9 @@ SELECT format('GRANT USAGE ON SCHEMA public TO %I', :'movie_user')
 \gexec
 
 SELECT format('GRANT USAGE ON SCHEMA public TO %I', :'party_user')
+\gexec
+
+SELECT format('GRANT USAGE ON SCHEMA public TO %I', :'payment_user')
 \gexec
 
 SELECT format('GRANT USAGE ON SCHEMA public TO %I', :'migrator_user')

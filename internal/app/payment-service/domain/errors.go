@@ -1,0 +1,18 @@
+package domain
+
+import "errors"
+
+var (
+	ErrInvalidToken          = errors.New("invalid token")
+	ErrInvalidProductType    = errors.New("invalid product type")
+	ErrInvalidProductRef     = errors.New("invalid product reference")
+	ErrTariffNotFound        = errors.New("tariff not found")
+	ErrTariffNotAvailable    = errors.New("tariff is not available for money payment")
+	ErrPaymentNotFound       = errors.New("payment not found")
+	ErrPaymentAccessDenied   = errors.New("payment access denied")
+	ErrPaymentAlreadyFinal   = errors.New("payment is already finalized")
+	ErrWebhookInvalidIP      = errors.New("webhook ip is not allowed")
+	ErrWebhookInvalidPayload = errors.New("webhook payload is invalid")
+	ErrYooKassaUnavailable   = errors.New("yookassa unavailable")
+	ErrInternal              = errors.New("internal error")
+)

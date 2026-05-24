@@ -25,7 +25,14 @@ type UserProfileMutationRepo interface {
 type UserSubscriptionRepo interface {
 	GetActiveSubscription(ctx context.Context, userID int64) (domain.SubscriptionInfo, error)
 	GetSubscriptionTariffByCode(ctx context.Context, code string) (domain.SubscriptionInfo, error)
+	GetSubscriptionTariffByID(ctx context.Context, tariffID int64) (domain.SubscriptionTariff, error)
 	GetSubscriptionTariffOptions(ctx context.Context, tariffID int64) ([]domain.SubscriptionOption, error)
+	DeactivateUserSubscriptions(ctx context.Context, userID int64) error
+	CreateUserSubscription(
+		ctx context.Context,
+		userID, tariffID int64,
+		startsAt, expiresAt time.Time,
+	) error
 	GetCoinsReceivedToday(ctx context.Context, userID int64) (int32, error)
 	GetRoomsCreatedThisMonth(ctx context.Context, userID int64) (int32, error)
 }

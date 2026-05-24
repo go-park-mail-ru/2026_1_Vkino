@@ -18,6 +18,8 @@ type stubAvatarStore struct {
 	presign func(ctx context.Context, key string, ttl time.Duration) (string, error)
 }
 
+const testProfileEmail = "user@example.com"
+
 const testAvatarKey = "users/42/avatar/current.png"
 
 var errPresignFailed = errors.New("presign failed")
@@ -56,8 +58,8 @@ func TestUpdateProfile_IgnoresAvatarPresignFailureAfterBirthdateUpdate(t *testin
 		GetUserByID(gomock.Any(), int64(42)).
 		Return(&domain.User{
 			ID:            42,
-			Email:         "user@example.com",
-			Role:          "user",
+			Email:         testProfileEmail,
+			Role:          roleUser,
 			Birthdate:     &oldBirthdate,
 			AvatarFileKey: ptrToTestAvatarKey(),
 		}, nil)
@@ -71,8 +73,8 @@ func TestUpdateProfile_IgnoresAvatarPresignFailureAfterBirthdateUpdate(t *testin
 
 			return &domain.User{
 				ID:            42,
-				Email:         "user@example.com",
-				Role:          "user",
+				Email:         testProfileEmail,
+				Role:          roleUser,
 				Birthdate:     &newBirthdate,
 				AvatarFileKey: ptrToTestAvatarKey(),
 			}, nil
@@ -161,8 +163,8 @@ func expectProfileBirthdateUpdate(t *testing.T, repo *mocks.MockUserRepo, oldBir
 		GetUserByID(gomock.Any(), int64(42)).
 		Return(&domain.User{
 			ID:            42,
-			Email:         "user@example.com",
-			Role:          "user",
+			Email:         testProfileEmail,
+			Role:          roleUser,
 			Birthdate:     &oldBirthdate,
 			AvatarFileKey: ptrToTestAvatarKey(),
 		}, nil)
@@ -176,8 +178,8 @@ func expectProfileBirthdateUpdate(t *testing.T, repo *mocks.MockUserRepo, oldBir
 
 			return &domain.User{
 				ID:            42,
-				Email:         "user@example.com",
-				Role:          "user",
+				Email:         testProfileEmail,
+				Role:          roleUser,
 				Birthdate:     &newBirthdate,
 				AvatarFileKey: ptrToTestAvatarKey(),
 			}, nil

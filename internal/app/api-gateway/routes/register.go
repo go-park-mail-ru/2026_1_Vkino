@@ -6,6 +6,7 @@ import (
 	authv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/auth/v1"
 	moviev1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/movie/v1"
 	partyv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/party/v1"
+	paymentv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/payment/v1"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 )
 
@@ -15,9 +16,11 @@ func Register(
 	userClient UserClient,
 	movieClient moviev1.MovieServiceClient,
 	partyClient partyv1.PartyServiceClient,
+	paymentClient paymentv1.PaymentServiceClient,
 ) []httpserver.Option {
 	result := make([]httpserver.Option, 0, 1+len(Auth(cfg, authClient))+len(User(cfg, userClient))+
-		len(Movie(cfg, movieClient))+len(Party(cfg, partyClient, movieClient, userClient)))
+		len(Movie(cfg, movieClient))+len(Party(cfg, partyClient, movieClient, userClient))+
+		len(Payment(cfg, paymentClient)))
 
 	result = append(result,
 		route("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +36,7 @@ func Register(
 	result = append(result, User(cfg, userClient)...)
 	result = append(result, Movie(cfg, movieClient)...)
 	result = append(result, Party(cfg, partyClient, movieClient, userClient)...)
+	result = append(result, Payment(cfg, paymentClient)...)
 
 	return result
 }

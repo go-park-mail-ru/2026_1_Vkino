@@ -28,6 +28,7 @@ APP_SERVICES=(
   user-service
   movie-service
   party-service
+  payment-service
   api-gateway
 )
 
@@ -125,6 +126,10 @@ path_affects_service() {
 
     cmd/party/*|cmd/party/**|internal/app/party-service/*|internal/app/party-service/**|deployments/prod/party/*|deployments/prod/party/**)
       add_service party-service
+      ;;
+
+    cmd/payment/*|cmd/payment/**|internal/app/payment-service/*|internal/app/payment-service/**|deployments/prod/payment/*|deployments/prod/payment/**)
+      add_service payment-service
       ;;
 
     cmd/gateway/*|cmd/gateway/**|internal/app/api-gateway/*|internal/app/api-gateway/**|deployments/prod/gateway/*|deployments/prod/gateway/**)

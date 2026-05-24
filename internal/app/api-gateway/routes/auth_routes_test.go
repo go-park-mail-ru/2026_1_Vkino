@@ -3,6 +3,7 @@ package routes
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,19 +19,19 @@ func TestAuthRoutes_SignUp(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockAuthServiceClient(ctrl)
 
-	cfg := testConfig{refreshCookieName: "refresh", cookieSecure: true}
+	cfg := testConfig{refreshCookieName: testRefreshCookieName, cookieSecure: true}
 
 	client.EXPECT().SignUp(gomock.Any(), &authv1.SignUpRequest{
-		Email:    "user@example.com",
+		Email:    testUserEmail,
 		Password: "pass",
 	}).Return(&authv1.SignUpResponse{
-		AccessToken:  "access",
-		RefreshToken: "refresh-token",
+		AccessToken:  testAccessToken,
+		RefreshToken: testRefreshTokenValue,
 	}, nil)
 
 	handler := newAuthHandler(t, cfg, client)
 	rr := doRequest(handler, http.MethodPost, "/user/sign-up",
-		bytes.NewReader([]byte(`{"email":"user@example.com","password":"pass"}`)))
+		bytes.NewReader(fmt.Appendf(nil, `{"email":%q,"password":"pass"}`, testUserEmail)))
 
 	res := rr.Result()
 
@@ -43,8 +44,8 @@ func TestAuthRoutes_SignUp(t *testing.T) {
 
 	cookies := res.Cookies()
 	require.Len(t, cookies, 1)
-	require.Equal(t, "refresh", cookies[0].Name)
-	require.Equal(t, "refresh-token", cookies[0].Value)
+	require.Equal(t, testRefreshCookieName, cookies[0].Name)
+	require.Equal(t, testRefreshTokenValue, cookies[0].Value)
 	require.True(t, cookies[0].HttpOnly)
 	require.True(t, cookies[0].Secure)
 }
@@ -67,27 +68,27 @@ func TestAuthRoutes_SignIn(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockAuthServiceClient(ctrl)
 
-	cfg := testConfig{refreshCookieName: "refresh", cookieSecure: false}
+	cfg := testConfig{refreshCookieName: testRefreshCookieName, cookieSecure: false}
 
 	client.EXPECT().SignIn(gomock.Any(), &authv1.SignInRequest{
-		Email:    "user@example.com",
+		Email:    testUserEmail,
 		Password: "pass",
 	}).Return(&authv1.SignInResponse{
-		AccessToken:  "access",
-		RefreshToken: "refresh-token",
+		AccessToken:  testAccessToken,
+		RefreshToken: testRefreshTokenValue,
 	}, nil)
 
 	handler := newAuthHandler(t, cfg, client)
 	rr := doRequest(handler, http.MethodPost, "/user/sign-in",
-		bytes.NewReader([]byte(`{"email":"user@example.com","password":"pass"}`)))
+		bytes.NewReader(fmt.Appendf(nil, `{"email":%q,"password":"pass"}`, testUserEmail)))
 
 	require.Equal(t, http.StatusOK, rr.Code)
 	require.JSONEq(t, `{"access_token":"access"}`, rr.Body.String())
 
 	cookies := rr.Result().Cookies()
 	require.Len(t, cookies, 1)
-	require.Equal(t, "refresh", cookies[0].Name)
-	require.Equal(t, "refresh-token", cookies[0].Value)
+	require.Equal(t, testRefreshCookieName, cookies[0].Name)
+	require.Equal(t, testRefreshTokenValue, cookies[0].Value)
 }
 
 func TestAuthRoutes_Refresh_MissingCookie(t *testing.T) {
@@ -96,7 +97,7 @@ func TestAuthRoutes_Refresh_MissingCookie(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockAuthServiceClient(ctrl)
 
-	cfg := testConfig{refreshCookieName: "refresh"}
+	cfg := testConfig{refreshCookieName: testRefreshCookieName}
 
 	handler := newAuthHandler(t, cfg, client)
 	rr := doRequest(handler, http.MethodPost, "/user/refresh", nil)
@@ -110,15 +111,21 @@ func TestAuthRoutes_Refresh(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockAuthServiceClient(ctrl)
 
-	cfg := testConfig{refreshCookieName: "refresh"}
+	cfg := testConfig{refreshCookieName: testRefreshCookieName}
 
-	client.EXPECT().Refresh(gomock.Any(), &authv1.RefreshRequest{RefreshToken: "refresh-token"}).
-		Return(&authv1.RefreshResponse{AccessToken: "access", RefreshToken: "new-refresh"}, nil)
+	client.EXPECT().Refresh(gomock.Any(), &authv1.RefreshRequest{RefreshToken: testRefreshTokenValue}).
+		Return(&authv1.RefreshResponse{AccessToken: testAccessToken, RefreshToken: "new-refresh"}, nil)
 
 	handler := newAuthHandler(t, cfg, client)
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/user/refresh", nil)
-	req.AddCookie(&http.Cookie{Name: "refresh", Value: "refresh-token"})
+	req.AddCookie(&http.Cookie{
+		Name:     testRefreshCookieName,
+		Value:    testRefreshTokenValue,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
 
 	rr := httptest.NewRecorder()
 
@@ -138,7 +145,7 @@ func TestAuthRoutes_Logout(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockAuthServiceClient(ctrl)
 
-	cfg := testConfig{refreshCookieName: "refresh", cookieSecure: true}
+	cfg := testConfig{refreshCookieName: testRefreshCookieName, cookieSecure: true}
 
 	client.EXPECT().Logout(gomock.Any(), &authv1.LogoutRequest{}).
 		Return(&authv1.LogoutResponse{}, nil)
@@ -150,7 +157,7 @@ func TestAuthRoutes_Logout(t *testing.T) {
 
 	cookies := rr.Result().Cookies()
 	require.Len(t, cookies, 1)
-	require.Equal(t, "refresh", cookies[0].Name)
+	require.Equal(t, testRefreshCookieName, cookies[0].Name)
 	require.Equal(t, -1, cookies[0].MaxAge)
 }
 

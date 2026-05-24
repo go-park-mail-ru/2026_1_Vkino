@@ -14,7 +14,7 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	log, err := New(Config{Level: "debug", Format: "json"})
+	log, err := New(Config{Level: "debug", Format: logFormatJSON})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -114,7 +114,7 @@ func TestFromContext_DefaultLogger(t *testing.T) {
 func TestWithFieldWritesField(t *testing.T) {
 	t.Parallel()
 
-	log, err := New(Config{Format: "json"})
+	log, err := New(Config{Format: logFormatJSON})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -141,7 +141,7 @@ func TestWithFieldWritesField(t *testing.T) {
 func TestAddFieldPropagatesToExistingChildLogger(t *testing.T) {
 	t.Parallel()
 
-	log, err := New(Config{Format: "json"})
+	log, err := New(Config{Format: logFormatJSON})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -182,7 +182,7 @@ func TestAddFieldPropagatesToExistingChildLogger(t *testing.T) {
 func TestFatal(t *testing.T) {
 	t.Parallel()
 
-	log, err := New(Config{Format: "json"})
+	log, err := New(Config{Format: logFormatJSON})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
