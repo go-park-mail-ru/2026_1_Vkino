@@ -9,6 +9,8 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 )
 
+const jsonKeyAccessToken = "access_token"
+
 func Auth(
 	cfg Config,
 	authClient authv1.AuthServiceClient,
@@ -43,7 +45,7 @@ func newSignUpHandler(cfg Config, authClient authv1.AuthServiceClient) http.Hand
 		}
 
 		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
-		httppkg.Response(w, http.StatusCreated, map[string]string{"access_token": resp.GetAccessToken()})
+		httppkg.Response(w, http.StatusCreated, map[string]string{jsonKeyAccessToken: resp.GetAccessToken()})
 	}
 }
 
@@ -68,7 +70,7 @@ func newSignInHandler(cfg Config, authClient authv1.AuthServiceClient) http.Hand
 		}
 
 		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
-		httppkg.Response(w, http.StatusOK, map[string]string{"access_token": resp.GetAccessToken()})
+		httppkg.Response(w, http.StatusOK, map[string]string{jsonKeyAccessToken: resp.GetAccessToken()})
 	}
 }
 
@@ -94,7 +96,7 @@ func newRefreshHandler(cfg Config, authClient authv1.AuthServiceClient) http.Han
 		}
 
 		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
-		httppkg.Response(w, http.StatusOK, map[string]string{"access_token": resp.GetAccessToken()})
+		httppkg.Response(w, http.StatusOK, map[string]string{jsonKeyAccessToken: resp.GetAccessToken()})
 	}
 }
 
@@ -138,17 +140,18 @@ func newChangePasswordHandler(cfg Config, authClient authv1.AuthServiceClient) h
 }
 
 func writeAuthCookie(w http.ResponseWriter, cfg Config, refreshToken string, expired bool) {
-	cookie := &http.Cookie{
-		Name:     cfg.RefreshCookieName(),
-		Value:    refreshToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   cfg.CookieSecure(),
-		SameSite: http.SameSiteLaxMode,
-	}
+	var cookie http.Cookie // #nosec G124 -- HttpOnly, Secure, and SameSite are set before SetCookie.
+
+	cookie.Name = cfg.RefreshCookieName()
+	cookie.Value = refreshToken
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.Secure = cfg.CookieSecure()
+	cookie.SameSite = http.SameSiteLaxMode
+
 	if expired {
 		cookie.MaxAge = -1
 	}
 
-	http.SetCookie(w, cookie)
+	http.SetCookie(w, &cookie)
 }

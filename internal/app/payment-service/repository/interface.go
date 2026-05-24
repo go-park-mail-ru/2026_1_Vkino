@@ -29,20 +29,20 @@ type PaymentRepo interface {
 }
 
 type YooKassaCreateRequest struct {
-	AmountValue      string
-	AmountCurrency   string
-	Capture          bool
-	ReturnURL        string
-	Description      string
-	IdempotencyKey   string
-	Metadata         map[string]string
+	AmountValue    string
+	AmountCurrency string
+	Capture        bool
+	ReturnURL      string
+	Description    string
+	IdempotencyKey string
+	Metadata       map[string]string
 }
 
 type YooKassaPayment struct {
-	ID               string
-	Status           string
-	Paid             bool
-	ConfirmationURL  string
+	ID              string
+	Status          string
+	Paid            bool
+	ConfirmationURL string
 }
 
 type YooKassaClient interface {

@@ -103,7 +103,7 @@ func (s *service) InviteFriendToRoom(
 	return domain.InviteFriendToRoomResponse{
 		RoomID:        req.RoomID,
 		InvitedUserID: req.InvitedUserID,
-		Status:        "pending",
+		Status:        memberStatusPending,
 	}, nil
 }
 
@@ -378,7 +378,7 @@ func (s *service) activatePendingMemberIfNeeded(
 	members []domain.RoomMember,
 ) (bool, error) {
 	member, ok := findRoomMember(members, userID)
-	if !ok || member.Role == "host" || member.Status != "pending" {
+	if !ok || member.Role == memberRoleHost || member.Status != memberStatusPending {
 		return false, nil
 	}
 

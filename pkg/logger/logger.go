@@ -16,6 +16,8 @@ import (
 )
 
 const (
+	logFormatJSON = "json"
+
 	defaultLevel    = "info"
 	defaultFormat   = "text"
 	defaultDirPerm  = 0o755
@@ -55,7 +57,7 @@ func New(cfg Config) (*Logger, error) {
 	base.SetOutput(output)
 
 	switch cfg.Format {
-	case "json":
+	case logFormatJSON:
 		base.SetFormatter(&logrus.JSONFormatter{
 			TimestampFormat: time.RFC3339Nano,
 		})

@@ -36,7 +36,7 @@ cover-total:
 run-build:
 	$(MAKE) proto-gen
 	$(MAKE) init-db
-	sudo docker compose -f deployments/dev/compose.yaml up --build
+	docker compose -f deployments/dev/compose.yaml up --build
 
 run-stop:
 	docker compose -f deployments/dev/compose.yaml down -v

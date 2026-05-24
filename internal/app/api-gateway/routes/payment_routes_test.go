@@ -145,6 +145,7 @@ func TestPaymentRoutes_YooKassaWebhook(t *testing.T) {
 	client := NewMockPaymentServiceClient(ctrl)
 
 	body := []byte(`{"type":"notification","event":"payment.succeeded","object":{"id":"yk-1"}}`)
+
 	client.EXPECT().HandleYooKassaWebhook(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(_ any, req *paymentv1.HandleYooKassaWebhookRequest, _ ...any) (*paymentv1.HandleYooKassaWebhookResponse, error) {
 			require.Equal(t, body, req.GetBody())
@@ -167,11 +168,11 @@ func TestPaymentRoutes_YooKassaWebhook_InvalidIP(t *testing.T) {
 	client := NewMockPaymentServiceClient(ctrl)
 
 	client.EXPECT().HandleYooKassaWebhook(gomock.Any(), gomock.Any()).
-		Return(nil, status.Error(codes.PermissionDenied, "webhook ip is not allowed"))
+		Return(nil, status.Error(codes.PermissionDenied, "access denied"))
 
 	handler := newPaymentHandler(t, client)
 	rr := doRequest(handler, http.MethodPost, "/payments/webhook/yookassa",
 		bytes.NewReader([]byte(`{"type":"notification","event":"payment.succeeded","object":{"id":"yk-1"}}`)))
 
-	requireJSONError(t, rr, http.StatusForbidden, "webhook ip is not allowed")
+	requireJSONError(t, rr, http.StatusForbidden, "access denied")
 }

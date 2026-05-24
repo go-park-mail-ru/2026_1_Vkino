@@ -10,8 +10,8 @@ func TestLocalizeMovieContentType(t *testing.T) {
 		in   string
 		want string
 	}{
-		{name: "film", in: "film", want: "Фильм"},
-		{name: "series", in: "series", want: "Сериал"},
+		{name: contentTypeFilm, in: contentTypeFilm, want: "Фильм"},
+		{name: contentTypeSeries, in: contentTypeSeries, want: "Сериал"},
 		{name: "unknown", in: "anime", want: "anime"},
 	}
 

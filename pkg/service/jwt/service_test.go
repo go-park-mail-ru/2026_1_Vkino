@@ -8,10 +8,15 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+const (
+	testJWTIssuer     = "issuer"
+	testJWTSigningKey = "secret"
+)
+
 func TestGenerateAndParseToken(t *testing.T) {
 	t.Parallel()
 
-	svc := New(Config{SigningKey: "secret", Issuer: "issuer"})
+	svc := New(Config{SigningKey: testJWTSigningKey, Issuer: testJWTIssuer})
 
 	token, err := svc.GenerateToken("user@example.com", 42, time.Minute)
 	if err != nil {
@@ -31,12 +36,12 @@ func TestGenerateAndParseToken(t *testing.T) {
 func TestParseTokenInvalidMethod(t *testing.T) {
 	t.Parallel()
 
-	svc := New(Config{SigningKey: "secret", Issuer: "issuer"})
+	svc := New(Config{SigningKey: testJWTSigningKey, Issuer: testJWTIssuer})
 
 	claims := CustomClaims{RegisteredClaims: jwt.RegisteredClaims{Subject: "user@example.com"}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS384, claims)
 
-	signed, err := token.SignedString([]byte("secret"))
+	signed, err := token.SignedString([]byte(testJWTSigningKey))
 	if err != nil {
 		t.Fatalf("sign token: %v", err)
 	}
@@ -50,12 +55,12 @@ func TestParseTokenInvalidMethod(t *testing.T) {
 func TestParseTokenEmptySubject(t *testing.T) {
 	t.Parallel()
 
-	svc := New(Config{SigningKey: "secret", Issuer: "issuer"})
+	svc := New(Config{SigningKey: testJWTSigningKey, Issuer: testJWTIssuer})
 
 	claims := CustomClaims{RegisteredClaims: jwt.RegisteredClaims{Subject: ""}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	signed, err := token.SignedString([]byte("secret"))
+	signed, err := token.SignedString([]byte(testJWTSigningKey))
 	if err != nil {
 		t.Fatalf("sign token: %v", err)
 	}

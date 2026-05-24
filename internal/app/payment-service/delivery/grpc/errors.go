@@ -21,11 +21,13 @@ var paymentGRPCErrorMapper = grpcx.New(
 		domain.ErrInternal,
 	},
 	map[error]grpcx.ErrResponse{
-		domain.ErrInvalidToken:          {Code: codes.Unauthenticated, Message: "unauthorized"},
-		domain.ErrInvalidProductType:    {Code: codes.InvalidArgument, Message: "invalid product type"},
-		domain.ErrInvalidProductRef:     {Code: codes.InvalidArgument, Message: "invalid product reference"},
-		domain.ErrTariffNotFound:        {Code: codes.NotFound, Message: "tariff not found"},
-		domain.ErrTariffNotAvailable:    {Code: codes.FailedPrecondition, Message: "tariff is not available for money payment"},
+		domain.ErrInvalidToken:       {Code: codes.Unauthenticated, Message: "unauthorized"},
+		domain.ErrInvalidProductType: {Code: codes.InvalidArgument, Message: "invalid product type"},
+		domain.ErrInvalidProductRef:  {Code: codes.InvalidArgument, Message: "invalid product reference"},
+		domain.ErrTariffNotFound:     {Code: codes.NotFound, Message: "tariff not found"},
+		domain.ErrTariffNotAvailable: {
+			Code: codes.FailedPrecondition, Message: "tariff is not available for money payment",
+		},
 		domain.ErrPaymentNotFound:       {Code: codes.NotFound, Message: "payment not found"},
 		domain.ErrPaymentAccessDenied:   {Code: codes.PermissionDenied, Message: "payment access denied"},
 		domain.ErrWebhookInvalidIP:      {Code: codes.PermissionDenied, Message: "webhook ip is not allowed"},

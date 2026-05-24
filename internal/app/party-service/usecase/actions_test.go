@@ -15,8 +15,8 @@ func TestApplyRoomActionAllowsNonHostParticipantPlaybackActions(t *testing.T) {
 		action string
 		status string
 	}{
-		{action: "play", status: "playing"},
-		{action: "pause", status: "paused"},
+		{action: roomActionPlay, status: "playing"},
+		{action: roomActionPause, status: playbackStatusPaused},
 	} {
 		t.Run(tc.action, func(t *testing.T) {
 			t.Parallel()
@@ -62,7 +62,7 @@ func TestApplyRoomActionAllowsNonHostParticipantSeek(t *testing.T) {
 
 	playback, err := svc.ApplyRoomAction(context.Background(), 2, domain.ApplyRoomActionRequest{
 		RoomID:          5,
-		Action:          "seek",
+		Action:          roomActionSeek,
 		DurationSeconds: 70,
 		PositionSeconds: 40,
 	})
@@ -76,7 +76,7 @@ func TestApplyRoomActionAllowsNonHostParticipantSeek(t *testing.T) {
 	require.Equal(t, playback, repo.savedPlayback[0])
 
 	require.Len(t, broker.events, 1)
-	require.Equal(t, "seek", broker.events[0].Type)
+	require.Equal(t, roomActionSeek, broker.events[0].Type)
 	require.Equal(t, int64(2), broker.events[0].ActorUserID)
 	require.NotNil(t, broker.events[0].Playback)
 	require.Equal(t, int64(40), broker.events[0].Playback.PositionSeconds)
@@ -91,7 +91,7 @@ func TestApplyRoomActionAllowsNonHostParticipantSyncState(t *testing.T) {
 
 	playback, err := svc.ApplyRoomAction(context.Background(), 2, domain.ApplyRoomActionRequest{
 		RoomID:          5,
-		Action:          "sync_state",
+		Action:          roomActionSyncState,
 		MovieID:         11,
 		EpisodeID:       12,
 		DurationSeconds: 70,
@@ -110,7 +110,7 @@ func TestApplyRoomActionAllowsNonHostParticipantSyncState(t *testing.T) {
 	require.Equal(t, playback, repo.savedPlayback[0])
 
 	require.Len(t, broker.events, 1)
-	require.Equal(t, "sync_state", broker.events[0].Type)
+	require.Equal(t, roomActionSyncState, broker.events[0].Type)
 	require.Equal(t, int64(2), broker.events[0].ActorUserID)
 	require.NotNil(t, broker.events[0].Playback)
 	require.Equal(t, "paused", broker.events[0].Playback.Status)
@@ -125,7 +125,7 @@ func TestApplyRoomActionRejectsNonMember(t *testing.T) {
 
 	_, err := svc.ApplyRoomAction(context.Background(), 3, domain.ApplyRoomActionRequest{
 		RoomID:          5,
-		Action:          "play",
+		Action:          roomActionPlay,
 		PositionSeconds: 26,
 		DurationSeconds: 70,
 	})
@@ -163,8 +163,8 @@ func newPlaybackActionRepo() *playbackActionRepo {
 			Visibility: "public",
 			HostUserID: 1,
 			Members: []domain.RoomMember{
-				{UserID: 1, Role: "host", Status: "active"},
-				{UserID: 2, Role: "member", Status: "active"},
+				{UserID: 1, Role: memberRoleHost, Status: memberStatusActive},
+				{UserID: 2, Role: memberRoleMember, Status: memberStatusActive},
 			},
 			Playback: domain.PlaybackState{
 				MovieID:         7,

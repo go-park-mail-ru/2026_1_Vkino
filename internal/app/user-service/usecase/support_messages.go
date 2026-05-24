@@ -95,7 +95,7 @@ func ticketAccessible(role string, actorUserID int64, ticket *domain.SupportTick
 		return true
 	}
 
-	if role == "user" {
+	if role == roleUser {
 		return ticket.UserID == actorUserID
 	}
 

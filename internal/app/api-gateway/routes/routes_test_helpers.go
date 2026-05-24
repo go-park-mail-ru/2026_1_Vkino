@@ -17,23 +17,31 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	testUserEmail         = "user@example.com"
+	testAccessToken       = "access"
+	testRefreshTokenValue = "refresh-token"
+	testRefreshCookieName = "refresh"
+	testSupportFileKey    = "file"
+)
+
 type testConfig struct {
 	authTimeout       time.Duration
 	userTimeout       time.Duration
 	movieTimeout      time.Duration
-	partyTimeout        time.Duration
-	paymentTimeout      time.Duration
-	refreshCookieName   string
+	partyTimeout      time.Duration
+	paymentTimeout    time.Duration
+	refreshCookieName string
 	cookieSecure      bool
 }
 
-func (c testConfig) AuthRequestTimeout() time.Duration  { return c.authTimeout }
-func (c testConfig) UserRequestTimeout() time.Duration  { return c.userTimeout }
-func (c testConfig) MovieRequestTimeout() time.Duration { return c.movieTimeout }
+func (c testConfig) AuthRequestTimeout() time.Duration    { return c.authTimeout }
+func (c testConfig) UserRequestTimeout() time.Duration    { return c.userTimeout }
+func (c testConfig) MovieRequestTimeout() time.Duration   { return c.movieTimeout }
 func (c testConfig) PartyRequestTimeout() time.Duration   { return c.partyTimeout }
 func (c testConfig) PaymentRequestTimeout() time.Duration { return c.paymentTimeout }
 func (c testConfig) RefreshCookieName() string            { return c.refreshCookieName }
-func (c testConfig) CookieSecure() bool                 { return c.cookieSecure }
+func (c testConfig) CookieSecure() bool                   { return c.cookieSecure }
 
 func newAuthHandler(t *testing.T, cfg Config, client authv1.AuthServiceClient) http.Handler {
 	t.Helper()

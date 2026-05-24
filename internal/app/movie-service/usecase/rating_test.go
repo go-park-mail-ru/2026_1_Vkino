@@ -29,7 +29,7 @@ func testMovieWithExternalRatings() *domain.Movie {
 	return &domain.Movie{
 		ID:              1,
 		Title:           "Interstellar",
-		ContentType:     "film",
+		ContentType:     contentTypeFilm,
 		ReleaseYear:     2014,
 		DurationSeconds: 169 * 60,
 		PictureFileKey:  "cards/interstellar.jpg",

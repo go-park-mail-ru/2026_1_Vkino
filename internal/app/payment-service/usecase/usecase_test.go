@@ -13,7 +13,14 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-const yooKassaTestIP = "185.71.76.10"
+const (
+	yooKassaTestIP          = "185.71.76.10"
+	tariffCodeLevel2        = "level_2"
+	productTypeSubscription = "subscription"
+	yooKassaStatusSucceeded = "succeeded"
+)
+
+var errUserServiceDown = errors.New("user service down")
 
 func TestCreatePayment_Success(t *testing.T) {
 	t.Parallel()
@@ -28,7 +35,7 @@ func TestCreatePayment_Success(t *testing.T) {
 	payments.EXPECT().UserExists(gomock.Any(), int64(42)).Return(true, nil)
 	payments.EXPECT().GetSubscriptionTariff(gomock.Any(), int64(2)).Return(domain.SubscriptionTariff{
 		ID:                      2,
-		Code:                    "level_2",
+		Code:                    tariffCodeLevel2,
 		Title:                   "Level 2",
 		PriceMoney:              299,
 		IsMoneyPaymentAvailable: true,
@@ -59,7 +66,7 @@ func TestCreatePayment_Success(t *testing.T) {
 
 	result, err := u.CreatePayment(context.Background(), usecase.CreatePaymentInput{
 		UserID:       42,
-		ProductType:  "subscription",
+		ProductType:  productTypeSubscription,
 		ProductRefID: 2,
 	})
 	require.NoError(t, err)
@@ -114,7 +121,7 @@ func TestCreatePayment_TariffNotAvailable(t *testing.T) {
 
 	_, err := u.CreatePayment(context.Background(), usecase.CreatePaymentInput{
 		UserID:       42,
-		ProductType:  "subscription",
+		ProductType:  productTypeSubscription,
 		ProductRefID: 2,
 	})
 	require.ErrorIs(t, err, domain.ErrTariffNotAvailable)
@@ -132,12 +139,13 @@ func TestCreatePayment_YooKassaFailureMarksPaymentCanceled(t *testing.T) {
 	payments.EXPECT().UserExists(gomock.Any(), int64(42)).Return(true, nil)
 	payments.EXPECT().GetSubscriptionTariff(gomock.Any(), int64(2)).Return(domain.SubscriptionTariff{
 		ID:                      2,
-		Code:                    "level_2",
+		Code:                    tariffCodeLevel2,
 		PriceMoney:              299,
 		IsMoneyPaymentAvailable: true,
 	}, nil)
 	payments.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(domain.Payment{ID: 9}, nil)
-	yookassa.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(repository.YooKassaPayment{}, domain.ErrYooKassaUnavailable)
+	yookassa.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).
+		Return(repository.YooKassaPayment{}, domain.ErrYooKassaUnavailable)
 	payments.EXPECT().UpdatePaymentStatus(gomock.Any(), int64(9), domain.PaymentStatusCanceled, nil).Return(nil)
 
 	u := usecase.New(
@@ -150,7 +158,7 @@ func TestCreatePayment_YooKassaFailureMarksPaymentCanceled(t *testing.T) {
 
 	_, err := u.CreatePayment(context.Background(), usecase.CreatePaymentInput{
 		UserID:       42,
-		ProductType:  "subscription",
+		ProductType:  productTypeSubscription,
 		ProductRefID: 2,
 	})
 	require.ErrorIs(t, err, domain.ErrYooKassaUnavailable)
@@ -207,10 +215,12 @@ func TestGetPayment_SyncsSucceededFromYooKassa(t *testing.T) {
 		payments.EXPECT().GetPaymentByID(gomock.Any(), int64(12)).Return(pendingPayment, nil),
 		yookassa.EXPECT().GetPayment(gomock.Any(), yookassaPaymentID).Return(repository.YooKassaPayment{
 			ID:     yookassaPaymentID,
-			Status: "succeeded",
+			Status: yooKassaStatusSucceeded,
 			Paid:   true,
 		}, nil),
-		payments.EXPECT().UpdatePaymentStatus(gomock.Any(), int64(12), domain.PaymentStatusSucceeded, gomock.Any()).Return(nil),
+		payments.EXPECT().UpdatePaymentStatus(
+			gomock.Any(), int64(12), domain.PaymentStatusSucceeded, gomock.Any(),
+		).Return(nil),
 		activator.EXPECT().ActivateSubscription(gomock.Any(), int64(42), int64(2), int64(12)).Return(nil),
 		payments.EXPECT().GetPaymentByID(gomock.Any(), int64(12)).Return(succeededPayment, nil),
 	)
@@ -230,7 +240,7 @@ func TestListMoneyTariffs(t *testing.T) {
 
 	payments := mocks.NewMockPaymentRepo(ctrl)
 	payments.EXPECT().ListMoneyTariffs(gomock.Any()).Return([]domain.MoneyTariff{
-		{ID: 2, Code: "level_2", PriceMoney: 299, Level: 2},
+		{ID: 2, Code: tariffCodeLevel2, PriceMoney: 299, Level: 2},
 	}, nil)
 
 	u := usecase.New(
@@ -244,7 +254,7 @@ func TestListMoneyTariffs(t *testing.T) {
 	tariffs, err := u.ListMoneyTariffs(context.Background())
 	require.NoError(t, err)
 	require.Len(t, tariffs, 1)
-	require.Equal(t, "level_2", tariffs[0].Code)
+	require.Equal(t, tariffCodeLevel2, tariffs[0].Code)
 }
 
 func TestHandleYooKassaWebhook_InvalidIP(t *testing.T) {
@@ -281,7 +291,7 @@ func TestHandleYooKassaWebhook_SucceededActivatesSubscription(t *testing.T) {
 	payments.EXPECT().TryRegisterWebhookEvent(gomock.Any(), "yk-42", "payment.succeeded", gomock.Any()).Return(true, nil)
 	yookassa.EXPECT().GetPayment(gomock.Any(), "yk-42").Return(repository.YooKassaPayment{
 		ID:     "yk-42",
-		Status: "succeeded",
+		Status: yooKassaStatusSucceeded,
 		Paid:   true,
 	}, nil)
 	payments.EXPECT().GetPaymentByYooKassaID(gomock.Any(), "yk-42").Return(domain.Payment{
@@ -385,7 +395,7 @@ func TestHandleYooKassaWebhook_ActivationFailure(t *testing.T) {
 	payments.EXPECT().TryRegisterWebhookEvent(gomock.Any(), "yk-fail", "payment.succeeded", gomock.Any()).Return(true, nil)
 	yookassa.EXPECT().GetPayment(gomock.Any(), "yk-fail").Return(repository.YooKassaPayment{
 		ID:     "yk-fail",
-		Status: "succeeded",
+		Status: yooKassaStatusSucceeded,
 		Paid:   true,
 	}, nil)
 	payments.EXPECT().GetPaymentByYooKassaID(gomock.Any(), "yk-fail").Return(domain.Payment{
@@ -396,7 +406,7 @@ func TestHandleYooKassaWebhook_ActivationFailure(t *testing.T) {
 		Status:       domain.PaymentStatusPending,
 	}, nil)
 	payments.EXPECT().UpdatePaymentStatus(gomock.Any(), int64(20), domain.PaymentStatusSucceeded, gomock.Any()).Return(nil)
-	activator.EXPECT().ActivateSubscription(gomock.Any(), int64(42), int64(2), int64(20)).Return(errors.New("user service down"))
+	activator.EXPECT().ActivateSubscription(gomock.Any(), int64(42), int64(2), int64(20)).Return(errUserServiceDown)
 
 	u := usecase.New(
 		payments,

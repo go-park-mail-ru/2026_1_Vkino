@@ -26,6 +26,7 @@ const (
 	defaultContinueWatchingLimit  = 5
 	defaultCollectionLimit        = 50
 	recentWatchHistoryMinProgress = 0.95
+	jsonKeySuccess                = "success"
 )
 
 type UserClient interface {
@@ -657,7 +658,7 @@ func newUserDeleteFriendHandler(cfg Config, userClient UserClient) http.HandlerF
 		}
 
 		httppkg.Response(w, http.StatusOK, map[string]bool{
-			"success": true,
+			jsonKeySuccess: true,
 		})
 	}
 }
@@ -764,7 +765,7 @@ func newUserDeleteMovieReviewHandler(cfg Config, userClient UserClient) http.Han
 		}
 
 		httppkg.Response(w, http.StatusOK, map[string]bool{
-			"success": true,
+			jsonKeySuccess: true,
 		})
 	}
 }
@@ -818,7 +819,7 @@ func newUserDeleteReviewReactionHandler(cfg Config, userClient UserClient) http.
 		}
 
 		httppkg.Response(w, http.StatusOK, map[string]bool{
-			"success": true,
+			jsonKeySuccess: true,
 		})
 	}
 }
@@ -975,7 +976,7 @@ func newUserDeleteOutgoingFriendRequestHandler(cfg Config, userClient UserClient
 		}
 
 		httppkg.Response(w, http.StatusOK, map[string]bool{
-			"success": true,
+			jsonKeySuccess: true,
 		})
 	}
 }

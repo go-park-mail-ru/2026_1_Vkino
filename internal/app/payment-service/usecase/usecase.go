@@ -2,27 +2,22 @@ package usecase
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/payment-service/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/payment-service/repository"
 	yookassapkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/yookassa"
-	"github.com/google/uuid"
 )
 
 type Usecase struct {
-	payments     repository.PaymentRepo
-	yookassa     repository.YooKassaClient
-	activator    repository.SubscriptionActivator
-	returnURL    string
-	capture      bool
-	now          func() time.Time
+	payments  repository.PaymentRepo
+	yookassa  repository.YooKassaClient
+	activator repository.SubscriptionActivator
+	returnURL string
+	capture   bool
+	now       func() time.Time
 }
 
 func New(
@@ -49,76 +44,27 @@ type CreatePaymentInput struct {
 }
 
 type CreatePaymentResult struct {
-	PaymentID        int64
-	Status           string
-	ConfirmationURL  string
+	PaymentID       int64
+	Status          string
+	ConfirmationURL string
 }
 
 func (u *Usecase) CreatePayment(ctx context.Context, input CreatePaymentInput) (CreatePaymentResult, error) {
-	if input.UserID <= 0 {
-		return CreatePaymentResult{}, domain.ErrInvalidToken
-	}
-
-	productType := domain.ProductType(strings.TrimSpace(input.ProductType))
-	if productType != domain.ProductTypeSubscription {
-		return CreatePaymentResult{}, domain.ErrInvalidProductType
-	}
-
-	if input.ProductRefID <= 0 {
-		return CreatePaymentResult{}, domain.ErrInvalidProductRef
-	}
-
-	exists, err := u.payments.UserExists(ctx, input.UserID)
-	if err != nil {
-		return CreatePaymentResult{}, fmt.Errorf("%w: %w", domain.ErrInternal, err)
-	}
-
-	if !exists {
-		return CreatePaymentResult{}, domain.ErrInvalidToken
-	}
-
-	tariff, err := u.payments.GetSubscriptionTariff(ctx, input.ProductRefID)
+	productType, tariff, err := u.validateCreatePaymentInput(ctx, input)
 	if err != nil {
 		return CreatePaymentResult{}, err
 	}
 
-	if !tariff.IsMoneyPaymentAvailable || tariff.PriceMoney <= 0 {
-		return CreatePaymentResult{}, domain.ErrTariffNotAvailable
+	payment, amountValue, err := u.createPendingPayment(ctx, input, productType, tariff)
+	if err != nil {
+		return CreatePaymentResult{}, err
 	}
 
-	amountValue := fmt.Sprintf("%d.00", tariff.PriceMoney)
-
-	payment, err := u.payments.CreatePayment(ctx, domain.Payment{
-		UserID:         input.UserID,
-		ProductType:    productType,
-		ProductRefID:   input.ProductRefID,
-		Amount:         amountValue,
-		Currency:       "RUB",
-		Status:         domain.PaymentStatusPending,
-		IdempotencyKey: uuid.NewString(),
-	})
+	ykPayment, err := u.createYooKassaPayment(ctx, input, productType, tariff, payment, amountValue)
 	if err != nil {
-		return CreatePaymentResult{}, fmt.Errorf("%w: %w", domain.ErrInternal, err)
-	}
-
-	description := fmt.Sprintf("VKino subscription %s", tariff.Code)
-
-	ykPayment, err := u.yookassa.CreatePayment(ctx, repository.YooKassaCreateRequest{
-		AmountValue:    amountValue,
-		AmountCurrency: "RUB",
-		Capture:        u.capture,
-		ReturnURL:      fmt.Sprintf("%s?payment_id=%d", strings.TrimRight(u.returnURL, "/"), payment.ID),
-		Description:    description,
-		IdempotencyKey: payment.IdempotencyKey,
-		Metadata: map[string]string{
-			"payment_id":   strconv.FormatInt(payment.ID, 10),
-			"user_id":      strconv.FormatInt(input.UserID, 10),
-			"product_type": string(productType),
-			"tariff_id":    strconv.FormatInt(tariff.ID, 10),
-		},
-	})
-	if err != nil {
-		_ = u.payments.UpdatePaymentStatus(ctx, payment.ID, domain.PaymentStatusCanceled, nil)
+		if updateErr := u.payments.UpdatePaymentStatus(ctx, payment.ID, domain.PaymentStatusCanceled, nil); updateErr != nil {
+			return CreatePaymentResult{}, fmt.Errorf("%w: %w", domain.ErrInternal, updateErr)
+		}
 
 		return CreatePaymentResult{}, err
 	}
@@ -154,11 +100,9 @@ func (u *Usecase) GetPayment(ctx context.Context, userID, paymentID int64) (doma
 	}
 
 	if payment.Status == domain.PaymentStatusPending {
-		if syncErr := u.syncPendingPaymentFromYooKassa(ctx, payment); syncErr == nil {
-			payment, err = u.payments.GetPaymentByID(ctx, paymentID)
-			if err != nil {
-				return domain.Payment{}, err
-			}
+		payment, err = u.refreshPendingPayment(ctx, paymentID, payment)
+		if err != nil {
+			return domain.Payment{}, err
 		}
 	}
 
@@ -189,50 +133,21 @@ func (u *Usecase) HandleYooKassaWebhook(ctx context.Context, body []byte, client
 		return domain.ErrWebhookInvalidIP
 	}
 
-	var notification webhookNotification
-	if err := json.Unmarshal(body, &notification); err != nil {
-		return domain.ErrWebhookInvalidPayload
-	}
-
-	if notification.Type != "notification" || notification.Object.ID == "" {
-		return domain.ErrWebhookInvalidPayload
-	}
-
-	payloadHash := sha256.Sum256(body)
-	hash := hex.EncodeToString(payloadHash[:])
-
-	registered, err := u.payments.TryRegisterWebhookEvent(ctx, notification.Object.ID, notification.Event, hash)
+	notification, err := parseWebhookNotification(body)
 	if err != nil {
-		return fmt.Errorf("%w: %w", domain.ErrInternal, err)
+		return err
+	}
+
+	registered, err := u.registerWebhookEvent(ctx, notification, body)
+	if err != nil {
+		return err
 	}
 
 	if !registered {
 		return nil
 	}
 
-	ykPayment, err := u.yookassa.GetPayment(ctx, notification.Object.ID)
-	if err != nil {
-		return err
-	}
-
-	payment, err := u.payments.GetPaymentByYooKassaID(ctx, notification.Object.ID)
-	if err != nil {
-		return err
-	}
-
-	switch notification.Event {
-	case "payment.succeeded":
-		if ykPayment.Status != "succeeded" {
-			return domain.ErrWebhookInvalidPayload
-		}
-
-		return u.finalizeSucceededPayment(ctx, payment)
-
-	case "payment.canceled":
-		return u.finalizeCanceledPayment(ctx, payment)
-	}
-
-	return nil
+	return u.dispatchWebhookEvent(ctx, notification)
 }
 
 func (u *Usecase) syncPendingPaymentFromYooKassa(ctx context.Context, payment domain.Payment) error {

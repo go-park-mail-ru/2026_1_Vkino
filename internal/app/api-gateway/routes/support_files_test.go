@@ -147,7 +147,9 @@ func TestSupportFileURLHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockUserClient(ctrl)
 
-	client.EXPECT().GetSupportFileURL(gomock.Any(), &supportv1.GetSupportFileURLRequest{FileKey: "file", TicketId: 12}).
+	client.EXPECT().GetSupportFileURL(gomock.Any(), &supportv1.GetSupportFileURLRequest{
+		FileKey: testSupportFileKey, TicketId: 12,
+	}).
 		Return(&supportv1.GetSupportFileURLResponse{FileUrl: "https://cdn/file"}, nil)
 
 	handler := newSupportFileURLHandler(testConfig{}, client)

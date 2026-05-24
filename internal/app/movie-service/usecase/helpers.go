@@ -9,6 +9,11 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/movie-service/domain"
 )
 
+const (
+	contentTypeFilm   = "film"
+	contentTypeSeries = "series"
+)
+
 func (u *MovieUsecase) buildMovieResponse(ctx context.Context, movie *domain.Movie) (domain.MovieResponse, error) {
 	resp := domain.MovieResponse{
 		ID:                 movie.ID,
@@ -273,9 +278,9 @@ func (u *MovieUsecase) buildActorShortResponse(
 
 func localizeMovieContentType(contentType string) string {
 	switch contentType {
-	case "film":
+	case contentTypeFilm:
 		return "Фильм"
-	case "series":
+	case contentTypeSeries:
 		return "Сериал"
 	default:
 		return contentType

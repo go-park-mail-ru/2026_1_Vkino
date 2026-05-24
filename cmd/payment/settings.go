@@ -42,11 +42,11 @@ func Load(path string, cfg any) error {
 	const defaultConfigPath = "configs/payment.yaml"
 
 	return configenv.Load(path, defaultConfigPath, cfg, map[string]string{
-		"postgres.user":        envName("POSTGRES", "USER"),
-		"postgres.password":    envName("POSTGRES", "PASSWORD"),
-		"postgres.dbname":      envName("POSTGRES", "DB"),
-		"yookassa.shop_id":     envName("YOOKASSA", "SHOP", "ID"),
-		"yookassa.secret_key":  envName("YOOKASSA", "SECRET", "KEY"),
+		"postgres.user":       envName("POSTGRES", "USER"),
+		"postgres.password":   envName("POSTGRES", "PASSWORD"),
+		"postgres.dbname":     envName("POSTGRES", "DB"),
+		"yookassa.shop_id":    envName("YOOKASSA", "SHOP", "ID"),
+		"yookassa.secret_key": envName("YOOKASSA", "SECRET", "KEY"),
 	})
 }
 

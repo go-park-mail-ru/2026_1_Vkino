@@ -14,6 +14,8 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/payment-service/repository"
 )
 
+const defaultHTTPTimeout = 30 * time.Second
+
 type Config struct {
 	APIURL    string
 	ShopID    string
@@ -31,7 +33,7 @@ type Client struct {
 func NewClient(cfg Config) *Client {
 	timeout := cfg.Timeout
 	if timeout <= 0 {
-		timeout = 30 * time.Second
+		timeout = defaultHTTPTimeout
 	}
 
 	return &Client{
@@ -116,6 +118,25 @@ func (c *Client) do(
 	body any,
 	dst any,
 ) error {
+	req, err := c.newHTTPRequest(ctx, method, path, idempotencyKey, body)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("%w: %w", domain.ErrYooKassaUnavailable, err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	return c.decodeHTTPResponse(resp, dst)
+}
+
+func (c *Client) newHTTPRequest(
+	ctx context.Context,
+	method, path, idempotencyKey string,
+	body any,
+) (*http.Request, error) {
 	apiURL := strings.TrimRight(c.cfg.APIURL, "/")
 	if apiURL == "" {
 		apiURL = "https://api.yookassa.ru/v3"
@@ -126,7 +147,7 @@ func (c *Client) do(
 	if body != nil {
 		payload, err := json.Marshal(body)
 		if err != nil {
-			return fmt.Errorf("%w: marshal request: %v", domain.ErrInternal, err)
+			return nil, fmt.Errorf("%w: marshal request: %w", domain.ErrInternal, err)
 		}
 
 		reader = bytes.NewReader(payload)
@@ -134,7 +155,7 @@ func (c *Client) do(
 
 	req, err := http.NewRequestWithContext(ctx, method, apiURL+path, reader)
 	if err != nil {
-		return fmt.Errorf("%w: build request: %v", domain.ErrInternal, err)
+		return nil, fmt.Errorf("%w: build request: %w", domain.ErrInternal, err)
 	}
 
 	req.SetBasicAuth(c.cfg.ShopID, c.cfg.SecretKey)
@@ -144,15 +165,13 @@ func (c *Client) do(
 		req.Header.Set("Idempotence-Key", idempotencyKey)
 	}
 
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("%w: %v", domain.ErrYooKassaUnavailable, err)
-	}
-	defer func() { _ = resp.Body.Close() }()
+	return req, nil
+}
 
+func (c *Client) decodeHTTPResponse(resp *http.Response, dst any) error {
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("%w: read response: %v", domain.ErrInternal, err)
+		return fmt.Errorf("%w: read response: %w", domain.ErrInternal, err)
 	}
 
 	if resp.StatusCode >= http.StatusBadRequest {
@@ -161,7 +180,7 @@ func (c *Client) do(
 
 	if dst != nil && len(respBody) > 0 {
 		if err = json.Unmarshal(respBody, dst); err != nil {
-			return fmt.Errorf("%w: decode response: %v", domain.ErrInternal, err)
+			return fmt.Errorf("%w: decode response: %w", domain.ErrInternal, err)
 		}
 	}
 

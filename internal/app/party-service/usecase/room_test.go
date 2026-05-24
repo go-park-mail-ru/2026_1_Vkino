@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const testInviteLink = "invite-123"
+
 func TestGetRoomRequiresMembershipEvenForPublicRoom(t *testing.T) {
 	t.Parallel()
 
@@ -40,7 +42,7 @@ func TestGetRoomInviteAllowsHostOnly(t *testing.T) {
 	resp, err := svc.GetRoomInvite(context.Background(), 1, 5)
 	require.NoError(t, err)
 	require.Equal(t, int64(5), resp.RoomID)
-	require.Equal(t, "invite-123", resp.InviteLink)
+	require.Equal(t, testInviteLink, resp.InviteLink)
 }
 
 func TestInviteFriendToRoomCreatesPendingMember(t *testing.T) {
@@ -65,14 +67,16 @@ func TestGetRoomActivatesPendingMember(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	repo.room.Members = append(repo.room.Members, domain.RoomMember{UserID: 9, Role: "member", Status: "pending"})
+	repo.room.Members = append(repo.room.Members, domain.RoomMember{
+		UserID: 9, Role: memberRoleMember, Status: memberStatusPending,
+	})
 	svc := New(repo, &roomUsecaseBroker{}, nil)
 
 	resp, err := svc.GetRoom(context.Background(), 9, 5)
 	require.NoError(t, err)
 	require.Equal(t, int64(5), repo.activateMemberRoomID)
 	require.Equal(t, int64(9), repo.activateMemberUserID)
-	require.Equal(t, "active", findMemberStatus(t, resp.Room.Members, 9))
+	require.Equal(t, memberStatusActive, findMemberStatus(t, resp.Room.Members, 9))
 }
 
 func TestJoinRoomUsesInviteOnly(t *testing.T) {
@@ -109,7 +113,7 @@ func TestGetOverviewHidesInviteOutsideHostRooms(t *testing.T) {
 
 	resp, err := svc.GetOverview(context.Background(), 1)
 	require.NoError(t, err)
-	require.Equal(t, "invite-123", resp.ActiveRooms[0].InviteLink)
+	require.Equal(t, testInviteLink, resp.ActiveRooms[0].InviteLink)
 	require.Empty(t, resp.FeaturedRooms[0].InviteLink)
 	require.Empty(t, resp.MyRooms[0].InviteLink)
 }
@@ -145,10 +149,10 @@ func newRoomUsecaseRepo() *roomUsecaseRepo {
 		Name:       "Room",
 		Visibility: "public",
 		HostUserID: 1,
-		InviteLink: "invite-123",
+		InviteLink: testInviteLink,
 		Members: []domain.RoomMember{
-			{UserID: 1, Role: "host", Status: "active"},
-			{UserID: 2, Role: "member", Status: "active"},
+			{UserID: 1, Role: memberRoleHost, Status: memberStatusActive},
+			{UserID: 2, Role: memberRoleMember, Status: memberStatusActive},
 		},
 	}
 
@@ -156,7 +160,7 @@ func newRoomUsecaseRepo() *roomUsecaseRepo {
 		room: room,
 		overview: domain.OverviewResponse{
 			ActiveRooms: []domain.RoomCard{
-				{ID: 5, HostUserID: 1, InviteLink: "invite-123"},
+				{ID: 5, HostUserID: 1, InviteLink: testInviteLink},
 			},
 			MyRooms: []domain.RoomCard{
 				{ID: 6, HostUserID: 7, InviteLink: "invite-456"},
@@ -167,7 +171,7 @@ func newRoomUsecaseRepo() *roomUsecaseRepo {
 		},
 		invite: &domain.Invite{
 			RoomID: 5,
-			Link:   "invite-123",
+			Link:   testInviteLink,
 		},
 	}
 }
@@ -201,7 +205,9 @@ func (r *roomUsecaseRepo) InviteMember(_ context.Context, roomID, userID int64) 
 		}
 	}
 
-	r.room.Members = append(r.room.Members, domain.RoomMember{UserID: userID, Role: "member", Status: "pending"})
+	r.room.Members = append(r.room.Members, domain.RoomMember{
+		UserID: userID, Role: memberRoleMember, Status: memberStatusPending,
+	})
 
 	return nil
 }
@@ -212,7 +218,9 @@ func (r *roomUsecaseRepo) AddMember(_ context.Context, roomID, userID int64) (*d
 
 	roomCopy := *r.room
 	roomCopy.Members = append([]domain.RoomMember(nil), r.room.Members...)
-	roomCopy.Members = append(roomCopy.Members, domain.RoomMember{UserID: userID, Role: "member", Status: "active"})
+	roomCopy.Members = append(roomCopy.Members, domain.RoomMember{
+		UserID: userID, Role: memberRoleMember, Status: memberStatusActive,
+	})
 
 	return &roomCopy, nil
 }
@@ -223,7 +231,7 @@ func (r *roomUsecaseRepo) ActivateMember(_ context.Context, roomID, userID int64
 
 	for i := range r.room.Members {
 		if r.room.Members[i].UserID == userID {
-			r.room.Members[i].Status = "active"
+			r.room.Members[i].Status = memberStatusActive
 		}
 	}
 

@@ -352,8 +352,8 @@ func TestUserRoutes_CreateTicket(t *testing.T) {
 		Category:          "billing",
 		Title:             "Help",
 		Description:       "Details",
-		UserEmail:         "user@example.com",
-		AttachmentFileKey: "file",
+		UserEmail:         testUserEmail,
+		AttachmentFileKey: testSupportFileKey,
 	}).Return(&supportv1.TicketResponse{}, nil)
 
 	handler := newUserHandler(t, client)
@@ -399,9 +399,9 @@ func TestUserRoutes_UpdateTicket(t *testing.T) {
 		Status:            "open",
 		SupportLine:       2,
 		Title:             "Help",
-		UserEmail:         "user@example.com",
+		UserEmail:         testUserEmail,
 		Description:       "Details",
-		AttachmentFileKey: "file",
+		AttachmentFileKey: testSupportFileKey,
 		Rating:            4,
 	}).Return(&supportv1.TicketResponse{}, nil)
 

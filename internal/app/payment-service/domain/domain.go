@@ -35,13 +35,13 @@ type Payment struct {
 }
 
 type SubscriptionTariff struct {
-	ID                     int64
-	Code                   string
-	Title                  string
-	PriceMoney             int32
+	ID                      int64
+	Code                    string
+	Title                   string
+	PriceMoney              int32
 	IsMoneyPaymentAvailable bool
-	DurationDays           int32
-	Level                  int32
+	DurationDays            int32
+	Level                   int32
 }
 
 type MoneyTariff struct {

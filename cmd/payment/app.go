@@ -27,69 +27,26 @@ const (
 )
 
 func Run(configPath string) error {
-	cfg := &Config{}
-	if err := Load(configPath, cfg); err != nil {
-		return fmt.Errorf("unable to load config: %w", err)
-	}
-
-	baseLogger, err := logger.New(cfg.Logger)
+	cfg, appLogger, runCtx, err := bootstrapPaymentApp(configPath)
 	if err != nil {
-		return fmt.Errorf("init logger: %w", err)
+		return err
 	}
+	defer runCtx.cancel()
 
-	appLogger := baseLogger.WithField("component", componentName)
-
-	runCtx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	if err = metrics.StartServer(runCtx, serviceName, cfg.Metrics, appLogger); err != nil {
-		return fmt.Errorf("start metrics server: %w", err)
-	}
-
-	pgDB, err := corepostgres.New(cfg.Postgres, corepostgres.BuildPostgresOptions(&cfg.Postgres)...)
+	pgDB, err := openPaymentPostgres(cfg.Postgres, appLogger)
 	if err != nil {
-		return fmt.Errorf("failed to connect to postgres: %w", err)
+		return err
 	}
 	defer pgDB.Close()
 
-	appLogger.Info("successfully connected to postgres")
-
-	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
-		Address:        cfg.AuthGRPC.Address,
-		RequestTimeout: cfg.AuthGRPC.RequestTimeout,
-	})
+	authConn, userConn, err := initPaymentGRPCClients(cfg)
 	if err != nil {
-		return fmt.Errorf("init auth grpc client: %w", err)
+		return err
 	}
 	defer func() { _ = authConn.Close() }()
-
-	userConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
-		Address:        cfg.UserGRPC.Address,
-		RequestTimeout: cfg.UserGRPC.RequestTimeout,
-	})
-	if err != nil {
-		return fmt.Errorf("init user grpc client: %w", err)
-	}
 	defer func() { _ = userConn.Close() }()
 
-	paymentRepo := postgresrepo.NewPaymentRepo(pgDB)
-	yookassaClient := yookassaclient.NewClient(yookassaclient.Config{
-		APIURL:    cfg.YooKassa.APIURL,
-		ShopID:    cfg.YooKassa.ShopID,
-		SecretKey: cfg.YooKassa.SecretKey,
-		ReturnURL: cfg.YooKassa.ReturnURL,
-		Capture:   cfg.YooKassa.Capture,
-		Timeout:   cfg.YooKassa.Timeout,
-	})
-	activator := usergrpc.NewUserSubscriptionActivator(userv1.NewUserServiceClient(userConn))
-
-	paymentUC := paymentusecase.New(
-		paymentRepo,
-		yookassaClient,
-		activator,
-		cfg.YooKassa.ReturnURL,
-		cfg.YooKassa.Capture,
-	)
+	paymentUC := newPaymentUsecase(cfg, pgDB, userConn)
 
 	lis, err := grpcx.Listen(cfg.GRPC.Port)
 	if err != nil {
@@ -104,7 +61,7 @@ func Run(configPath string) error {
 	appLogger.WithField("port", cfg.GRPC.Port).Info("starting grpc server")
 
 	return serverrunner.RunGRPC(
-		runCtx,
+		runCtx.ctx,
 		appLogger,
 		serviceName,
 		func() error {
@@ -112,5 +69,88 @@ func Run(configPath string) error {
 		},
 		grpcServer.GracefulStop,
 		grpcServer.Stop,
+	)
+}
+
+type paymentRunContext struct {
+	ctx    context.Context
+	cancel context.CancelFunc
+}
+
+func bootstrapPaymentApp(configPath string) (Config, *logger.Logger, paymentRunContext, error) {
+	cfg := Config{}
+	if err := Load(configPath, &cfg); err != nil {
+		return Config{}, nil, paymentRunContext{}, fmt.Errorf("unable to load config: %w", err)
+	}
+
+	baseLogger, err := logger.New(cfg.Logger)
+	if err != nil {
+		return Config{}, nil, paymentRunContext{}, fmt.Errorf("init logger: %w", err)
+	}
+
+	appLogger := baseLogger.WithField("component", componentName)
+	ctx, cancel := context.WithCancel(context.Background())
+	runCtx := paymentRunContext{ctx: ctx, cancel: cancel}
+
+	if err := metrics.StartServer(runCtx.ctx, serviceName, cfg.Metrics, appLogger); err != nil {
+		cancel()
+
+		return Config{}, nil, paymentRunContext{}, fmt.Errorf("start metrics server: %w", err)
+	}
+
+	return cfg, appLogger, runCtx, nil
+}
+
+func openPaymentPostgres(cfg corepostgres.Config, log *logger.Logger) (*corepostgres.Client, error) {
+	pgDB, err := corepostgres.New(cfg, corepostgres.BuildPostgresOptions(&cfg)...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
+	}
+
+	log.Info("successfully connected to postgres")
+
+	return pgDB, nil
+}
+
+func initPaymentGRPCClients(cfg Config) (*grpc.ClientConn, *grpc.ClientConn, error) {
+	authConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
+		Address:        cfg.AuthGRPC.Address,
+		RequestTimeout: cfg.AuthGRPC.RequestTimeout,
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("init auth grpc client: %w", err)
+	}
+
+	userConn, err := grpcx.Dial(context.Background(), grpcx.ClientConfig{
+		Address:        cfg.UserGRPC.Address,
+		RequestTimeout: cfg.UserGRPC.RequestTimeout,
+	})
+	if err != nil {
+		_ = authConn.Close()
+
+		return nil, nil, fmt.Errorf("init user grpc client: %w", err)
+	}
+
+	return authConn, userConn, nil
+}
+
+func newPaymentUsecase(cfg Config, pgDB *corepostgres.Client, userConn *grpc.ClientConn) *paymentusecase.Usecase {
+	paymentRepo := postgresrepo.NewPaymentRepo(pgDB)
+	yookassaClient := yookassaclient.NewClient(yookassaclient.Config{
+		APIURL:    cfg.YooKassa.APIURL,
+		ShopID:    cfg.YooKassa.ShopID,
+		SecretKey: cfg.YooKassa.SecretKey,
+		ReturnURL: cfg.YooKassa.ReturnURL,
+		Capture:   cfg.YooKassa.Capture,
+		Timeout:   cfg.YooKassa.Timeout,
+	})
+	activator := usergrpc.NewUserSubscriptionActivator(userv1.NewUserServiceClient(userConn))
+
+	return paymentusecase.New(
+		paymentRepo,
+		yookassaClient,
+		activator,
+		cfg.YooKassa.ReturnURL,
+		cfg.YooKassa.Capture,
 	)
 }

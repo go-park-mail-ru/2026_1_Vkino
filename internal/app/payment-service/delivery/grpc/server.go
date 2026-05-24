@@ -24,15 +24,6 @@ func NewServer(u *usecase.Usecase, authClient authv1.AuthServiceClient) *Server 
 	}
 }
 
-func (s *Server) authorize(ctx context.Context) (authctx.Context, error) {
-	authCtx, err := authctx.ValidateIncomingContext(ctx, s.authClient)
-	if err != nil {
-		return authctx.Context{}, err
-	}
-
-	return authCtx, nil
-}
-
 func (s *Server) CreatePayment(
 	ctx context.Context,
 	req *paymentv1.CreatePaymentRequest,
@@ -129,4 +120,13 @@ func (s *Server) HandleYooKassaWebhook(
 	}
 
 	return &paymentv1.HandleYooKassaWebhookResponse{}, nil
+}
+
+func (s *Server) authorize(ctx context.Context) (authctx.Context, error) {
+	authCtx, err := authctx.ValidateIncomingContext(ctx, s.authClient)
+	if err != nil {
+		return authctx.Context{}, err
+	}
+
+	return authCtx, nil
 }

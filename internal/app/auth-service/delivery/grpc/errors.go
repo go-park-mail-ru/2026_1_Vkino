@@ -2,10 +2,13 @@ package grpc
 
 import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/domain"
+
 	postgresrepo "github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/repository/postgres"
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/errmap/grpcx"
 	"google.golang.org/grpc/codes"
 )
+
+const grpcMessageUnauthorized = "unauthorized"
 
 var authGRPCErrorMapper = grpcx.New(
 	[]error{
@@ -26,10 +29,10 @@ var authGRPCErrorMapper = grpcx.New(
 		domain.ErrUserAlreadyExists:       {Code: codes.AlreadyExists, Message: "user already exists"},
 		postgresrepo.ErrUserAlreadyExists: {Code: codes.AlreadyExists, Message: "user already exists"},
 
-		domain.ErrInvalidCredentials: {Code: codes.Unauthenticated, Message: "unauthorized"},
-		domain.ErrPasswordMismatch:   {Code: codes.Unauthenticated, Message: "unauthorized"},
-		domain.ErrNoSession:          {Code: codes.Unauthenticated, Message: "unauthorized"},
-		domain.ErrInvalidToken:       {Code: codes.Unauthenticated, Message: "unauthorized"},
+		domain.ErrInvalidCredentials: {Code: codes.Unauthenticated, Message: grpcMessageUnauthorized},
+		domain.ErrPasswordMismatch:   {Code: codes.Unauthenticated, Message: grpcMessageUnauthorized},
+		domain.ErrNoSession:          {Code: codes.Unauthenticated, Message: grpcMessageUnauthorized},
+		domain.ErrInvalidToken:       {Code: codes.Unauthenticated, Message: grpcMessageUnauthorized},
 
 		domain.ErrUserNotFound:       {Code: codes.NotFound, Message: "user not found"},
 		postgresrepo.ErrUserNotFound: {Code: codes.NotFound, Message: "user not found"},
