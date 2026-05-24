@@ -4,23 +4,19 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/payment-service/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/payment-service/repository"
 )
 
-var (
-	ErrEmptyPaymentURL = errors.New("payment request URL is empty")
-	ErrUntrustedHost   = errors.New("untrusted payment endpoint")
+const (
+	defaultHTTPTimeout = 30 * time.Second
+	yookassaAPIBaseURL = "https://api.yookassa.ru/v3"
 )
-
-const defaultHTTPTimeout = 30 * time.Second
 
 type Config struct {
 	APIURL    string
@@ -129,15 +125,7 @@ func (c *Client) do(
 		return err
 	}
 
-	if req.URL == nil || req.URL.Host == "" {
-		return ErrEmptyPaymentURL
-	}
-	// чтобы линтер не ругался
-	if req.URL.Host != "api.yookassa.ru" && req.URL.Host != "yookassa.ru" {
-		return fmt.Errorf("host %s: %w", req.URL.Host, ErrUntrustedHost)
-	}
-
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.httpClient.Do(req) // #nosec G704 -- request host is fixed to the YooKassa API endpoint.
 	if err != nil {
 		return fmt.Errorf("%w: %w", domain.ErrYooKassaUnavailable, err)
 	}
@@ -152,11 +140,6 @@ func (c *Client) newHTTPRequest(
 	method, path, idempotencyKey string,
 	body any,
 ) (*http.Request, error) {
-	apiURL := strings.TrimRight(c.cfg.APIURL, "/")
-	if apiURL == "" {
-		apiURL = "https://api.yookassa.ru/v3"
-	}
-
 	var reader io.Reader
 
 	if body != nil {
@@ -168,7 +151,7 @@ func (c *Client) newHTTPRequest(
 		reader = bytes.NewReader(payload)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, apiURL+path, reader)
+	req, err := http.NewRequestWithContext(ctx, method, yookassaAPIBaseURL+path, reader)
 	if err != nil {
 		return nil, fmt.Errorf("%w: build request: %w", domain.ErrInternal, err)
 	}
