@@ -1,9 +1,11 @@
 package domain
 
 type SubscriptionTariff struct {
-	ID           int64
-	Code         string
-	Title        string
-	Level        int32
-	DurationDays int32
+	ID                      int64
+	Code                    string
+	Title                   string
+	Level                   int32
+	DurationDays            int32
+	PriceVKinoCoins         int32
+	IsCoinsPaymentAvailable bool
 }

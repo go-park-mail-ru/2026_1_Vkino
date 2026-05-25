@@ -33,6 +33,14 @@ type UserProfileUsecase interface {
 	) (domain.ProfileResponse, error)
 }
 
+type UserSubscriptionPaymentUsecase interface {
+	BuySubscriptionWithVKinoCoins(
+		ctx context.Context,
+		userID int64,
+		tariffID int64,
+	) (domain.VKinoCoinsSubscriptionPurchase, error)
+}
+
 type UserMovieUsecase interface {
 	AddMovieToFavorites(ctx context.Context, userID, movieID int64) (domain.FavoriteMovieResponse, error)
 	SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) (domain.MovieRatingResponse, error)
@@ -59,6 +67,7 @@ type UserFriendUsecase interface {
 
 type Usecase interface {
 	UserProfileUsecase
+	UserSubscriptionPaymentUsecase
 	UserMovieUsecase
 	UserFriendUsecase
 }

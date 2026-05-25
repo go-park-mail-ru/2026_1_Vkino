@@ -12,77 +12,59 @@ import (
 )
 
 type Usecase struct {
-	payments  repository.PaymentRepo
-	yookassa  repository.YooKassaClient
-	activator repository.SubscriptionActivator
-	returnURL string
-	capture   bool
-	now       func() time.Time
+	payments   repository.PaymentRepo
+	yookassa   repository.YooKassaClient
+	coinsBuyer repository.SubscriptionCoinsBuyer
+	activator  repository.SubscriptionActivator
+	returnURL  string
+	capture    bool
+	now        func() time.Time
 }
 
 func New(
 	payments repository.PaymentRepo,
 	yookassa repository.YooKassaClient,
+	coinsBuyer repository.SubscriptionCoinsBuyer,
 	activator repository.SubscriptionActivator,
 	returnURL string,
 	capture bool,
 ) *Usecase {
 	return &Usecase{
-		payments:  payments,
-		yookassa:  yookassa,
-		activator: activator,
-		returnURL: returnURL,
-		capture:   capture,
-		now:       time.Now,
+		payments:   payments,
+		yookassa:   yookassa,
+		coinsBuyer: coinsBuyer,
+		activator:  activator,
+		returnURL:  returnURL,
+		capture:    capture,
+		now:        time.Now,
 	}
 }
 
 type CreatePaymentInput struct {
-	UserID       int64
-	ProductType  string
-	ProductRefID int64
+	UserID        int64
+	ProductType   string
+	ProductRefID  int64
+	PaymentMethod string
 }
 
 type CreatePaymentResult struct {
-	PaymentID       int64
-	Status          string
-	ConfirmationURL string
+	PaymentID         int64
+	Status            string
+	ConfirmationURL   string
+	PaymentMethod     string
+	CoinsSpent        *int32
+	VKinoCoinsBalance *int32
 }
 
 func (u *Usecase) CreatePayment(ctx context.Context, input CreatePaymentInput) (CreatePaymentResult, error) {
-	productType, tariff, err := u.validateCreatePaymentInput(ctx, input)
-	if err != nil {
-		return CreatePaymentResult{}, err
+	switch normalizePaymentMethod(input.PaymentMethod) {
+	case domain.PaymentMethodYooKassa:
+		return u.createYooKassaSubscriptionPayment(ctx, input)
+	case domain.PaymentMethodVKinoCoins:
+		return u.createVKinoCoinsSubscriptionPayment(ctx, input)
+	default:
+		return CreatePaymentResult{}, domain.ErrInvalidPaymentMethod
 	}
-
-	payment, amountValue, err := u.createPendingPayment(ctx, input, productType, tariff)
-	if err != nil {
-		return CreatePaymentResult{}, err
-	}
-
-	ykPayment, err := u.createYooKassaPayment(ctx, input, productType, tariff, payment, amountValue)
-	if err != nil {
-		if updateErr := u.payments.UpdatePaymentStatus(ctx, payment.ID, domain.PaymentStatusCanceled, nil); updateErr != nil {
-			return CreatePaymentResult{}, fmt.Errorf("%w: %w", domain.ErrInternal, updateErr)
-		}
-
-		return CreatePaymentResult{}, err
-	}
-
-	if err = u.payments.UpdatePaymentYooKassa(
-		ctx,
-		payment.ID,
-		ykPayment.ID,
-		ykPayment.ConfirmationURL,
-	); err != nil {
-		return CreatePaymentResult{}, fmt.Errorf("%w: %w", domain.ErrInternal, err)
-	}
-
-	return CreatePaymentResult{
-		PaymentID:       payment.ID,
-		Status:          string(domain.PaymentStatusPending),
-		ConfirmationURL: ykPayment.ConfirmationURL,
-	}, nil
 }
 
 func (u *Usecase) GetPayment(ctx context.Context, userID, paymentID int64) (domain.Payment, error) {

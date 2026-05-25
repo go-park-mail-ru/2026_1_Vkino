@@ -38,11 +38,18 @@ type UserSubscriptionRepo interface {
 }
 
 type UserCoinsRepo interface {
+	GetVKinoCoinsBalance(ctx context.Context, userID int64) (int32, error)
+	GrantDailyVKinoCoins(ctx context.Context, userID int64) (int32, error)
 	GetVKinoCoinsHistory(
 		ctx context.Context,
 		userID int64,
 		limit, offset int32,
 	) ([]domain.VKinoCoinsHistoryItem, int32, error)
+	BuySubscriptionWithVKinoCoins(
+		ctx context.Context,
+		userID int64,
+		tariffID int64,
+	) (domain.VKinoCoinsSubscriptionPurchase, error)
 }
 
 type UserMovieRepo interface {

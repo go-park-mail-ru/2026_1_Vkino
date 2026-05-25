@@ -145,11 +145,14 @@ func newPaymentUsecase(cfg Config, pgDB *corepostgres.Client, userConn *grpc.Cli
 		Capture:   cfg.YooKassa.Capture,
 		Timeout:   cfg.YooKassa.Timeout,
 	})
-	activator := usergrpc.NewUserSubscriptionActivator(userv1.NewUserServiceClient(userConn))
+	userClient := userv1.NewUserServiceClient(userConn)
+	activator := usergrpc.NewUserSubscriptionActivator(userClient)
+	coinsBuyer := usergrpc.NewUserSubscriptionCoinsBuyer(userClient)
 
 	return paymentusecase.New(
 		paymentRepo,
 		yookassaClient,
+		coinsBuyer,
 		activator,
 		cfg.YooKassa.ReturnURL,
 		cfg.YooKassa.Capture,

@@ -49,6 +49,7 @@ func TestCreatePayment_Success(t *testing.T) {
 			require.Equal(t, int64(2), payment.ProductRefID)
 			require.Equal(t, "299.00", payment.Amount)
 			require.Equal(t, domain.PaymentStatusPending, payment.Status)
+			require.Equal(t, domain.PaymentMethodYooKassa, payment.PaymentMethod)
 
 			payment.ID = 7
 
@@ -62,7 +63,7 @@ func TestCreatePayment_Success(t *testing.T) {
 	}, nil)
 	payments.EXPECT().UpdatePaymentYooKassa(gomock.Any(), int64(7), "yk-7", "https://yoomoney.ru/checkout/7").Return(nil)
 
-	u := usecase.New(payments, yookassa, activator, "http://localhost:3000/payments/return", true)
+	u := usecase.New(payments, yookassa, nil, activator, "http://localhost:3000/payments/return", true)
 
 	result, err := u.CreatePayment(context.Background(), usecase.CreatePaymentInput{
 		UserID:       42,
@@ -73,6 +74,7 @@ func TestCreatePayment_Success(t *testing.T) {
 	require.Equal(t, int64(7), result.PaymentID)
 	require.Equal(t, "pending", result.Status)
 	require.Equal(t, "https://yoomoney.ru/checkout/7", result.ConfirmationURL)
+	require.Equal(t, "yookassa", result.PaymentMethod)
 }
 
 func TestCreatePayment_InvalidProductType(t *testing.T) {
@@ -84,6 +86,7 @@ func TestCreatePayment_InvalidProductType(t *testing.T) {
 	u := usecase.New(
 		mocks.NewMockPaymentRepo(ctrl),
 		mocks.NewMockYooKassaClient(ctrl),
+		nil,
 		mocks.NewMockSubscriptionActivator(ctrl),
 		"http://localhost:3000/payments/return",
 		true,
@@ -114,6 +117,7 @@ func TestCreatePayment_TariffNotAvailable(t *testing.T) {
 	u := usecase.New(
 		payments,
 		mocks.NewMockYooKassaClient(ctrl),
+		nil,
 		mocks.NewMockSubscriptionActivator(ctrl),
 		"http://localhost:3000/payments/return",
 		true,
@@ -151,6 +155,7 @@ func TestCreatePayment_YooKassaFailureMarksPaymentCanceled(t *testing.T) {
 	u := usecase.New(
 		payments,
 		yookassa,
+		nil,
 		mocks.NewMockSubscriptionActivator(ctrl),
 		"http://localhost:3000/payments/return",
 		true,
@@ -180,6 +185,7 @@ func TestGetPayment_AccessDenied(t *testing.T) {
 	u := usecase.New(
 		payments,
 		mocks.NewMockYooKassaClient(ctrl),
+		nil,
 		mocks.NewMockSubscriptionActivator(ctrl),
 		"http://localhost:3000/payments/return",
 		true,
@@ -225,7 +231,7 @@ func TestGetPayment_SyncsSucceededFromYooKassa(t *testing.T) {
 		payments.EXPECT().GetPaymentByID(gomock.Any(), int64(12)).Return(succeededPayment, nil),
 	)
 
-	u := usecase.New(payments, yookassa, activator, "http://localhost:3000/payments/return", true)
+	u := usecase.New(payments, yookassa, nil, activator, "http://localhost:3000/payments/return", true)
 
 	payment, err := u.GetPayment(context.Background(), 42, 12)
 	require.NoError(t, err)
@@ -246,6 +252,7 @@ func TestListMoneyTariffs(t *testing.T) {
 	u := usecase.New(
 		payments,
 		mocks.NewMockYooKassaClient(ctrl),
+		nil,
 		mocks.NewMockSubscriptionActivator(ctrl),
 		"http://localhost:3000/payments/return",
 		true,
@@ -263,6 +270,7 @@ func TestHandleYooKassaWebhook_InvalidIP(t *testing.T) {
 	u := usecase.New(
 		mocks.NewMockPaymentRepo(gomock.NewController(t)),
 		mocks.NewMockYooKassaClient(gomock.NewController(t)),
+		nil,
 		mocks.NewMockSubscriptionActivator(gomock.NewController(t)),
 		"http://localhost:3000/payments/return",
 		true,
@@ -304,7 +312,7 @@ func TestHandleYooKassaWebhook_SucceededActivatesSubscription(t *testing.T) {
 	payments.EXPECT().UpdatePaymentStatus(gomock.Any(), int64(11), domain.PaymentStatusSucceeded, gomock.Any()).Return(nil)
 	activator.EXPECT().ActivateSubscription(gomock.Any(), int64(42), int64(2), int64(11)).Return(nil)
 
-	u := usecase.New(payments, yookassa, activator, "http://localhost:3000/payments/return", true)
+	u := usecase.New(payments, yookassa, nil, activator, "http://localhost:3000/payments/return", true)
 
 	err := u.HandleYooKassaWebhook(context.Background(), body, yooKassaTestIP)
 	require.NoError(t, err)
@@ -340,6 +348,7 @@ func TestHandleYooKassaWebhook_Canceled(t *testing.T) {
 	u := usecase.New(
 		payments,
 		yookassa,
+		nil,
 		mocks.NewMockSubscriptionActivator(ctrl),
 		"http://localhost:3000/payments/return",
 		true,
@@ -367,6 +376,7 @@ func TestHandleYooKassaWebhook_DeduplicatedEventIsNoop(t *testing.T) {
 	u := usecase.New(
 		payments,
 		mocks.NewMockYooKassaClient(ctrl),
+		nil,
 		mocks.NewMockSubscriptionActivator(ctrl),
 		"http://localhost:3000/payments/return",
 		true,
@@ -411,6 +421,7 @@ func TestHandleYooKassaWebhook_ActivationFailure(t *testing.T) {
 	u := usecase.New(
 		payments,
 		yookassa,
+		nil,
 		activator,
 		"http://localhost:3000/payments/return",
 		true,
@@ -418,4 +429,189 @@ func TestHandleYooKassaWebhook_ActivationFailure(t *testing.T) {
 
 	err := u.HandleYooKassaWebhook(context.Background(), body, yooKassaTestIP)
 	require.ErrorIs(t, err, domain.ErrInternal)
+}
+
+func TestCreatePayment_ExplicitYooKassa(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	payments := mocks.NewMockPaymentRepo(ctrl)
+	yookassa := mocks.NewMockYooKassaClient(ctrl)
+
+	payments.EXPECT().UserExists(gomock.Any(), int64(42)).Return(true, nil)
+	payments.EXPECT().GetSubscriptionTariff(gomock.Any(), int64(2)).Return(domain.SubscriptionTariff{
+		ID:                      2,
+		Code:                    tariffCodeLevel2,
+		Title:                   "Level 2",
+		PriceMoney:              299,
+		IsMoneyPaymentAvailable: true,
+		DurationDays:            30,
+		Level:                   2,
+	}, nil)
+	payments.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(domain.Payment{ID: 77}, nil)
+	yookassa.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(repository.YooKassaPayment{
+		ID:              "yk-77",
+		Status:          "pending",
+		ConfirmationURL: "https://yoomoney.ru/checkout/77",
+	}, nil)
+	payments.EXPECT().
+		UpdatePaymentYooKassa(gomock.Any(), int64(77), "yk-77", "https://yoomoney.ru/checkout/77").
+		Return(nil)
+
+	u := usecase.New(
+		payments,
+		yookassa,
+		nil,
+		mocks.NewMockSubscriptionActivator(ctrl),
+		"http://localhost:3000/payments/return",
+		true,
+	)
+
+	result, err := u.CreatePayment(context.Background(), usecase.CreatePaymentInput{
+		UserID:        42,
+		ProductType:   productTypeSubscription,
+		ProductRefID:  2,
+		PaymentMethod: "yookassa",
+	})
+	require.NoError(t, err)
+	require.Equal(t, "yookassa", result.PaymentMethod)
+	require.Equal(t, "pending", result.Status)
+}
+
+func TestCreatePayment_VKinoCoinsSuccess(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	payments := mocks.NewMockPaymentRepo(ctrl)
+	coinsBuyer := mocks.NewMockSubscriptionCoinsBuyer(ctrl)
+
+	payments.EXPECT().UserExists(gomock.Any(), int64(42)).Return(true, nil)
+	payments.EXPECT().GetSubscriptionTariff(gomock.Any(), int64(2)).Return(domain.SubscriptionTariff{
+		ID:                      2,
+		Code:                    tariffCodeLevel2,
+		PriceVKinoCoins:         20,
+		IsCoinsPaymentAvailable: true,
+	}, nil)
+	coinsBuyer.EXPECT().BuySubscriptionWithVKinoCoins(gomock.Any(), int64(42), int64(2)).Return(
+		domain.CoinsSubscriptionPurchase{
+			PaymentID:         123,
+			CoinsSpent:        20,
+			VKinoCoinsBalance: 80,
+		},
+		nil,
+	)
+
+	u := usecase.New(
+		payments,
+		mocks.NewMockYooKassaClient(ctrl),
+		coinsBuyer,
+		mocks.NewMockSubscriptionActivator(ctrl),
+		"http://localhost:3000/payments/return",
+		true,
+	)
+
+	result, err := u.CreatePayment(context.Background(), usecase.CreatePaymentInput{
+		UserID:        42,
+		ProductType:   productTypeSubscription,
+		ProductRefID:  2,
+		PaymentMethod: "vkino_coins",
+	})
+	require.NoError(t, err)
+	require.Equal(t, int64(123), result.PaymentID)
+	require.Equal(t, "succeeded", result.Status)
+	require.Empty(t, result.ConfirmationURL)
+	require.Equal(t, "vkino_coins", result.PaymentMethod)
+	require.NotNil(t, result.CoinsSpent)
+	require.EqualValues(t, 20, *result.CoinsSpent)
+	require.NotNil(t, result.VKinoCoinsBalance)
+	require.EqualValues(t, 80, *result.VKinoCoinsBalance)
+}
+
+func TestCreatePayment_VKinoCoinsInsufficientBalance(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	payments := mocks.NewMockPaymentRepo(ctrl)
+	coinsBuyer := mocks.NewMockSubscriptionCoinsBuyer(ctrl)
+
+	payments.EXPECT().UserExists(gomock.Any(), int64(42)).Return(true, nil)
+	payments.EXPECT().GetSubscriptionTariff(gomock.Any(), int64(2)).Return(domain.SubscriptionTariff{
+		ID:                      2,
+		Code:                    tariffCodeLevel2,
+		PriceVKinoCoins:         20,
+		IsCoinsPaymentAvailable: true,
+	}, nil)
+	coinsBuyer.EXPECT().BuySubscriptionWithVKinoCoins(gomock.Any(), int64(42), int64(2)).
+		Return(domain.CoinsSubscriptionPurchase{}, domain.ErrInsufficientVKinoCoins)
+
+	u := usecase.New(
+		payments,
+		mocks.NewMockYooKassaClient(ctrl),
+		coinsBuyer,
+		mocks.NewMockSubscriptionActivator(ctrl),
+		"http://localhost:3000/payments/return",
+		true,
+	)
+
+	_, err := u.CreatePayment(context.Background(), usecase.CreatePaymentInput{
+		UserID:        42,
+		ProductType:   productTypeSubscription,
+		ProductRefID:  2,
+		PaymentMethod: "vkino_coins",
+	})
+	require.ErrorIs(t, err, domain.ErrInsufficientVKinoCoins)
+}
+
+func TestCreatePayment_InvalidPaymentMethod(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	u := usecase.New(
+		mocks.NewMockPaymentRepo(ctrl),
+		mocks.NewMockYooKassaClient(ctrl),
+		nil,
+		mocks.NewMockSubscriptionActivator(ctrl),
+		"http://localhost:3000/payments/return",
+		true,
+	)
+
+	_, err := u.CreatePayment(context.Background(), usecase.CreatePaymentInput{
+		UserID:        42,
+		ProductType:   productTypeSubscription,
+		ProductRefID:  2,
+		PaymentMethod: "crypto_magic",
+	})
+	require.ErrorIs(t, err, domain.ErrInvalidPaymentMethod)
+}
+
+func TestCreatePayment_VKinoCoinsInvalidProductType(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	u := usecase.New(
+		mocks.NewMockPaymentRepo(ctrl),
+		mocks.NewMockYooKassaClient(ctrl),
+		mocks.NewMockSubscriptionCoinsBuyer(ctrl),
+		mocks.NewMockSubscriptionActivator(ctrl),
+		"http://localhost:3000/payments/return",
+		true,
+	)
+
+	_, err := u.CreatePayment(context.Background(), usecase.CreatePaymentInput{
+		UserID:        42,
+		ProductType:   "coins",
+		ProductRefID:  2,
+		PaymentMethod: "vkino_coins",
+	})
+	require.ErrorIs(t, err, domain.ErrInvalidProductType)
 }

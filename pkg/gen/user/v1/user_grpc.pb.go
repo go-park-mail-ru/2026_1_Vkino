@@ -19,29 +19,30 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_GetProfile_FullMethodName                  = "/user.v1.UserService/GetProfile"
-	UserService_GetFriend_FullMethodName                   = "/user.v1.UserService/GetFriend"
-	UserService_GetSubscriptionCapabilities_FullMethodName = "/user.v1.UserService/GetSubscriptionCapabilities"
-	UserService_GetVKinoCoinsHistory_FullMethodName        = "/user.v1.UserService/GetVKinoCoinsHistory"
-	UserService_ActivateSubscription_FullMethodName        = "/user.v1.UserService/ActivateSubscription"
-	UserService_UpdateProfile_FullMethodName               = "/user.v1.UserService/UpdateProfile"
-	UserService_SearchUsersByEmail_FullMethodName          = "/user.v1.UserService/SearchUsersByEmail"
-	UserService_AddFriend_FullMethodName                   = "/user.v1.UserService/AddFriend"
-	UserService_DeleteFriend_FullMethodName                = "/user.v1.UserService/DeleteFriend"
-	UserService_AddMovieToFavorites_FullMethodName         = "/user.v1.UserService/AddMovieToFavorites"
-	UserService_SetMovieRating_FullMethodName              = "/user.v1.UserService/SetMovieRating"
-	UserService_SetMovieReview_FullMethodName              = "/user.v1.UserService/SetMovieReview"
-	UserService_DeleteMovieReview_FullMethodName           = "/user.v1.UserService/DeleteMovieReview"
-	UserService_SetReviewReaction_FullMethodName           = "/user.v1.UserService/SetReviewReaction"
-	UserService_DeleteReviewReaction_FullMethodName        = "/user.v1.UserService/DeleteReviewReaction"
-	UserService_ToggleFavorite_FullMethodName              = "/user.v1.UserService/ToggleFavorite"
-	UserService_GetFavorites_FullMethodName                = "/user.v1.UserService/GetFavorites"
-	UserService_SearchUsers_FullMethodName                 = "/user.v1.UserService/SearchUsers"
-	UserService_SendFriendRequest_FullMethodName           = "/user.v1.UserService/SendFriendRequest"
-	UserService_RespondToFriendRequest_FullMethodName      = "/user.v1.UserService/RespondToFriendRequest"
-	UserService_DeleteOutgoingFriendRequest_FullMethodName = "/user.v1.UserService/DeleteOutgoingFriendRequest"
-	UserService_GetFriendRequests_FullMethodName           = "/user.v1.UserService/GetFriendRequests"
-	UserService_GetFriendsList_FullMethodName              = "/user.v1.UserService/GetFriendsList"
+	UserService_GetProfile_FullMethodName                    = "/user.v1.UserService/GetProfile"
+	UserService_GetFriend_FullMethodName                     = "/user.v1.UserService/GetFriend"
+	UserService_GetSubscriptionCapabilities_FullMethodName   = "/user.v1.UserService/GetSubscriptionCapabilities"
+	UserService_GetVKinoCoinsHistory_FullMethodName          = "/user.v1.UserService/GetVKinoCoinsHistory"
+	UserService_ActivateSubscription_FullMethodName          = "/user.v1.UserService/ActivateSubscription"
+	UserService_BuySubscriptionWithVKinoCoins_FullMethodName = "/user.v1.UserService/BuySubscriptionWithVKinoCoins"
+	UserService_UpdateProfile_FullMethodName                 = "/user.v1.UserService/UpdateProfile"
+	UserService_SearchUsersByEmail_FullMethodName            = "/user.v1.UserService/SearchUsersByEmail"
+	UserService_AddFriend_FullMethodName                     = "/user.v1.UserService/AddFriend"
+	UserService_DeleteFriend_FullMethodName                  = "/user.v1.UserService/DeleteFriend"
+	UserService_AddMovieToFavorites_FullMethodName           = "/user.v1.UserService/AddMovieToFavorites"
+	UserService_SetMovieRating_FullMethodName                = "/user.v1.UserService/SetMovieRating"
+	UserService_SetMovieReview_FullMethodName                = "/user.v1.UserService/SetMovieReview"
+	UserService_DeleteMovieReview_FullMethodName             = "/user.v1.UserService/DeleteMovieReview"
+	UserService_SetReviewReaction_FullMethodName             = "/user.v1.UserService/SetReviewReaction"
+	UserService_DeleteReviewReaction_FullMethodName          = "/user.v1.UserService/DeleteReviewReaction"
+	UserService_ToggleFavorite_FullMethodName                = "/user.v1.UserService/ToggleFavorite"
+	UserService_GetFavorites_FullMethodName                  = "/user.v1.UserService/GetFavorites"
+	UserService_SearchUsers_FullMethodName                   = "/user.v1.UserService/SearchUsers"
+	UserService_SendFriendRequest_FullMethodName             = "/user.v1.UserService/SendFriendRequest"
+	UserService_RespondToFriendRequest_FullMethodName        = "/user.v1.UserService/RespondToFriendRequest"
+	UserService_DeleteOutgoingFriendRequest_FullMethodName   = "/user.v1.UserService/DeleteOutgoingFriendRequest"
+	UserService_GetFriendRequests_FullMethodName             = "/user.v1.UserService/GetFriendRequests"
+	UserService_GetFriendsList_FullMethodName                = "/user.v1.UserService/GetFriendsList"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -53,6 +54,7 @@ type UserServiceClient interface {
 	GetSubscriptionCapabilities(ctx context.Context, in *GetSubscriptionCapabilitiesRequest, opts ...grpc.CallOption) (*GetSubscriptionCapabilitiesResponse, error)
 	GetVKinoCoinsHistory(ctx context.Context, in *GetVKinoCoinsHistoryRequest, opts ...grpc.CallOption) (*GetVKinoCoinsHistoryResponse, error)
 	ActivateSubscription(ctx context.Context, in *ActivateSubscriptionRequest, opts ...grpc.CallOption) (*ActivateSubscriptionResponse, error)
+	BuySubscriptionWithVKinoCoins(ctx context.Context, in *BuySubscriptionWithVKinoCoinsRequest, opts ...grpc.CallOption) (*BuySubscriptionWithVKinoCoinsResponse, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
 	SearchUsersByEmail(ctx context.Context, in *SearchUsersByEmailRequest, opts ...grpc.CallOption) (*SearchUsersByEmailResponse, error)
 	AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*AddFriendResponse, error)
@@ -125,6 +127,16 @@ func (c *userServiceClient) ActivateSubscription(ctx context.Context, in *Activa
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ActivateSubscriptionResponse)
 	err := c.cc.Invoke(ctx, UserService_ActivateSubscription_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) BuySubscriptionWithVKinoCoins(ctx context.Context, in *BuySubscriptionWithVKinoCoinsRequest, opts ...grpc.CallOption) (*BuySubscriptionWithVKinoCoinsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BuySubscriptionWithVKinoCoinsResponse)
+	err := c.cc.Invoke(ctx, UserService_BuySubscriptionWithVKinoCoins_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -320,6 +332,7 @@ type UserServiceServer interface {
 	GetSubscriptionCapabilities(context.Context, *GetSubscriptionCapabilitiesRequest) (*GetSubscriptionCapabilitiesResponse, error)
 	GetVKinoCoinsHistory(context.Context, *GetVKinoCoinsHistoryRequest) (*GetVKinoCoinsHistoryResponse, error)
 	ActivateSubscription(context.Context, *ActivateSubscriptionRequest) (*ActivateSubscriptionResponse, error)
+	BuySubscriptionWithVKinoCoins(context.Context, *BuySubscriptionWithVKinoCoinsRequest) (*BuySubscriptionWithVKinoCoinsResponse, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
 	SearchUsersByEmail(context.Context, *SearchUsersByEmailRequest) (*SearchUsersByEmailResponse, error)
 	AddFriend(context.Context, *AddFriendRequest) (*AddFriendResponse, error)
@@ -362,6 +375,9 @@ func (UnimplementedUserServiceServer) GetVKinoCoinsHistory(context.Context, *Get
 }
 func (UnimplementedUserServiceServer) ActivateSubscription(context.Context, *ActivateSubscriptionRequest) (*ActivateSubscriptionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ActivateSubscription not implemented")
+}
+func (UnimplementedUserServiceServer) BuySubscriptionWithVKinoCoins(context.Context, *BuySubscriptionWithVKinoCoinsRequest) (*BuySubscriptionWithVKinoCoinsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method BuySubscriptionWithVKinoCoins not implemented")
 }
 func (UnimplementedUserServiceServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateProfile not implemented")
@@ -524,6 +540,24 @@ func _UserService_ActivateSubscription_Handler(srv interface{}, ctx context.Cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).ActivateSubscription(ctx, req.(*ActivateSubscriptionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_BuySubscriptionWithVKinoCoins_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BuySubscriptionWithVKinoCoinsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).BuySubscriptionWithVKinoCoins(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_BuySubscriptionWithVKinoCoins_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).BuySubscriptionWithVKinoCoins(ctx, req.(*BuySubscriptionWithVKinoCoinsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -878,6 +912,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ActivateSubscription",
 			Handler:    _UserService_ActivateSubscription_Handler,
+		},
+		{
+			MethodName: "BuySubscriptionWithVKinoCoins",
+			Handler:    _UserService_BuySubscriptionWithVKinoCoins_Handler,
 		},
 		{
 			MethodName: "UpdateProfile",

@@ -25,6 +25,7 @@ type CreatePaymentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductType   string                 `protobuf:"bytes,1,opt,name=product_type,json=productType,proto3" json:"product_type,omitempty"`
 	ProductRefId  int64                  `protobuf:"varint,2,opt,name=product_ref_id,json=productRefId,proto3" json:"product_ref_id,omitempty"`
+	PaymentMethod string                 `protobuf:"bytes,3,opt,name=payment_method,json=paymentMethod,proto3" json:"payment_method,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -73,13 +74,23 @@ func (x *CreatePaymentRequest) GetProductRefId() int64 {
 	return 0
 }
 
+func (x *CreatePaymentRequest) GetPaymentMethod() string {
+	if x != nil {
+		return x.PaymentMethod
+	}
+	return ""
+}
+
 type CreatePaymentResponse struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	PaymentId       int64                  `protobuf:"varint,1,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
-	Status          string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
-	ConfirmationUrl string                 `protobuf:"bytes,3,opt,name=confirmation_url,json=confirmationUrl,proto3" json:"confirmation_url,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	PaymentId         int64                  `protobuf:"varint,1,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
+	Status            string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	ConfirmationUrl   string                 `protobuf:"bytes,3,opt,name=confirmation_url,json=confirmationUrl,proto3" json:"confirmation_url,omitempty"`
+	PaymentMethod     string                 `protobuf:"bytes,4,opt,name=payment_method,json=paymentMethod,proto3" json:"payment_method,omitempty"`
+	CoinsSpent        *int32                 `protobuf:"varint,5,opt,name=coins_spent,json=coinsSpent,proto3,oneof" json:"coins_spent,omitempty"`
+	VkinoCoinsBalance *int32                 `protobuf:"varint,6,opt,name=vkino_coins_balance,json=vkinoCoinsBalance,proto3,oneof" json:"vkino_coins_balance,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *CreatePaymentResponse) Reset() {
@@ -131,6 +142,27 @@ func (x *CreatePaymentResponse) GetConfirmationUrl() string {
 		return x.ConfirmationUrl
 	}
 	return ""
+}
+
+func (x *CreatePaymentResponse) GetPaymentMethod() string {
+	if x != nil {
+		return x.PaymentMethod
+	}
+	return ""
+}
+
+func (x *CreatePaymentResponse) GetCoinsSpent() int32 {
+	if x != nil && x.CoinsSpent != nil {
+		return *x.CoinsSpent
+	}
+	return 0
+}
+
+func (x *CreatePaymentResponse) GetVkinoCoinsBalance() int32 {
+	if x != nil && x.VkinoCoinsBalance != nil {
+		return *x.VkinoCoinsBalance
+	}
+	return 0
 }
 
 type GetPaymentRequest struct {
@@ -187,6 +219,8 @@ type GetPaymentResponse struct {
 	Currency        string                 `protobuf:"bytes,6,opt,name=currency,proto3" json:"currency,omitempty"`
 	ConfirmationUrl *string                `protobuf:"bytes,7,opt,name=confirmation_url,json=confirmationUrl,proto3,oneof" json:"confirmation_url,omitempty"`
 	PaidAt          *string                `protobuf:"bytes,8,opt,name=paid_at,json=paidAt,proto3,oneof" json:"paid_at,omitempty"`
+	PaymentMethod   string                 `protobuf:"bytes,9,opt,name=payment_method,json=paymentMethod,proto3" json:"payment_method,omitempty"`
+	CoinsSpent      *int32                 `protobuf:"varint,10,opt,name=coins_spent,json=coinsSpent,proto3,oneof" json:"coins_spent,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -277,6 +311,20 @@ func (x *GetPaymentResponse) GetPaidAt() string {
 	return ""
 }
 
+func (x *GetPaymentResponse) GetPaymentMethod() string {
+	if x != nil {
+		return x.PaymentMethod
+	}
+	return ""
+}
+
+func (x *GetPaymentResponse) GetCoinsSpent() int32 {
+	if x != nil && x.CoinsSpent != nil {
+		return *x.CoinsSpent
+	}
+	return 0
+}
+
 type ListMoneyTariffsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -314,15 +362,18 @@ func (*ListMoneyTariffsRequest) Descriptor() ([]byte, []int) {
 }
 
 type MoneyTariff struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Code          string                 `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
-	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	PriceMoney    int32                  `protobuf:"varint,4,opt,name=price_money,json=priceMoney,proto3" json:"price_money,omitempty"`
-	DurationDays  int32                  `protobuf:"varint,5,opt,name=duration_days,json=durationDays,proto3" json:"duration_days,omitempty"`
-	Level         int32                  `protobuf:"varint,6,opt,name=level,proto3" json:"level,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                   protoimpl.MessageState `protogen:"open.v1"`
+	Id                      int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Code                    string                 `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	Title                   string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	PriceMoney              int32                  `protobuf:"varint,4,opt,name=price_money,json=priceMoney,proto3" json:"price_money,omitempty"`
+	DurationDays            int32                  `protobuf:"varint,5,opt,name=duration_days,json=durationDays,proto3" json:"duration_days,omitempty"`
+	Level                   int32                  `protobuf:"varint,6,opt,name=level,proto3" json:"level,omitempty"`
+	PriceVkinoCoins         int32                  `protobuf:"varint,7,opt,name=price_vkino_coins,json=priceVkinoCoins,proto3" json:"price_vkino_coins,omitempty"`
+	IsCoinsPaymentAvailable bool                   `protobuf:"varint,8,opt,name=is_coins_payment_available,json=isCoinsPaymentAvailable,proto3" json:"is_coins_payment_available,omitempty"`
+	IsMoneyPaymentAvailable bool                   `protobuf:"varint,9,opt,name=is_money_payment_available,json=isMoneyPaymentAvailable,proto3" json:"is_money_payment_available,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
 }
 
 func (x *MoneyTariff) Reset() {
@@ -395,6 +446,27 @@ func (x *MoneyTariff) GetLevel() int32 {
 		return x.Level
 	}
 	return 0
+}
+
+func (x *MoneyTariff) GetPriceVkinoCoins() int32 {
+	if x != nil {
+		return x.PriceVkinoCoins
+	}
+	return 0
+}
+
+func (x *MoneyTariff) GetIsCoinsPaymentAvailable() bool {
+	if x != nil {
+		return x.IsCoinsPaymentAvailable
+	}
+	return false
+}
+
+func (x *MoneyTariff) GetIsMoneyPaymentAvailable() bool {
+	if x != nil {
+		return x.IsMoneyPaymentAvailable
+	}
+	return false
 }
 
 type ListMoneyTariffsResponse struct {
@@ -534,18 +606,25 @@ var File_payment_v1_payment_proto protoreflect.FileDescriptor
 const file_payment_v1_payment_proto_rawDesc = "" +
 	"\n" +
 	"\x18payment/v1/payment.proto\x12\n" +
-	"payment.v1\"_\n" +
+	"payment.v1\"\x86\x01\n" +
 	"\x14CreatePaymentRequest\x12!\n" +
 	"\fproduct_type\x18\x01 \x01(\tR\vproductType\x12$\n" +
-	"\x0eproduct_ref_id\x18\x02 \x01(\x03R\fproductRefId\"y\n" +
+	"\x0eproduct_ref_id\x18\x02 \x01(\x03R\fproductRefId\x12%\n" +
+	"\x0epayment_method\x18\x03 \x01(\tR\rpaymentMethod\"\xa3\x02\n" +
 	"\x15CreatePaymentResponse\x12\x1d\n" +
 	"\n" +
 	"payment_id\x18\x01 \x01(\x03R\tpaymentId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12)\n" +
-	"\x10confirmation_url\x18\x03 \x01(\tR\x0fconfirmationUrl\"2\n" +
+	"\x10confirmation_url\x18\x03 \x01(\tR\x0fconfirmationUrl\x12%\n" +
+	"\x0epayment_method\x18\x04 \x01(\tR\rpaymentMethod\x12$\n" +
+	"\vcoins_spent\x18\x05 \x01(\x05H\x00R\n" +
+	"coinsSpent\x88\x01\x01\x123\n" +
+	"\x13vkino_coins_balance\x18\x06 \x01(\x05H\x01R\x11vkinoCoinsBalance\x88\x01\x01B\x0e\n" +
+	"\f_coins_spentB\x16\n" +
+	"\x14_vkino_coins_balance\"2\n" +
 	"\x11GetPaymentRequest\x12\x1d\n" +
 	"\n" +
-	"payment_id\x18\x01 \x01(\x03R\tpaymentId\"\xb7\x02\n" +
+	"payment_id\x18\x01 \x01(\x03R\tpaymentId\"\x94\x03\n" +
 	"\x12GetPaymentResponse\x12\x1d\n" +
 	"\n" +
 	"payment_id\x18\x01 \x01(\x03R\tpaymentId\x12!\n" +
@@ -555,11 +634,16 @@ const file_payment_v1_payment_proto_rawDesc = "" +
 	"\x06amount\x18\x05 \x01(\tR\x06amount\x12\x1a\n" +
 	"\bcurrency\x18\x06 \x01(\tR\bcurrency\x12.\n" +
 	"\x10confirmation_url\x18\a \x01(\tH\x00R\x0fconfirmationUrl\x88\x01\x01\x12\x1c\n" +
-	"\apaid_at\x18\b \x01(\tH\x01R\x06paidAt\x88\x01\x01B\x13\n" +
+	"\apaid_at\x18\b \x01(\tH\x01R\x06paidAt\x88\x01\x01\x12%\n" +
+	"\x0epayment_method\x18\t \x01(\tR\rpaymentMethod\x12$\n" +
+	"\vcoins_spent\x18\n" +
+	" \x01(\x05H\x02R\n" +
+	"coinsSpent\x88\x01\x01B\x13\n" +
 	"\x11_confirmation_urlB\n" +
 	"\n" +
-	"\b_paid_at\"\x19\n" +
-	"\x17ListMoneyTariffsRequest\"\xa3\x01\n" +
+	"\b_paid_atB\x0e\n" +
+	"\f_coins_spent\"\x19\n" +
+	"\x17ListMoneyTariffsRequest\"\xc9\x02\n" +
 	"\vMoneyTariff\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04code\x18\x02 \x01(\tR\x04code\x12\x14\n" +
@@ -567,7 +651,10 @@ const file_payment_v1_payment_proto_rawDesc = "" +
 	"\vprice_money\x18\x04 \x01(\x05R\n" +
 	"priceMoney\x12#\n" +
 	"\rduration_days\x18\x05 \x01(\x05R\fdurationDays\x12\x14\n" +
-	"\x05level\x18\x06 \x01(\x05R\x05level\"M\n" +
+	"\x05level\x18\x06 \x01(\x05R\x05level\x12*\n" +
+	"\x11price_vkino_coins\x18\a \x01(\x05R\x0fpriceVkinoCoins\x12;\n" +
+	"\x1ais_coins_payment_available\x18\b \x01(\bR\x17isCoinsPaymentAvailable\x12;\n" +
+	"\x1ais_money_payment_available\x18\t \x01(\bR\x17isMoneyPaymentAvailable\"M\n" +
 	"\x18ListMoneyTariffsResponse\x121\n" +
 	"\atariffs\x18\x01 \x03(\v2\x17.payment.v1.MoneyTariffR\atariffs\"O\n" +
 	"\x1cHandleYooKassaWebhookRequest\x12\x12\n" +
@@ -627,6 +714,7 @@ func file_payment_v1_payment_proto_init() {
 	if File_payment_v1_payment_proto != nil {
 		return
 	}
+	file_payment_v1_payment_proto_msgTypes[1].OneofWrappers = []any{}
 	file_payment_v1_payment_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

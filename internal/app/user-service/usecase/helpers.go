@@ -7,10 +7,15 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/logger"
 )
 
-func (u *UserUsecase) profileResponse(ctx context.Context, user *domain.User) (domain.ProfileResponse, error) {
+func (u *UserUsecase) profileResponse(
+	ctx context.Context,
+	user *domain.User,
+	vkinoCoinsBalance int32,
+) (domain.ProfileResponse, error) {
 	resp := domain.ProfileResponse{
-		Email: user.Email,
-		Role:  user.Role,
+		Email:             user.Email,
+		Role:              user.Role,
+		VKinoCoinsBalance: vkinoCoinsBalance,
 	}
 
 	if user.Birthdate != nil {

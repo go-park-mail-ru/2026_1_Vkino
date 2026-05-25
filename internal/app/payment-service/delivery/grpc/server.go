@@ -34,19 +34,31 @@ func (s *Server) CreatePayment(
 	}
 
 	result, err := s.usecase.CreatePayment(ctx, usecase.CreatePaymentInput{
-		UserID:       authCtx.UserID,
-		ProductType:  req.GetProductType(),
-		ProductRefID: req.GetProductRefId(),
+		UserID:        authCtx.UserID,
+		ProductType:   req.GetProductType(),
+		ProductRefID:  req.GetProductRefId(),
+		PaymentMethod: req.GetPaymentMethod(),
 	})
 	if err != nil {
 		return nil, mapError(err)
 	}
 
-	return &paymentv1.CreatePaymentResponse{
+	resp := &paymentv1.CreatePaymentResponse{
 		PaymentId:       result.PaymentID,
 		Status:          result.Status,
 		ConfirmationUrl: result.ConfirmationURL,
-	}, nil
+		PaymentMethod:   result.PaymentMethod,
+	}
+
+	if result.CoinsSpent != nil {
+		resp.CoinsSpent = result.CoinsSpent
+	}
+
+	if result.VKinoCoinsBalance != nil {
+		resp.VkinoCoinsBalance = result.VKinoCoinsBalance
+	}
+
+	return resp, nil
 }
 
 func (s *Server) GetPayment(
@@ -64,12 +76,13 @@ func (s *Server) GetPayment(
 	}
 
 	resp := &paymentv1.GetPaymentResponse{
-		PaymentId:    payment.ID,
-		ProductType:  string(payment.ProductType),
-		ProductRefId: payment.ProductRefID,
-		Status:       string(payment.Status),
-		Amount:       payment.Amount,
-		Currency:     payment.Currency,
+		PaymentId:     payment.ID,
+		ProductType:   string(payment.ProductType),
+		ProductRefId:  payment.ProductRefID,
+		Status:        string(payment.Status),
+		Amount:        payment.Amount,
+		Currency:      payment.Currency,
+		PaymentMethod: string(payment.PaymentMethod),
 	}
 
 	if payment.ConfirmationURL != nil {
@@ -79,6 +92,10 @@ func (s *Server) GetPayment(
 	if payment.PaidAt != nil {
 		paidAt := payment.PaidAt.Format(time.RFC3339)
 		resp.PaidAt = &paidAt
+	}
+
+	if payment.CoinsSpent != nil {
+		resp.CoinsSpent = payment.CoinsSpent
 	}
 
 	return resp, nil
@@ -99,12 +116,15 @@ func (s *Server) ListMoneyTariffs(
 
 	for _, tariff := range tariffs {
 		resp.Tariffs = append(resp.Tariffs, &paymentv1.MoneyTariff{
-			Id:           tariff.ID,
-			Code:         tariff.Code,
-			Title:        tariff.Title,
-			PriceMoney:   tariff.PriceMoney,
-			DurationDays: tariff.DurationDays,
-			Level:        tariff.Level,
+			Id:                      tariff.ID,
+			Code:                    tariff.Code,
+			Title:                   tariff.Title,
+			PriceMoney:              tariff.PriceMoney,
+			DurationDays:            tariff.DurationDays,
+			Level:                   tariff.Level,
+			PriceVkinoCoins:         tariff.PriceVKinoCoins,
+			IsCoinsPaymentAvailable: tariff.IsCoinsPaymentAvailable,
+			IsMoneyPaymentAvailable: tariff.IsMoneyPaymentAvailable,
 		})
 	}
 

@@ -19,9 +19,10 @@ func (s *Server) GetProfile(ctx context.Context, req *userv1.GetProfileRequest) 
 	}
 
 	resp := &userv1.GetProfileResponse{
-		Email:     profile.Email,
-		AvatarUrl: profile.AvatarURL,
-		Role:      profile.Role,
+		Email:             profile.Email,
+		AvatarUrl:         profile.AvatarURL,
+		Role:              profile.Role,
+		VkinoCoinsBalance: profile.VKinoCoinsBalance,
 	}
 
 	if profile.Birthdate != nil {

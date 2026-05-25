@@ -13,6 +13,8 @@ const (
 			st.code,
 			st.title,
 			st.price_money,
+			st.price_vkino_coins,
+			st.is_coins_payment_available,
 			st.is_money_payment_available,
 			st.duration_days,
 			st.level
@@ -28,6 +30,9 @@ const (
 			st.code,
 			st.title,
 			st.price_money,
+			st.price_vkino_coins,
+			st.is_coins_payment_available,
+			st.is_money_payment_available,
 			st.duration_days,
 			st.level
 		from subscription_tariff st
@@ -45,9 +50,11 @@ const (
 			amount,
 			currency,
 			status,
-			idempotency_key
+			idempotency_key,
+			payment_method,
+			coins_spent
 		)
-		values ($1, $2, $3, $4, $5, $6, $7)
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		returning id, created_at, updated_at
 	`
 
@@ -78,6 +85,8 @@ const (
 			amount,
 			currency,
 			status,
+			payment_method,
+			coins_spent,
 			yookassa_payment_id,
 			idempotency_key,
 			confirmation_url,
@@ -97,6 +106,8 @@ const (
 			amount,
 			currency,
 			status,
+			payment_method,
+			coins_spent,
 			yookassa_payment_id,
 			idempotency_key,
 			confirmation_url,

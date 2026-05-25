@@ -9,6 +9,7 @@ import (
 
 	domain "github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -143,6 +144,8 @@ func (r *UserRepo) GetSubscriptionTariffByID(
 		&tariff.Title,
 		&tariff.Level,
 		&tariff.DurationDays,
+		&tariff.PriceVKinoCoins,
+		&tariff.IsCoinsPaymentAvailable,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -223,6 +226,24 @@ func (r *UserRepo) GetCoinsReceivedToday(ctx context.Context, userID int64) (int
 	return total, nil
 }
 
+func (r *UserRepo) GetVKinoCoinsBalance(ctx context.Context, userID int64) (int32, error) {
+	var balance int32
+	if err := r.db.QueryRow(ctx, sqlGetVKinoCoinsBalance, userID).Scan(&balance); err != nil {
+		return 0, fmt.Errorf("get vkino coins balance: %w", err)
+	}
+
+	return balance, nil
+}
+
+func (r *UserRepo) GrantDailyVKinoCoins(ctx context.Context, userID int64) (int32, error) {
+	var granted int32
+	if err := r.db.QueryRow(ctx, sqlGrantDailyVKinoCoins, userID).Scan(&granted); err != nil {
+		return 0, fmt.Errorf("grant daily vkino coins: %w", err)
+	}
+
+	return granted, nil
+}
+
 func (r *UserRepo) GetRoomsCreatedThisMonth(ctx context.Context, userID int64) (int32, error) {
 	var total int32
 	if err := r.db.QueryRow(ctx, sqlGetRoomsCreatedThisMonth, userID).Scan(&total); err != nil {
@@ -293,6 +314,279 @@ func (r *UserRepo) GetVKinoCoinsHistory(
 	}
 
 	return items, totalCount, nil
+}
+
+func (r *UserRepo) BuySubscriptionWithVKinoCoins(
+	ctx context.Context,
+	userID int64,
+	tariffID int64,
+) (domain.VKinoCoinsSubscriptionPurchase, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return domain.VKinoCoinsSubscriptionPurchase{}, fmt.Errorf("begin buy subscription with vkino coins tx: %w", err)
+	}
+
+	defer func() {
+		ignoreRollbackError(tx.Rollback(ctx))
+	}()
+
+	tariff, balance, now, err := prepareVKinoCoinsSubscriptionPurchase(ctx, tx, userID, tariffID)
+	if err != nil {
+		return domain.VKinoCoinsSubscriptionPurchase{}, err
+	}
+
+	paymentID, err := createCoinsPaymentTx(ctx, tx, userID, tariff.ID, tariff.PriceVKinoCoins, now)
+	if err != nil {
+		return domain.VKinoCoinsSubscriptionPurchase{}, err
+	}
+
+	if err = createVKinoCoinsPurchaseHistoryTx(ctx, tx, userID, tariff); err != nil {
+		return domain.VKinoCoinsSubscriptionPurchase{}, err
+	}
+
+	activeUntil, err := activatePurchasedSubscriptionTx(ctx, tx, userID, tariff, now)
+	if err != nil {
+		return domain.VKinoCoinsSubscriptionPurchase{}, err
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return domain.VKinoCoinsSubscriptionPurchase{}, fmt.Errorf("commit buy subscription with vkino coins tx: %w", err)
+	}
+
+	return domain.VKinoCoinsSubscriptionPurchase{
+		PaymentID:         paymentID,
+		CoinsSpent:        tariff.PriceVKinoCoins,
+		VKinoCoinsBalance: balance - tariff.PriceVKinoCoins,
+		Subscription: domain.SubscriptionInfo{
+			ID:          tariff.ID,
+			Code:        tariff.Code,
+			Name:        tariff.Title,
+			Level:       tariff.Level,
+			ActiveUntil: activeUntil,
+		},
+	}, nil
+}
+
+func prepareVKinoCoinsSubscriptionPurchase(
+	ctx context.Context,
+	tx pgx.Tx,
+	userID int64,
+	tariffID int64,
+) (domain.SubscriptionTariff, int32, time.Time, error) {
+	tariff, err := getAvailableCoinsTariffByIDTx(ctx, tx, tariffID)
+	if err != nil {
+		return domain.SubscriptionTariff{}, 0, time.Time{}, err
+	}
+
+	if err = lockUserForCoinsPurchase(ctx, tx, userID); err != nil {
+		return domain.SubscriptionTariff{}, 0, time.Time{}, err
+	}
+
+	balance, err := getSufficientVKinoCoinsBalanceTx(ctx, tx, userID, tariff.PriceVKinoCoins)
+	if err != nil {
+		return domain.SubscriptionTariff{}, 0, time.Time{}, err
+	}
+
+	return tariff, balance, time.Now().UTC(), nil
+}
+
+func getAvailableCoinsTariffByIDTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	tariffID int64,
+) (domain.SubscriptionTariff, error) {
+	tariff, err := getSubscriptionTariffByIDTx(ctx, tx, tariffID)
+	if err != nil {
+		return domain.SubscriptionTariff{}, err
+	}
+
+	if !tariff.IsCoinsPaymentAvailable || tariff.PriceVKinoCoins <= 0 {
+		return domain.SubscriptionTariff{}, domain.ErrTariffNotAvailableForCoins
+	}
+
+	return tariff, nil
+}
+
+func getSubscriptionTariffByIDTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	tariffID int64,
+) (domain.SubscriptionTariff, error) {
+	var tariff domain.SubscriptionTariff
+
+	err := tx.QueryRow(ctx, sqlGetSubscriptionTariffByID, tariffID).Scan(
+		&tariff.ID,
+		&tariff.Code,
+		&tariff.Title,
+		&tariff.Level,
+		&tariff.DurationDays,
+		&tariff.PriceVKinoCoins,
+		&tariff.IsCoinsPaymentAvailable,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.SubscriptionTariff{}, domain.ErrSubscriptionTariffNotFound
+		}
+
+		return domain.SubscriptionTariff{}, fmt.Errorf("get subscription tariff by id in tx: %w", err)
+	}
+
+	return tariff, nil
+}
+
+func lockUserForCoinsPurchase(ctx context.Context, tx pgx.Tx, userID int64) error {
+	var lockedUserID int64
+	if err := tx.QueryRow(ctx, sqlLockUserForUpdate, userID).Scan(&lockedUserID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrUserNotFound
+		}
+
+		return fmt.Errorf("lock user for coins purchase: %w", err)
+	}
+
+	return nil
+}
+
+func getVKinoCoinsBalanceTx(ctx context.Context, tx pgx.Tx, userID int64) (int32, error) {
+	var balance int32
+	if err := tx.QueryRow(ctx, sqlGetVKinoCoinsBalance, userID).Scan(&balance); err != nil {
+		return 0, fmt.Errorf("get vkino coins balance in tx: %w", err)
+	}
+
+	return balance, nil
+}
+
+func getSufficientVKinoCoinsBalanceTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	userID int64,
+	requiredBalance int32,
+) (int32, error) {
+	balance, err := getVKinoCoinsBalanceTx(ctx, tx, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	if balance < requiredBalance {
+		return 0, domain.ErrInsufficientVKinoCoins
+	}
+
+	return balance, nil
+}
+
+func createCoinsPaymentTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	userID, tariffID int64,
+	coinsSpent int32,
+	paidAt time.Time,
+) (int64, error) {
+	amount := fmt.Sprintf("%d.00", coinsSpent)
+
+	var (
+		paymentID int64
+		createdAt time.Time
+		updatedAt time.Time
+	)
+
+	err := tx.QueryRow(
+		ctx,
+		sqlCreateCoinsPayment,
+		userID,
+		"subscription",
+		tariffID,
+		amount,
+		"VKC",
+		"succeeded",
+		uuid.NewString(),
+		"vkino_coins",
+		coinsSpent,
+		paidAt,
+	).Scan(&paymentID, &createdAt, &updatedAt)
+	if err != nil {
+		return 0, fmt.Errorf("create coins payment: %w", err)
+	}
+
+	return paymentID, nil
+}
+
+func createVKinoCoinsPurchaseHistoryTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	userID int64,
+	tariff domain.SubscriptionTariff,
+) error {
+	description := "Покупка подписки " + tariff.Code
+
+	if _, err := tx.Exec(
+		ctx,
+		sqlCreateVKinoCoinsPurchaseHistory,
+		userID,
+		tariff.PriceVKinoCoins,
+		description,
+	); err != nil {
+		return fmt.Errorf("create vkino coins purchase history: %w", err)
+	}
+
+	return nil
+}
+
+func activatePurchasedSubscriptionTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	userID int64,
+	tariff domain.SubscriptionTariff,
+	now time.Time,
+) (*string, error) {
+	startsAt, err := subscriptionActivationStartTx(ctx, tx, userID, tariff, now)
+	if err != nil {
+		return nil, err
+	}
+
+	expiresAt := startsAt.AddDate(0, 0, int(tariff.DurationDays))
+
+	if _, err = tx.Exec(ctx, sqlDeactivateUserSubscriptions, userID); err != nil {
+		return nil, fmt.Errorf("deactivate user subscriptions: %w", err)
+	}
+
+	if _, err = tx.Exec(ctx, sqlCreateUserSubscription, userID, tariff.ID, startsAt, expiresAt); err != nil {
+		return nil, fmt.Errorf("create user subscription: %w", err)
+	}
+
+	activeUntil := expiresAt.Format(time.RFC3339)
+
+	return &activeUntil, nil
+}
+
+func subscriptionActivationStartTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	userID int64,
+	tariff domain.SubscriptionTariff,
+	now time.Time,
+) (time.Time, error) {
+	var (
+		current   domain.SubscriptionInfo
+		expiresAt time.Time
+	)
+
+	err := tx.QueryRow(ctx, sqlGetActiveSubscription, userID).Scan(
+		&current.ID,
+		&current.Code,
+		&current.Name,
+		&current.Level,
+		&expiresAt,
+	)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return time.Time{}, fmt.Errorf("get active subscription in tx: %w", err)
+	}
+
+	startsAt := now
+	if err == nil && current.Level == tariff.Level && expiresAt.After(now) {
+		startsAt = expiresAt
+	}
+
+	return startsAt, nil
 }
 
 func (r *UserRepo) GetFriend(ctx context.Context, userID, friendID int64) (*domain.User, error) {

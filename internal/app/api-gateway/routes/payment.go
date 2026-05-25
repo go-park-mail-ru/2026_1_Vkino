@@ -10,8 +10,9 @@ import (
 )
 
 type createPaymentRequest struct {
-	ProductType  string `json:"product_type"`
-	ProductRefID int64  `json:"product_ref_id"`
+	ProductType   string `json:"product_type"`
+	ProductRefID  int64  `json:"product_ref_id"`
+	PaymentMethod string `json:"payment_method,omitempty"`
 }
 
 func Payment(cfg Config, client paymentv1.PaymentServiceClient) []httpserver.Option {
@@ -34,8 +35,9 @@ func createPaymentHandler(cfg Config, client paymentv1.PaymentServiceClient) htt
 		}
 
 		resp, err := client.CreatePayment(r.Context(), &paymentv1.CreatePaymentRequest{
-			ProductType:  req.ProductType,
-			ProductRefId: req.ProductRefID,
+			ProductType:   req.ProductType,
+			ProductRefId:  req.ProductRefID,
+			PaymentMethod: req.PaymentMethod,
 		})
 		if err != nil {
 			writeGRPCError(w, err)
@@ -43,11 +45,22 @@ func createPaymentHandler(cfg Config, client paymentv1.PaymentServiceClient) htt
 			return
 		}
 
-		httppkg.Response(w, http.StatusCreated, map[string]any{
+		body := map[string]any{
 			"payment_id":       resp.GetPaymentId(),
 			"status":           resp.GetStatus(),
 			"confirmation_url": resp.GetConfirmationUrl(),
-		})
+			"payment_method":   resp.GetPaymentMethod(),
+		}
+
+		if resp.CoinsSpent != nil {
+			body["coins_spent"] = resp.GetCoinsSpent()
+		}
+
+		if resp.VkinoCoinsBalance != nil {
+			body["vkino_coins_balance"] = resp.GetVkinoCoinsBalance()
+		}
+
+		httppkg.Response(w, http.StatusCreated, body)
 	}
 }
 
@@ -77,6 +90,7 @@ func getPaymentHandler(cfg Config, client paymentv1.PaymentServiceClient) http.H
 			"status":         resp.GetStatus(),
 			"amount":         resp.GetAmount(),
 			"currency":       resp.GetCurrency(),
+			"payment_method": resp.GetPaymentMethod(),
 		}
 
 		if resp.ConfirmationUrl != nil {
@@ -85,6 +99,10 @@ func getPaymentHandler(cfg Config, client paymentv1.PaymentServiceClient) http.H
 
 		if resp.PaidAt != nil {
 			body["paid_at"] = resp.GetPaidAt()
+		}
+
+		if resp.CoinsSpent != nil {
+			body["coins_spent"] = resp.GetCoinsSpent()
 		}
 
 		httppkg.Response(w, http.StatusOK, body)
@@ -106,12 +124,15 @@ func listMoneyTariffsHandler(cfg Config, client paymentv1.PaymentServiceClient) 
 		tariffs := make([]map[string]any, 0, len(resp.GetTariffs()))
 		for _, tariff := range resp.GetTariffs() {
 			tariffs = append(tariffs, map[string]any{
-				"id":            tariff.GetId(),
-				"code":          tariff.GetCode(),
-				"title":         tariff.GetTitle(),
-				"price_money":   tariff.GetPriceMoney(),
-				"duration_days": tariff.GetDurationDays(),
-				"level":         tariff.GetLevel(),
+				"id":                         tariff.GetId(),
+				"code":                       tariff.GetCode(),
+				"title":                      tariff.GetTitle(),
+				"price_money":                tariff.GetPriceMoney(),
+				"price_vkino_coins":          tariff.GetPriceVkinoCoins(),
+				"is_money_payment_available": tariff.GetIsMoneyPaymentAvailable(),
+				"is_coins_payment_available": tariff.GetIsCoinsPaymentAvailable(),
+				"duration_days":              tariff.GetDurationDays(),
+				"level":                      tariff.GetLevel(),
 			})
 		}
 

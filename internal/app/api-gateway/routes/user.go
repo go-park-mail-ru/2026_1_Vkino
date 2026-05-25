@@ -126,6 +126,14 @@ func (c grpcUserClient) ActivateSubscription(
 	return c.user.ActivateSubscription(ctx, in, opts...)
 }
 
+func (c grpcUserClient) BuySubscriptionWithVKinoCoins(
+	ctx context.Context,
+	in *userv1.BuySubscriptionWithVKinoCoinsRequest,
+	opts ...grpc.CallOption,
+) (*userv1.BuySubscriptionWithVKinoCoinsResponse, error) {
+	return c.user.BuySubscriptionWithVKinoCoins(ctx, in, opts...)
+}
+
 func (c grpcUserClient) SearchUsersByEmail(
 	ctx context.Context,
 	in *userv1.SearchUsersByEmailRequest,
@@ -557,7 +565,18 @@ func newUserProfileHandler(cfg Config, userClient UserClient) http.HandlerFunc {
 			return
 		}
 
-		httppkg.Response(w, http.StatusOK, resp)
+		body := map[string]any{
+			"email":               resp.GetEmail(),
+			"avatar_url":          resp.GetAvatarUrl(),
+			"role":                resp.GetRole(),
+			"vkino_coins_balance": resp.GetVkinoCoinsBalance(),
+		}
+
+		if resp.GetBirthdate() != "" {
+			body["birthdate"] = resp.GetBirthdate()
+		}
+
+		httppkg.Response(w, http.StatusOK, body)
 	}
 }
 
