@@ -344,6 +344,18 @@ services:
     networks:
       - app-network
 
+  grafana-max-alerts:
+    image: timarc/grafana-max-alerts:0.1.0
+    restart: always
+    env_file:
+      - /opt/grafana-max-alerts/.env
+    ports:
+      - 8010:8000
+    depends_on:
+      - grafana
+    networks:
+      - app-network
+
   node-exporter:
     image: prom/node-exporter:v1.9.1
     command:
