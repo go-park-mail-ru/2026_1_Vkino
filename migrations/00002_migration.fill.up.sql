@@ -1699,13 +1699,6 @@ WITH actor_seed(full_name, birthdate, biography, country_title, picture_file_key
             'jake_johnson.webp'
         ),
         (
-            'Хейли Стайнфелд',
-            null::date,
-            'Американская актриса и певица, работающая в кино, сериалах и анимации.',
-            'США',
-            'hailee_steinfeld.webp'
-        ),
-        (
             'Махершала Али',
             null::date,
             'Американский актёр, двукратный лауреат премии «Оскар».',
