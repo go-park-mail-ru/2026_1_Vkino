@@ -349,10 +349,6 @@ services:
     restart: always
     env_file:
       - /opt/grafana-max-alerts/.env
-    ports:
-      - 8010:8000
-    depends_on:
-      - grafana
     networks:
       - app-network
 
