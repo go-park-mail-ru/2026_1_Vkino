@@ -22,6 +22,7 @@ const (
 	UserService_GetProfile_FullMethodName                  = "/user.v1.UserService/GetProfile"
 	UserService_GetFriend_FullMethodName                   = "/user.v1.UserService/GetFriend"
 	UserService_GetSubscriptionCapabilities_FullMethodName = "/user.v1.UserService/GetSubscriptionCapabilities"
+	UserService_GetVKinoCoinsHistory_FullMethodName        = "/user.v1.UserService/GetVKinoCoinsHistory"
 	UserService_ActivateSubscription_FullMethodName        = "/user.v1.UserService/ActivateSubscription"
 	UserService_UpdateProfile_FullMethodName               = "/user.v1.UserService/UpdateProfile"
 	UserService_SearchUsersByEmail_FullMethodName          = "/user.v1.UserService/SearchUsersByEmail"
@@ -50,6 +51,7 @@ type UserServiceClient interface {
 	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
 	GetFriend(ctx context.Context, in *GetFriendRequest, opts ...grpc.CallOption) (*GetFriendResponse, error)
 	GetSubscriptionCapabilities(ctx context.Context, in *GetSubscriptionCapabilitiesRequest, opts ...grpc.CallOption) (*GetSubscriptionCapabilitiesResponse, error)
+	GetVKinoCoinsHistory(ctx context.Context, in *GetVKinoCoinsHistoryRequest, opts ...grpc.CallOption) (*GetVKinoCoinsHistoryResponse, error)
 	ActivateSubscription(ctx context.Context, in *ActivateSubscriptionRequest, opts ...grpc.CallOption) (*ActivateSubscriptionResponse, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
 	SearchUsersByEmail(ctx context.Context, in *SearchUsersByEmailRequest, opts ...grpc.CallOption) (*SearchUsersByEmailResponse, error)
@@ -103,6 +105,16 @@ func (c *userServiceClient) GetSubscriptionCapabilities(ctx context.Context, in 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetSubscriptionCapabilitiesResponse)
 	err := c.cc.Invoke(ctx, UserService_GetSubscriptionCapabilities_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetVKinoCoinsHistory(ctx context.Context, in *GetVKinoCoinsHistoryRequest, opts ...grpc.CallOption) (*GetVKinoCoinsHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetVKinoCoinsHistoryResponse)
+	err := c.cc.Invoke(ctx, UserService_GetVKinoCoinsHistory_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -306,6 +318,7 @@ type UserServiceServer interface {
 	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
 	GetFriend(context.Context, *GetFriendRequest) (*GetFriendResponse, error)
 	GetSubscriptionCapabilities(context.Context, *GetSubscriptionCapabilitiesRequest) (*GetSubscriptionCapabilitiesResponse, error)
+	GetVKinoCoinsHistory(context.Context, *GetVKinoCoinsHistoryRequest) (*GetVKinoCoinsHistoryResponse, error)
 	ActivateSubscription(context.Context, *ActivateSubscriptionRequest) (*ActivateSubscriptionResponse, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
 	SearchUsersByEmail(context.Context, *SearchUsersByEmailRequest) (*SearchUsersByEmailResponse, error)
@@ -343,6 +356,9 @@ func (UnimplementedUserServiceServer) GetFriend(context.Context, *GetFriendReque
 }
 func (UnimplementedUserServiceServer) GetSubscriptionCapabilities(context.Context, *GetSubscriptionCapabilitiesRequest) (*GetSubscriptionCapabilitiesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSubscriptionCapabilities not implemented")
+}
+func (UnimplementedUserServiceServer) GetVKinoCoinsHistory(context.Context, *GetVKinoCoinsHistoryRequest) (*GetVKinoCoinsHistoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetVKinoCoinsHistory not implemented")
 }
 func (UnimplementedUserServiceServer) ActivateSubscription(context.Context, *ActivateSubscriptionRequest) (*ActivateSubscriptionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ActivateSubscription not implemented")
@@ -472,6 +488,24 @@ func _UserService_GetSubscriptionCapabilities_Handler(srv interface{}, ctx conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).GetSubscriptionCapabilities(ctx, req.(*GetSubscriptionCapabilitiesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetVKinoCoinsHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetVKinoCoinsHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetVKinoCoinsHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetVKinoCoinsHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetVKinoCoinsHistory(ctx, req.(*GetVKinoCoinsHistoryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -836,6 +870,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSubscriptionCapabilities",
 			Handler:    _UserService_GetSubscriptionCapabilities_Handler,
+		},
+		{
+			MethodName: "GetVKinoCoinsHistory",
+			Handler:    _UserService_GetVKinoCoinsHistory_Handler,
 		},
 		{
 			MethodName: "ActivateSubscription",

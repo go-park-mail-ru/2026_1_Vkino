@@ -104,6 +104,37 @@ func (s *Server) GetSubscriptionCapabilities(
 	return resp, nil
 }
 
+func (s *Server) GetVKinoCoinsHistory(
+	ctx context.Context,
+	req *userv1.GetVKinoCoinsHistoryRequest,
+) (*userv1.GetVKinoCoinsHistoryResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := s.usecase.GetVKinoCoinsHistory(ctx, authCtx.UserID, req.GetLimit(), req.GetOffset())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	items := make([]*userv1.VKinoCoinsHistoryItem, 0, len(result.Items))
+	for _, item := range result.Items {
+		items = append(items, &userv1.VKinoCoinsHistoryItem{
+			Id:              item.ID,
+			VkinoCoinsCount: item.VKinoCoinsCount,
+			OperationType:   item.OperationType,
+			Description:     item.Description,
+			CreatedAt:       item.CreatedAt,
+		})
+	}
+
+	return &userv1.GetVKinoCoinsHistoryResponse{
+		Items:      items,
+		TotalCount: result.TotalCount,
+	}, nil
+}
+
 func (s *Server) UpdateProfile(
 	ctx context.Context,
 	req *userv1.UpdateProfileRequest,

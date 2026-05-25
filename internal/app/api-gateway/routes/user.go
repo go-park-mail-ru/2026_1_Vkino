@@ -110,6 +110,14 @@ func (c grpcUserClient) GetSubscriptionCapabilities(
 	return c.user.GetSubscriptionCapabilities(ctx, in, opts...)
 }
 
+func (c grpcUserClient) GetVKinoCoinsHistory(
+	ctx context.Context,
+	in *userv1.GetVKinoCoinsHistoryRequest,
+	opts ...grpc.CallOption,
+) (*userv1.GetVKinoCoinsHistoryResponse, error) {
+	return c.user.GetVKinoCoinsHistory(ctx, in, opts...)
+}
+
 func (c grpcUserClient) ActivateSubscription(
 	ctx context.Context,
 	in *userv1.ActivateSubscriptionRequest,
@@ -506,6 +514,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 	return []httpserver.Option{
 		route("GET /user/me", newUserProfileHandler(cfg, userClient)),
 		route("GET /user/subscription/capabilities", newUserSubscriptionCapabilitiesHandler(cfg, userClient)),
+		route("GET /user/coins/history", newUserVKinoCoinsHistoryHandler(cfg, userClient)),
 		route("GET /user/search", newUserSearchHandler(cfg, userClient)),
 		route("PUT /user/profile", newUserUpdateProfileHandler(cfg, userClient)),
 		route("POST /user/friends/{id}", newUserSendFriendRequestHandler(cfg, userClient)),

@@ -232,6 +232,69 @@ func (r *UserRepo) GetRoomsCreatedThisMonth(ctx context.Context, userID int64) (
 	return total, nil
 }
 
+func (r *UserRepo) GetVKinoCoinsHistory(
+	ctx context.Context,
+	userID int64,
+	limit, offset int32,
+) ([]domain.VKinoCoinsHistoryItem, int32, error) {
+	rows, err := r.db.Query(ctx, sqlGetVKinoCoinsHistory, userID, limit, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("get vkino coins history: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]domain.VKinoCoinsHistoryItem, 0, limit)
+
+	var totalCount int32
+
+	for rows.Next() {
+		var (
+			id              sql.NullInt64
+			vkinoCoinsCount sql.NullInt32
+			operationType   sql.NullString
+			description     sql.NullString
+			createdAt       sql.NullTime
+			rowTotalCount   int32
+		)
+
+		if err := rows.Scan(
+			&id,
+			&vkinoCoinsCount,
+			&operationType,
+			&description,
+			&createdAt,
+			&rowTotalCount,
+		); err != nil {
+			return nil, 0, fmt.Errorf("scan vkino coins history item: %w", err)
+		}
+
+		totalCount = rowTotalCount
+
+		if !id.Valid {
+			continue
+		}
+
+		item := domain.VKinoCoinsHistoryItem{
+			ID:              id.Int64,
+			VKinoCoinsCount: vkinoCoinsCount.Int32,
+			OperationType:   operationType.String,
+			Description:     description.String,
+		}
+
+		if createdAt.Valid {
+			item.CreatedAt = createdAt.Time.Format(time.RFC3339)
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("iterate vkino coins history: %w", err)
+	}
+
+	return items, totalCount, nil
+}
+
 func (r *UserRepo) GetFriend(ctx context.Context, userID, friendID int64) (*domain.User, error) {
 	var user domain.User
 

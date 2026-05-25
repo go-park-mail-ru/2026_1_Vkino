@@ -14,6 +14,7 @@ type UserProfileUsecase interface {
 	GetProfile(ctx context.Context, userID int64) (domain.ProfileResponse, error)
 	GetFriend(ctx context.Context, userID, friendID int64) (domain.FriendResponse, error)
 	GetSubscriptionCapabilities(ctx context.Context, userID int64) (domain.SubscriptionState, error)
+	GetVKinoCoinsHistory(ctx context.Context, userID int64, limit, offset int32) (domain.VKinoCoinsHistoryResponse, error)
 	ActivateSubscription(
 		ctx context.Context,
 		userID, tariffID, paymentID int64,
