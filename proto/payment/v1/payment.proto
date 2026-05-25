@@ -14,12 +14,16 @@ service PaymentService {
 message CreatePaymentRequest {
   string product_type = 1;
   int64 product_ref_id = 2;
+  string payment_method = 3;
 }
 
 message CreatePaymentResponse {
   int64 payment_id = 1;
   string status = 2;
   string confirmation_url = 3;
+  string payment_method = 4;
+  optional int32 coins_spent = 5;
+  optional int32 vkino_coins_balance = 6;
 }
 
 message GetPaymentRequest {
@@ -35,6 +39,8 @@ message GetPaymentResponse {
   string currency = 6;
   optional string confirmation_url = 7;
   optional string paid_at = 8;
+  string payment_method = 9;
+  optional int32 coins_spent = 10;
 }
 
 message ListMoneyTariffsRequest {}
@@ -46,6 +52,9 @@ message MoneyTariff {
   int32 price_money = 4;
   int32 duration_days = 5;
   int32 level = 6;
+  int32 price_vkino_coins = 7;
+  bool is_coins_payment_available = 8;
+  bool is_money_payment_available = 9;
 }
 
 message ListMoneyTariffsResponse {

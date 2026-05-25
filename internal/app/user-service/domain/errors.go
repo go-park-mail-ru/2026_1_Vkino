@@ -24,6 +24,8 @@ var (
 	ErrInternal             = errors.New("internal error")
 
 	ErrSubscriptionTariffNotFound = errors.New("subscription tariff not found")
+	ErrInsufficientVKinoCoins     = errors.New("insufficient vkino coins")
+	ErrTariffNotAvailableForCoins = errors.New("tariff is not available for vkino coins payment")
 
 	ErrTicketNotFound            = errors.New("ticket not found")
 	ErrAccessDenied              = errors.New("access denied")

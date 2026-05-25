@@ -53,3 +53,10 @@ type YooKassaClient interface {
 type SubscriptionActivator interface {
 	ActivateSubscription(ctx context.Context, userID, tariffID, paymentID int64) error
 }
+
+type SubscriptionCoinsBuyer interface {
+	BuySubscriptionWithVKinoCoins(
+		ctx context.Context,
+		userID, tariffID int64,
+	) (domain.CoinsSubscriptionPurchase, error)
+}

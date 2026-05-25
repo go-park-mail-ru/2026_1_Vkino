@@ -19,12 +19,22 @@ func TestUserRoutes_GetProfile(t *testing.T) {
 	client := NewMockUserClient(ctrl)
 
 	client.EXPECT().GetProfile(gomock.Any(), &userv1.GetProfileRequest{}).
-		Return(&userv1.GetProfileResponse{}, nil)
+		Return(&userv1.GetProfileResponse{
+			Email:             "user@example.com",
+			Role:              "user",
+			VkinoCoinsBalance: 80,
+		}, nil)
 
 	handler := newUserHandler(t, client)
 	rr := doRequest(handler, http.MethodGet, "/user/me", nil)
 
 	require.Equal(t, http.StatusOK, rr.Code)
+	require.JSONEq(t, `{
+		"email":"user@example.com",
+		"role":"user",
+		"vkino_coins_balance":80,
+		"avatar_url":""
+	}`, rr.Body.String())
 }
 
 func TestUserRoutes_SearchUsers_DefaultLimit(t *testing.T) {

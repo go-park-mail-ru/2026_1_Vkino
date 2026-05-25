@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/domain"
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/user-service/repository/mocks"
+	"github.com/stretchr/testify/require"
 )
 
 type stubAvatarStore struct {
@@ -22,7 +23,10 @@ const testProfileEmail = "user@example.com"
 
 const testAvatarKey = "users/42/avatar/current.png"
 
-var errPresignFailed = errors.New("presign failed")
+var (
+	errPresignFailed    = errors.New("presign failed")
+	errDailyGrantFailed = errors.New("daily grant failed")
+)
 
 func (s stubAvatarStore) PutObject(context.Context, string, io.Reader, int64, string) error {
 	return nil
@@ -102,6 +106,61 @@ func TestUpdateProfile_IgnoresAvatarPresignFailureAfterBirthdateUpdate(t *testin
 	if resp.AvatarURL != "" {
 		t.Fatalf("avatar_url = %q, want empty", resp.AvatarURL)
 	}
+}
+
+func TestGetProfile_GrantsDailyCoinsAndReturnsBalance(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockUserRepo(ctrl)
+
+	repo.EXPECT().
+		GetUserByID(gomock.Any(), int64(42)).
+		Return(&domain.User{
+			ID:    42,
+			Email: testProfileEmail,
+			Role:  roleUser,
+		}, nil)
+	repo.EXPECT().
+		GrantDailyVKinoCoins(gomock.Any(), int64(42)).
+		Return(int32(6), nil)
+	repo.EXPECT().
+		GetVKinoCoinsBalance(gomock.Any(), int64(42)).
+		Return(int32(80), nil)
+
+	u := NewUserUsecase(repo, stubAvatarStore{}, nil)
+
+	resp, err := u.GetProfile(context.Background(), 42)
+	require.NoError(t, err)
+	require.Equal(t, int32(80), resp.VKinoCoinsBalance)
+	require.Equal(t, testProfileEmail, resp.Email)
+}
+
+func TestGetProfile_GrantDailyFailureReturnsInternal(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockUserRepo(ctrl)
+
+	repo.EXPECT().
+		GetUserByID(gomock.Any(), int64(42)).
+		Return(&domain.User{
+			ID:    42,
+			Email: testProfileEmail,
+			Role:  roleUser,
+		}, nil)
+	repo.EXPECT().
+		GrantDailyVKinoCoins(gomock.Any(), int64(42)).
+		Return(int32(0), errDailyGrantFailed)
+
+	u := NewUserUsecase(repo, stubAvatarStore{}, nil)
+
+	_, err := u.GetProfile(context.Background(), 42)
+	require.ErrorIs(t, err, domain.ErrInternal)
 }
 
 func TestUpdateProfile_IgnoresNullAvatarPayload(t *testing.T) {

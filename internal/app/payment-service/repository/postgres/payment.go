@@ -41,6 +41,8 @@ func (r *PaymentRepo) GetSubscriptionTariff(
 		&tariff.Code,
 		&tariff.Title,
 		&tariff.PriceMoney,
+		&tariff.PriceVKinoCoins,
+		&tariff.IsCoinsPaymentAvailable,
 		&tariff.IsMoneyPaymentAvailable,
 		&tariff.DurationDays,
 		&tariff.Level,
@@ -73,6 +75,9 @@ func (r *PaymentRepo) ListMoneyTariffs(ctx context.Context) ([]domain.MoneyTarif
 			&tariff.Code,
 			&tariff.Title,
 			&tariff.PriceMoney,
+			&tariff.PriceVKinoCoins,
+			&tariff.IsCoinsPaymentAvailable,
+			&tariff.IsMoneyPaymentAvailable,
 			&tariff.DurationDays,
 			&tariff.Level,
 		); err != nil {
@@ -90,6 +95,11 @@ func (r *PaymentRepo) ListMoneyTariffs(ctx context.Context) ([]domain.MoneyTarif
 }
 
 func (r *PaymentRepo) CreatePayment(ctx context.Context, payment domain.Payment) (domain.Payment, error) {
+	var coinsSpent any
+	if payment.CoinsSpent != nil {
+		coinsSpent = *payment.CoinsSpent
+	}
+
 	err := r.db.QueryRow(
 		ctx,
 		sqlCreatePayment,
@@ -100,6 +110,8 @@ func (r *PaymentRepo) CreatePayment(ctx context.Context, payment domain.Payment)
 		payment.Currency,
 		string(payment.Status),
 		payment.IdempotencyKey,
+		string(payment.PaymentMethod),
+		coinsSpent,
 	).Scan(&payment.ID, &payment.CreatedAt, &payment.UpdatedAt)
 	if err != nil {
 		return domain.Payment{}, fmt.Errorf("create payment: %w", err)
@@ -173,6 +185,8 @@ func (r *PaymentRepo) TryRegisterWebhookEvent(
 func (r *PaymentRepo) scanPayment(row pgx.Row) (domain.Payment, error) {
 	var (
 		payment           domain.Payment
+		paymentMethod     string
+		coinsSpent        sql.NullInt32
 		yookassaPaymentID sql.NullString
 		confirmationURL   sql.NullString
 		paidAt            sql.NullTime
@@ -188,6 +202,8 @@ func (r *PaymentRepo) scanPayment(row pgx.Row) (domain.Payment, error) {
 		&payment.Amount,
 		&payment.Currency,
 		&status,
+		&paymentMethod,
+		&coinsSpent,
 		&yookassaPaymentID,
 		&payment.IdempotencyKey,
 		&confirmationURL,
@@ -205,21 +221,61 @@ func (r *PaymentRepo) scanPayment(row pgx.Row) (domain.Payment, error) {
 
 	payment.ProductType = domain.ProductType(productType)
 	payment.Status = domain.PaymentStatus(status)
-
-	if yookassaPaymentID.Valid {
-		value := yookassaPaymentID.String
-		payment.YooKassaPaymentID = &value
-	}
-
-	if confirmationURL.Valid {
-		value := confirmationURL.String
-		payment.ConfirmationURL = &value
-	}
-
-	if paidAt.Valid {
-		value := paidAt.Time
-		payment.PaidAt = &value
-	}
+	applyPaymentScanOptionals(&payment, paymentMethod, coinsSpent, yookassaPaymentID, confirmationURL, paidAt)
 
 	return payment, nil
+}
+
+func applyPaymentScanOptionals(
+	payment *domain.Payment,
+	paymentMethod string,
+	coinsSpent sql.NullInt32,
+	yookassaPaymentID sql.NullString,
+	confirmationURL sql.NullString,
+	paidAt sql.NullTime,
+) {
+	payment.PaymentMethod = normalizePaymentMethodValue(paymentMethod)
+	payment.CoinsSpent = nullableInt32Pointer(coinsSpent)
+	payment.YooKassaPaymentID = nullableStringPointer(yookassaPaymentID)
+	payment.ConfirmationURL = nullableStringPointer(confirmationURL)
+	payment.PaidAt = nullableTimePointer(paidAt)
+}
+
+func normalizePaymentMethodValue(value string) domain.PaymentMethod {
+	method := domain.PaymentMethod(value)
+	if method == "" {
+		return domain.PaymentMethodYooKassa
+	}
+
+	return method
+}
+
+func nullableInt32Pointer(value sql.NullInt32) *int32 {
+	if !value.Valid {
+		return nil
+	}
+
+	result := value.Int32
+
+	return &result
+}
+
+func nullableStringPointer(value sql.NullString) *string {
+	if !value.Valid {
+		return nil
+	}
+
+	result := value.String
+
+	return &result
+}
+
+func nullableTimePointer(value sql.NullTime) *time.Time {
+	if !value.Valid {
+		return nil
+	}
+
+	result := value.Time
+
+	return &result
 }

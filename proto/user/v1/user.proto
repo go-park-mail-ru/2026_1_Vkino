@@ -10,6 +10,8 @@ service UserService {
   rpc GetSubscriptionCapabilities(GetSubscriptionCapabilitiesRequest) returns (GetSubscriptionCapabilitiesResponse);
   rpc GetVKinoCoinsHistory(GetVKinoCoinsHistoryRequest) returns (GetVKinoCoinsHistoryResponse);
   rpc ActivateSubscription(ActivateSubscriptionRequest) returns (ActivateSubscriptionResponse);
+  rpc BuySubscriptionWithVKinoCoins(BuySubscriptionWithVKinoCoinsRequest)
+      returns (BuySubscriptionWithVKinoCoinsResponse);
   rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
   rpc SearchUsersByEmail(SearchUsersByEmailRequest) returns (SearchUsersByEmailResponse);
   rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
@@ -39,6 +41,7 @@ message GetProfileResponse {
   string birthdate = 2;
   string avatar_url = 3;
   string role = 4;
+  int32 vkino_coins_balance = 5;
 }
 
 message GetFriendRequest {
@@ -111,6 +114,18 @@ message ActivateSubscriptionRequest {
 
 message ActivateSubscriptionResponse {
   SubscriptionInfo subscription = 1;
+}
+
+message BuySubscriptionWithVKinoCoinsRequest {
+  int64 user_id = 1;
+  int64 tariff_id = 2;
+}
+
+message BuySubscriptionWithVKinoCoinsResponse {
+  int64 payment_id = 1;
+  int32 coins_spent = 2;
+  int32 vkino_coins_balance = 3;
+  SubscriptionInfo subscription = 4;
 }
 
 message UpdateProfileRequest {

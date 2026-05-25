@@ -57,7 +57,9 @@ const (
 			st.code,
 			st.title,
 			st.level,
-			st.duration_days
+			st.duration_days,
+			st.price_vkino_coins,
+			st.is_coins_payment_available
 		from subscription_tariff st
 		where st.id = $1
 			and st.is_active = true
@@ -100,6 +102,58 @@ const (
 			and operation_type = 'daily'
 			and created_at >= date_trunc('day', now())
 			and created_at < date_trunc('day', now()) + interval '1 day'
+	`
+
+	sqlGetVKinoCoinsBalance = `
+		select coalesce(sum(
+			case
+				when operation_type in ('daily', 'bet_win') then vkino_coins_count
+				when operation_type in ('bet_lose', 'purchase') then -vkino_coins_count
+				else 0
+			end
+		), 0)::int
+		from vkino_coins_history
+		where user_id = $1
+	`
+
+	sqlGrantDailyVKinoCoins = `
+		select grant_daily_vkino_coins($1)
+	`
+
+	sqlLockUserForUpdate = `
+		select id
+		from users
+		where id = $1
+			and is_active = true
+		for update
+	`
+
+	sqlCreateCoinsPayment = `
+		insert into payment (
+			user_id,
+			product_type,
+			product_ref_id,
+			amount,
+			currency,
+			status,
+			idempotency_key,
+			payment_method,
+			coins_spent,
+			paid_at
+		)
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		returning id, created_at, updated_at
+	`
+
+	sqlCreateVKinoCoinsPurchaseHistory = `
+		insert into vkino_coins_history (
+			user_id,
+			vkino_coins_count,
+			operation_type,
+			description,
+			operation_date
+		)
+		values ($1, $2, 'purchase', $3, current_date)
 	`
 
 	sqlGetRoomsCreatedThisMonth = `

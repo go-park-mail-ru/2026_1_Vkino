@@ -35,3 +35,31 @@ func (s *Server) ActivateSubscription(
 
 	return resp, nil
 }
+
+func (s *Server) BuySubscriptionWithVKinoCoins(
+	ctx context.Context,
+	req *userv1.BuySubscriptionWithVKinoCoinsRequest,
+) (*userv1.BuySubscriptionWithVKinoCoinsResponse, error) {
+	purchase, err := s.usecase.BuySubscriptionWithVKinoCoins(ctx, req.GetUserId(), req.GetTariffId())
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	resp := &userv1.BuySubscriptionWithVKinoCoinsResponse{
+		PaymentId:         purchase.PaymentID,
+		CoinsSpent:        purchase.CoinsSpent,
+		VkinoCoinsBalance: purchase.VKinoCoinsBalance,
+		Subscription: &userv1.SubscriptionInfo{
+			Id:    purchase.Subscription.ID,
+			Code:  purchase.Subscription.Code,
+			Name:  purchase.Subscription.Name,
+			Level: purchase.Subscription.Level,
+		},
+	}
+
+	if purchase.Subscription.ActiveUntil != nil {
+		resp.Subscription.ActiveUntil = purchase.Subscription.ActiveUntil
+	}
+
+	return resp, nil
+}

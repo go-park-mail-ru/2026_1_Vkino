@@ -20,7 +20,16 @@ func (u *UserUsecase) GetProfile(ctx context.Context, userID int64) (domain.Prof
 		return domain.ProfileResponse{}, domain.ErrInvalidToken
 	}
 
-	return u.profileResponse(ctx, user)
+	if _, err = u.userRepo.GrantDailyVKinoCoins(ctx, userID); err != nil {
+		return domain.ProfileResponse{}, fmt.Errorf("%w: grant daily vkino coins: %w", domain.ErrInternal, err)
+	}
+
+	balance, err := u.userRepo.GetVKinoCoinsBalance(ctx, userID)
+	if err != nil {
+		return domain.ProfileResponse{}, fmt.Errorf("%w: get vkino coins balance: %w", domain.ErrInternal, err)
+	}
+
+	return u.profileResponse(ctx, user, balance)
 }
 
 func (u *UserUsecase) UpdateProfile(
@@ -46,7 +55,7 @@ func (u *UserUsecase) UpdateProfile(
 		return domain.ProfileResponse{}, err
 	}
 
-	return u.profileResponse(ctx, user)
+	return u.profileResponse(ctx, user, 0)
 }
 
 func (u *UserUsecase) updateBirthdateIfProvided(
