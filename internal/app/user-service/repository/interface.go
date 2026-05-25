@@ -37,6 +37,14 @@ type UserSubscriptionRepo interface {
 	GetRoomsCreatedThisMonth(ctx context.Context, userID int64) (int32, error)
 }
 
+type UserCoinsRepo interface {
+	GetVKinoCoinsHistory(
+		ctx context.Context,
+		userID int64,
+		limit, offset int32,
+	) ([]domain.VKinoCoinsHistoryItem, int32, error)
+}
+
 type UserMovieRepo interface {
 	AddMovieToFavorites(ctx context.Context, userID, movieID int64) error
 	SetMovieRating(ctx context.Context, userID, movieID int64, rating float64) error
@@ -76,6 +84,7 @@ type UserRepo interface {
 	UserReadRepo
 	UserProfileMutationRepo
 	UserSubscriptionRepo
+	UserCoinsRepo
 	UserMovieRepo
 	UserFriendRepo
 }

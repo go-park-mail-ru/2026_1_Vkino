@@ -384,6 +384,26 @@ func (mr *MockUserClientMockRecorder) GetSubscriptionCapabilities(ctx, in any, o
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionCapabilities", reflect.TypeOf((*MockUserClient)(nil).GetSubscriptionCapabilities), varargs...)
 }
 
+// GetVKinoCoinsHistory mocks base method.
+func (m *MockUserClient) GetVKinoCoinsHistory(ctx context.Context, in *userv1.GetVKinoCoinsHistoryRequest, opts ...grpc.CallOption) (*userv1.GetVKinoCoinsHistoryResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetVKinoCoinsHistory", varargs...)
+	ret0, _ := ret[0].(*userv1.GetVKinoCoinsHistoryResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVKinoCoinsHistory indicates an expected call of GetVKinoCoinsHistory.
+func (mr *MockUserClientMockRecorder) GetVKinoCoinsHistory(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVKinoCoinsHistory", reflect.TypeOf((*MockUserClient)(nil).GetVKinoCoinsHistory), varargs...)
+}
+
 // GetSupportFileURL mocks base method.
 func (m *MockUserClient) GetSupportFileURL(ctx context.Context, in *supportv1.GetSupportFileURLRequest, opts ...grpc.CallOption) (*supportv1.GetSupportFileURLResponse, error) {
 	m.ctrl.T.Helper()

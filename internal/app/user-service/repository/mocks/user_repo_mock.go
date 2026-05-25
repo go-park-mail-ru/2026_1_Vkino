@@ -807,6 +807,22 @@ func (mr *MockUserRepoMockRecorder) GetFriendsList(ctx, userID, limit, offset an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFriendsList", reflect.TypeOf((*MockUserRepo)(nil).GetFriendsList), ctx, userID, limit, offset)
 }
 
+// GetVKinoCoinsHistory mocks base method.
+func (m *MockUserRepo) GetVKinoCoinsHistory(ctx context.Context, userID int64, limit, offset int32) ([]domain.VKinoCoinsHistoryItem, int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVKinoCoinsHistory", ctx, userID, limit, offset)
+	ret0, _ := ret[0].([]domain.VKinoCoinsHistoryItem)
+	ret1, _ := ret[1].(int32)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetVKinoCoinsHistory indicates an expected call of GetVKinoCoinsHistory.
+func (mr *MockUserRepoMockRecorder) GetVKinoCoinsHistory(ctx, userID, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVKinoCoinsHistory", reflect.TypeOf((*MockUserRepo)(nil).GetVKinoCoinsHistory), ctx, userID, limit, offset)
+}
+
 // GetRoomsCreatedThisMonth mocks base method.
 func (m *MockUserRepo) GetRoomsCreatedThisMonth(ctx context.Context, userID int64) (int32, error) {
 	m.ctrl.T.Helper()

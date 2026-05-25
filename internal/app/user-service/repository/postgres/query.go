@@ -110,6 +110,35 @@ const (
 			and created_at <= now()
 	`
 
+	sqlGetVKinoCoinsHistory = `
+		with total as (
+			select count(*)::int as total_count
+			from vkino_coins_history
+			where user_id = $1
+		)
+		select
+			h.id,
+			h.vkino_coins_count,
+			h.operation_type,
+			h.description,
+			h.created_at,
+			t.total_count
+		from total t
+		left join lateral (
+			select
+				id,
+				vkino_coins_count,
+				operation_type,
+				description,
+				created_at
+			from vkino_coins_history
+			where user_id = $1
+			order by created_at desc, id desc
+			limit $2 offset $3
+		) h on true
+		order by h.created_at desc nulls last, h.id desc nulls last
+	`
+
 	sqlGetFriendByID = `
 		select
 			u.id, u.email, u.password_hash, u.role, u.birthdate, u.avatar_file_key,
