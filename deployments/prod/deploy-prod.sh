@@ -18,6 +18,7 @@ ROOT_DIR="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 COMPOSE_FILE="${ROOT_DIR}/deployments/prod/compose.yaml"
 ENV_FILE="${ROOT_DIR}/deployments/prod/.env"
 LOCK_FILE="${ROOT_DIR}/deployments/prod/.deploy-prod.lock"
+DEPLOYED_REV_FILE="${ROOT_DIR}/deployments/prod/.last-deployed-rev"
 PROJECT_NAME="${COMPOSE_PROJECT_NAME:-prod}"
 DEPLOY_BRANCH="${DEPLOY_BRANCH:-master}"
 ROLLOUT_TIMEOUT_SECONDS="${ROLLOUT_TIMEOUT_SECONDS:-120}"
@@ -77,6 +78,10 @@ rollout() {
     --timeout "${ROLLOUT_TIMEOUT_SECONDS}" \
     --wait-after-healthy "${ROLLOUT_WAIT_AFTER_HEALTHY_SECONDS}" \
     "${service}"
+}
+
+mark_deployed_revision() {
+  printf '%s\n' "${NEW_REV}" >"${DEPLOYED_REV_FILE}"
 }
 
 add_service() {
@@ -160,7 +165,12 @@ path_affects_service() {
 
 log "fetching latest ${DEPLOY_BRANCH} branch"
 
-OLD_REV="$(git rev-parse HEAD 2>/dev/null || true)"
+PREVIOUS_HEAD_REV="$(git rev-parse HEAD 2>/dev/null || true)"
+PREVIOUS_DEPLOYED_REV=""
+
+if [[ -f "${DEPLOYED_REV_FILE}" ]]; then
+  PREVIOUS_DEPLOYED_REV="$(tr -d '\n' <"${DEPLOYED_REV_FILE}")"
+fi
 
 git fetch origin "${DEPLOY_BRANCH}"
 git reset --hard "origin/${DEPLOY_BRANCH}"
@@ -174,17 +184,22 @@ SERVICES_TO_DEPLOY=()
 MIGRATIONS_CHANGED=0
 NGINX_CHANGED=0
 
-if [[ -z "${OLD_REV}" ]]; then
-  log "old revision is unknown, scheduling all services"
+if [[ -z "${PREVIOUS_DEPLOYED_REV}" ]]; then
+  log "last deployed revision is unknown, scheduling all services"
   add_all_services
+elif ! git merge-base --is-ancestor "${PREVIOUS_DEPLOYED_REV}" "${NEW_REV}"; then
+  log "last deployed revision ${PREVIOUS_DEPLOYED_REV} is not an ancestor of ${NEW_REV}, scheduling all services"
+  add_all_services
+elif [[ "${PREVIOUS_DEPLOYED_REV}" == "${NEW_REV}" ]]; then
+  log "target revision ${NEW_REV} is already marked as deployed"
 else
-  log "detecting changed files between ${OLD_REV} and ${NEW_REV}"
+  log "detecting changed files between deployed ${PREVIOUS_DEPLOYED_REV} and target ${NEW_REV}"
 
   while IFS= read -r changed_path; do
     [[ -z "${changed_path}" ]] && continue
     log "changed: ${changed_path}"
     path_affects_service "${changed_path}"
-  done < <(git diff --name-only "${OLD_REV}" "${NEW_REV}")
+  done < <(git diff --name-only "${PREVIOUS_DEPLOYED_REV}" "${NEW_REV}")
 fi
 
 if [[ "${FORCE_ROLLOUT_ALL:-0}" == "1" ]]; then
@@ -193,7 +208,13 @@ if [[ "${FORCE_ROLLOUT_ALL:-0}" == "1" ]]; then
 fi
 
 if [[ "${#SERVICES_TO_DEPLOY[@]}" -eq 0 && "${MIGRATIONS_CHANGED}" -eq 0 && "${NGINX_CHANGED}" -eq 0 ]]; then
-  log "no deployable changes detected"
+  if [[ -n "${PREVIOUS_HEAD_REV}" && "${PREVIOUS_HEAD_REV}" != "${NEW_REV}" ]]; then
+    log "no deployable changes detected for runtime artifacts; updating deployed revision marker"
+    mark_deployed_revision
+  else
+    log "no deployable changes detected"
+  fi
+
   compose ps
   exit 0
 fi
@@ -221,6 +242,8 @@ if [[ "${NGINX_CHANGED}" == "1" ]]; then
   log "nginx config changed, reloading nginx"
   compose exec -T nginx nginx -s reload
 fi
+
+mark_deployed_revision
 
 log "current compose status"
 compose ps
