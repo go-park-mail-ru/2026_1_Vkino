@@ -144,6 +144,26 @@ func (mr *MockUserClientMockRecorder) SpendVKinoCoins(ctx, in any, opts ...any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpendVKinoCoins", reflect.TypeOf((*MockUserClient)(nil).SpendVKinoCoins), varargs...)
 }
 
+// GrantVKinoCoins mocks base method.
+func (m *MockUserClient) GrantVKinoCoins(ctx context.Context, in *userv1.GrantVKinoCoinsRequest, opts ...grpc.CallOption) (*userv1.GrantVKinoCoinsResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GrantVKinoCoins", varargs...)
+	ret0, _ := ret[0].(*userv1.GrantVKinoCoinsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GrantVKinoCoins indicates an expected call of GrantVKinoCoins.
+func (mr *MockUserClientMockRecorder) GrantVKinoCoins(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GrantVKinoCoins", reflect.TypeOf((*MockUserClient)(nil).GrantVKinoCoins), varargs...)
+}
+
 // CreateTicket mocks base method.
 func (m *MockUserClient) CreateTicket(ctx context.Context, in *supportv1.CreateTicketRequest, opts ...grpc.CallOption) (*supportv1.TicketResponse, error) {
 	m.ctrl.T.Helper()

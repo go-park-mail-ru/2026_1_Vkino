@@ -1117,6 +1117,134 @@ func (x *SpendVKinoCoinsResponse) GetVkinoCoinsBalance() int32 {
 	return 0
 }
 
+type GrantVKinoCoinsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	CoinsAmount   int32                  `protobuf:"varint,2,opt,name=coins_amount,json=coinsAmount,proto3" json:"coins_amount,omitempty"`
+	OperationType string                 `protobuf:"bytes,3,opt,name=operation_type,json=operationType,proto3" json:"operation_type,omitempty"`
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	ReferenceKey  string                 `protobuf:"bytes,5,opt,name=reference_key,json=referenceKey,proto3" json:"reference_key,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GrantVKinoCoinsRequest) Reset() {
+	*x = GrantVKinoCoinsRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GrantVKinoCoinsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GrantVKinoCoinsRequest) ProtoMessage() {}
+
+func (x *GrantVKinoCoinsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GrantVKinoCoinsRequest.ProtoReflect.Descriptor instead.
+func (*GrantVKinoCoinsRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *GrantVKinoCoinsRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *GrantVKinoCoinsRequest) GetCoinsAmount() int32 {
+	if x != nil {
+		return x.CoinsAmount
+	}
+	return 0
+}
+
+func (x *GrantVKinoCoinsRequest) GetOperationType() string {
+	if x != nil {
+		return x.OperationType
+	}
+	return ""
+}
+
+func (x *GrantVKinoCoinsRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *GrantVKinoCoinsRequest) GetReferenceKey() string {
+	if x != nil {
+		return x.ReferenceKey
+	}
+	return ""
+}
+
+type GrantVKinoCoinsResponse struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	CoinsGranted      int32                  `protobuf:"varint,1,opt,name=coins_granted,json=coinsGranted,proto3" json:"coins_granted,omitempty"`
+	VkinoCoinsBalance int32                  `protobuf:"varint,2,opt,name=vkino_coins_balance,json=vkinoCoinsBalance,proto3" json:"vkino_coins_balance,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GrantVKinoCoinsResponse) Reset() {
+	*x = GrantVKinoCoinsResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GrantVKinoCoinsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GrantVKinoCoinsResponse) ProtoMessage() {}
+
+func (x *GrantVKinoCoinsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GrantVKinoCoinsResponse.ProtoReflect.Descriptor instead.
+func (*GrantVKinoCoinsResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *GrantVKinoCoinsResponse) GetCoinsGranted() int32 {
+	if x != nil {
+		return x.CoinsGranted
+	}
+	return 0
+}
+
+func (x *GrantVKinoCoinsResponse) GetVkinoCoinsBalance() int32 {
+	if x != nil {
+		return x.VkinoCoinsBalance
+	}
+	return 0
+}
+
 type UpdateProfileRequest struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	UserId            int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -1129,7 +1257,7 @@ type UpdateProfileRequest struct {
 
 func (x *UpdateProfileRequest) Reset() {
 	*x = UpdateProfileRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[18]
+	mi := &file_user_v1_user_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1141,7 +1269,7 @@ func (x *UpdateProfileRequest) String() string {
 func (*UpdateProfileRequest) ProtoMessage() {}
 
 func (x *UpdateProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[18]
+	mi := &file_user_v1_user_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1154,7 +1282,7 @@ func (x *UpdateProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateProfileRequest.ProtoReflect.Descriptor instead.
 func (*UpdateProfileRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{18}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *UpdateProfileRequest) GetUserId() int64 {
@@ -1196,7 +1324,7 @@ type UpdateProfileResponse struct {
 
 func (x *UpdateProfileResponse) Reset() {
 	*x = UpdateProfileResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[19]
+	mi := &file_user_v1_user_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1208,7 +1336,7 @@ func (x *UpdateProfileResponse) String() string {
 func (*UpdateProfileResponse) ProtoMessage() {}
 
 func (x *UpdateProfileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[19]
+	mi := &file_user_v1_user_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1221,7 +1349,7 @@ func (x *UpdateProfileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateProfileResponse.ProtoReflect.Descriptor instead.
 func (*UpdateProfileResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{19}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *UpdateProfileResponse) GetEmail() string {
@@ -1255,7 +1383,7 @@ type SearchUsersByEmailRequest struct {
 
 func (x *SearchUsersByEmailRequest) Reset() {
 	*x = SearchUsersByEmailRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[20]
+	mi := &file_user_v1_user_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1267,7 +1395,7 @@ func (x *SearchUsersByEmailRequest) String() string {
 func (*SearchUsersByEmailRequest) ProtoMessage() {}
 
 func (x *SearchUsersByEmailRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[20]
+	mi := &file_user_v1_user_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1280,7 +1408,7 @@ func (x *SearchUsersByEmailRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchUsersByEmailRequest.ProtoReflect.Descriptor instead.
 func (*SearchUsersByEmailRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{20}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *SearchUsersByEmailRequest) GetUserId() int64 {
@@ -1309,7 +1437,7 @@ type UserSearchResult struct {
 
 func (x *UserSearchResult) Reset() {
 	*x = UserSearchResult{}
-	mi := &file_user_v1_user_proto_msgTypes[21]
+	mi := &file_user_v1_user_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1321,7 +1449,7 @@ func (x *UserSearchResult) String() string {
 func (*UserSearchResult) ProtoMessage() {}
 
 func (x *UserSearchResult) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[21]
+	mi := &file_user_v1_user_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1334,7 +1462,7 @@ func (x *UserSearchResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserSearchResult.ProtoReflect.Descriptor instead.
 func (*UserSearchResult) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{21}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *UserSearchResult) GetId() int64 {
@@ -1374,7 +1502,7 @@ type SearchUsersByEmailResponse struct {
 
 func (x *SearchUsersByEmailResponse) Reset() {
 	*x = SearchUsersByEmailResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[22]
+	mi := &file_user_v1_user_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1386,7 +1514,7 @@ func (x *SearchUsersByEmailResponse) String() string {
 func (*SearchUsersByEmailResponse) ProtoMessage() {}
 
 func (x *SearchUsersByEmailResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[22]
+	mi := &file_user_v1_user_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1399,7 +1527,7 @@ func (x *SearchUsersByEmailResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchUsersByEmailResponse.ProtoReflect.Descriptor instead.
 func (*SearchUsersByEmailResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{22}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *SearchUsersByEmailResponse) GetUsers() []*UserSearchResult {
@@ -1419,7 +1547,7 @@ type AddFriendRequest struct {
 
 func (x *AddFriendRequest) Reset() {
 	*x = AddFriendRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[23]
+	mi := &file_user_v1_user_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1431,7 +1559,7 @@ func (x *AddFriendRequest) String() string {
 func (*AddFriendRequest) ProtoMessage() {}
 
 func (x *AddFriendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[23]
+	mi := &file_user_v1_user_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1444,7 +1572,7 @@ func (x *AddFriendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddFriendRequest.ProtoReflect.Descriptor instead.
 func (*AddFriendRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{23}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *AddFriendRequest) GetUserId() int64 {
@@ -1472,7 +1600,7 @@ type AddFriendResponse struct {
 
 func (x *AddFriendResponse) Reset() {
 	*x = AddFriendResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[24]
+	mi := &file_user_v1_user_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1484,7 +1612,7 @@ func (x *AddFriendResponse) String() string {
 func (*AddFriendResponse) ProtoMessage() {}
 
 func (x *AddFriendResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[24]
+	mi := &file_user_v1_user_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1497,7 +1625,7 @@ func (x *AddFriendResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddFriendResponse.ProtoReflect.Descriptor instead.
 func (*AddFriendResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{24}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *AddFriendResponse) GetId() int64 {
@@ -1531,7 +1659,7 @@ type DeleteFriendRequest struct {
 
 func (x *DeleteFriendRequest) Reset() {
 	*x = DeleteFriendRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[25]
+	mi := &file_user_v1_user_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1543,7 +1671,7 @@ func (x *DeleteFriendRequest) String() string {
 func (*DeleteFriendRequest) ProtoMessage() {}
 
 func (x *DeleteFriendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[25]
+	mi := &file_user_v1_user_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1556,7 +1684,7 @@ func (x *DeleteFriendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteFriendRequest.ProtoReflect.Descriptor instead.
 func (*DeleteFriendRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{25}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *DeleteFriendRequest) GetUserId() int64 {
@@ -1582,7 +1710,7 @@ type DeleteFriendResponse struct {
 
 func (x *DeleteFriendResponse) Reset() {
 	*x = DeleteFriendResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[26]
+	mi := &file_user_v1_user_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1594,7 +1722,7 @@ func (x *DeleteFriendResponse) String() string {
 func (*DeleteFriendResponse) ProtoMessage() {}
 
 func (x *DeleteFriendResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[26]
+	mi := &file_user_v1_user_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1607,7 +1735,7 @@ func (x *DeleteFriendResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteFriendResponse.ProtoReflect.Descriptor instead.
 func (*DeleteFriendResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{26}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *DeleteFriendResponse) GetSuccess() bool {
@@ -1627,7 +1755,7 @@ type AddMovieToFavoritesRequest struct {
 
 func (x *AddMovieToFavoritesRequest) Reset() {
 	*x = AddMovieToFavoritesRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[27]
+	mi := &file_user_v1_user_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1639,7 +1767,7 @@ func (x *AddMovieToFavoritesRequest) String() string {
 func (*AddMovieToFavoritesRequest) ProtoMessage() {}
 
 func (x *AddMovieToFavoritesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[27]
+	mi := &file_user_v1_user_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1652,7 +1780,7 @@ func (x *AddMovieToFavoritesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddMovieToFavoritesRequest.ProtoReflect.Descriptor instead.
 func (*AddMovieToFavoritesRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{27}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *AddMovieToFavoritesRequest) GetUserId() int64 {
@@ -1679,7 +1807,7 @@ type AddMovieToFavoritesResponse struct {
 
 func (x *AddMovieToFavoritesResponse) Reset() {
 	*x = AddMovieToFavoritesResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[28]
+	mi := &file_user_v1_user_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1691,7 +1819,7 @@ func (x *AddMovieToFavoritesResponse) String() string {
 func (*AddMovieToFavoritesResponse) ProtoMessage() {}
 
 func (x *AddMovieToFavoritesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[28]
+	mi := &file_user_v1_user_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1704,7 +1832,7 @@ func (x *AddMovieToFavoritesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddMovieToFavoritesResponse.ProtoReflect.Descriptor instead.
 func (*AddMovieToFavoritesResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{28}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *AddMovieToFavoritesResponse) GetMovieId() int64 {
@@ -1731,7 +1859,7 @@ type SetMovieRatingRequest struct {
 
 func (x *SetMovieRatingRequest) Reset() {
 	*x = SetMovieRatingRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[29]
+	mi := &file_user_v1_user_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1743,7 +1871,7 @@ func (x *SetMovieRatingRequest) String() string {
 func (*SetMovieRatingRequest) ProtoMessage() {}
 
 func (x *SetMovieRatingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[29]
+	mi := &file_user_v1_user_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1756,7 +1884,7 @@ func (x *SetMovieRatingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetMovieRatingRequest.ProtoReflect.Descriptor instead.
 func (*SetMovieRatingRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{29}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *SetMovieRatingRequest) GetMovieId() int64 {
@@ -1783,7 +1911,7 @@ type SetMovieRatingResponse struct {
 
 func (x *SetMovieRatingResponse) Reset() {
 	*x = SetMovieRatingResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[30]
+	mi := &file_user_v1_user_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1795,7 +1923,7 @@ func (x *SetMovieRatingResponse) String() string {
 func (*SetMovieRatingResponse) ProtoMessage() {}
 
 func (x *SetMovieRatingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[30]
+	mi := &file_user_v1_user_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1808,7 +1936,7 @@ func (x *SetMovieRatingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetMovieRatingResponse.ProtoReflect.Descriptor instead.
 func (*SetMovieRatingResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{30}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *SetMovieRatingResponse) GetMovieId() int64 {
@@ -1836,7 +1964,7 @@ type SetMovieReviewRequest struct {
 
 func (x *SetMovieReviewRequest) Reset() {
 	*x = SetMovieReviewRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[31]
+	mi := &file_user_v1_user_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1848,7 +1976,7 @@ func (x *SetMovieReviewRequest) String() string {
 func (*SetMovieReviewRequest) ProtoMessage() {}
 
 func (x *SetMovieReviewRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[31]
+	mi := &file_user_v1_user_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1861,7 +1989,7 @@ func (x *SetMovieReviewRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetMovieReviewRequest.ProtoReflect.Descriptor instead.
 func (*SetMovieReviewRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{31}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *SetMovieReviewRequest) GetMovieId() int64 {
@@ -1897,7 +2025,7 @@ type SetMovieReviewResponse struct {
 
 func (x *SetMovieReviewResponse) Reset() {
 	*x = SetMovieReviewResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[32]
+	mi := &file_user_v1_user_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1909,7 +2037,7 @@ func (x *SetMovieReviewResponse) String() string {
 func (*SetMovieReviewResponse) ProtoMessage() {}
 
 func (x *SetMovieReviewResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[32]
+	mi := &file_user_v1_user_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1922,7 +2050,7 @@ func (x *SetMovieReviewResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetMovieReviewResponse.ProtoReflect.Descriptor instead.
 func (*SetMovieReviewResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{32}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *SetMovieReviewResponse) GetReviewId() int64 {
@@ -1962,7 +2090,7 @@ type DeleteMovieReviewRequest struct {
 
 func (x *DeleteMovieReviewRequest) Reset() {
 	*x = DeleteMovieReviewRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[33]
+	mi := &file_user_v1_user_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1974,7 +2102,7 @@ func (x *DeleteMovieReviewRequest) String() string {
 func (*DeleteMovieReviewRequest) ProtoMessage() {}
 
 func (x *DeleteMovieReviewRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[33]
+	mi := &file_user_v1_user_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1987,7 +2115,7 @@ func (x *DeleteMovieReviewRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMovieReviewRequest.ProtoReflect.Descriptor instead.
 func (*DeleteMovieReviewRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{33}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *DeleteMovieReviewRequest) GetMovieId() int64 {
@@ -2006,7 +2134,7 @@ type DeleteMovieReviewResponse struct {
 
 func (x *DeleteMovieReviewResponse) Reset() {
 	*x = DeleteMovieReviewResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[34]
+	mi := &file_user_v1_user_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2018,7 +2146,7 @@ func (x *DeleteMovieReviewResponse) String() string {
 func (*DeleteMovieReviewResponse) ProtoMessage() {}
 
 func (x *DeleteMovieReviewResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[34]
+	mi := &file_user_v1_user_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2031,7 +2159,7 @@ func (x *DeleteMovieReviewResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMovieReviewResponse.ProtoReflect.Descriptor instead.
 func (*DeleteMovieReviewResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{34}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *DeleteMovieReviewResponse) GetSuccess() bool {
@@ -2051,7 +2179,7 @@ type SetReviewReactionRequest struct {
 
 func (x *SetReviewReactionRequest) Reset() {
 	*x = SetReviewReactionRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[35]
+	mi := &file_user_v1_user_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2063,7 +2191,7 @@ func (x *SetReviewReactionRequest) String() string {
 func (*SetReviewReactionRequest) ProtoMessage() {}
 
 func (x *SetReviewReactionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[35]
+	mi := &file_user_v1_user_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2076,7 +2204,7 @@ func (x *SetReviewReactionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetReviewReactionRequest.ProtoReflect.Descriptor instead.
 func (*SetReviewReactionRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{35}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *SetReviewReactionRequest) GetReviewId() int64 {
@@ -2103,7 +2231,7 @@ type SetReviewReactionResponse struct {
 
 func (x *SetReviewReactionResponse) Reset() {
 	*x = SetReviewReactionResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[36]
+	mi := &file_user_v1_user_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2115,7 +2243,7 @@ func (x *SetReviewReactionResponse) String() string {
 func (*SetReviewReactionResponse) ProtoMessage() {}
 
 func (x *SetReviewReactionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[36]
+	mi := &file_user_v1_user_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2128,7 +2256,7 @@ func (x *SetReviewReactionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetReviewReactionResponse.ProtoReflect.Descriptor instead.
 func (*SetReviewReactionResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{36}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *SetReviewReactionResponse) GetReviewId() int64 {
@@ -2154,7 +2282,7 @@ type DeleteReviewReactionRequest struct {
 
 func (x *DeleteReviewReactionRequest) Reset() {
 	*x = DeleteReviewReactionRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[37]
+	mi := &file_user_v1_user_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2166,7 +2294,7 @@ func (x *DeleteReviewReactionRequest) String() string {
 func (*DeleteReviewReactionRequest) ProtoMessage() {}
 
 func (x *DeleteReviewReactionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[37]
+	mi := &file_user_v1_user_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2179,7 +2307,7 @@ func (x *DeleteReviewReactionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteReviewReactionRequest.ProtoReflect.Descriptor instead.
 func (*DeleteReviewReactionRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{37}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *DeleteReviewReactionRequest) GetReviewId() int64 {
@@ -2198,7 +2326,7 @@ type DeleteReviewReactionResponse struct {
 
 func (x *DeleteReviewReactionResponse) Reset() {
 	*x = DeleteReviewReactionResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[38]
+	mi := &file_user_v1_user_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2210,7 +2338,7 @@ func (x *DeleteReviewReactionResponse) String() string {
 func (*DeleteReviewReactionResponse) ProtoMessage() {}
 
 func (x *DeleteReviewReactionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[38]
+	mi := &file_user_v1_user_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2223,7 +2351,7 @@ func (x *DeleteReviewReactionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteReviewReactionResponse.ProtoReflect.Descriptor instead.
 func (*DeleteReviewReactionResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{38}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *DeleteReviewReactionResponse) GetSuccess() bool {
@@ -2242,7 +2370,7 @@ type ToggleFavoriteRequest struct {
 
 func (x *ToggleFavoriteRequest) Reset() {
 	*x = ToggleFavoriteRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[39]
+	mi := &file_user_v1_user_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2254,7 +2382,7 @@ func (x *ToggleFavoriteRequest) String() string {
 func (*ToggleFavoriteRequest) ProtoMessage() {}
 
 func (x *ToggleFavoriteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[39]
+	mi := &file_user_v1_user_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2267,7 +2395,7 @@ func (x *ToggleFavoriteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ToggleFavoriteRequest.ProtoReflect.Descriptor instead.
 func (*ToggleFavoriteRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{39}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *ToggleFavoriteRequest) GetMovieId() int64 {
@@ -2287,7 +2415,7 @@ type ToggleFavoriteResponse struct {
 
 func (x *ToggleFavoriteResponse) Reset() {
 	*x = ToggleFavoriteResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[40]
+	mi := &file_user_v1_user_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2299,7 +2427,7 @@ func (x *ToggleFavoriteResponse) String() string {
 func (*ToggleFavoriteResponse) ProtoMessage() {}
 
 func (x *ToggleFavoriteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[40]
+	mi := &file_user_v1_user_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2312,7 +2440,7 @@ func (x *ToggleFavoriteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ToggleFavoriteResponse.ProtoReflect.Descriptor instead.
 func (*ToggleFavoriteResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{40}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *ToggleFavoriteResponse) GetMovieId() int64 {
@@ -2339,7 +2467,7 @@ type GetFavoritesRequest struct {
 
 func (x *GetFavoritesRequest) Reset() {
 	*x = GetFavoritesRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[41]
+	mi := &file_user_v1_user_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2351,7 +2479,7 @@ func (x *GetFavoritesRequest) String() string {
 func (*GetFavoritesRequest) ProtoMessage() {}
 
 func (x *GetFavoritesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[41]
+	mi := &file_user_v1_user_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2364,7 +2492,7 @@ func (x *GetFavoritesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFavoritesRequest.ProtoReflect.Descriptor instead.
 func (*GetFavoritesRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{41}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *GetFavoritesRequest) GetLimit() int32 {
@@ -2391,7 +2519,7 @@ type GetFavoritesResponse struct {
 
 func (x *GetFavoritesResponse) Reset() {
 	*x = GetFavoritesResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[42]
+	mi := &file_user_v1_user_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2403,7 +2531,7 @@ func (x *GetFavoritesResponse) String() string {
 func (*GetFavoritesResponse) ProtoMessage() {}
 
 func (x *GetFavoritesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[42]
+	mi := &file_user_v1_user_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2416,7 +2544,7 @@ func (x *GetFavoritesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFavoritesResponse.ProtoReflect.Descriptor instead.
 func (*GetFavoritesResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{42}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *GetFavoritesResponse) GetMovieIds() []int64 {
@@ -2443,7 +2571,7 @@ type SearchUsersRequest struct {
 
 func (x *SearchUsersRequest) Reset() {
 	*x = SearchUsersRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[43]
+	mi := &file_user_v1_user_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2455,7 +2583,7 @@ func (x *SearchUsersRequest) String() string {
 func (*SearchUsersRequest) ProtoMessage() {}
 
 func (x *SearchUsersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[43]
+	mi := &file_user_v1_user_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2468,7 +2596,7 @@ func (x *SearchUsersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchUsersRequest.ProtoReflect.Descriptor instead.
 func (*SearchUsersRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{43}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *SearchUsersRequest) GetQuery() string {
@@ -2494,7 +2622,7 @@ type SearchUsersResponse struct {
 
 func (x *SearchUsersResponse) Reset() {
 	*x = SearchUsersResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[44]
+	mi := &file_user_v1_user_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2506,7 +2634,7 @@ func (x *SearchUsersResponse) String() string {
 func (*SearchUsersResponse) ProtoMessage() {}
 
 func (x *SearchUsersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[44]
+	mi := &file_user_v1_user_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2519,7 +2647,7 @@ func (x *SearchUsersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchUsersResponse.ProtoReflect.Descriptor instead.
 func (*SearchUsersResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{44}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *SearchUsersResponse) GetUsers() []*UserSearchResult {
@@ -2538,7 +2666,7 @@ type SendFriendRequestRequest struct {
 
 func (x *SendFriendRequestRequest) Reset() {
 	*x = SendFriendRequestRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[45]
+	mi := &file_user_v1_user_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2550,7 +2678,7 @@ func (x *SendFriendRequestRequest) String() string {
 func (*SendFriendRequestRequest) ProtoMessage() {}
 
 func (x *SendFriendRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[45]
+	mi := &file_user_v1_user_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2563,7 +2691,7 @@ func (x *SendFriendRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendFriendRequestRequest.ProtoReflect.Descriptor instead.
 func (*SendFriendRequestRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{45}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *SendFriendRequestRequest) GetToUserId() int64 {
@@ -2582,7 +2710,7 @@ type SendFriendRequestResponse struct {
 
 func (x *SendFriendRequestResponse) Reset() {
 	*x = SendFriendRequestResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[46]
+	mi := &file_user_v1_user_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2594,7 +2722,7 @@ func (x *SendFriendRequestResponse) String() string {
 func (*SendFriendRequestResponse) ProtoMessage() {}
 
 func (x *SendFriendRequestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[46]
+	mi := &file_user_v1_user_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2607,7 +2735,7 @@ func (x *SendFriendRequestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendFriendRequestResponse.ProtoReflect.Descriptor instead.
 func (*SendFriendRequestResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{46}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *SendFriendRequestResponse) GetRequestId() int64 {
@@ -2627,7 +2755,7 @@ type RespondToFriendRequestRequest struct {
 
 func (x *RespondToFriendRequestRequest) Reset() {
 	*x = RespondToFriendRequestRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[47]
+	mi := &file_user_v1_user_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2639,7 +2767,7 @@ func (x *RespondToFriendRequestRequest) String() string {
 func (*RespondToFriendRequestRequest) ProtoMessage() {}
 
 func (x *RespondToFriendRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[47]
+	mi := &file_user_v1_user_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2652,7 +2780,7 @@ func (x *RespondToFriendRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RespondToFriendRequestRequest.ProtoReflect.Descriptor instead.
 func (*RespondToFriendRequestRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{47}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *RespondToFriendRequestRequest) GetRequestId() int64 {
@@ -2678,7 +2806,7 @@ type RespondToFriendRequestResponse struct {
 
 func (x *RespondToFriendRequestResponse) Reset() {
 	*x = RespondToFriendRequestResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[48]
+	mi := &file_user_v1_user_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2690,7 +2818,7 @@ func (x *RespondToFriendRequestResponse) String() string {
 func (*RespondToFriendRequestResponse) ProtoMessage() {}
 
 func (x *RespondToFriendRequestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[48]
+	mi := &file_user_v1_user_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2703,7 +2831,7 @@ func (x *RespondToFriendRequestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RespondToFriendRequestResponse.ProtoReflect.Descriptor instead.
 func (*RespondToFriendRequestResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{48}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *RespondToFriendRequestResponse) GetSuccess() bool {
@@ -2722,7 +2850,7 @@ type DeleteOutgoingFriendRequestRequest struct {
 
 func (x *DeleteOutgoingFriendRequestRequest) Reset() {
 	*x = DeleteOutgoingFriendRequestRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[49]
+	mi := &file_user_v1_user_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2734,7 +2862,7 @@ func (x *DeleteOutgoingFriendRequestRequest) String() string {
 func (*DeleteOutgoingFriendRequestRequest) ProtoMessage() {}
 
 func (x *DeleteOutgoingFriendRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[49]
+	mi := &file_user_v1_user_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2747,7 +2875,7 @@ func (x *DeleteOutgoingFriendRequestRequest) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use DeleteOutgoingFriendRequestRequest.ProtoReflect.Descriptor instead.
 func (*DeleteOutgoingFriendRequestRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{49}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *DeleteOutgoingFriendRequestRequest) GetRequestId() int64 {
@@ -2766,7 +2894,7 @@ type DeleteOutgoingFriendRequestResponse struct {
 
 func (x *DeleteOutgoingFriendRequestResponse) Reset() {
 	*x = DeleteOutgoingFriendRequestResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[50]
+	mi := &file_user_v1_user_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2778,7 +2906,7 @@ func (x *DeleteOutgoingFriendRequestResponse) String() string {
 func (*DeleteOutgoingFriendRequestResponse) ProtoMessage() {}
 
 func (x *DeleteOutgoingFriendRequestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[50]
+	mi := &file_user_v1_user_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2791,7 +2919,7 @@ func (x *DeleteOutgoingFriendRequestResponse) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use DeleteOutgoingFriendRequestResponse.ProtoReflect.Descriptor instead.
 func (*DeleteOutgoingFriendRequestResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{50}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *DeleteOutgoingFriendRequestResponse) GetSuccess() bool {
@@ -2811,7 +2939,7 @@ type GetFriendRequestsRequest struct {
 
 func (x *GetFriendRequestsRequest) Reset() {
 	*x = GetFriendRequestsRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[51]
+	mi := &file_user_v1_user_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2823,7 +2951,7 @@ func (x *GetFriendRequestsRequest) String() string {
 func (*GetFriendRequestsRequest) ProtoMessage() {}
 
 func (x *GetFriendRequestsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[51]
+	mi := &file_user_v1_user_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2836,7 +2964,7 @@ func (x *GetFriendRequestsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFriendRequestsRequest.ProtoReflect.Descriptor instead.
 func (*GetFriendRequestsRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{51}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *GetFriendRequestsRequest) GetDirection() string {
@@ -2865,7 +2993,7 @@ type FriendRequestItem struct {
 
 func (x *FriendRequestItem) Reset() {
 	*x = FriendRequestItem{}
-	mi := &file_user_v1_user_proto_msgTypes[52]
+	mi := &file_user_v1_user_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2877,7 +3005,7 @@ func (x *FriendRequestItem) String() string {
 func (*FriendRequestItem) ProtoMessage() {}
 
 func (x *FriendRequestItem) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[52]
+	mi := &file_user_v1_user_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2890,7 +3018,7 @@ func (x *FriendRequestItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FriendRequestItem.ProtoReflect.Descriptor instead.
 func (*FriendRequestItem) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{52}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *FriendRequestItem) GetId() int64 {
@@ -2930,7 +3058,7 @@ type GetFriendRequestsResponse struct {
 
 func (x *GetFriendRequestsResponse) Reset() {
 	*x = GetFriendRequestsResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[53]
+	mi := &file_user_v1_user_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2942,7 +3070,7 @@ func (x *GetFriendRequestsResponse) String() string {
 func (*GetFriendRequestsResponse) ProtoMessage() {}
 
 func (x *GetFriendRequestsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[53]
+	mi := &file_user_v1_user_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2955,7 +3083,7 @@ func (x *GetFriendRequestsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFriendRequestsResponse.ProtoReflect.Descriptor instead.
 func (*GetFriendRequestsResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{53}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *GetFriendRequestsResponse) GetRequests() []*FriendRequestItem {
@@ -2975,7 +3103,7 @@ type GetFriendsListRequest struct {
 
 func (x *GetFriendsListRequest) Reset() {
 	*x = GetFriendsListRequest{}
-	mi := &file_user_v1_user_proto_msgTypes[54]
+	mi := &file_user_v1_user_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2987,7 +3115,7 @@ func (x *GetFriendsListRequest) String() string {
 func (*GetFriendsListRequest) ProtoMessage() {}
 
 func (x *GetFriendsListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[54]
+	mi := &file_user_v1_user_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3000,7 +3128,7 @@ func (x *GetFriendsListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFriendsListRequest.ProtoReflect.Descriptor instead.
 func (*GetFriendsListRequest) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{54}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *GetFriendsListRequest) GetLimit() int32 {
@@ -3027,7 +3155,7 @@ type GetFriendsListResponse struct {
 
 func (x *GetFriendsListResponse) Reset() {
 	*x = GetFriendsListResponse{}
-	mi := &file_user_v1_user_proto_msgTypes[55]
+	mi := &file_user_v1_user_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3039,7 +3167,7 @@ func (x *GetFriendsListResponse) String() string {
 func (*GetFriendsListResponse) ProtoMessage() {}
 
 func (x *GetFriendsListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_v1_user_proto_msgTypes[55]
+	mi := &file_user_v1_user_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3052,7 +3180,7 @@ func (x *GetFriendsListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFriendsListResponse.ProtoReflect.Descriptor instead.
 func (*GetFriendsListResponse) Descriptor() ([]byte, []int) {
-	return file_user_v1_user_proto_rawDescGZIP(), []int{55}
+	return file_user_v1_user_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *GetFriendsListResponse) GetFriends() []*UserSearchResult {
@@ -3158,6 +3286,15 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x17SpendVKinoCoinsResponse\x12\x1f\n" +
 	"\vcoins_spent\x18\x01 \x01(\x05R\n" +
 	"coinsSpent\x12.\n" +
+	"\x13vkino_coins_balance\x18\x02 \x01(\x05R\x11vkinoCoinsBalance\"\xc2\x01\n" +
+	"\x16GrantVKinoCoinsRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12!\n" +
+	"\fcoins_amount\x18\x02 \x01(\x05R\vcoinsAmount\x12%\n" +
+	"\x0eoperation_type\x18\x03 \x01(\tR\roperationType\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x12#\n" +
+	"\rreference_key\x18\x05 \x01(\tR\freferenceKey\"n\n" +
+	"\x17GrantVKinoCoinsResponse\x12#\n" +
+	"\rcoins_granted\x18\x01 \x01(\x05R\fcoinsGranted\x12.\n" +
 	"\x13vkino_coins_balance\x18\x02 \x01(\x05R\x11vkinoCoinsBalance\"\x95\x01\n" +
 	"\x14UpdateProfileRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1c\n" +
@@ -3288,7 +3425,7 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x16GetFriendsListResponse\x123\n" +
 	"\afriends\x18\x01 \x03(\v2\x19.user.v1.UserSearchResultR\afriends\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x05R\n" +
-	"totalCount2\xf1\x11\n" +
+	"totalCount2\xc7\x12\n" +
 	"\vUserService\x12E\n" +
 	"\n" +
 	"GetProfile\x12\x1a.user.v1.GetProfileRequest\x1a\x1b.user.v1.GetProfileResponse\x12B\n" +
@@ -3297,7 +3434,8 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x14GetVKinoCoinsHistory\x12$.user.v1.GetVKinoCoinsHistoryRequest\x1a%.user.v1.GetVKinoCoinsHistoryResponse\x12c\n" +
 	"\x14ActivateSubscription\x12$.user.v1.ActivateSubscriptionRequest\x1a%.user.v1.ActivateSubscriptionResponse\x12~\n" +
 	"\x1dBuySubscriptionWithVKinoCoins\x12-.user.v1.BuySubscriptionWithVKinoCoinsRequest\x1a..user.v1.BuySubscriptionWithVKinoCoinsResponse\x12T\n" +
-	"\x0fSpendVKinoCoins\x12\x1f.user.v1.SpendVKinoCoinsRequest\x1a .user.v1.SpendVKinoCoinsResponse\x12N\n" +
+	"\x0fSpendVKinoCoins\x12\x1f.user.v1.SpendVKinoCoinsRequest\x1a .user.v1.SpendVKinoCoinsResponse\x12T\n" +
+	"\x0fGrantVKinoCoins\x12\x1f.user.v1.GrantVKinoCoinsRequest\x1a .user.v1.GrantVKinoCoinsResponse\x12N\n" +
 	"\rUpdateProfile\x12\x1d.user.v1.UpdateProfileRequest\x1a\x1e.user.v1.UpdateProfileResponse\x12]\n" +
 	"\x12SearchUsersByEmail\x12\".user.v1.SearchUsersByEmailRequest\x1a#.user.v1.SearchUsersByEmailResponse\x12B\n" +
 	"\tAddFriend\x12\x19.user.v1.AddFriendRequest\x1a\x1a.user.v1.AddFriendResponse\x12K\n" +
@@ -3329,7 +3467,7 @@ func file_user_v1_user_proto_rawDescGZIP() []byte {
 	return file_user_v1_user_proto_rawDescData
 }
 
-var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 56)
+var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 58)
 var file_user_v1_user_proto_goTypes = []any{
 	(*GetProfileRequest)(nil),                     // 0: user.v1.GetProfileRequest
 	(*GetProfileResponse)(nil),                    // 1: user.v1.GetProfileResponse
@@ -3349,44 +3487,46 @@ var file_user_v1_user_proto_goTypes = []any{
 	(*BuySubscriptionWithVKinoCoinsResponse)(nil), // 15: user.v1.BuySubscriptionWithVKinoCoinsResponse
 	(*SpendVKinoCoinsRequest)(nil),                // 16: user.v1.SpendVKinoCoinsRequest
 	(*SpendVKinoCoinsResponse)(nil),               // 17: user.v1.SpendVKinoCoinsResponse
-	(*UpdateProfileRequest)(nil),                  // 18: user.v1.UpdateProfileRequest
-	(*UpdateProfileResponse)(nil),                 // 19: user.v1.UpdateProfileResponse
-	(*SearchUsersByEmailRequest)(nil),             // 20: user.v1.SearchUsersByEmailRequest
-	(*UserSearchResult)(nil),                      // 21: user.v1.UserSearchResult
-	(*SearchUsersByEmailResponse)(nil),            // 22: user.v1.SearchUsersByEmailResponse
-	(*AddFriendRequest)(nil),                      // 23: user.v1.AddFriendRequest
-	(*AddFriendResponse)(nil),                     // 24: user.v1.AddFriendResponse
-	(*DeleteFriendRequest)(nil),                   // 25: user.v1.DeleteFriendRequest
-	(*DeleteFriendResponse)(nil),                  // 26: user.v1.DeleteFriendResponse
-	(*AddMovieToFavoritesRequest)(nil),            // 27: user.v1.AddMovieToFavoritesRequest
-	(*AddMovieToFavoritesResponse)(nil),           // 28: user.v1.AddMovieToFavoritesResponse
-	(*SetMovieRatingRequest)(nil),                 // 29: user.v1.SetMovieRatingRequest
-	(*SetMovieRatingResponse)(nil),                // 30: user.v1.SetMovieRatingResponse
-	(*SetMovieReviewRequest)(nil),                 // 31: user.v1.SetMovieReviewRequest
-	(*SetMovieReviewResponse)(nil),                // 32: user.v1.SetMovieReviewResponse
-	(*DeleteMovieReviewRequest)(nil),              // 33: user.v1.DeleteMovieReviewRequest
-	(*DeleteMovieReviewResponse)(nil),             // 34: user.v1.DeleteMovieReviewResponse
-	(*SetReviewReactionRequest)(nil),              // 35: user.v1.SetReviewReactionRequest
-	(*SetReviewReactionResponse)(nil),             // 36: user.v1.SetReviewReactionResponse
-	(*DeleteReviewReactionRequest)(nil),           // 37: user.v1.DeleteReviewReactionRequest
-	(*DeleteReviewReactionResponse)(nil),          // 38: user.v1.DeleteReviewReactionResponse
-	(*ToggleFavoriteRequest)(nil),                 // 39: user.v1.ToggleFavoriteRequest
-	(*ToggleFavoriteResponse)(nil),                // 40: user.v1.ToggleFavoriteResponse
-	(*GetFavoritesRequest)(nil),                   // 41: user.v1.GetFavoritesRequest
-	(*GetFavoritesResponse)(nil),                  // 42: user.v1.GetFavoritesResponse
-	(*SearchUsersRequest)(nil),                    // 43: user.v1.SearchUsersRequest
-	(*SearchUsersResponse)(nil),                   // 44: user.v1.SearchUsersResponse
-	(*SendFriendRequestRequest)(nil),              // 45: user.v1.SendFriendRequestRequest
-	(*SendFriendRequestResponse)(nil),             // 46: user.v1.SendFriendRequestResponse
-	(*RespondToFriendRequestRequest)(nil),         // 47: user.v1.RespondToFriendRequestRequest
-	(*RespondToFriendRequestResponse)(nil),        // 48: user.v1.RespondToFriendRequestResponse
-	(*DeleteOutgoingFriendRequestRequest)(nil),    // 49: user.v1.DeleteOutgoingFriendRequestRequest
-	(*DeleteOutgoingFriendRequestResponse)(nil),   // 50: user.v1.DeleteOutgoingFriendRequestResponse
-	(*GetFriendRequestsRequest)(nil),              // 51: user.v1.GetFriendRequestsRequest
-	(*FriendRequestItem)(nil),                     // 52: user.v1.FriendRequestItem
-	(*GetFriendRequestsResponse)(nil),             // 53: user.v1.GetFriendRequestsResponse
-	(*GetFriendsListRequest)(nil),                 // 54: user.v1.GetFriendsListRequest
-	(*GetFriendsListResponse)(nil),                // 55: user.v1.GetFriendsListResponse
+	(*GrantVKinoCoinsRequest)(nil),                // 18: user.v1.GrantVKinoCoinsRequest
+	(*GrantVKinoCoinsResponse)(nil),               // 19: user.v1.GrantVKinoCoinsResponse
+	(*UpdateProfileRequest)(nil),                  // 20: user.v1.UpdateProfileRequest
+	(*UpdateProfileResponse)(nil),                 // 21: user.v1.UpdateProfileResponse
+	(*SearchUsersByEmailRequest)(nil),             // 22: user.v1.SearchUsersByEmailRequest
+	(*UserSearchResult)(nil),                      // 23: user.v1.UserSearchResult
+	(*SearchUsersByEmailResponse)(nil),            // 24: user.v1.SearchUsersByEmailResponse
+	(*AddFriendRequest)(nil),                      // 25: user.v1.AddFriendRequest
+	(*AddFriendResponse)(nil),                     // 26: user.v1.AddFriendResponse
+	(*DeleteFriendRequest)(nil),                   // 27: user.v1.DeleteFriendRequest
+	(*DeleteFriendResponse)(nil),                  // 28: user.v1.DeleteFriendResponse
+	(*AddMovieToFavoritesRequest)(nil),            // 29: user.v1.AddMovieToFavoritesRequest
+	(*AddMovieToFavoritesResponse)(nil),           // 30: user.v1.AddMovieToFavoritesResponse
+	(*SetMovieRatingRequest)(nil),                 // 31: user.v1.SetMovieRatingRequest
+	(*SetMovieRatingResponse)(nil),                // 32: user.v1.SetMovieRatingResponse
+	(*SetMovieReviewRequest)(nil),                 // 33: user.v1.SetMovieReviewRequest
+	(*SetMovieReviewResponse)(nil),                // 34: user.v1.SetMovieReviewResponse
+	(*DeleteMovieReviewRequest)(nil),              // 35: user.v1.DeleteMovieReviewRequest
+	(*DeleteMovieReviewResponse)(nil),             // 36: user.v1.DeleteMovieReviewResponse
+	(*SetReviewReactionRequest)(nil),              // 37: user.v1.SetReviewReactionRequest
+	(*SetReviewReactionResponse)(nil),             // 38: user.v1.SetReviewReactionResponse
+	(*DeleteReviewReactionRequest)(nil),           // 39: user.v1.DeleteReviewReactionRequest
+	(*DeleteReviewReactionResponse)(nil),          // 40: user.v1.DeleteReviewReactionResponse
+	(*ToggleFavoriteRequest)(nil),                 // 41: user.v1.ToggleFavoriteRequest
+	(*ToggleFavoriteResponse)(nil),                // 42: user.v1.ToggleFavoriteResponse
+	(*GetFavoritesRequest)(nil),                   // 43: user.v1.GetFavoritesRequest
+	(*GetFavoritesResponse)(nil),                  // 44: user.v1.GetFavoritesResponse
+	(*SearchUsersRequest)(nil),                    // 45: user.v1.SearchUsersRequest
+	(*SearchUsersResponse)(nil),                   // 46: user.v1.SearchUsersResponse
+	(*SendFriendRequestRequest)(nil),              // 47: user.v1.SendFriendRequestRequest
+	(*SendFriendRequestResponse)(nil),             // 48: user.v1.SendFriendRequestResponse
+	(*RespondToFriendRequestRequest)(nil),         // 49: user.v1.RespondToFriendRequestRequest
+	(*RespondToFriendRequestResponse)(nil),        // 50: user.v1.RespondToFriendRequestResponse
+	(*DeleteOutgoingFriendRequestRequest)(nil),    // 51: user.v1.DeleteOutgoingFriendRequestRequest
+	(*DeleteOutgoingFriendRequestResponse)(nil),   // 52: user.v1.DeleteOutgoingFriendRequestResponse
+	(*GetFriendRequestsRequest)(nil),              // 53: user.v1.GetFriendRequestsRequest
+	(*FriendRequestItem)(nil),                     // 54: user.v1.FriendRequestItem
+	(*GetFriendRequestsResponse)(nil),             // 55: user.v1.GetFriendRequestsResponse
+	(*GetFriendsListRequest)(nil),                 // 56: user.v1.GetFriendsListRequest
+	(*GetFriendsListResponse)(nil),                // 57: user.v1.GetFriendsListResponse
 }
 var file_user_v1_user_proto_depIdxs = []int32{
 	10, // 0: user.v1.GetProfileResponse.vkino_coins_history:type_name -> user.v1.VKinoCoinsHistoryItem
@@ -3396,10 +3536,10 @@ var file_user_v1_user_proto_depIdxs = []int32{
 	10, // 4: user.v1.GetVKinoCoinsHistoryResponse.items:type_name -> user.v1.VKinoCoinsHistoryItem
 	5,  // 5: user.v1.ActivateSubscriptionResponse.subscription:type_name -> user.v1.SubscriptionInfo
 	5,  // 6: user.v1.BuySubscriptionWithVKinoCoinsResponse.subscription:type_name -> user.v1.SubscriptionInfo
-	21, // 7: user.v1.SearchUsersByEmailResponse.users:type_name -> user.v1.UserSearchResult
-	21, // 8: user.v1.SearchUsersResponse.users:type_name -> user.v1.UserSearchResult
-	52, // 9: user.v1.GetFriendRequestsResponse.requests:type_name -> user.v1.FriendRequestItem
-	21, // 10: user.v1.GetFriendsListResponse.friends:type_name -> user.v1.UserSearchResult
+	23, // 7: user.v1.SearchUsersByEmailResponse.users:type_name -> user.v1.UserSearchResult
+	23, // 8: user.v1.SearchUsersResponse.users:type_name -> user.v1.UserSearchResult
+	54, // 9: user.v1.GetFriendRequestsResponse.requests:type_name -> user.v1.FriendRequestItem
+	23, // 10: user.v1.GetFriendsListResponse.friends:type_name -> user.v1.UserSearchResult
 	0,  // 11: user.v1.UserService.GetProfile:input_type -> user.v1.GetProfileRequest
 	2,  // 12: user.v1.UserService.GetFriend:input_type -> user.v1.GetFriendRequest
 	4,  // 13: user.v1.UserService.GetSubscriptionCapabilities:input_type -> user.v1.GetSubscriptionCapabilitiesRequest
@@ -3407,51 +3547,53 @@ var file_user_v1_user_proto_depIdxs = []int32{
 	12, // 15: user.v1.UserService.ActivateSubscription:input_type -> user.v1.ActivateSubscriptionRequest
 	14, // 16: user.v1.UserService.BuySubscriptionWithVKinoCoins:input_type -> user.v1.BuySubscriptionWithVKinoCoinsRequest
 	16, // 17: user.v1.UserService.SpendVKinoCoins:input_type -> user.v1.SpendVKinoCoinsRequest
-	18, // 18: user.v1.UserService.UpdateProfile:input_type -> user.v1.UpdateProfileRequest
-	20, // 19: user.v1.UserService.SearchUsersByEmail:input_type -> user.v1.SearchUsersByEmailRequest
-	23, // 20: user.v1.UserService.AddFriend:input_type -> user.v1.AddFriendRequest
-	25, // 21: user.v1.UserService.DeleteFriend:input_type -> user.v1.DeleteFriendRequest
-	27, // 22: user.v1.UserService.AddMovieToFavorites:input_type -> user.v1.AddMovieToFavoritesRequest
-	29, // 23: user.v1.UserService.SetMovieRating:input_type -> user.v1.SetMovieRatingRequest
-	31, // 24: user.v1.UserService.SetMovieReview:input_type -> user.v1.SetMovieReviewRequest
-	33, // 25: user.v1.UserService.DeleteMovieReview:input_type -> user.v1.DeleteMovieReviewRequest
-	35, // 26: user.v1.UserService.SetReviewReaction:input_type -> user.v1.SetReviewReactionRequest
-	37, // 27: user.v1.UserService.DeleteReviewReaction:input_type -> user.v1.DeleteReviewReactionRequest
-	39, // 28: user.v1.UserService.ToggleFavorite:input_type -> user.v1.ToggleFavoriteRequest
-	41, // 29: user.v1.UserService.GetFavorites:input_type -> user.v1.GetFavoritesRequest
-	43, // 30: user.v1.UserService.SearchUsers:input_type -> user.v1.SearchUsersRequest
-	45, // 31: user.v1.UserService.SendFriendRequest:input_type -> user.v1.SendFriendRequestRequest
-	47, // 32: user.v1.UserService.RespondToFriendRequest:input_type -> user.v1.RespondToFriendRequestRequest
-	49, // 33: user.v1.UserService.DeleteOutgoingFriendRequest:input_type -> user.v1.DeleteOutgoingFriendRequestRequest
-	51, // 34: user.v1.UserService.GetFriendRequests:input_type -> user.v1.GetFriendRequestsRequest
-	54, // 35: user.v1.UserService.GetFriendsList:input_type -> user.v1.GetFriendsListRequest
-	1,  // 36: user.v1.UserService.GetProfile:output_type -> user.v1.GetProfileResponse
-	3,  // 37: user.v1.UserService.GetFriend:output_type -> user.v1.GetFriendResponse
-	8,  // 38: user.v1.UserService.GetSubscriptionCapabilities:output_type -> user.v1.GetSubscriptionCapabilitiesResponse
-	11, // 39: user.v1.UserService.GetVKinoCoinsHistory:output_type -> user.v1.GetVKinoCoinsHistoryResponse
-	13, // 40: user.v1.UserService.ActivateSubscription:output_type -> user.v1.ActivateSubscriptionResponse
-	15, // 41: user.v1.UserService.BuySubscriptionWithVKinoCoins:output_type -> user.v1.BuySubscriptionWithVKinoCoinsResponse
-	17, // 42: user.v1.UserService.SpendVKinoCoins:output_type -> user.v1.SpendVKinoCoinsResponse
-	19, // 43: user.v1.UserService.UpdateProfile:output_type -> user.v1.UpdateProfileResponse
-	22, // 44: user.v1.UserService.SearchUsersByEmail:output_type -> user.v1.SearchUsersByEmailResponse
-	24, // 45: user.v1.UserService.AddFriend:output_type -> user.v1.AddFriendResponse
-	26, // 46: user.v1.UserService.DeleteFriend:output_type -> user.v1.DeleteFriendResponse
-	28, // 47: user.v1.UserService.AddMovieToFavorites:output_type -> user.v1.AddMovieToFavoritesResponse
-	30, // 48: user.v1.UserService.SetMovieRating:output_type -> user.v1.SetMovieRatingResponse
-	32, // 49: user.v1.UserService.SetMovieReview:output_type -> user.v1.SetMovieReviewResponse
-	34, // 50: user.v1.UserService.DeleteMovieReview:output_type -> user.v1.DeleteMovieReviewResponse
-	36, // 51: user.v1.UserService.SetReviewReaction:output_type -> user.v1.SetReviewReactionResponse
-	38, // 52: user.v1.UserService.DeleteReviewReaction:output_type -> user.v1.DeleteReviewReactionResponse
-	40, // 53: user.v1.UserService.ToggleFavorite:output_type -> user.v1.ToggleFavoriteResponse
-	42, // 54: user.v1.UserService.GetFavorites:output_type -> user.v1.GetFavoritesResponse
-	44, // 55: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
-	46, // 56: user.v1.UserService.SendFriendRequest:output_type -> user.v1.SendFriendRequestResponse
-	48, // 57: user.v1.UserService.RespondToFriendRequest:output_type -> user.v1.RespondToFriendRequestResponse
-	50, // 58: user.v1.UserService.DeleteOutgoingFriendRequest:output_type -> user.v1.DeleteOutgoingFriendRequestResponse
-	53, // 59: user.v1.UserService.GetFriendRequests:output_type -> user.v1.GetFriendRequestsResponse
-	55, // 60: user.v1.UserService.GetFriendsList:output_type -> user.v1.GetFriendsListResponse
-	36, // [36:61] is the sub-list for method output_type
-	11, // [11:36] is the sub-list for method input_type
+	18, // 18: user.v1.UserService.GrantVKinoCoins:input_type -> user.v1.GrantVKinoCoinsRequest
+	20, // 19: user.v1.UserService.UpdateProfile:input_type -> user.v1.UpdateProfileRequest
+	22, // 20: user.v1.UserService.SearchUsersByEmail:input_type -> user.v1.SearchUsersByEmailRequest
+	25, // 21: user.v1.UserService.AddFriend:input_type -> user.v1.AddFriendRequest
+	27, // 22: user.v1.UserService.DeleteFriend:input_type -> user.v1.DeleteFriendRequest
+	29, // 23: user.v1.UserService.AddMovieToFavorites:input_type -> user.v1.AddMovieToFavoritesRequest
+	31, // 24: user.v1.UserService.SetMovieRating:input_type -> user.v1.SetMovieRatingRequest
+	33, // 25: user.v1.UserService.SetMovieReview:input_type -> user.v1.SetMovieReviewRequest
+	35, // 26: user.v1.UserService.DeleteMovieReview:input_type -> user.v1.DeleteMovieReviewRequest
+	37, // 27: user.v1.UserService.SetReviewReaction:input_type -> user.v1.SetReviewReactionRequest
+	39, // 28: user.v1.UserService.DeleteReviewReaction:input_type -> user.v1.DeleteReviewReactionRequest
+	41, // 29: user.v1.UserService.ToggleFavorite:input_type -> user.v1.ToggleFavoriteRequest
+	43, // 30: user.v1.UserService.GetFavorites:input_type -> user.v1.GetFavoritesRequest
+	45, // 31: user.v1.UserService.SearchUsers:input_type -> user.v1.SearchUsersRequest
+	47, // 32: user.v1.UserService.SendFriendRequest:input_type -> user.v1.SendFriendRequestRequest
+	49, // 33: user.v1.UserService.RespondToFriendRequest:input_type -> user.v1.RespondToFriendRequestRequest
+	51, // 34: user.v1.UserService.DeleteOutgoingFriendRequest:input_type -> user.v1.DeleteOutgoingFriendRequestRequest
+	53, // 35: user.v1.UserService.GetFriendRequests:input_type -> user.v1.GetFriendRequestsRequest
+	56, // 36: user.v1.UserService.GetFriendsList:input_type -> user.v1.GetFriendsListRequest
+	1,  // 37: user.v1.UserService.GetProfile:output_type -> user.v1.GetProfileResponse
+	3,  // 38: user.v1.UserService.GetFriend:output_type -> user.v1.GetFriendResponse
+	8,  // 39: user.v1.UserService.GetSubscriptionCapabilities:output_type -> user.v1.GetSubscriptionCapabilitiesResponse
+	11, // 40: user.v1.UserService.GetVKinoCoinsHistory:output_type -> user.v1.GetVKinoCoinsHistoryResponse
+	13, // 41: user.v1.UserService.ActivateSubscription:output_type -> user.v1.ActivateSubscriptionResponse
+	15, // 42: user.v1.UserService.BuySubscriptionWithVKinoCoins:output_type -> user.v1.BuySubscriptionWithVKinoCoinsResponse
+	17, // 43: user.v1.UserService.SpendVKinoCoins:output_type -> user.v1.SpendVKinoCoinsResponse
+	19, // 44: user.v1.UserService.GrantVKinoCoins:output_type -> user.v1.GrantVKinoCoinsResponse
+	21, // 45: user.v1.UserService.UpdateProfile:output_type -> user.v1.UpdateProfileResponse
+	24, // 46: user.v1.UserService.SearchUsersByEmail:output_type -> user.v1.SearchUsersByEmailResponse
+	26, // 47: user.v1.UserService.AddFriend:output_type -> user.v1.AddFriendResponse
+	28, // 48: user.v1.UserService.DeleteFriend:output_type -> user.v1.DeleteFriendResponse
+	30, // 49: user.v1.UserService.AddMovieToFavorites:output_type -> user.v1.AddMovieToFavoritesResponse
+	32, // 50: user.v1.UserService.SetMovieRating:output_type -> user.v1.SetMovieRatingResponse
+	34, // 51: user.v1.UserService.SetMovieReview:output_type -> user.v1.SetMovieReviewResponse
+	36, // 52: user.v1.UserService.DeleteMovieReview:output_type -> user.v1.DeleteMovieReviewResponse
+	38, // 53: user.v1.UserService.SetReviewReaction:output_type -> user.v1.SetReviewReactionResponse
+	40, // 54: user.v1.UserService.DeleteReviewReaction:output_type -> user.v1.DeleteReviewReactionResponse
+	42, // 55: user.v1.UserService.ToggleFavorite:output_type -> user.v1.ToggleFavoriteResponse
+	44, // 56: user.v1.UserService.GetFavorites:output_type -> user.v1.GetFavoritesResponse
+	46, // 57: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
+	48, // 58: user.v1.UserService.SendFriendRequest:output_type -> user.v1.SendFriendRequestResponse
+	50, // 59: user.v1.UserService.RespondToFriendRequest:output_type -> user.v1.RespondToFriendRequestResponse
+	52, // 60: user.v1.UserService.DeleteOutgoingFriendRequest:output_type -> user.v1.DeleteOutgoingFriendRequestResponse
+	55, // 61: user.v1.UserService.GetFriendRequests:output_type -> user.v1.GetFriendRequestsResponse
+	57, // 62: user.v1.UserService.GetFriendsList:output_type -> user.v1.GetFriendsListResponse
+	37, // [37:63] is the sub-list for method output_type
+	11, // [11:37] is the sub-list for method input_type
 	11, // [11:11] is the sub-list for extension type_name
 	11, // [11:11] is the sub-list for extension extendee
 	0,  // [0:11] is the sub-list for field type_name
@@ -3465,15 +3607,15 @@ func file_user_v1_user_proto_init() {
 	file_user_v1_user_proto_msgTypes[5].OneofWrappers = []any{}
 	file_user_v1_user_proto_msgTypes[6].OneofWrappers = []any{}
 	file_user_v1_user_proto_msgTypes[7].OneofWrappers = []any{}
-	file_user_v1_user_proto_msgTypes[31].OneofWrappers = []any{}
-	file_user_v1_user_proto_msgTypes[32].OneofWrappers = []any{}
+	file_user_v1_user_proto_msgTypes[33].OneofWrappers = []any{}
+	file_user_v1_user_proto_msgTypes[34].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_v1_user_proto_rawDesc), len(file_user_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   56,
+			NumMessages:   58,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

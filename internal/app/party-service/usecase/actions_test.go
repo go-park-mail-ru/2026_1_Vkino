@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
 	"github.com/stretchr/testify/require"
@@ -179,8 +180,8 @@ func TestVoteRoomPollSpendsCoinsAndUpdatesPoll(t *testing.T) {
 	require.Equal(t, int64(100), spender.pollID)
 	require.Equal(t, int64(1001), spender.optionID)
 	require.Equal(t, int64(2), spender.userID)
-	require.Equal(t, int64(1), poll.Options[0].VotesCount)
-	require.Equal(t, int64(25), poll.Options[0].CoinsTotal)
+	require.Equal(t, int64(2), poll.Options[0].VotesCount)
+	require.Equal(t, int64(50), poll.Options[0].CoinsTotal)
 	require.Len(t, broker.events, 1)
 	require.NotNil(t, broker.events[0].Vote)
 	require.Equal(t, int32(25), broker.events[0].Vote.CoinsAmount)
@@ -204,6 +205,31 @@ func TestVoteRoomPollStopsWhenCoinsSpendFails(t *testing.T) {
 	require.ErrorIs(t, err, domain.ErrInsufficientVKinoCoins)
 	require.Empty(t, repo.savedVotes)
 	require.Empty(t, broker.events)
+}
+
+func TestResolveRoomPollRewardsWinnersAndClosesPoll(t *testing.T) {
+	t.Parallel()
+
+	repo := newVotePollRepo()
+	broker := &playbackActionBroker{}
+	spender := &votePollCoinsSpender{}
+	svc := New(repo, broker, nil, spender)
+
+	poll, err := svc.ResolveRoomPoll(context.Background(), 1, domain.ResolveRoomPollRequest{
+		RoomID:   5,
+		PollID:   100,
+		OptionID: 1001,
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, poll.ClosedAt)
+	require.NotNil(t, poll.CorrectOptionID)
+	require.Equal(t, int64(1001), *poll.CorrectOptionID)
+	require.Len(t, spender.rewards, 1)
+	require.Equal(t, int64(2), spender.rewards[0].userID)
+	require.Equal(t, int32(40), spender.rewards[0].coinsAmount)
+	require.Len(t, broker.events, 1)
+	require.Equal(t, "poll_resolved", broker.events[0].Type)
 }
 
 func newPlaybackActionRepo() *playbackActionRepo {
@@ -257,8 +283,8 @@ func newVotePollRepo() *votePollRepo {
 					Question:        "Who wins?",
 					CreatedByUserID: 1,
 					Options: []domain.PollOption{
-						{ID: 1001, Title: "A"},
-						{ID: 1002, Title: "B"},
+						{ID: 1001, Title: "A", VotesCount: 1, CoinsTotal: 25},
+						{ID: 1002, Title: "B", VotesCount: 1, CoinsTotal: 15},
 					},
 				},
 			},
@@ -328,6 +354,14 @@ func (r *playbackActionRepo) SaveVote(context.Context, domain.PollVote) error {
 	return domain.ErrNotImplemented
 }
 
+func (r *playbackActionRepo) GetPollOptionStakes(context.Context, int64, int64) ([]domain.PollOptionStake, error) {
+	return nil, domain.ErrNotImplemented
+}
+
+func (r *playbackActionRepo) ResolvePoll(context.Context, int64, int64, int64, int64) (*domain.Poll, error) {
+	return nil, domain.ErrNotImplemented
+}
+
 func (r *votePollRepo) GetOverview(context.Context, int64) (domain.OverviewResponse, error) {
 	return domain.OverviewResponse{}, nil
 }
@@ -390,6 +424,46 @@ func (r *votePollRepo) SaveVote(_ context.Context, vote domain.PollVote) error {
 	return nil
 }
 
+func (r *votePollRepo) GetPollOptionStakes(_ context.Context, pollID,
+	optionID int64) ([]domain.PollOptionStake, error) {
+	if r.room == nil {
+		return nil, domain.ErrInvalidPoll
+	}
+
+	switch {
+	case pollID == 100 && optionID == 1001:
+		return []domain.PollOptionStake{{UserID: 2, OptionID: 1001, CoinsAmount: 25}}, nil
+	case pollID == 100 && optionID == 1002:
+		return []domain.PollOptionStake{{UserID: 3, OptionID: 1002, CoinsAmount: 15}}, nil
+	default:
+		return nil, nil
+	}
+}
+
+func (r *votePollRepo) ResolvePoll(_ context.Context, roomID, pollID, optionID,
+	resolvedByUserID int64) (*domain.Poll, error) {
+	if r.room == nil || r.room.ID != roomID {
+		return nil, domain.ErrRoomNotFound
+	}
+
+	for pollIdx := range r.room.Polls {
+		if r.room.Polls[pollIdx].ID != pollID {
+			continue
+		}
+
+		now := time.Now().UTC()
+		r.room.Polls[pollIdx].ClosedAt = &now
+		r.room.Polls[pollIdx].CorrectOptionID = &optionID
+		r.room.Polls[pollIdx].ResolvedByUserID = &resolvedByUserID
+
+		pollCopy := r.room.Polls[pollIdx]
+
+		return &pollCopy, nil
+	}
+
+	return nil, domain.ErrInvalidPoll
+}
+
 func (r *votePollRepo) TouchRoom(context.Context, int64) error {
 	return nil
 }
@@ -411,6 +485,15 @@ type votePollCoinsSpender struct {
 	optionID    int64
 	coinsAmount int32
 	err         error
+	rewards     []pollRewardCall
+}
+
+type pollRewardCall struct {
+	userID      int64
+	roomID      int64
+	pollID      int64
+	optionID    int64
+	coinsAmount int32
 }
 
 func (s *votePollCoinsSpender) SpendForPollVote(
@@ -423,6 +506,22 @@ func (s *votePollCoinsSpender) SpendForPollVote(
 	s.pollID = pollID
 	s.optionID = optionID
 	s.coinsAmount = coinsAmount
+
+	return s.err
+}
+
+func (s *votePollCoinsSpender) RewardForPollWin(
+	_ context.Context,
+	userID, roomID, pollID, optionID int64,
+	coinsAmount int32,
+) error {
+	s.rewards = append(s.rewards, pollRewardCall{
+		userID:      userID,
+		roomID:      roomID,
+		pollID:      pollID,
+		optionID:    optionID,
+		coinsAmount: coinsAmount,
+	})
 
 	return s.err
 }

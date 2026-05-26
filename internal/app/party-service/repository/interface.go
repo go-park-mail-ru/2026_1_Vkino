@@ -32,6 +32,11 @@ type PartyMessagingRepo interface {
 type PartyPollRepo interface {
 	SavePoll(ctx context.Context, poll domain.Poll) (*domain.Poll, error)
 	SaveVote(ctx context.Context, vote domain.PollVote) error
+	GetPollOptionStakes(ctx context.Context, pollID, optionID int64) ([]domain.PollOptionStake, error)
+	ResolvePoll(
+		ctx context.Context,
+		roomID, pollID, optionID, resolvedByUserID int64,
+	) (*domain.Poll, error)
 }
 
 type PartyRepo interface {

@@ -142,6 +142,14 @@ func (c grpcUserClient) SpendVKinoCoins(
 	return c.user.SpendVKinoCoins(ctx, in, opts...)
 }
 
+func (c grpcUserClient) GrantVKinoCoins(
+	ctx context.Context,
+	in *userv1.GrantVKinoCoinsRequest,
+	opts ...grpc.CallOption,
+) (*userv1.GrantVKinoCoinsResponse, error) {
+	return c.user.GrantVKinoCoins(ctx, in, opts...)
+}
+
 func (c grpcUserClient) SearchUsersByEmail(
 	ctx context.Context,
 	in *userv1.SearchUsersByEmailRequest,
@@ -591,6 +599,7 @@ func newUserProfileHandler(cfg Config, userClient UserClient) http.HandlerFunc {
 				"created_at":        item.GetCreatedAt(),
 			})
 		}
+
 		body["vkino_coins_history"] = history
 
 		if resp.GetBirthdate() != "" {

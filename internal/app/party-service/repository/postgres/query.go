@@ -161,6 +161,9 @@ const (
 			b.bet_title,
 			b.user_creator_id,
 			b.created_at,
+			b.resolved_at,
+			coalesce(b.resolved_bet_variant_id, 0),
+			coalesce(b.resolved_by_user_id, 0),
 			v.id,
 			v.bet_variant,
 			coalesce(vote_counts.votes_count, 0),
@@ -177,6 +180,18 @@ const (
 		) vote_counts on vote_counts.bet_variant_id = v.id
 		where b.vkino_room_id = $1
 		order by b.created_at asc, b.id asc, v.id asc
+	`
+
+	sqlGetPollOptionStakes = `
+		select
+			a.user_id,
+			a.bet_variant_id,
+			a.vkino_coins_count
+		from vkino_room_chat_bet_answer a
+		join vkino_room_chat_bet_variant v on v.id = a.bet_variant_id
+		where v.vkino_room_chat_bet_id = $1
+			and a.bet_variant_id = $2
+		order by a.user_id, a.bet_variant_id
 	`
 
 	sqlCreateRoom = `
@@ -312,5 +327,17 @@ const (
 		update vkino_room
 		set updated_at = now()
 		where id = $1
+	`
+
+	sqlResolvePoll = `
+		update vkino_room_chat_bet
+		set
+			resolved_bet_variant_id = $3,
+			resolved_by_user_id = $4,
+			resolved_at = now(),
+			updated_at = now()
+		where id = $1
+			and vkino_room_id = $2
+			and resolved_at is null
 	`
 )

@@ -26,6 +26,7 @@ type PartyRealtimeUsecase interface {
 	SendRoomMessage(ctx context.Context, userID int64, req domain.SendRoomMessageRequest) (domain.RoomMessage, error)
 	CreateRoomPoll(ctx context.Context, userID int64, req domain.CreateRoomPollRequest) (domain.Poll, error)
 	VoteRoomPoll(ctx context.Context, userID int64, req domain.VoteRoomPollRequest) (domain.PollVote, domain.Poll, error)
+	ResolveRoomPoll(ctx context.Context, userID int64, req domain.ResolveRoomPollRequest) (domain.Poll, error)
 	SubscribeRoom(
 		ctx context.Context,
 		userID int64,

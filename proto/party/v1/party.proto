@@ -16,6 +16,7 @@ service PartyService {
   rpc SendRoomMessage(SendRoomMessageRequest) returns (SendRoomMessageResponse);
   rpc CreateRoomPoll(CreateRoomPollRequest) returns (CreateRoomPollResponse);
   rpc VoteRoomPoll(VoteRoomPollRequest) returns (VoteRoomPollResponse);
+  rpc ResolveRoomPoll(ResolveRoomPollRequest) returns (ResolveRoomPollResponse);
 
   rpc SubscribeRoom(SubscribeRoomRequest) returns (stream RoomEvent);
 }
@@ -130,6 +131,16 @@ message VoteRoomPollResponse {
   Poll poll = 2;
 }
 
+message ResolveRoomPollRequest {
+  int64 room_id = 1;
+  int64 poll_id = 2;
+  int64 option_id = 3;
+}
+
+message ResolveRoomPollResponse {
+  Poll poll = 1;
+}
+
 message SubscribeRoomRequest {
   int64 room_id = 1;
 }
@@ -195,6 +206,8 @@ message Poll {
   int64 created_by_user_id = 5;
   string created_at = 6;
   string closed_at = 7;
+  int64 correct_option_id = 8;
+  int64 resolved_by_user_id = 9;
 }
 
 message PollOption {

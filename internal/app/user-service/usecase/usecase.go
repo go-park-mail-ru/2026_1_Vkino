@@ -46,6 +46,14 @@ type UserSubscriptionPaymentUsecase interface {
 		operationType string,
 		description string,
 	) (domain.VKinoCoinsSpend, error)
+	GrantVKinoCoins(
+		ctx context.Context,
+		userID int64,
+		coinsAmount int32,
+		operationType string,
+		description string,
+		referenceKey string,
+	) (domain.VKinoCoinsGrant, error)
 }
 
 type UserMovieUsecase interface {

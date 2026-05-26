@@ -167,6 +167,21 @@ const (
 		values ($1, $2, $3, $4, current_date)
 	`
 
+	sqlCreateVKinoCoinsGrantHistory = `
+		insert into vkino_coins_history (
+			user_id,
+			vkino_coins_count,
+			operation_type,
+			description,
+			operation_date,
+			reference_key
+		)
+		values ($1, $2, $3, $4, current_date, $5)
+		on conflict (reference_key)
+			where reference_key is not null
+		do nothing
+	`
+
 	sqlGetRoomsCreatedThisMonth = `
 		select count(*)::int
 		from vkino_room

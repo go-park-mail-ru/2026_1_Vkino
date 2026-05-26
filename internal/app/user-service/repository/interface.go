@@ -52,6 +52,14 @@ type UserCoinsRepo interface {
 		operationType string,
 		description string,
 	) (int32, error)
+	GrantVKinoCoins(
+		ctx context.Context,
+		userID int64,
+		coinsAmount int32,
+		operationType string,
+		description string,
+		referenceKey string,
+	) (int32, int32, error)
 	BuySubscriptionWithVKinoCoins(
 		ctx context.Context,
 		userID int64,

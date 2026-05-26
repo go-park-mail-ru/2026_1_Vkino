@@ -19,6 +19,7 @@ var (
 	ErrInvalidMessage         = errors.New("invalid message")
 	ErrInvalidPoll            = errors.New("invalid poll")
 	ErrInvalidPollOption      = errors.New("invalid poll option")
+	ErrPollAlreadyResolved    = errors.New("poll already resolved")
 	ErrInsufficientVKinoCoins = errors.New("insufficient vkino coins")
 	ErrNotImplemented         = errors.New("not implemented")
 	ErrInternal               = errors.New("internal error")

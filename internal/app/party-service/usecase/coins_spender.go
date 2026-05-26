@@ -19,6 +19,11 @@ type CoinsSpender interface {
 		userID, roomID, pollID, optionID int64,
 		coinsAmount int32,
 	) error
+	RewardForPollWin(
+		ctx context.Context,
+		userID, roomID, pollID, optionID int64,
+		coinsAmount int32,
+	) error
 }
 
 type userServiceCoinsSpender struct {
@@ -66,4 +71,41 @@ func (s *userServiceCoinsSpender) SpendForPollVote(
 	}
 
 	return fmt.Errorf("spend vkino coins for poll vote: %w", err)
+}
+
+func (s *userServiceCoinsSpender) RewardForPollWin(
+	ctx context.Context,
+	userID, roomID, pollID, optionID int64,
+	coinsAmount int32,
+) error {
+	if s == nil || s.client == nil || coinsAmount <= 0 {
+		return nil
+	}
+
+	if auth, err := authctx.FromContext(ctx); err == nil && auth.Authorization != "" {
+		ctx = authctx.AppendOutgoing(ctx, auth.Authorization)
+	}
+
+	description := fmt.Sprintf(
+		"Выигрыш %d VKino coins в опросе %d комнаты %d за вариант %d",
+		coinsAmount,
+		pollID,
+		roomID,
+		optionID,
+	)
+
+	referenceKey := fmt.Sprintf("poll-win:%d:%d:%d", pollID, optionID, userID)
+
+	_, err := s.client.GrantVKinoCoins(ctx, &userv1.GrantVKinoCoinsRequest{
+		UserId:        userID,
+		CoinsAmount:   coinsAmount,
+		OperationType: "bet_win",
+		Description:   description,
+		ReferenceKey:  referenceKey,
+	})
+	if err != nil {
+		return fmt.Errorf("grant vkino coins for poll win: %w", err)
+	}
+
+	return nil
 }

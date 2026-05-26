@@ -241,7 +241,8 @@ func (r *roomUsecaseRepo) GetRoomByID(_ context.Context, roomID int64) (*domain.
 	return &roomCopy, nil
 }
 
-func (r *roomUsecaseRepo) CreateRoom(_ context.Context, userID int64, req domain.CreateRoomRequest) (*domain.Room, error) {
+func (r *roomUsecaseRepo) CreateRoom(_ context.Context, userID int64,
+	req domain.CreateRoomRequest) (*domain.Room, error) {
 	r.createRoomCalled = true
 	r.createdRoomReq = req
 
@@ -326,6 +327,14 @@ func (r *roomUsecaseRepo) SavePoll(context.Context, domain.Poll) (*domain.Poll, 
 
 func (r *roomUsecaseRepo) SaveVote(context.Context, domain.PollVote) error {
 	return domain.ErrNotImplemented
+}
+
+func (r *roomUsecaseRepo) GetPollOptionStakes(context.Context, int64, int64) ([]domain.PollOptionStake, error) {
+	return nil, domain.ErrNotImplemented
+}
+
+func (r *roomUsecaseRepo) ResolvePoll(context.Context, int64, int64, int64, int64) (*domain.Poll, error) {
+	return nil, domain.ErrNotImplemented
 }
 
 func (r *roomUsecaseRepo) TouchRoom(context.Context, int64) error {

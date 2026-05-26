@@ -352,6 +352,57 @@ func (r *UserRepo) SpendVKinoCoins(
 	return balance - coinsAmount, nil
 }
 
+func (r *UserRepo) GrantVKinoCoins(
+	ctx context.Context,
+	userID int64,
+	coinsAmount int32,
+	operationType string,
+	description string,
+	referenceKey string,
+) (int32, int32, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return 0, 0, fmt.Errorf("begin grant vkino coins tx: %w", err)
+	}
+
+	defer func() {
+		ignoreRollbackError(tx.Rollback(ctx))
+	}()
+
+	if err = lockUserForCoinsPurchase(ctx, tx, userID); err != nil {
+		return 0, 0, err
+	}
+
+	tag, err := tx.Exec(
+		ctx,
+		sqlCreateVKinoCoinsGrantHistory,
+		userID,
+		coinsAmount,
+		operationType,
+		description,
+		referenceKey,
+	)
+	if err != nil {
+		return 0, 0, fmt.Errorf("create vkino coins grant history: %w", err)
+	}
+
+	balance, err := getVKinoCoinsBalanceTx(ctx, tx, userID)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return 0, 0, fmt.Errorf("commit grant vkino coins tx: %w", err)
+	}
+
+	coinsGranted := int32(0)
+	if tag.RowsAffected() > 0 {
+		coinsGranted = coinsAmount
+	}
+
+	return coinsGranted, balance, nil
+}
+
 func (r *UserRepo) BuySubscriptionWithVKinoCoins(
 	ctx context.Context,
 	userID int64,

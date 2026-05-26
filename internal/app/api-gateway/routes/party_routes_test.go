@@ -163,6 +163,12 @@ func (s *partyClientStub) VoteRoomPoll(context.Context, *partyv1.VoteRoomPollReq
 	panic("unexpected call")
 }
 
+func (s *partyClientStub) ResolveRoomPoll(context.Context, *partyv1.ResolveRoomPollRequest,
+	...grpc.CallOption,
+) (*partyv1.ResolveRoomPollResponse, error) {
+	panic("unexpected call")
+}
+
 func (s *partyClientStub) SubscribeRoom(context.Context, *partyv1.SubscribeRoomRequest,
 	...grpc.CallOption,
 ) (grpc.ServerStreamingClient[partyv1.RoomEvent], error) {

@@ -73,3 +73,8 @@ type VKinoCoinsSpend struct {
 	CoinsSpent        int32
 	VKinoCoinsBalance int32
 }
+
+type VKinoCoinsGrant struct {
+	CoinsGranted      int32
+	VKinoCoinsBalance int32
+}

@@ -252,6 +252,29 @@ func (s *Server) VoteRoomPoll(
 	}, nil
 }
 
+func (s *Server) ResolveRoomPoll(
+	ctx context.Context,
+	req *partyv1.ResolveRoomPollRequest,
+) (*partyv1.ResolveRoomPollResponse, error) {
+	ctx, authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	poll, err := s.usecase.ResolveRoomPoll(ctx, authCtx.UserID, domain.ResolveRoomPollRequest{
+		RoomID:   req.GetRoomId(),
+		PollID:   req.GetPollId(),
+		OptionID: req.GetOptionId(),
+	})
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &partyv1.ResolveRoomPollResponse{
+		Poll: toProtoPoll(poll),
+	}, nil
+}
+
 func (s *Server) SubscribeRoom(
 	req *partyv1.SubscribeRoomRequest,
 	stream grpc.ServerStreamingServer[partyv1.RoomEvent],
@@ -403,6 +426,14 @@ func toProtoPoll(item domain.Poll) *partyv1.Poll {
 		CreatedAt:       formatTime(item.CreatedAt),
 		ClosedAt:        formatTimePtr(item.ClosedAt),
 		Options:         make([]*partyv1.PollOption, 0, len(item.Options)),
+	}
+
+	if item.CorrectOptionID != nil {
+		result.CorrectOptionId = *item.CorrectOptionID
+	}
+
+	if item.ResolvedByUserID != nil {
+		result.ResolvedByUserId = *item.ResolvedByUserID
 	}
 
 	for _, option := range item.Options {

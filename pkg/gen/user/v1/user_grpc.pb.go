@@ -26,6 +26,7 @@ const (
 	UserService_ActivateSubscription_FullMethodName          = "/user.v1.UserService/ActivateSubscription"
 	UserService_BuySubscriptionWithVKinoCoins_FullMethodName = "/user.v1.UserService/BuySubscriptionWithVKinoCoins"
 	UserService_SpendVKinoCoins_FullMethodName               = "/user.v1.UserService/SpendVKinoCoins"
+	UserService_GrantVKinoCoins_FullMethodName               = "/user.v1.UserService/GrantVKinoCoins"
 	UserService_UpdateProfile_FullMethodName                 = "/user.v1.UserService/UpdateProfile"
 	UserService_SearchUsersByEmail_FullMethodName            = "/user.v1.UserService/SearchUsersByEmail"
 	UserService_AddFriend_FullMethodName                     = "/user.v1.UserService/AddFriend"
@@ -57,6 +58,7 @@ type UserServiceClient interface {
 	ActivateSubscription(ctx context.Context, in *ActivateSubscriptionRequest, opts ...grpc.CallOption) (*ActivateSubscriptionResponse, error)
 	BuySubscriptionWithVKinoCoins(ctx context.Context, in *BuySubscriptionWithVKinoCoinsRequest, opts ...grpc.CallOption) (*BuySubscriptionWithVKinoCoinsResponse, error)
 	SpendVKinoCoins(ctx context.Context, in *SpendVKinoCoinsRequest, opts ...grpc.CallOption) (*SpendVKinoCoinsResponse, error)
+	GrantVKinoCoins(ctx context.Context, in *GrantVKinoCoinsRequest, opts ...grpc.CallOption) (*GrantVKinoCoinsResponse, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
 	SearchUsersByEmail(ctx context.Context, in *SearchUsersByEmailRequest, opts ...grpc.CallOption) (*SearchUsersByEmailResponse, error)
 	AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*AddFriendResponse, error)
@@ -149,6 +151,16 @@ func (c *userServiceClient) SpendVKinoCoins(ctx context.Context, in *SpendVKinoC
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SpendVKinoCoinsResponse)
 	err := c.cc.Invoke(ctx, UserService_SpendVKinoCoins_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GrantVKinoCoins(ctx context.Context, in *GrantVKinoCoinsRequest, opts ...grpc.CallOption) (*GrantVKinoCoinsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GrantVKinoCoinsResponse)
+	err := c.cc.Invoke(ctx, UserService_GrantVKinoCoins_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -346,6 +358,7 @@ type UserServiceServer interface {
 	ActivateSubscription(context.Context, *ActivateSubscriptionRequest) (*ActivateSubscriptionResponse, error)
 	BuySubscriptionWithVKinoCoins(context.Context, *BuySubscriptionWithVKinoCoinsRequest) (*BuySubscriptionWithVKinoCoinsResponse, error)
 	SpendVKinoCoins(context.Context, *SpendVKinoCoinsRequest) (*SpendVKinoCoinsResponse, error)
+	GrantVKinoCoins(context.Context, *GrantVKinoCoinsRequest) (*GrantVKinoCoinsResponse, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
 	SearchUsersByEmail(context.Context, *SearchUsersByEmailRequest) (*SearchUsersByEmailResponse, error)
 	AddFriend(context.Context, *AddFriendRequest) (*AddFriendResponse, error)
@@ -394,6 +407,9 @@ func (UnimplementedUserServiceServer) BuySubscriptionWithVKinoCoins(context.Cont
 }
 func (UnimplementedUserServiceServer) SpendVKinoCoins(context.Context, *SpendVKinoCoinsRequest) (*SpendVKinoCoinsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SpendVKinoCoins not implemented")
+}
+func (UnimplementedUserServiceServer) GrantVKinoCoins(context.Context, *GrantVKinoCoinsRequest) (*GrantVKinoCoinsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GrantVKinoCoins not implemented")
 }
 func (UnimplementedUserServiceServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateProfile not implemented")
@@ -592,6 +608,24 @@ func _UserService_SpendVKinoCoins_Handler(srv interface{}, ctx context.Context, 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).SpendVKinoCoins(ctx, req.(*SpendVKinoCoinsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GrantVKinoCoins_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GrantVKinoCoinsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GrantVKinoCoins(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GrantVKinoCoins_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GrantVKinoCoins(ctx, req.(*GrantVKinoCoinsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -954,6 +988,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SpendVKinoCoins",
 			Handler:    _UserService_SpendVKinoCoins_Handler,
+		},
+		{
+			MethodName: "GrantVKinoCoins",
+			Handler:    _UserService_GrantVKinoCoins_Handler,
 		},
 		{
 			MethodName: "UpdateProfile",

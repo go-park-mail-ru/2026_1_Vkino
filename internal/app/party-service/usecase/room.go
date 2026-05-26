@@ -191,6 +191,7 @@ func (s *service) CreateRoom(
 	if !ok {
 		return domain.RoomResponse{}, domain.ErrInvalidVisibility
 	}
+
 	req.Visibility = visibility
 
 	if err := s.ensureRoomCreationAllowed(ctx, userID); err != nil {

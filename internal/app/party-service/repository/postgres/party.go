@@ -317,6 +317,67 @@ func (r *PartyRepo) SaveVote(ctx context.Context, vote domain.PollVote) error {
 	return nil
 }
 
+func (r *PartyRepo) GetPollOptionStakes(
+	ctx context.Context,
+	pollID, optionID int64,
+) ([]domain.PollOptionStake, error) {
+	rows, err := r.db.Query(ctx, sqlGetPollOptionStakes, pollID, optionID)
+	if err != nil {
+		return nil, fmt.Errorf("get poll option stakes: %w", err)
+	}
+	defer rows.Close()
+
+	stakes := make([]domain.PollOptionStake, 0)
+
+	for rows.Next() {
+		var stake domain.PollOptionStake
+		if err = rows.Scan(&stake.UserID, &stake.OptionID, &stake.CoinsAmount); err != nil {
+			return nil, fmt.Errorf("scan poll option stake: %w", err)
+		}
+
+		stakes = append(stakes, stake)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate poll option stakes: %w", err)
+	}
+
+	return stakes, nil
+}
+
+func (r *PartyRepo) ResolvePoll(
+	ctx context.Context,
+	roomID, pollID, optionID, resolvedByUserID int64,
+) (*domain.Poll, error) {
+	tag, err := r.db.Exec(ctx, sqlResolvePoll, pollID, roomID, optionID, resolvedByUserID)
+	if err != nil {
+		return nil, fmt.Errorf("resolve poll: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return nil, domain.ErrPollAlreadyResolved
+	}
+
+	if err = r.TouchRoom(ctx, roomID); err != nil {
+		return nil, err
+	}
+
+	room, err := r.GetRoomByID(ctx, roomID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, poll := range room.Polls {
+		if poll.ID == pollID {
+			pollCopy := poll
+
+			return &pollCopy, nil
+		}
+	}
+
+	return nil, domain.ErrInvalidPoll
+}
+
 func (r *PartyRepo) populateRoomDetails(ctx context.Context, room *domain.Room, roomID int64) error {
 	members, err := r.getRoomMembers(ctx, roomID)
 	if err != nil {
@@ -496,11 +557,14 @@ func (r *PartyRepo) getRoomPolls(ctx context.Context, roomID int64) ([]domain.Po
 
 	for rows.Next() {
 		var (
-			poll       domain.Poll
-			optionID   sql.NullInt64
-			optionText sql.NullString
-			votesCount sql.NullInt64
-			coinsTotal sql.NullInt64
+			poll             domain.Poll
+			resolvedAt       sql.NullTime
+			correctOptionID  sql.NullInt64
+			resolvedByUserID sql.NullInt64
+			optionID         sql.NullInt64
+			optionText       sql.NullString
+			votesCount       sql.NullInt64
+			coinsTotal       sql.NullInt64
 		)
 
 		if err = rows.Scan(
@@ -509,12 +573,30 @@ func (r *PartyRepo) getRoomPolls(ctx context.Context, roomID int64) ([]domain.Po
 			&poll.Question,
 			&poll.CreatedByUserID,
 			&poll.CreatedAt,
+			&resolvedAt,
+			&correctOptionID,
+			&resolvedByUserID,
 			&optionID,
 			&optionText,
 			&votesCount,
 			&coinsTotal,
 		); err != nil {
 			return nil, fmt.Errorf("scan room poll: %w", err)
+		}
+
+		if resolvedAt.Valid {
+			value := resolvedAt.Time
+			poll.ClosedAt = &value
+		}
+
+		if correctOptionID.Valid && correctOptionID.Int64 > 0 {
+			value := correctOptionID.Int64
+			poll.CorrectOptionID = &value
+		}
+
+		if resolvedByUserID.Valid && resolvedByUserID.Int64 > 0 {
+			value := resolvedByUserID.Int64
+			poll.ResolvedByUserID = &value
 		}
 
 		existing := ensureRoomPoll(pollMap, &order, poll)
@@ -564,6 +646,7 @@ func appendRoomPollOption(
 	if votesCount.Valid {
 		option.VotesCount = votesCount.Int64
 	}
+
 	if coinsTotal.Valid {
 		option.CoinsTotal = coinsTotal.Int64
 	}
