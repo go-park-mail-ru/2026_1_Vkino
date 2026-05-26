@@ -77,6 +77,9 @@ SELECT format('GRANT SELECT, INSERT, UPDATE ON TABLE user_subscription TO %I', :
 SELECT format('GRANT SELECT, INSERT ON TABLE vkino_coins_history TO %I', :'user_user')
 \gexec
 
+SELECT format('GRANT SELECT, INSERT ON TABLE payment TO %I', :'user_user')
+\gexec
+
 SELECT format('GRANT SELECT ON TABLE vkino_room TO %I', :'user_user')
 \gexec
 
