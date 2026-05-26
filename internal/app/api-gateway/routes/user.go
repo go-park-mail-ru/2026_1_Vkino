@@ -134,6 +134,22 @@ func (c grpcUserClient) BuySubscriptionWithVKinoCoins(
 	return c.user.BuySubscriptionWithVKinoCoins(ctx, in, opts...)
 }
 
+func (c grpcUserClient) SpendVKinoCoins(
+	ctx context.Context,
+	in *userv1.SpendVKinoCoinsRequest,
+	opts ...grpc.CallOption,
+) (*userv1.SpendVKinoCoinsResponse, error) {
+	return c.user.SpendVKinoCoins(ctx, in, opts...)
+}
+
+func (c grpcUserClient) GrantVKinoCoins(
+	ctx context.Context,
+	in *userv1.GrantVKinoCoinsRequest,
+	opts ...grpc.CallOption,
+) (*userv1.GrantVKinoCoinsResponse, error) {
+	return c.user.GrantVKinoCoins(ctx, in, opts...)
+}
+
 func (c grpcUserClient) SearchUsersByEmail(
 	ctx context.Context,
 	in *userv1.SearchUsersByEmailRequest,
@@ -566,11 +582,25 @@ func newUserProfileHandler(cfg Config, userClient UserClient) http.HandlerFunc {
 		}
 
 		body := map[string]any{
-			"email":               resp.GetEmail(),
-			"avatar_url":          resp.GetAvatarUrl(),
-			"role":                resp.GetRole(),
-			"vkino_coins_balance": resp.GetVkinoCoinsBalance(),
+			"email":                           resp.GetEmail(),
+			"avatar_url":                      resp.GetAvatarUrl(),
+			"role":                            resp.GetRole(),
+			"vkino_coins_balance":             resp.GetVkinoCoinsBalance(),
+			"vkino_coins_history_total_count": resp.GetVkinoCoinsHistoryTotalCount(),
 		}
+
+		history := make([]map[string]any, 0, len(resp.GetVkinoCoinsHistory()))
+		for _, item := range resp.GetVkinoCoinsHistory() {
+			history = append(history, map[string]any{
+				"id":                item.GetId(),
+				"vkino_coins_count": item.GetVkinoCoinsCount(),
+				"operation_type":    item.GetOperationType(),
+				"description":       item.GetDescription(),
+				"created_at":        item.GetCreatedAt(),
+			})
+		}
+
+		body["vkino_coins_history"] = history
 
 		if resp.GetBirthdate() != "" {
 			body["birthdate"] = resp.GetBirthdate()

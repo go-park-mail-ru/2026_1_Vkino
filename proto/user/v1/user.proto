@@ -12,6 +12,8 @@ service UserService {
   rpc ActivateSubscription(ActivateSubscriptionRequest) returns (ActivateSubscriptionResponse);
   rpc BuySubscriptionWithVKinoCoins(BuySubscriptionWithVKinoCoinsRequest)
       returns (BuySubscriptionWithVKinoCoinsResponse);
+  rpc SpendVKinoCoins(SpendVKinoCoinsRequest) returns (SpendVKinoCoinsResponse);
+  rpc GrantVKinoCoins(GrantVKinoCoinsRequest) returns (GrantVKinoCoinsResponse);
   rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
   rpc SearchUsersByEmail(SearchUsersByEmailRequest) returns (SearchUsersByEmailResponse);
   rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
@@ -42,6 +44,8 @@ message GetProfileResponse {
   string avatar_url = 3;
   string role = 4;
   int32 vkino_coins_balance = 5;
+  repeated VKinoCoinsHistoryItem vkino_coins_history = 6;
+  int32 vkino_coins_history_total_count = 7;
 }
 
 message GetFriendRequest {
@@ -126,6 +130,31 @@ message BuySubscriptionWithVKinoCoinsResponse {
   int32 coins_spent = 2;
   int32 vkino_coins_balance = 3;
   SubscriptionInfo subscription = 4;
+}
+
+message SpendVKinoCoinsRequest {
+  int64 user_id = 1;
+  int32 coins_amount = 2;
+  string operation_type = 3;
+  string description = 4;
+}
+
+message SpendVKinoCoinsResponse {
+  int32 coins_spent = 1;
+  int32 vkino_coins_balance = 2;
+}
+
+message GrantVKinoCoinsRequest {
+  int64 user_id = 1;
+  int32 coins_amount = 2;
+  string operation_type = 3;
+  string description = 4;
+  string reference_key = 5;
+}
+
+message GrantVKinoCoinsResponse {
+  int32 coins_granted = 1;
+  int32 vkino_coins_balance = 2;
 }
 
 message UpdateProfileRequest {

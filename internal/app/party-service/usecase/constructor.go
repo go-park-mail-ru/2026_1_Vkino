@@ -8,10 +8,12 @@ func New(
 	partyRepo repository.PartyRepo,
 	eventBroker repository.RoomEventBroker,
 	subscriptionReader SubscriptionReader,
+	coinsSpender CoinsSpender,
 ) Usecase {
 	return &service{
 		partyRepo:          partyRepo,
 		eventBroker:        eventBroker,
 		subscriptionReader: subscriptionReader,
+		coinsSpender:       coinsSpender,
 	}
 }

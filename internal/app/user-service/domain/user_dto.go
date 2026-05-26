@@ -28,11 +28,13 @@ type ReviewReactionResponse struct {
 }
 
 type ProfileResponse struct {
-	Email             string  `json:"email"`
-	Role              string  `json:"role"`
-	Birthdate         *string `json:"birthdate"`
-	AvatarURL         string  `json:"avatar_url"`
-	VKinoCoinsBalance int32   `json:"vkino_coins_balance"`
+	Email                       string                  `json:"email"`
+	Role                        string                  `json:"role"`
+	Birthdate                   *string                 `json:"birthdate"`
+	AvatarURL                   string                  `json:"avatar_url"`
+	VKinoCoinsBalance           int32                   `json:"vkino_coins_balance"`
+	VKinoCoinsHistory           []VKinoCoinsHistoryItem `json:"vkino_coins_history"`
+	VKinoCoinsHistoryTotalCount int32                   `json:"vkino_coins_history_total_count"`
 }
 
 type FriendResponse struct {
@@ -65,4 +67,14 @@ type VKinoCoinsSubscriptionPurchase struct {
 	CoinsSpent        int32
 	VKinoCoinsBalance int32
 	Subscription      SubscriptionInfo
+}
+
+type VKinoCoinsSpend struct {
+	CoinsSpent        int32
+	VKinoCoinsBalance int32
+}
+
+type VKinoCoinsGrant struct {
+	CoinsGranted      int32
+	VKinoCoinsBalance int32
 }

@@ -64,25 +64,35 @@ type RoomMessage struct {
 }
 
 type Poll struct {
-	ID              int64
-	RoomID          int64
-	Question        string
-	Options         []PollOption
-	CreatedByUserID int64
-	CreatedAt       time.Time
-	ClosedAt        *time.Time
+	ID               int64
+	RoomID           int64
+	Question         string
+	Options          []PollOption
+	CreatedByUserID  int64
+	CreatedAt        time.Time
+	ClosedAt         *time.Time
+	CorrectOptionID  *int64
+	ResolvedByUserID *int64
 }
 
 type PollOption struct {
 	ID         int64
 	Title      string
 	VotesCount int64
+	CoinsTotal int64
 }
 
 type PollVote struct {
-	PollID   int64
-	OptionID int64
-	UserID   int64
+	PollID      int64
+	OptionID    int64
+	UserID      int64
+	CoinsAmount int32
+}
+
+type PollOptionStake struct {
+	UserID      int64
+	OptionID    int64
+	CoinsAmount int32
 }
 
 type RoomEvent struct {

@@ -26,6 +26,7 @@ var (
 	ErrSubscriptionTariffNotFound = errors.New("subscription tariff not found")
 	ErrInsufficientVKinoCoins     = errors.New("insufficient vkino coins")
 	ErrTariffNotAvailableForCoins = errors.New("tariff is not available for vkino coins payment")
+	ErrInvalidCoinsAmount         = errors.New("invalid coins amount")
 
 	ErrTicketNotFound            = errors.New("ticket not found")
 	ErrAccessDenied              = errors.New("access denied")

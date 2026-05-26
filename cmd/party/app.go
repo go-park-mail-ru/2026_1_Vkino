@@ -69,6 +69,7 @@ func Run(configPath string) error {
 		partyRepo,
 		eventBroker,
 		partyusecase.NewSubscriptionReader(userv1.NewUserServiceClient(userConn)),
+		partyusecase.NewCoinsSpender(userv1.NewUserServiceClient(userConn)),
 	)
 
 	lis, err := grpcx.Listen(cfg.GRPC.Port)

@@ -63,3 +63,46 @@ func (s *Server) BuySubscriptionWithVKinoCoins(
 
 	return resp, nil
 }
+
+func (s *Server) SpendVKinoCoins(
+	ctx context.Context,
+	req *userv1.SpendVKinoCoinsRequest,
+) (*userv1.SpendVKinoCoinsResponse, error) {
+	spend, err := s.usecase.SpendVKinoCoins(
+		ctx,
+		req.GetUserId(),
+		req.GetCoinsAmount(),
+		req.GetOperationType(),
+		req.GetDescription(),
+	)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &userv1.SpendVKinoCoinsResponse{
+		CoinsSpent:        spend.CoinsSpent,
+		VkinoCoinsBalance: spend.VKinoCoinsBalance,
+	}, nil
+}
+
+func (s *Server) GrantVKinoCoins(
+	ctx context.Context,
+	req *userv1.GrantVKinoCoinsRequest,
+) (*userv1.GrantVKinoCoinsResponse, error) {
+	grant, err := s.usecase.GrantVKinoCoins(
+		ctx,
+		req.GetUserId(),
+		req.GetCoinsAmount(),
+		req.GetOperationType(),
+		req.GetDescription(),
+		req.GetReferenceKey(),
+	)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &userv1.GrantVKinoCoinsResponse{
+		CoinsGranted:      grant.CoinsGranted,
+		VkinoCoinsBalance: grant.VKinoCoinsBalance,
+	}, nil
+}

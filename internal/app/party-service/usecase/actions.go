@@ -3,6 +3,8 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"math"
+	"sort"
 	"strings"
 	"time"
 
@@ -10,15 +12,16 @@ import (
 )
 
 const (
-	playbackStatusPaused = "paused"
-	roomActionPlay       = "play"
-	roomActionPause      = "pause"
-	roomActionSeek       = "seek"
-	roomActionSyncState  = "sync_state"
-	memberRoleHost       = "host"
-	memberRoleMember     = "member"
-	memberStatusActive   = "active"
-	memberStatusPending  = "pending"
+	playbackStatusPaused  = "paused"
+	roomActionPlay        = "play"
+	roomActionPause       = "pause"
+	roomActionSeek        = "seek"
+	roomActionSyncState   = "sync_state"
+	memberRoleHost        = "host"
+	memberRoleMember      = "member"
+	memberStatusActive    = "active"
+	memberStatusPending   = "pending"
+	roomVisibilityPrivate = "private"
 )
 
 func (s *service) ApplyRoomAction(
@@ -351,9 +354,14 @@ func (s *service) VoteRoomPoll(
 	}
 
 	vote := domain.PollVote{
-		PollID:   req.PollID,
-		OptionID: req.OptionID,
-		UserID:   userID,
+		PollID:      req.PollID,
+		OptionID:    req.OptionID,
+		UserID:      userID,
+		CoinsAmount: req.CoinsAmount,
+	}
+
+	if err := s.spendPollVoteCoins(ctx, req, vote); err != nil {
+		return domain.PollVote{}, domain.Poll{}, err
 	}
 
 	updatedPoll, err := s.saveVoteAndLoadPoll(ctx, req.RoomID, req.PollID, vote)
@@ -366,6 +374,41 @@ func (s *service) VoteRoomPoll(
 	}
 
 	return vote, updatedPoll, nil
+}
+
+func (s *service) ResolveRoomPoll(
+	ctx context.Context,
+	userID int64,
+	req domain.ResolveRoomPollRequest,
+) (domain.Poll, error) {
+	if err := validateResolveRoomPollRequest(userID, req); err != nil {
+		return domain.Poll{}, err
+	}
+
+	room, poll, err := s.ensurePollCanBeResolved(ctx, userID, req)
+	if err != nil {
+		return domain.Poll{}, err
+	}
+
+	payouts, err := s.buildPollPayouts(ctx, poll, req.OptionID)
+	if err != nil {
+		return domain.Poll{}, err
+	}
+
+	if err = s.applyPollPayouts(ctx, req, payouts); err != nil {
+		return domain.Poll{}, err
+	}
+
+	resolvedPoll, err := s.partyRepo.ResolvePoll(ctx, room.ID, req.PollID, req.OptionID, userID)
+	if err != nil {
+		return domain.Poll{}, err
+	}
+
+	if err = s.publishResolvedRoomPollEvent(ctx, req.RoomID, userID, *resolvedPoll); err != nil {
+		return domain.Poll{}, err
+	}
+
+	return *resolvedPoll, nil
 }
 
 func (s *service) getAccessibleRoom(ctx context.Context, userID, roomID int64) (*domain.Room, error) {
@@ -525,7 +568,7 @@ func buildPollOptions(rawOptions []string) ([]domain.PollOption, error) {
 }
 
 func ensureAccessibleRoom(room *domain.Room, userID int64) error {
-	if room.Visibility == "private" && !isRoomMember(room.Members, userID) {
+	if room.Visibility == roomVisibilityPrivate && !isRoomMember(room.Members, userID) {
 		return domain.ErrAccessDenied
 	}
 
@@ -541,11 +584,46 @@ func validateVoteRoomPollRequest(userID int64, req domain.VoteRoomPollRequest) e
 		return domain.ErrInvalidRoomID
 	}
 
+	if req.PollID <= 0 || req.OptionID <= 0 || req.CoinsAmount <= 0 {
+		return domain.ErrInvalidPollOption
+	}
+
+	return nil
+}
+
+func validateResolveRoomPollRequest(userID int64, req domain.ResolveRoomPollRequest) error {
+	if userID <= 0 {
+		return domain.ErrInvalidUserID
+	}
+
+	if req.RoomID <= 0 {
+		return domain.ErrInvalidRoomID
+	}
+
 	if req.PollID <= 0 || req.OptionID <= 0 {
 		return domain.ErrInvalidPollOption
 	}
 
 	return nil
+}
+
+func (s *service) spendPollVoteCoins(
+	ctx context.Context,
+	req domain.VoteRoomPollRequest,
+	vote domain.PollVote,
+) error {
+	if s.coinsSpender == nil {
+		return nil
+	}
+
+	return s.coinsSpender.SpendForPollVote(
+		ctx,
+		vote.UserID,
+		req.RoomID,
+		req.PollID,
+		req.OptionID,
+		req.CoinsAmount,
+	)
 }
 
 func (s *service) publishVoteRoomPollEvent(
@@ -587,7 +665,228 @@ func (s *service) ensurePollCanBeVoted(ctx context.Context, userID int64, req do
 		return domain.ErrInvalidPollOption
 	}
 
+	if poll.ClosedAt != nil {
+		return domain.ErrPollAlreadyResolved
+	}
+
 	return nil
+}
+
+func (s *service) ensurePollCanBeResolved(
+	ctx context.Context,
+	userID int64,
+	req domain.ResolveRoomPollRequest,
+) (domain.Room, domain.Poll, error) {
+	room, err := s.getAccessibleRoom(ctx, userID, req.RoomID)
+	if err != nil {
+		return domain.Room{}, domain.Poll{}, err
+	}
+
+	poll, ok := findPoll(room.Polls, req.PollID)
+	if !ok {
+		return domain.Room{}, domain.Poll{}, domain.ErrInvalidPoll
+	}
+
+	if poll.CreatedByUserID != userID {
+		return domain.Room{}, domain.Poll{}, domain.ErrAccessDenied
+	}
+
+	if poll.ClosedAt != nil {
+		return domain.Room{}, domain.Poll{}, domain.ErrPollAlreadyResolved
+	}
+
+	if !pollHasOption(poll, req.OptionID) {
+		return domain.Room{}, domain.Poll{}, domain.ErrInvalidPollOption
+	}
+
+	return *room, poll, nil
+}
+
+type pollPayout struct {
+	userID      int64
+	optionID    int64
+	coinsAmount int32
+}
+
+type payoutCalc struct {
+	pollPayout
+
+	remainder int64
+}
+
+func (s *service) buildPollPayouts(
+	ctx context.Context,
+	poll domain.Poll,
+	correctOptionID int64,
+) ([]pollPayout, error) {
+	totalPool := totalPollPool(poll.Options)
+
+	winnerStakes, err := s.partyRepo.GetPollOptionStakes(ctx, poll.ID, correctOptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	winnersPool := totalWinnerStakePool(winnerStakes)
+	if totalPool <= 0 || winnersPool <= 0 || len(winnerStakes) == 0 {
+		return nil, nil
+	}
+
+	calcs, distributed, err := buildPollPayoutCalcs(winnerStakes, totalPool, winnersPool)
+	if err != nil {
+		return nil, err
+	}
+
+	sortPollPayoutCalcs(calcs)
+	distributePollPayoutRemainder(calcs, totalPool, distributed)
+
+	return collectPollPayouts(calcs), nil
+}
+
+func totalPollPool(options []domain.PollOption) int64 {
+	var totalPool int64
+	for _, option := range options {
+		totalPool += option.CoinsTotal
+	}
+
+	return totalPool
+}
+
+func totalWinnerStakePool(winnerStakes []domain.PollOptionStake) int64 {
+	var winnersPool int64
+	for _, stake := range winnerStakes {
+		winnersPool += int64(stake.CoinsAmount)
+	}
+
+	return winnersPool
+}
+
+func buildPollPayoutCalcs(
+	winnerStakes []domain.PollOptionStake,
+	totalPool int64,
+	winnersPool int64,
+) ([]payoutCalc, int64, error) {
+	calcs := make([]payoutCalc, 0, len(winnerStakes))
+
+	var distributed int64
+
+	for _, stake := range winnerStakes {
+		calc, base, err := buildPollPayoutCalc(stake, totalPool, winnersPool)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		calcs = append(calcs, calc)
+		distributed += base
+	}
+
+	return calcs, distributed, nil
+}
+
+func buildPollPayoutCalc(
+	stake domain.PollOptionStake,
+	totalPool int64,
+	winnersPool int64,
+) (payoutCalc, int64, error) {
+	product := totalPool * int64(stake.CoinsAmount)
+	base := product / winnersPool
+	remainder := product % winnersPool
+
+	coinsAmount, err := int64ToInt32(base)
+	if err != nil {
+		return payoutCalc{}, 0, err
+	}
+
+	return payoutCalc{
+		pollPayout: pollPayout{
+			userID:      stake.UserID,
+			optionID:    stake.OptionID,
+			coinsAmount: coinsAmount,
+		},
+		remainder: remainder,
+	}, base, nil
+}
+
+func sortPollPayoutCalcs(calcs []payoutCalc) {
+	sort.SliceStable(calcs, func(i, j int) bool {
+		if calcs[i].remainder == calcs[j].remainder {
+			return calcs[i].userID < calcs[j].userID
+		}
+
+		return calcs[i].remainder > calcs[j].remainder
+	})
+}
+
+func distributePollPayoutRemainder(calcs []payoutCalc, totalPool int64, distributed int64) {
+	for remaining := totalPool - distributed; remaining > 0; remaining-- {
+		calcs[(totalPool-remaining)%int64(len(calcs))].coinsAmount++
+	}
+}
+
+func collectPollPayouts(calcs []payoutCalc) []pollPayout {
+	payouts := make([]pollPayout, 0, len(calcs))
+	for _, calc := range calcs {
+		if calc.coinsAmount <= 0 {
+			continue
+		}
+
+		payouts = append(payouts, calc.pollPayout)
+	}
+
+	return payouts
+}
+
+func int64ToInt32(value int64) (int32, error) {
+	if value > math.MaxInt32 || value < math.MinInt32 {
+		return 0, fmt.Errorf("%w: poll payout overflows int32", domain.ErrInternal)
+	}
+
+	return int32(value), nil
+}
+
+func (s *service) applyPollPayouts(
+	ctx context.Context,
+	req domain.ResolveRoomPollRequest,
+	payouts []pollPayout,
+) error {
+	if s.coinsSpender == nil {
+		return nil
+	}
+
+	for _, payout := range payouts {
+		if err := s.coinsSpender.RewardForPollWin(
+			ctx,
+			payout.userID,
+			req.RoomID,
+			req.PollID,
+			payout.optionID,
+			payout.coinsAmount,
+		); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *service) publishResolvedRoomPollEvent(
+	ctx context.Context,
+	roomID int64,
+	userID int64,
+	poll domain.Poll,
+) error {
+	if s.eventBroker == nil {
+		return nil
+	}
+
+	pollCopy := poll
+
+	return s.publishRoomEvent(ctx, domain.RoomEvent{
+		Type:        "poll_resolved",
+		RoomID:      roomID,
+		ActorUserID: userID,
+		Poll:        &pollCopy,
+		SentAt:      time.Now().UTC(),
+	})
 }
 
 func (s *service) saveVoteAndLoadPoll(

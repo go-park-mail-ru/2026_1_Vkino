@@ -178,20 +178,21 @@ func (s *service) CreateRoom(
 		return domain.RoomResponse{}, domain.ErrInvalidUserID
 	}
 
-	if req.Name == "" {
-		return domain.RoomResponse{}, domain.ErrInvalidRoomName
-	}
-
-	if req.Visibility == "" {
-		return domain.RoomResponse{}, domain.ErrInvalidVisibility
-	}
-
 	if s.partyRepo == nil {
 		return domain.RoomResponse{}, domain.ErrInternal
 	}
 
 	req.Name = strings.TrimSpace(req.Name)
-	req.Visibility = strings.TrimSpace(strings.ToLower(req.Visibility))
+	if req.Name == "" {
+		return domain.RoomResponse{}, domain.ErrInvalidRoomName
+	}
+
+	visibility, ok := normalizeRoomVisibility(req.Visibility)
+	if !ok {
+		return domain.RoomResponse{}, domain.ErrInvalidVisibility
+	}
+
+	req.Visibility = visibility
 
 	if err := s.ensureRoomCreationAllowed(ctx, userID); err != nil {
 		return domain.RoomResponse{}, err
@@ -203,6 +204,17 @@ func (s *service) CreateRoom(
 	}
 
 	return domain.RoomResponse{Room: *room}, nil
+}
+
+func normalizeRoomVisibility(value string) (string, bool) {
+	switch strings.TrimSpace(strings.ToLower(value)) {
+	case "public", "open", "opened", "открытая", "открытый", "публичная", "публичный":
+		return "public", true
+	case "private", "closed", "закрытая", "закрытый", "приватная", "приватный":
+		return "private", true
+	default:
+		return "", false
+	}
 }
 
 func (s *service) JoinRoom(

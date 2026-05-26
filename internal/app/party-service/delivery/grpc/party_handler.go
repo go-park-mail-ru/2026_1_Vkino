@@ -13,7 +13,7 @@ func (s *Server) GetOverview(
 	ctx context.Context,
 	_ *partyv1.GetOverviewRequest,
 ) (*partyv1.GetOverviewResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (s *Server) GetOverview(
 }
 
 func (s *Server) GetRoom(ctx context.Context, req *partyv1.GetRoomRequest) (*partyv1.GetRoomResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func (s *Server) GetRoomInvite(
 	ctx context.Context,
 	req *partyv1.GetRoomInviteRequest,
 ) (*partyv1.GetRoomInviteResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (s *Server) InviteFriendToRoom(
 	ctx context.Context,
 	req *partyv1.InviteFriendToRoomRequest,
 ) (*partyv1.InviteFriendToRoomResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (s *Server) CreateRoom(
 	ctx context.Context,
 	req *partyv1.CreateRoomRequest,
 ) (*partyv1.CreateRoomResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (s *Server) JoinRoom(
 	ctx context.Context,
 	req *partyv1.JoinRoomRequest,
 ) (*partyv1.JoinRoomResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (s *Server) DeleteRoom(
 	ctx context.Context,
 	req *partyv1.DeleteRoomRequest,
 ) (*partyv1.DeleteRoomResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (s *Server) ApplyRoomAction(
 	ctx context.Context,
 	req *partyv1.ApplyRoomActionRequest,
 ) (*partyv1.ApplyRoomActionResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func (s *Server) SendRoomMessage(
 	ctx context.Context,
 	req *partyv1.SendRoomMessageRequest,
 ) (*partyv1.SendRoomMessageResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func (s *Server) CreateRoomPoll(
 	ctx context.Context,
 	req *partyv1.CreateRoomPollRequest,
 ) (*partyv1.CreateRoomPollResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -226,12 +226,42 @@ func (s *Server) VoteRoomPoll(
 	ctx context.Context,
 	req *partyv1.VoteRoomPollRequest,
 ) (*partyv1.VoteRoomPollResponse, error) {
-	authCtx, err := s.authorize(ctx)
+	ctx, authCtx, err := s.authorize(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	vote, poll, err := s.usecase.VoteRoomPoll(ctx, authCtx.UserID, domain.VoteRoomPollRequest{
+		RoomID:      req.GetRoomId(),
+		PollID:      req.GetPollId(),
+		OptionID:    req.GetOptionId(),
+		CoinsAmount: req.GetCoinsAmount(),
+	})
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	return &partyv1.VoteRoomPollResponse{
+		Vote: &partyv1.PollVote{
+			PollId:      vote.PollID,
+			OptionId:    vote.OptionID,
+			UserId:      vote.UserID,
+			CoinsAmount: vote.CoinsAmount,
+		},
+		Poll: toProtoPoll(poll),
+	}, nil
+}
+
+func (s *Server) ResolveRoomPoll(
+	ctx context.Context,
+	req *partyv1.ResolveRoomPollRequest,
+) (*partyv1.ResolveRoomPollResponse, error) {
+	ctx, authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	poll, err := s.usecase.ResolveRoomPoll(ctx, authCtx.UserID, domain.ResolveRoomPollRequest{
 		RoomID:   req.GetRoomId(),
 		PollID:   req.GetPollId(),
 		OptionID: req.GetOptionId(),
@@ -240,12 +270,7 @@ func (s *Server) VoteRoomPoll(
 		return nil, mapError(err)
 	}
 
-	return &partyv1.VoteRoomPollResponse{
-		Vote: &partyv1.PollVote{
-			PollId:   vote.PollID,
-			OptionId: vote.OptionID,
-			UserId:   vote.UserID,
-		},
+	return &partyv1.ResolveRoomPollResponse{
 		Poll: toProtoPoll(poll),
 	}, nil
 }
@@ -254,13 +279,13 @@ func (s *Server) SubscribeRoom(
 	req *partyv1.SubscribeRoomRequest,
 	stream grpc.ServerStreamingServer[partyv1.RoomEvent],
 ) error {
-	authCtx, err := s.authorize(stream.Context())
+	ctx, authCtx, err := s.authorize(stream.Context())
 	if err != nil {
 		return err
 	}
 
 	events, unsubscribe, err := s.usecase.SubscribeRoom(
-		stream.Context(),
+		ctx,
 		authCtx.UserID,
 		domain.SubscribeRoomRequest{RoomID: req.GetRoomId()},
 	)
@@ -269,7 +294,7 @@ func (s *Server) SubscribeRoom(
 	}
 	defer unsubscribe()
 
-	return forwardRoomEvents(stream.Context(), stream, events)
+	return forwardRoomEvents(ctx, stream, events)
 }
 
 func forwardRoomEvents(
@@ -403,11 +428,20 @@ func toProtoPoll(item domain.Poll) *partyv1.Poll {
 		Options:         make([]*partyv1.PollOption, 0, len(item.Options)),
 	}
 
+	if item.CorrectOptionID != nil {
+		result.CorrectOptionId = *item.CorrectOptionID
+	}
+
+	if item.ResolvedByUserID != nil {
+		result.ResolvedByUserId = *item.ResolvedByUserID
+	}
+
 	for _, option := range item.Options {
 		result.Options = append(result.Options, &partyv1.PollOption{
 			Id:         option.ID,
 			Title:      option.Title,
 			VotesCount: option.VotesCount,
+			CoinsTotal: option.CoinsTotal,
 		})
 	}
 
@@ -440,9 +474,10 @@ func toProtoRoomEvent(item domain.RoomEvent) *partyv1.RoomEvent {
 
 	if item.Vote != nil {
 		result.Vote = &partyv1.PollVote{
-			PollId:   item.Vote.PollID,
-			OptionId: item.Vote.OptionID,
-			UserId:   item.Vote.UserID,
+			PollId:      item.Vote.PollID,
+			OptionId:    item.Vote.OptionID,
+			UserId:      item.Vote.UserID,
+			CoinsAmount: item.Vote.CoinsAmount,
 		}
 	}
 

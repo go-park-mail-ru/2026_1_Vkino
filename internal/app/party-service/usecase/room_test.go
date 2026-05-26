@@ -15,7 +15,7 @@ func TestGetRoomRequiresMembershipEvenForPublicRoom(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{}, nil)
+	svc := New(repo, &roomUsecaseBroker{}, nil, nil)
 
 	_, err := svc.GetRoom(context.Background(), 3, 5)
 
@@ -26,7 +26,7 @@ func TestGetRoomHidesInviteForNonHost(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{}, nil)
+	svc := New(repo, &roomUsecaseBroker{}, nil, nil)
 
 	resp, err := svc.GetRoom(context.Background(), 2, 5)
 	require.NoError(t, err)
@@ -37,7 +37,7 @@ func TestGetRoomInviteAllowsHostOnly(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{}, nil)
+	svc := New(repo, &roomUsecaseBroker{}, nil, nil)
 
 	resp, err := svc.GetRoomInvite(context.Background(), 1, 5)
 	require.NoError(t, err)
@@ -49,7 +49,7 @@ func TestInviteFriendToRoomCreatesPendingMember(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{}, nil)
+	svc := New(repo, &roomUsecaseBroker{}, nil, nil)
 
 	resp, err := svc.InviteFriendToRoom(context.Background(), 1, domain.InviteFriendToRoomRequest{
 		RoomID:        5,
@@ -70,7 +70,7 @@ func TestGetRoomActivatesPendingMember(t *testing.T) {
 	repo.room.Members = append(repo.room.Members, domain.RoomMember{
 		UserID: 9, Role: memberRoleMember, Status: memberStatusPending,
 	})
-	svc := New(repo, &roomUsecaseBroker{}, nil)
+	svc := New(repo, &roomUsecaseBroker{}, nil, nil)
 
 	resp, err := svc.GetRoom(context.Background(), 9, 5)
 	require.NoError(t, err)
@@ -83,7 +83,7 @@ func TestJoinRoomUsesInviteOnly(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{}, nil)
+	svc := New(repo, &roomUsecaseBroker{}, nil, nil)
 
 	_, err := svc.JoinRoom(context.Background(), 9, domain.JoinRoomRequest{})
 
@@ -94,7 +94,7 @@ func TestJoinRoomAddsMemberByInviteAndHidesInviteForNonHost(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{}, nil)
+	svc := New(repo, &roomUsecaseBroker{}, nil, nil)
 
 	resp, err := svc.JoinRoom(context.Background(), 9, domain.JoinRoomRequest{
 		InviteLink: "https://example.com/watch-party/join/invite-123",
@@ -109,7 +109,7 @@ func TestGetOverviewHidesInviteOutsideHostRooms(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
-	svc := New(repo, &roomUsecaseBroker{}, nil)
+	svc := New(repo, &roomUsecaseBroker{}, nil, nil)
 
 	resp, err := svc.GetOverview(context.Background(), 1)
 	require.NoError(t, err)
@@ -123,12 +123,60 @@ func TestSubscribeRoomRequiresMembership(t *testing.T) {
 
 	repo := newRoomUsecaseRepo()
 	broker := &roomUsecaseBroker{}
-	svc := New(repo, broker, nil)
+	svc := New(repo, broker, nil, nil)
 
 	_, _, err := svc.SubscribeRoom(context.Background(), 3, domain.SubscribeRoomRequest{RoomID: 5})
 
 	require.ErrorIs(t, err, domain.ErrAccessDenied)
 	require.Empty(t, broker.subscribedRoomIDs)
+}
+
+func TestCreateRoomNormalizesVisibility(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		visibility string
+		want       string
+	}{
+		{name: "public russian", visibility: "Открытая", want: "public"},
+		{name: "public legacy", visibility: "open", want: "public"},
+		{name: "private russian", visibility: "Закрытая", want: "private"},
+		{name: "private canonical", visibility: "private", want: "private"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			repo := newRoomUsecaseRepo()
+			svc := New(repo, &roomUsecaseBroker{}, nil, nil)
+
+			resp, err := svc.CreateRoom(context.Background(), 1, domain.CreateRoomRequest{
+				Name:       "  Room  ",
+				Visibility: tt.visibility,
+			})
+			require.NoError(t, err)
+			require.Equal(t, tt.want, resp.Room.Visibility)
+			require.Equal(t, "Room", repo.createdRoomReq.Name)
+			require.Equal(t, tt.want, repo.createdRoomReq.Visibility)
+		})
+	}
+}
+
+func TestCreateRoomRejectsUnknownVisibility(t *testing.T) {
+	t.Parallel()
+
+	repo := newRoomUsecaseRepo()
+	svc := New(repo, &roomUsecaseBroker{}, nil, nil)
+
+	_, err := svc.CreateRoom(context.Background(), 1, domain.CreateRoomRequest{
+		Name:       "Room",
+		Visibility: "friends-only",
+	})
+
+	require.ErrorIs(t, err, domain.ErrInvalidVisibility)
+	require.False(t, repo.createRoomCalled)
 }
 
 type roomUsecaseRepo struct {
@@ -141,6 +189,8 @@ type roomUsecaseRepo struct {
 	addMemberUserID      int64
 	activateMemberRoomID int64
 	activateMemberUserID int64
+	createdRoomReq       domain.CreateRoomRequest
+	createRoomCalled     bool
 }
 
 func newRoomUsecaseRepo() *roomUsecaseRepo {
@@ -191,8 +241,24 @@ func (r *roomUsecaseRepo) GetRoomByID(_ context.Context, roomID int64) (*domain.
 	return &roomCopy, nil
 }
 
-func (r *roomUsecaseRepo) CreateRoom(context.Context, int64, domain.CreateRoomRequest) (*domain.Room, error) {
-	return nil, domain.ErrNotImplemented
+func (r *roomUsecaseRepo) CreateRoom(
+	_ context.Context,
+	userID int64,
+	req domain.CreateRoomRequest,
+) (*domain.Room, error) {
+	r.createRoomCalled = true
+	r.createdRoomReq = req
+
+	return &domain.Room{
+		ID:         99,
+		Name:       req.Name,
+		Visibility: req.Visibility,
+		HostUserID: userID,
+		InviteLink: "invite-created",
+		Members: []domain.RoomMember{
+			{UserID: userID, Role: memberRoleHost, Status: memberStatusActive},
+		},
+	}, nil
 }
 
 func (r *roomUsecaseRepo) InviteMember(_ context.Context, roomID, userID int64) error {
@@ -264,6 +330,14 @@ func (r *roomUsecaseRepo) SavePoll(context.Context, domain.Poll) (*domain.Poll, 
 
 func (r *roomUsecaseRepo) SaveVote(context.Context, domain.PollVote) error {
 	return domain.ErrNotImplemented
+}
+
+func (r *roomUsecaseRepo) GetPollOptionStakes(context.Context, int64, int64) ([]domain.PollOptionStake, error) {
+	return nil, domain.ErrNotImplemented
+}
+
+func (r *roomUsecaseRepo) ResolvePoll(context.Context, int64, int64, int64, int64) (*domain.Poll, error) {
+	return nil, domain.ErrNotImplemented
 }
 
 func (r *roomUsecaseRepo) TouchRoom(context.Context, int64) error {

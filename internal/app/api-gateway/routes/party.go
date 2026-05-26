@@ -49,6 +49,8 @@ type PartyRealtimeClient interface {
 		opts ...grpc.CallOption) (*partyv1.CreateRoomPollResponse, error)
 	VoteRoomPoll(ctx context.Context, in *partyv1.VoteRoomPollRequest,
 		opts ...grpc.CallOption) (*partyv1.VoteRoomPollResponse, error)
+	ResolveRoomPoll(ctx context.Context, in *partyv1.ResolveRoomPollRequest,
+		opts ...grpc.CallOption) (*partyv1.ResolveRoomPollResponse, error)
 	SubscribeRoom(ctx context.Context, in *partyv1.SubscribeRoomRequest,
 		opts ...grpc.CallOption) (grpc.ServerStreamingClient[partyv1.RoomEvent], error)
 }
@@ -76,6 +78,7 @@ func Party(
 		route("POST /watch-party/rooms/{id}/messages", newPartyMessageHandler(cfg, partyClient)),
 		route("POST /watch-party/rooms/{id}/polls", newPartyPollHandler(cfg, partyClient)),
 		route("POST /watch-party/rooms/{id}/polls/{pollId}/votes", newPartyVoteHandler(cfg, partyClient)),
+		route("POST /watch-party/rooms/{id}/polls/{pollId}/resolve", newPartyResolvePollHandler(cfg, partyClient)),
 
 		httpserver.WithRoute("GET /watch-party/rooms/{id}/subscribe", newPartyRoomSubscribeHandler(partyClient)),
 	}
@@ -397,7 +400,8 @@ func newPartyVoteHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 		}
 
 		var req struct {
-			OptionID int64 `json:"option_id"`
+			OptionID    int64 `json:"option_id"`
+			CoinsAmount int32 `json:"coins_amount"`
 		}
 		if !readJSON(w, r, &req) {
 			return
@@ -407,6 +411,41 @@ func newPartyVoteHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 		defer cancel()
 
 		resp, err := partyClient.VoteRoomPoll(r.Context(), &partyv1.VoteRoomPollRequest{
+			RoomId: roomID, PollId: pollID, OptionId: req.OptionID, CoinsAmount: req.CoinsAmount,
+		})
+		if err != nil {
+			writeGRPCError(w, err)
+
+			return
+		}
+
+		httppkg.Response(w, http.StatusOK, resp)
+	}
+}
+
+func newPartyResolvePollHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		roomID, ok := parseRoomPathID(w, r)
+		if !ok {
+			return
+		}
+
+		pollID, ok := parseNamedPathID(w, r, "pollId", "invalid poll id")
+		if !ok {
+			return
+		}
+
+		var req struct {
+			OptionID int64 `json:"option_id"`
+		}
+		if !readJSON(w, r, &req) {
+			return
+		}
+
+		cancel := grpcContext(r, cfg.PartyRequestTimeout())
+		defer cancel()
+
+		resp, err := partyClient.ResolveRoomPoll(r.Context(), &partyv1.ResolveRoomPollRequest{
 			RoomId: roomID, PollId: pollID, OptionId: req.OptionID,
 		})
 		if err != nil {

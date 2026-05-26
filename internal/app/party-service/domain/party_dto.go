@@ -69,6 +69,13 @@ type CreateRoomPollRequest struct {
 }
 
 type VoteRoomPollRequest struct {
+	RoomID      int64
+	PollID      int64
+	OptionID    int64
+	CoinsAmount int32
+}
+
+type ResolveRoomPollRequest struct {
 	RoomID   int64
 	PollID   int64
 	OptionID int64

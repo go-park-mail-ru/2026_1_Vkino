@@ -107,8 +107,8 @@ const (
 	sqlGetVKinoCoinsBalance = `
 		select coalesce(sum(
 			case
-				when operation_type in ('daily', 'bet_win') then vkino_coins_count
-				when operation_type in ('bet_lose', 'purchase') then -vkino_coins_count
+				when operation_type in ('daily', 'signup_bonus', 'bet_win') then vkino_coins_count
+				when operation_type in ('bet_lose', 'bet_place', 'purchase') then -vkino_coins_count
 				else 0
 			end
 		), 0)::int
@@ -154,6 +154,32 @@ const (
 			operation_date
 		)
 		values ($1, $2, 'purchase', $3, current_date)
+	`
+
+	sqlCreateVKinoCoinsHistory = `
+		insert into vkino_coins_history (
+			user_id,
+			vkino_coins_count,
+			operation_type,
+			description,
+			operation_date
+		)
+		values ($1, $2, $3, $4, current_date)
+	`
+
+	sqlCreateVKinoCoinsGrantHistory = `
+		insert into vkino_coins_history (
+			user_id,
+			vkino_coins_count,
+			operation_type,
+			description,
+			operation_date,
+			reference_key
+		)
+		values ($1, $2, $3, $4, current_date, $5)
+		on conflict (reference_key)
+			where reference_key is not null
+		do nothing
 	`
 
 	sqlGetRoomsCreatedThisMonth = `

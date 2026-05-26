@@ -161,18 +161,37 @@ const (
 			b.bet_title,
 			b.user_creator_id,
 			b.created_at,
+			b.resolved_at,
+			coalesce(b.resolved_bet_variant_id, 0),
+			coalesce(b.resolved_by_user_id, 0),
 			v.id,
 			v.bet_variant,
-			coalesce(vote_counts.votes_count, 0)
+			coalesce(vote_counts.votes_count, 0),
+			coalesce(vote_counts.coins_total, 0)
 		from vkino_room_chat_bet b
 		left join vkino_room_chat_bet_variant v on v.vkino_room_chat_bet_id = b.id
 		left join (
-			select bet_variant_id, count(*)::bigint as votes_count
+			select
+				bet_variant_id,
+				count(*)::bigint as votes_count,
+				coalesce(sum(vkino_coins_count), 0)::bigint as coins_total
 			from vkino_room_chat_bet_answer
 			group by bet_variant_id
 		) vote_counts on vote_counts.bet_variant_id = v.id
 		where b.vkino_room_id = $1
 		order by b.created_at asc, b.id asc, v.id asc
+	`
+
+	sqlGetPollOptionStakes = `
+		select
+			a.user_id,
+			a.bet_variant_id,
+			a.vkino_coins_count
+		from vkino_room_chat_bet_answer a
+		join vkino_room_chat_bet_variant v on v.id = a.bet_variant_id
+		where v.vkino_room_chat_bet_id = $1
+			and a.bet_variant_id = $2
+		order by a.user_id, a.bet_variant_id
 	`
 
 	sqlCreateRoom = `
@@ -296,15 +315,29 @@ const (
 	`
 
 	sqlInsertRoomVote = `
-		insert into vkino_room_chat_bet_answer (user_id, bet_variant_id)
-		values ($1, $2)
+		insert into vkino_room_chat_bet_answer (user_id, bet_variant_id, vkino_coins_count)
+		values ($1, $2, $3)
 		on conflict (user_id, bet_variant_id)
-		do nothing
+		do update set
+			vkino_coins_count = vkino_room_chat_bet_answer.vkino_coins_count + excluded.vkino_coins_count,
+			updated_at = now()
 	`
 
 	sqlTouchRoom = `
 		update vkino_room
 		set updated_at = now()
 		where id = $1
+	`
+
+	sqlResolvePoll = `
+		update vkino_room_chat_bet
+		set
+			resolved_bet_variant_id = $3,
+			resolved_by_user_id = $4,
+			resolved_at = now(),
+			updated_at = now()
+		where id = $1
+			and vkino_room_id = $2
+			and resolved_at is null
 	`
 )

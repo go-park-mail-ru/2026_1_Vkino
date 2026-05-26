@@ -40,6 +40,17 @@ const (
 		values ($1, $2)
 		returning id, email, password_hash, birthdate, avatar_file_key, registration_date, is_active, created_at, updated_at
 	`
+
+	sqlCreateSignupBonusHistory = `
+		insert into vkino_coins_history (
+			user_id,
+			vkino_coins_count,
+			operation_type,
+			description,
+			operation_date
+		)
+		values ($1, $2, 'signup_bonus', $3, current_date)
+	`
 	sqlUpdateUserHashByID = `
 		update users
 		set ` + userHashColumn + ` = $1, updated_at = now()

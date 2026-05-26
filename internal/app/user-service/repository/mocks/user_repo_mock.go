@@ -383,6 +383,37 @@ func (mr *MockUserCoinsRepoMockRecorder) GetVKinoCoinsHistory(ctx, userID, limit
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVKinoCoinsHistory", reflect.TypeOf((*MockUserCoinsRepo)(nil).GetVKinoCoinsHistory), ctx, userID, limit, offset)
 }
 
+// SpendVKinoCoins mocks base method.
+func (m *MockUserCoinsRepo) SpendVKinoCoins(ctx context.Context, userID int64, coinsAmount int32, operationType, description string) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpendVKinoCoins", ctx, userID, coinsAmount, operationType, description)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpendVKinoCoins indicates an expected call of SpendVKinoCoins.
+func (mr *MockUserCoinsRepoMockRecorder) SpendVKinoCoins(ctx, userID, coinsAmount, operationType, description any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpendVKinoCoins", reflect.TypeOf((*MockUserCoinsRepo)(nil).SpendVKinoCoins), ctx, userID, coinsAmount, operationType, description)
+}
+
+// GrantVKinoCoins mocks base method.
+func (m *MockUserCoinsRepo) GrantVKinoCoins(ctx context.Context, userID int64, coinsAmount int32, operationType, description, referenceKey string) (int32, int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GrantVKinoCoins", ctx, userID, coinsAmount, operationType, description, referenceKey)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(int32)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GrantVKinoCoins indicates an expected call of GrantVKinoCoins.
+func (mr *MockUserCoinsRepoMockRecorder) GrantVKinoCoins(ctx, userID, coinsAmount, operationType, description, referenceKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GrantVKinoCoins", reflect.TypeOf((*MockUserCoinsRepo)(nil).GrantVKinoCoins), ctx, userID, coinsAmount, operationType, description, referenceKey)
+}
+
 // GrantDailyVKinoCoins mocks base method.
 func (m *MockUserCoinsRepo) GrantDailyVKinoCoins(ctx context.Context, userID int64) (int32, error) {
 	m.ctrl.T.Helper()
@@ -731,6 +762,21 @@ func (mr *MockUserRepoMockRecorder) BuySubscriptionWithVKinoCoins(ctx, userID, t
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuySubscriptionWithVKinoCoins", reflect.TypeOf((*MockUserRepo)(nil).BuySubscriptionWithVKinoCoins), ctx, userID, tariffID)
 }
 
+// SpendVKinoCoins mocks base method.
+func (m *MockUserRepo) SpendVKinoCoins(ctx context.Context, userID int64, coinsAmount int32, operationType, description string) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpendVKinoCoins", ctx, userID, coinsAmount, operationType, description)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpendVKinoCoins indicates an expected call of SpendVKinoCoins.
+func (mr *MockUserRepoMockRecorder) SpendVKinoCoins(ctx, userID, coinsAmount, operationType, description any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpendVKinoCoins", reflect.TypeOf((*MockUserRepo)(nil).SpendVKinoCoins), ctx, userID, coinsAmount, operationType, description)
+}
+
 // CreateUserSubscription mocks base method.
 func (m *MockUserRepo) CreateUserSubscription(ctx context.Context, userID, tariffID int64, startsAt, expiresAt time.Time) error {
 	m.ctrl.T.Helper()
@@ -1041,6 +1087,22 @@ func (m *MockUserRepo) GetVKinoCoinsHistory(ctx context.Context, userID int64, l
 func (mr *MockUserRepoMockRecorder) GetVKinoCoinsHistory(ctx, userID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVKinoCoinsHistory", reflect.TypeOf((*MockUserRepo)(nil).GetVKinoCoinsHistory), ctx, userID, limit, offset)
+}
+
+// GrantVKinoCoins mocks base method.
+func (m *MockUserRepo) GrantVKinoCoins(ctx context.Context, userID int64, coinsAmount int32, operationType, description, referenceKey string) (int32, int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GrantVKinoCoins", ctx, userID, coinsAmount, operationType, description, referenceKey)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(int32)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GrantVKinoCoins indicates an expected call of GrantVKinoCoins.
+func (mr *MockUserRepoMockRecorder) GrantVKinoCoins(ctx, userID, coinsAmount, operationType, description, referenceKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GrantVKinoCoins", reflect.TypeOf((*MockUserRepo)(nil).GrantVKinoCoins), ctx, userID, coinsAmount, operationType, description, referenceKey)
 }
 
 // GrantDailyVKinoCoins mocks base method.

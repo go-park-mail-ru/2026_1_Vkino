@@ -11,11 +11,15 @@ func (u *UserUsecase) profileResponse(
 	ctx context.Context,
 	user *domain.User,
 	vkinoCoinsBalance int32,
+	vkinoCoinsHistory []domain.VKinoCoinsHistoryItem,
+	vkinoCoinsHistoryTotalCount int32,
 ) (domain.ProfileResponse, error) {
 	resp := domain.ProfileResponse{
-		Email:             user.Email,
-		Role:              user.Role,
-		VKinoCoinsBalance: vkinoCoinsBalance,
+		Email:                       user.Email,
+		Role:                        user.Role,
+		VKinoCoinsBalance:           vkinoCoinsBalance,
+		VKinoCoinsHistory:           vkinoCoinsHistory,
+		VKinoCoinsHistoryTotalCount: vkinoCoinsHistoryTotalCount,
 	}
 
 	if user.Birthdate != nil {
