@@ -134,6 +134,14 @@ func (c grpcUserClient) BuySubscriptionWithVKinoCoins(
 	return c.user.BuySubscriptionWithVKinoCoins(ctx, in, opts...)
 }
 
+func (c grpcUserClient) SpendVKinoCoins(
+	ctx context.Context,
+	in *userv1.SpendVKinoCoinsRequest,
+	opts ...grpc.CallOption,
+) (*userv1.SpendVKinoCoinsResponse, error) {
+	return c.user.SpendVKinoCoins(ctx, in, opts...)
+}
+
 func (c grpcUserClient) SearchUsersByEmail(
 	ctx context.Context,
 	in *userv1.SearchUsersByEmailRequest,

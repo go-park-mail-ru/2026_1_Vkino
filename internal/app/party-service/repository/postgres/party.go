@@ -309,7 +309,7 @@ func (r *PartyRepo) SavePoll(ctx context.Context, poll domain.Poll) (*domain.Pol
 }
 
 func (r *PartyRepo) SaveVote(ctx context.Context, vote domain.PollVote) error {
-	_, err := r.db.Exec(ctx, sqlInsertRoomVote, vote.UserID, vote.OptionID)
+	_, err := r.db.Exec(ctx, sqlInsertRoomVote, vote.UserID, vote.OptionID, vote.CoinsAmount)
 	if err != nil {
 		return fmt.Errorf("save vote: %w", err)
 	}
@@ -500,6 +500,7 @@ func (r *PartyRepo) getRoomPolls(ctx context.Context, roomID int64) ([]domain.Po
 			optionID   sql.NullInt64
 			optionText sql.NullString
 			votesCount sql.NullInt64
+			coinsTotal sql.NullInt64
 		)
 
 		if err = rows.Scan(
@@ -511,12 +512,13 @@ func (r *PartyRepo) getRoomPolls(ctx context.Context, roomID int64) ([]domain.Po
 			&optionID,
 			&optionText,
 			&votesCount,
+			&coinsTotal,
 		); err != nil {
 			return nil, fmt.Errorf("scan room poll: %w", err)
 		}
 
 		existing := ensureRoomPoll(pollMap, &order, poll)
-		appendRoomPollOption(existing, optionID, optionText, votesCount)
+		appendRoomPollOption(existing, optionID, optionText, votesCount, coinsTotal)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -549,6 +551,7 @@ func appendRoomPollOption(
 	optionID sql.NullInt64,
 	optionText sql.NullString,
 	votesCount sql.NullInt64,
+	coinsTotal sql.NullInt64,
 ) {
 	if !optionID.Valid {
 		return
@@ -560,6 +563,9 @@ func appendRoomPollOption(
 	}
 	if votesCount.Valid {
 		option.VotesCount = votesCount.Int64
+	}
+	if coinsTotal.Valid {
+		option.CoinsTotal = coinsTotal.Int64
 	}
 
 	poll.Options = append(poll.Options, option)

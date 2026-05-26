@@ -39,6 +39,13 @@ type UserSubscriptionPaymentUsecase interface {
 		userID int64,
 		tariffID int64,
 	) (domain.VKinoCoinsSubscriptionPurchase, error)
+	SpendVKinoCoins(
+		ctx context.Context,
+		userID int64,
+		coinsAmount int32,
+		operationType string,
+		description string,
+	) (domain.VKinoCoinsSpend, error)
 }
 
 type UserMovieUsecase interface {

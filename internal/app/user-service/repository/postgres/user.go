@@ -316,6 +316,42 @@ func (r *UserRepo) GetVKinoCoinsHistory(
 	return items, totalCount, nil
 }
 
+func (r *UserRepo) SpendVKinoCoins(
+	ctx context.Context,
+	userID int64,
+	coinsAmount int32,
+	operationType string,
+	description string,
+) (int32, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("begin spend vkino coins tx: %w", err)
+	}
+
+	defer func() {
+		ignoreRollbackError(tx.Rollback(ctx))
+	}()
+
+	if err = lockUserForCoinsPurchase(ctx, tx, userID); err != nil {
+		return 0, err
+	}
+
+	balance, err := getSufficientVKinoCoinsBalanceTx(ctx, tx, userID, coinsAmount)
+	if err != nil {
+		return 0, err
+	}
+
+	if _, err = tx.Exec(ctx, sqlCreateVKinoCoinsHistory, userID, coinsAmount, operationType, description); err != nil {
+		return 0, fmt.Errorf("create vkino coins history: %w", err)
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return 0, fmt.Errorf("commit spend vkino coins tx: %w", err)
+	}
+
+	return balance - coinsAmount, nil
+}
+
 func (r *UserRepo) BuySubscriptionWithVKinoCoins(
 	ctx context.Context,
 	userID int64,

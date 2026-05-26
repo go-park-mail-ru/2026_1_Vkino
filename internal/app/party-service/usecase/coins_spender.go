@@ -1,0 +1,69 @@
+package usecase
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/party-service/domain"
+	userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
+	"github.com/go-park-mail-ru/2026_1_VKino/pkg/service/authctx"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+const betPlaceOperationType = "bet_place"
+
+type CoinsSpender interface {
+	SpendForPollVote(
+		ctx context.Context,
+		userID, roomID, pollID, optionID int64,
+		coinsAmount int32,
+	) error
+}
+
+type userServiceCoinsSpender struct {
+	client userv1.UserServiceClient
+}
+
+func NewCoinsSpender(client userv1.UserServiceClient) CoinsSpender {
+	return &userServiceCoinsSpender{client: client}
+}
+
+func (s *userServiceCoinsSpender) SpendForPollVote(
+	ctx context.Context,
+	userID, roomID, pollID, optionID int64,
+	coinsAmount int32,
+) error {
+	if s == nil || s.client == nil || coinsAmount <= 0 {
+		return nil
+	}
+
+	if auth, err := authctx.FromContext(ctx); err == nil && auth.Authorization != "" {
+		ctx = authctx.AppendOutgoing(ctx, auth.Authorization)
+	}
+
+	description := fmt.Sprintf(
+		"Ставка %d VKino coins в опросе %d комнаты %d на вариант %d",
+		coinsAmount,
+		pollID,
+		roomID,
+		optionID,
+	)
+
+	_, err := s.client.SpendVKinoCoins(ctx, &userv1.SpendVKinoCoinsRequest{
+		UserId:        userID,
+		CoinsAmount:   coinsAmount,
+		OperationType: betPlaceOperationType,
+		Description:   description,
+	})
+	if err == nil {
+		return nil
+	}
+
+	st, ok := status.FromError(err)
+	if ok && st.Code() == codes.FailedPrecondition && st.Message() == "insufficient vkino coins" {
+		return domain.ErrInsufficientVKinoCoins
+	}
+
+	return fmt.Errorf("spend vkino coins for poll vote: %w", err)
+}

@@ -383,6 +383,21 @@ func (mr *MockUserCoinsRepoMockRecorder) GetVKinoCoinsHistory(ctx, userID, limit
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVKinoCoinsHistory", reflect.TypeOf((*MockUserCoinsRepo)(nil).GetVKinoCoinsHistory), ctx, userID, limit, offset)
 }
 
+// SpendVKinoCoins mocks base method.
+func (m *MockUserCoinsRepo) SpendVKinoCoins(ctx context.Context, userID int64, coinsAmount int32, operationType, description string) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpendVKinoCoins", ctx, userID, coinsAmount, operationType, description)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpendVKinoCoins indicates an expected call of SpendVKinoCoins.
+func (mr *MockUserCoinsRepoMockRecorder) SpendVKinoCoins(ctx, userID, coinsAmount, operationType, description any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpendVKinoCoins", reflect.TypeOf((*MockUserCoinsRepo)(nil).SpendVKinoCoins), ctx, userID, coinsAmount, operationType, description)
+}
+
 // GrantDailyVKinoCoins mocks base method.
 func (m *MockUserCoinsRepo) GrantDailyVKinoCoins(ctx context.Context, userID int64) (int32, error) {
 	m.ctrl.T.Helper()
@@ -729,6 +744,21 @@ func (m *MockUserRepo) BuySubscriptionWithVKinoCoins(ctx context.Context, userID
 func (mr *MockUserRepoMockRecorder) BuySubscriptionWithVKinoCoins(ctx, userID, tariffID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuySubscriptionWithVKinoCoins", reflect.TypeOf((*MockUserRepo)(nil).BuySubscriptionWithVKinoCoins), ctx, userID, tariffID)
+}
+
+// SpendVKinoCoins mocks base method.
+func (m *MockUserRepo) SpendVKinoCoins(ctx context.Context, userID int64, coinsAmount int32, operationType, description string) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SpendVKinoCoins", ctx, userID, coinsAmount, operationType, description)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SpendVKinoCoins indicates an expected call of SpendVKinoCoins.
+func (mr *MockUserRepoMockRecorder) SpendVKinoCoins(ctx, userID, coinsAmount, operationType, description any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpendVKinoCoins", reflect.TypeOf((*MockUserRepo)(nil).SpendVKinoCoins), ctx, userID, coinsAmount, operationType, description)
 }
 
 // CreateUserSubscription mocks base method.

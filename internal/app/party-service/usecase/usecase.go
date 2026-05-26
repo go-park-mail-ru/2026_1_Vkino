@@ -43,4 +43,5 @@ type service struct {
 	partyRepo          repository.PartyRepo
 	eventBroker        repository.RoomEventBroker
 	subscriptionReader SubscriptionReader
+	coinsSpender       CoinsSpender
 }

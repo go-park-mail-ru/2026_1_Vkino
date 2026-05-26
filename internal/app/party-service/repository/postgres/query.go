@@ -163,11 +163,15 @@ const (
 			b.created_at,
 			v.id,
 			v.bet_variant,
-			coalesce(vote_counts.votes_count, 0)
+			coalesce(vote_counts.votes_count, 0),
+			coalesce(vote_counts.coins_total, 0)
 		from vkino_room_chat_bet b
 		left join vkino_room_chat_bet_variant v on v.vkino_room_chat_bet_id = b.id
 		left join (
-			select bet_variant_id, count(*)::bigint as votes_count
+			select
+				bet_variant_id,
+				count(*)::bigint as votes_count,
+				coalesce(sum(vkino_coins_count), 0)::bigint as coins_total
 			from vkino_room_chat_bet_answer
 			group by bet_variant_id
 		) vote_counts on vote_counts.bet_variant_id = v.id
@@ -296,10 +300,12 @@ const (
 	`
 
 	sqlInsertRoomVote = `
-		insert into vkino_room_chat_bet_answer (user_id, bet_variant_id)
-		values ($1, $2)
+		insert into vkino_room_chat_bet_answer (user_id, bet_variant_id, vkino_coins_count)
+		values ($1, $2, $3)
 		on conflict (user_id, bet_variant_id)
-		do nothing
+		do update set
+			vkino_coins_count = vkino_room_chat_bet_answer.vkino_coins_count + excluded.vkino_coins_count,
+			updated_at = now()
 	`
 
 	sqlTouchRoom = `

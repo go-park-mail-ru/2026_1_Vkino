@@ -77,12 +77,14 @@ type PollOption struct {
 	ID         int64
 	Title      string
 	VotesCount int64
+	CoinsTotal int64
 }
 
 type PollVote struct {
-	PollID   int64
-	OptionID int64
-	UserID   int64
+	PollID      int64
+	OptionID    int64
+	UserID      int64
+	CoinsAmount int32
 }
 
 type RoomEvent struct {

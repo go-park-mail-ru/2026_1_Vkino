@@ -66,3 +66,8 @@ type VKinoCoinsSubscriptionPurchase struct {
 	VKinoCoinsBalance int32
 	Subscription      SubscriptionInfo
 }
+
+type VKinoCoinsSpend struct {
+	CoinsSpent        int32
+	VKinoCoinsBalance int32
+}

@@ -397,7 +397,8 @@ func newPartyVoteHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 		}
 
 		var req struct {
-			OptionID int64 `json:"option_id"`
+			OptionID    int64 `json:"option_id"`
+			CoinsAmount int32 `json:"coins_amount"`
 		}
 		if !readJSON(w, r, &req) {
 			return
@@ -407,7 +408,7 @@ func newPartyVoteHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 		defer cancel()
 
 		resp, err := partyClient.VoteRoomPoll(r.Context(), &partyv1.VoteRoomPollRequest{
-			RoomId: roomID, PollId: pollID, OptionId: req.OptionID,
+			RoomId: roomID, PollId: pollID, OptionId: req.OptionID, CoinsAmount: req.CoinsAmount,
 		})
 		if err != nil {
 			writeGRPCError(w, err)

@@ -351,9 +351,14 @@ func (s *service) VoteRoomPoll(
 	}
 
 	vote := domain.PollVote{
-		PollID:   req.PollID,
-		OptionID: req.OptionID,
-		UserID:   userID,
+		PollID:      req.PollID,
+		OptionID:    req.OptionID,
+		UserID:      userID,
+		CoinsAmount: req.CoinsAmount,
+	}
+
+	if err := s.spendPollVoteCoins(ctx, req, vote); err != nil {
+		return domain.PollVote{}, domain.Poll{}, err
 	}
 
 	updatedPoll, err := s.saveVoteAndLoadPoll(ctx, req.RoomID, req.PollID, vote)
@@ -541,11 +546,30 @@ func validateVoteRoomPollRequest(userID int64, req domain.VoteRoomPollRequest) e
 		return domain.ErrInvalidRoomID
 	}
 
-	if req.PollID <= 0 || req.OptionID <= 0 {
+	if req.PollID <= 0 || req.OptionID <= 0 || req.CoinsAmount <= 0 {
 		return domain.ErrInvalidPollOption
 	}
 
 	return nil
+}
+
+func (s *service) spendPollVoteCoins(
+	ctx context.Context,
+	req domain.VoteRoomPollRequest,
+	vote domain.PollVote,
+) error {
+	if s.coinsSpender == nil {
+		return nil
+	}
+
+	return s.coinsSpender.SpendForPollVote(
+		ctx,
+		vote.UserID,
+		req.RoomID,
+		req.PollID,
+		req.OptionID,
+		req.CoinsAmount,
+	)
 }
 
 func (s *service) publishVoteRoomPollEvent(

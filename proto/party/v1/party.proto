@@ -122,6 +122,7 @@ message VoteRoomPollRequest {
   int64 room_id = 1;
   int64 poll_id = 2;
   int64 option_id = 3;
+  int32 coins_amount = 4;
 }
 
 message VoteRoomPollResponse {
@@ -200,12 +201,14 @@ message PollOption {
   int64 id = 1;
   string title = 2;
   int64 votes_count = 3;
+  int64 coins_total = 4;
 }
 
 message PollVote {
   int64 poll_id = 1;
   int64 option_id = 2;
   int64 user_id = 3;
+  int32 coins_amount = 4;
 }
 
 message RoomEvent {

@@ -57,6 +57,7 @@ var userGRPCErrorMapper = newGRPCErrorMapper(
 		domain.ErrSubscriptionTariffNotFound,
 		domain.ErrInsufficientVKinoCoins,
 		domain.ErrTariffNotAvailableForCoins,
+		domain.ErrInvalidCoinsAmount,
 		domain.ErrInternal,
 	},
 	mergeGRPCErrorRules(commonGRPCErrorRules, map[error]grpcx.ErrResponse{
@@ -81,6 +82,7 @@ var userGRPCErrorMapper = newGRPCErrorMapper(
 		domain.ErrTariffNotAvailableForCoins: {
 			Code: codes.FailedPrecondition, Message: "tariff is not available for vkino coins payment",
 		},
+		domain.ErrInvalidCoinsAmount: {Code: codes.InvalidArgument, Message: "invalid coins amount"},
 	}),
 )
 
