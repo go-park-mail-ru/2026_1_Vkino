@@ -41,32 +41,50 @@ type authClientStub struct {
 	validateErr  error
 }
 
-func (s authClientStub) SignUp(context.Context, *authv1.SignUpRequest,
-	...grpc.CallOption) (*authv1.SignUpResponse, error) {
+func (s authClientStub) SignUp(
+	context.Context,
+	*authv1.SignUpRequest,
+	...grpc.CallOption,
+) (*authv1.SignUpResponse, error) {
 	panic("unexpected call")
 }
 
-func (s authClientStub) SignIn(context.Context, *authv1.SignInRequest,
-	...grpc.CallOption) (*authv1.SignInResponse, error) {
+func (s authClientStub) SignIn(
+	context.Context,
+	*authv1.SignInRequest,
+	...grpc.CallOption,
+) (*authv1.SignInResponse, error) {
 	panic("unexpected call")
 }
 
-func (s authClientStub) Refresh(context.Context, *authv1.RefreshRequest,
-	...grpc.CallOption) (*authv1.RefreshResponse, error) {
+func (s authClientStub) Refresh(
+	context.Context,
+	*authv1.RefreshRequest,
+	...grpc.CallOption,
+) (*authv1.RefreshResponse, error) {
 	panic("unexpected call")
 }
 
-func (s authClientStub) Validate(context.Context, *authv1.ValidateRequest,
-	...grpc.CallOption) (*authv1.ValidateResponse, error) {
+func (s authClientStub) Validate(
+	context.Context,
+	*authv1.ValidateRequest,
+	...grpc.CallOption,
+) (*authv1.ValidateResponse, error) {
 	return s.validateResp, s.validateErr
 }
 
-func (s authClientStub) Logout(context.Context, *authv1.LogoutRequest, ...grpc.CallOption) (*authv1.LogoutResponse,
-	error) {
+func (s authClientStub) Logout(
+	context.Context,
+	*authv1.LogoutRequest,
+	...grpc.CallOption,
+) (*authv1.LogoutResponse, error) {
 	panic("unexpected call")
 }
 
-func (s authClientStub) ChangePassword(context.Context, *authv1.ChangePasswordRequest,
-	...grpc.CallOption) (*authv1.ChangePasswordResponse, error) {
+func (s authClientStub) ChangePassword(
+	context.Context,
+	*authv1.ChangePasswordRequest,
+	...grpc.CallOption,
+) (*authv1.ChangePasswordResponse, error) {
 	panic("unexpected call")
 }

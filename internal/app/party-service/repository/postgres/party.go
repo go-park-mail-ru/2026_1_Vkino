@@ -556,47 +556,9 @@ func (r *PartyRepo) getRoomPolls(ctx context.Context, roomID int64) ([]domain.Po
 	order := make([]int64, 0)
 
 	for rows.Next() {
-		var (
-			poll             domain.Poll
-			resolvedAt       sql.NullTime
-			correctOptionID  sql.NullInt64
-			resolvedByUserID sql.NullInt64
-			optionID         sql.NullInt64
-			optionText       sql.NullString
-			votesCount       sql.NullInt64
-			coinsTotal       sql.NullInt64
-		)
-
-		if err = rows.Scan(
-			&poll.ID,
-			&poll.RoomID,
-			&poll.Question,
-			&poll.CreatedByUserID,
-			&poll.CreatedAt,
-			&resolvedAt,
-			&correctOptionID,
-			&resolvedByUserID,
-			&optionID,
-			&optionText,
-			&votesCount,
-			&coinsTotal,
-		); err != nil {
-			return nil, fmt.Errorf("scan room poll: %w", err)
-		}
-
-		if resolvedAt.Valid {
-			value := resolvedAt.Time
-			poll.ClosedAt = &value
-		}
-
-		if correctOptionID.Valid && correctOptionID.Int64 > 0 {
-			value := correctOptionID.Int64
-			poll.CorrectOptionID = &value
-		}
-
-		if resolvedByUserID.Valid && resolvedByUserID.Int64 > 0 {
-			value := resolvedByUserID.Int64
-			poll.ResolvedByUserID = &value
+		poll, optionID, optionText, votesCount, coinsTotal, scanErr := scanRoomPollRow(rows)
+		if scanErr != nil {
+			return nil, fmt.Errorf("scan room poll: %w", scanErr)
 		}
 
 		existing := ensureRoomPoll(pollMap, &order, poll)
@@ -613,6 +575,69 @@ func (r *PartyRepo) getRoomPolls(ctx context.Context, roomID int64) ([]domain.Po
 	}
 
 	return polls, nil
+}
+
+func scanRoomPollRow(rows corepostgres.Rows) (
+	domain.Poll,
+	sql.NullInt64,
+	sql.NullString,
+	sql.NullInt64,
+	sql.NullInt64,
+	error,
+) {
+	var (
+		poll             domain.Poll
+		resolvedAt       sql.NullTime
+		correctOptionID  sql.NullInt64
+		resolvedByUserID sql.NullInt64
+		optionID         sql.NullInt64
+		optionText       sql.NullString
+		votesCount       sql.NullInt64
+		coinsTotal       sql.NullInt64
+	)
+
+	if err := rows.Scan(
+		&poll.ID,
+		&poll.RoomID,
+		&poll.Question,
+		&poll.CreatedByUserID,
+		&poll.CreatedAt,
+		&resolvedAt,
+		&correctOptionID,
+		&resolvedByUserID,
+		&optionID,
+		&optionText,
+		&votesCount,
+		&coinsTotal,
+	); err != nil {
+		return domain.Poll{}, sql.NullInt64{}, sql.NullString{}, sql.NullInt64{}, sql.NullInt64{}, err
+	}
+
+	applyRoomPollNullFields(&poll, resolvedAt, correctOptionID, resolvedByUserID)
+
+	return poll, optionID, optionText, votesCount, coinsTotal, nil
+}
+
+func applyRoomPollNullFields(
+	poll *domain.Poll,
+	resolvedAt sql.NullTime,
+	correctOptionID sql.NullInt64,
+	resolvedByUserID sql.NullInt64,
+) {
+	if resolvedAt.Valid {
+		value := resolvedAt.Time
+		poll.ClosedAt = &value
+	}
+
+	if correctOptionID.Valid && correctOptionID.Int64 > 0 {
+		value := correctOptionID.Int64
+		poll.CorrectOptionID = &value
+	}
+
+	if resolvedByUserID.Valid && resolvedByUserID.Int64 > 0 {
+		value := resolvedByUserID.Int64
+		poll.ResolvedByUserID = &value
+	}
 }
 
 func ensureRoomPoll(pollMap map[int64]*domain.Poll, order *[]int64, poll domain.Poll) *domain.Poll {

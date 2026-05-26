@@ -241,8 +241,11 @@ func (r *roomUsecaseRepo) GetRoomByID(_ context.Context, roomID int64) (*domain.
 	return &roomCopy, nil
 }
 
-func (r *roomUsecaseRepo) CreateRoom(_ context.Context, userID int64,
-	req domain.CreateRoomRequest) (*domain.Room, error) {
+func (r *roomUsecaseRepo) CreateRoom(
+	_ context.Context,
+	userID int64,
+	req domain.CreateRoomRequest,
+) (*domain.Room, error) {
 	r.createRoomCalled = true
 	r.createdRoomReq = req
 

@@ -43,34 +43,19 @@ func (s *userServiceCoinsSpender) SpendForPollVote(
 		return nil
 	}
 
-	if auth, err := authctx.FromContext(ctx); err == nil && auth.Authorization != "" {
-		ctx = authctx.AppendOutgoing(ctx, auth.Authorization)
-	}
-
-	description := fmt.Sprintf(
-		"Ставка %d VKino coins в опросе %d комнаты %d на вариант %d",
-		coinsAmount,
-		pollID,
-		roomID,
-		optionID,
-	)
+	ctx = appendOutgoingAuthorization(ctx)
 
 	_, err := s.client.SpendVKinoCoins(ctx, &userv1.SpendVKinoCoinsRequest{
 		UserId:        userID,
 		CoinsAmount:   coinsAmount,
 		OperationType: betPlaceOperationType,
-		Description:   description,
+		Description:   pollVoteSpendDescription(coinsAmount, pollID, roomID, optionID),
 	})
 	if err == nil {
 		return nil
 	}
 
-	st, ok := status.FromError(err)
-	if ok && st.Code() == codes.FailedPrecondition && st.Message() == "insufficient vkino coins" {
-		return domain.ErrInsufficientVKinoCoins
-	}
-
-	return fmt.Errorf("spend vkino coins for poll vote: %w", err)
+	return mapSpendForPollVoteError(err)
 }
 
 func (s *userServiceCoinsSpender) RewardForPollWin(
@@ -82,9 +67,7 @@ func (s *userServiceCoinsSpender) RewardForPollWin(
 		return nil
 	}
 
-	if auth, err := authctx.FromContext(ctx); err == nil && auth.Authorization != "" {
-		ctx = authctx.AppendOutgoing(ctx, auth.Authorization)
-	}
+	ctx = appendOutgoingAuthorization(ctx)
 
 	description := fmt.Sprintf(
 		"Выигрыш %d VKino coins в опросе %d комнаты %d за вариант %d",
@@ -108,4 +91,31 @@ func (s *userServiceCoinsSpender) RewardForPollWin(
 	}
 
 	return nil
+}
+
+func appendOutgoingAuthorization(ctx context.Context) context.Context {
+	if auth, err := authctx.FromContext(ctx); err == nil && auth.Authorization != "" {
+		return authctx.AppendOutgoing(ctx, auth.Authorization)
+	}
+
+	return ctx
+}
+
+func pollVoteSpendDescription(coinsAmount int32, pollID, roomID, optionID int64) string {
+	return fmt.Sprintf(
+		"Ставка %d VKino coins в опросе %d комнаты %d на вариант %d",
+		coinsAmount,
+		pollID,
+		roomID,
+		optionID,
+	)
+}
+
+func mapSpendForPollVoteError(err error) error {
+	st, ok := status.FromError(err)
+	if ok && st.Code() == codes.FailedPrecondition && st.Message() == "insufficient vkino coins" {
+		return domain.ErrInsufficientVKinoCoins
+	}
+
+	return fmt.Errorf("spend vkino coins for poll vote: %w", err)
 }

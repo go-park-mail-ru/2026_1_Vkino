@@ -84,7 +84,10 @@ func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (
 	if err != nil {
 		return nil, fmt.Errorf("begin create user transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+
+	defer func() {
+		ignoreRollbackError(tx.Rollback(ctx))
+	}()
 
 	var user domain.User
 
@@ -136,4 +139,10 @@ func (r *UserRepo) UpdatePassword(ctx context.Context, userID int64, passwordHas
 	}
 
 	return nil
+}
+
+func ignoreRollbackError(err error) {
+	if err != nil {
+		return
+	}
 }

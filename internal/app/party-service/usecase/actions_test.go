@@ -424,8 +424,11 @@ func (r *votePollRepo) SaveVote(_ context.Context, vote domain.PollVote) error {
 	return nil
 }
 
-func (r *votePollRepo) GetPollOptionStakes(_ context.Context, pollID,
-	optionID int64) ([]domain.PollOptionStake, error) {
+func (r *votePollRepo) GetPollOptionStakes(
+	_ context.Context,
+	pollID,
+	optionID int64,
+) ([]domain.PollOptionStake, error) {
 	if r.room == nil {
 		return nil, domain.ErrInvalidPoll
 	}
@@ -440,8 +443,10 @@ func (r *votePollRepo) GetPollOptionStakes(_ context.Context, pollID,
 	}
 }
 
-func (r *votePollRepo) ResolvePoll(_ context.Context, roomID, pollID, optionID,
-	resolvedByUserID int64) (*domain.Poll, error) {
+func (r *votePollRepo) ResolvePoll(
+	_ context.Context,
+	roomID, pollID, optionID, resolvedByUserID int64,
+) (*domain.Poll, error) {
 	if r.room == nil || r.room.ID != roomID {
 		return nil, domain.ErrRoomNotFound
 	}

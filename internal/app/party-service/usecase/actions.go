@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -11,15 +12,16 @@ import (
 )
 
 const (
-	playbackStatusPaused = "paused"
-	roomActionPlay       = "play"
-	roomActionPause      = "pause"
-	roomActionSeek       = "seek"
-	roomActionSyncState  = "sync_state"
-	memberRoleHost       = "host"
-	memberRoleMember     = "member"
-	memberStatusActive   = "active"
-	memberStatusPending  = "pending"
+	playbackStatusPaused  = "paused"
+	roomActionPlay        = "play"
+	roomActionPause       = "pause"
+	roomActionSeek        = "seek"
+	roomActionSyncState   = "sync_state"
+	memberRoleHost        = "host"
+	memberRoleMember      = "member"
+	memberStatusActive    = "active"
+	memberStatusPending   = "pending"
+	roomVisibilityPrivate = "private"
 )
 
 func (s *service) ApplyRoomAction(
@@ -566,7 +568,7 @@ func buildPollOptions(rawOptions []string) ([]domain.PollOption, error) {
 }
 
 func ensureAccessibleRoom(room *domain.Room, userID int64) error {
-	if room.Visibility == "private" && !isRoomMember(room.Members, userID) {
+	if room.Visibility == roomVisibilityPrivate && !isRoomMember(room.Members, userID) {
 		return domain.ErrAccessDenied
 	}
 
@@ -706,54 +708,105 @@ type pollPayout struct {
 	coinsAmount int32
 }
 
+type payoutCalc struct {
+	pollPayout
+
+	remainder int64
+}
+
 func (s *service) buildPollPayouts(
 	ctx context.Context,
 	poll domain.Poll,
 	correctOptionID int64,
 ) ([]pollPayout, error) {
-	var totalPool int64
-	for _, option := range poll.Options {
-		totalPool += option.CoinsTotal
-	}
+	totalPool := totalPollPool(poll.Options)
 
 	winnerStakes, err := s.partyRepo.GetPollOptionStakes(ctx, poll.ID, correctOptionID)
 	if err != nil {
 		return nil, err
 	}
 
+	winnersPool := totalWinnerStakePool(winnerStakes)
+	if totalPool <= 0 || winnersPool <= 0 || len(winnerStakes) == 0 {
+		return nil, nil
+	}
+
+	calcs, distributed, err := buildPollPayoutCalcs(winnerStakes, totalPool, winnersPool)
+	if err != nil {
+		return nil, err
+	}
+
+	sortPollPayoutCalcs(calcs)
+	distributePollPayoutRemainder(calcs, totalPool, distributed)
+
+	return collectPollPayouts(calcs), nil
+}
+
+func totalPollPool(options []domain.PollOption) int64 {
+	var totalPool int64
+	for _, option := range options {
+		totalPool += option.CoinsTotal
+	}
+
+	return totalPool
+}
+
+func totalWinnerStakePool(winnerStakes []domain.PollOptionStake) int64 {
 	var winnersPool int64
 	for _, stake := range winnerStakes {
 		winnersPool += int64(stake.CoinsAmount)
 	}
 
-	if totalPool <= 0 || winnersPool <= 0 || len(winnerStakes) == 0 {
-		return nil, nil
-	}
+	return winnersPool
+}
 
-	type payoutCalc struct {
-		pollPayout
-		remainder int64
-	}
-
+func buildPollPayoutCalcs(
+	winnerStakes []domain.PollOptionStake,
+	totalPool int64,
+	winnersPool int64,
+) ([]payoutCalc, int64, error) {
 	calcs := make([]payoutCalc, 0, len(winnerStakes))
 
 	var distributed int64
 
 	for _, stake := range winnerStakes {
-		product := totalPool * int64(stake.CoinsAmount)
-		base := product / winnersPool
-		remainder := product % winnersPool
-		calcs = append(calcs, payoutCalc{
-			pollPayout: pollPayout{
-				userID:      stake.UserID,
-				optionID:    stake.OptionID,
-				coinsAmount: int32(base),
-			},
-			remainder: remainder,
-		})
+		calc, base, err := buildPollPayoutCalc(stake, totalPool, winnersPool)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		calcs = append(calcs, calc)
 		distributed += base
 	}
 
+	return calcs, distributed, nil
+}
+
+func buildPollPayoutCalc(
+	stake domain.PollOptionStake,
+	totalPool int64,
+	winnersPool int64,
+) (payoutCalc, int64, error) {
+	product := totalPool * int64(stake.CoinsAmount)
+	base := product / winnersPool
+	remainder := product % winnersPool
+
+	coinsAmount, err := int64ToInt32(base)
+	if err != nil {
+		return payoutCalc{}, 0, err
+	}
+
+	return payoutCalc{
+		pollPayout: pollPayout{
+			userID:      stake.UserID,
+			optionID:    stake.OptionID,
+			coinsAmount: coinsAmount,
+		},
+		remainder: remainder,
+	}, base, nil
+}
+
+func sortPollPayoutCalcs(calcs []payoutCalc) {
 	sort.SliceStable(calcs, func(i, j int) bool {
 		if calcs[i].remainder == calcs[j].remainder {
 			return calcs[i].userID < calcs[j].userID
@@ -761,11 +814,15 @@ func (s *service) buildPollPayouts(
 
 		return calcs[i].remainder > calcs[j].remainder
 	})
+}
 
+func distributePollPayoutRemainder(calcs []payoutCalc, totalPool int64, distributed int64) {
 	for remaining := totalPool - distributed; remaining > 0; remaining-- {
 		calcs[(totalPool-remaining)%int64(len(calcs))].coinsAmount++
 	}
+}
 
+func collectPollPayouts(calcs []payoutCalc) []pollPayout {
 	payouts := make([]pollPayout, 0, len(calcs))
 	for _, calc := range calcs {
 		if calc.coinsAmount <= 0 {
@@ -775,7 +832,15 @@ func (s *service) buildPollPayouts(
 		payouts = append(payouts, calc.pollPayout)
 	}
 
-	return payouts, nil
+	return payouts
+}
+
+func int64ToInt32(value int64) (int32, error) {
+	if value > math.MaxInt32 || value < math.MinInt32 {
+		return 0, fmt.Errorf("%w: poll payout overflows int32", domain.ErrInternal)
+	}
+
+	return int32(value), nil
 }
 
 func (s *service) applyPollPayouts(
