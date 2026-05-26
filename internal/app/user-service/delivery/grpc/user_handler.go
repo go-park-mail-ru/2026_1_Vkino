@@ -19,10 +19,22 @@ func (s *Server) GetProfile(ctx context.Context, req *userv1.GetProfileRequest) 
 	}
 
 	resp := &userv1.GetProfileResponse{
-		Email:             profile.Email,
-		AvatarUrl:         profile.AvatarURL,
-		Role:              profile.Role,
-		VkinoCoinsBalance: profile.VKinoCoinsBalance,
+		Email:                       profile.Email,
+		AvatarUrl:                   profile.AvatarURL,
+		Role:                        profile.Role,
+		VkinoCoinsBalance:           profile.VKinoCoinsBalance,
+		VkinoCoinsHistory:           make([]*userv1.VKinoCoinsHistoryItem, 0, len(profile.VKinoCoinsHistory)),
+		VkinoCoinsHistoryTotalCount: profile.VKinoCoinsHistoryTotalCount,
+	}
+
+	for _, item := range profile.VKinoCoinsHistory {
+		resp.VkinoCoinsHistory = append(resp.VkinoCoinsHistory, &userv1.VKinoCoinsHistoryItem{
+			Id:              item.ID,
+			VkinoCoinsCount: item.VKinoCoinsCount,
+			OperationType:   item.OperationType,
+			Description:     item.Description,
+			CreatedAt:       item.CreatedAt,
+		})
 	}
 
 	if profile.Birthdate != nil {

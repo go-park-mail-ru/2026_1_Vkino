@@ -574,11 +574,24 @@ func newUserProfileHandler(cfg Config, userClient UserClient) http.HandlerFunc {
 		}
 
 		body := map[string]any{
-			"email":               resp.GetEmail(),
-			"avatar_url":          resp.GetAvatarUrl(),
-			"role":                resp.GetRole(),
-			"vkino_coins_balance": resp.GetVkinoCoinsBalance(),
+			"email":                           resp.GetEmail(),
+			"avatar_url":                      resp.GetAvatarUrl(),
+			"role":                            resp.GetRole(),
+			"vkino_coins_balance":             resp.GetVkinoCoinsBalance(),
+			"vkino_coins_history_total_count": resp.GetVkinoCoinsHistoryTotalCount(),
 		}
+
+		history := make([]map[string]any, 0, len(resp.GetVkinoCoinsHistory()))
+		for _, item := range resp.GetVkinoCoinsHistory() {
+			history = append(history, map[string]any{
+				"id":                item.GetId(),
+				"vkino_coins_count": item.GetVkinoCoinsCount(),
+				"operation_type":    item.GetOperationType(),
+				"description":       item.GetDescription(),
+				"created_at":        item.GetCreatedAt(),
+			})
+		}
+		body["vkino_coins_history"] = history
 
 		if resp.GetBirthdate() != "" {
 			body["birthdate"] = resp.GetBirthdate()

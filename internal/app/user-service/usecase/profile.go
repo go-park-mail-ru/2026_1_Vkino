@@ -14,6 +14,8 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/sanitize"
 )
 
+const profileCoinsHistoryLimit int32 = 20
+
 func (u *UserUsecase) GetProfile(ctx context.Context, userID int64) (domain.ProfileResponse, error) {
 	user, err := u.userRepo.GetUserByID(ctx, userID)
 	if err != nil {
@@ -29,7 +31,12 @@ func (u *UserUsecase) GetProfile(ctx context.Context, userID int64) (domain.Prof
 		return domain.ProfileResponse{}, fmt.Errorf("%w: get vkino coins balance: %w", domain.ErrInternal, err)
 	}
 
-	return u.profileResponse(ctx, user, balance)
+	history, totalCount, err := u.userRepo.GetVKinoCoinsHistory(ctx, userID, profileCoinsHistoryLimit, 0)
+	if err != nil {
+		return domain.ProfileResponse{}, fmt.Errorf("%w: get vkino coins history: %w", domain.ErrInternal, err)
+	}
+
+	return u.profileResponse(ctx, user, balance, history, totalCount)
 }
 
 func (u *UserUsecase) UpdateProfile(
@@ -55,7 +62,7 @@ func (u *UserUsecase) UpdateProfile(
 		return domain.ProfileResponse{}, err
 	}
 
-	return u.profileResponse(ctx, user, 0)
+	return u.profileResponse(ctx, user, 0, nil, 0)
 }
 
 func (u *UserUsecase) updateBirthdateIfProvided(

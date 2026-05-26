@@ -23,6 +23,16 @@ func TestUserRoutes_GetProfile(t *testing.T) {
 			Email:             "user@example.com",
 			Role:              "user",
 			VkinoCoinsBalance: 80,
+			VkinoCoinsHistory: []*userv1.VKinoCoinsHistoryItem{
+				{
+					Id:              7,
+					VkinoCoinsCount: 3,
+					OperationType:   "signup_bonus",
+					Description:     "Стартовый бонус",
+					CreatedAt:       "2026-05-26T10:00:00Z",
+				},
+			},
+			VkinoCoinsHistoryTotalCount: 1,
 		}, nil)
 
 	handler := newUserHandler(t, client)
@@ -33,7 +43,17 @@ func TestUserRoutes_GetProfile(t *testing.T) {
 		"email":"user@example.com",
 		"role":"user",
 		"vkino_coins_balance":80,
-		"avatar_url":""
+		"avatar_url":"",
+		"vkino_coins_history_total_count":1,
+		"vkino_coins_history":[
+			{
+				"id":7,
+				"vkino_coins_count":3,
+				"operation_type":"signup_bonus",
+				"description":"Стартовый бонус",
+				"created_at":"2026-05-26T10:00:00Z"
+			}
+		]
 	}`, rr.Body.String())
 }
 

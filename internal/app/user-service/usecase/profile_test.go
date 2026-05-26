@@ -129,6 +129,17 @@ func TestGetProfile_GrantsDailyCoinsAndReturnsBalance(t *testing.T) {
 	repo.EXPECT().
 		GetVKinoCoinsBalance(gomock.Any(), int64(42)).
 		Return(int32(80), nil)
+	repo.EXPECT().
+		GetVKinoCoinsHistory(gomock.Any(), int64(42), profileCoinsHistoryLimit, int32(0)).
+		Return([]domain.VKinoCoinsHistoryItem{
+			{
+				ID:              7,
+				VKinoCoinsCount: 3,
+				OperationType:   "signup_bonus",
+				Description:     "Стартовый бонус",
+				CreatedAt:       "2026-05-26T10:00:00Z",
+			},
+		}, int32(1), nil)
 
 	u := NewUserUsecase(repo, stubAvatarStore{}, nil)
 
@@ -136,6 +147,8 @@ func TestGetProfile_GrantsDailyCoinsAndReturnsBalance(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int32(80), resp.VKinoCoinsBalance)
 	require.Equal(t, testProfileEmail, resp.Email)
+	require.Len(t, resp.VKinoCoinsHistory, 1)
+	require.Equal(t, int32(1), resp.VKinoCoinsHistoryTotalCount)
 }
 
 func TestGetProfile_GrantDailyFailureReturnsInternal(t *testing.T) {

@@ -19,6 +19,11 @@ func NewUserRepo(db *corepostgres.Client) *UserRepo {
 	return &UserRepo{db: db}
 }
 
+const (
+	signupBonusCoinsAmount = 20
+	signupBonusDescription = "Стартовый бонус за регистрацию"
+)
+
 var (
 	ErrUserNotFound      = errors.New("user not found")
 	ErrUserAlreadyExists = errors.New("user with this email already exists")
@@ -75,9 +80,15 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int64) (*domain.User, err
 }
 
 func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (*domain.User, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("begin create user transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	var user domain.User
 
-	err := r.db.QueryRow(ctx, sqlCreateUser, email, passwordHash).Scan(
+	err = tx.QueryRow(ctx, sqlCreateUser, email, passwordHash).Scan(
 		&user.ID,
 		&user.Email,
 		&user.CredentialHash,
@@ -95,6 +106,20 @@ func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (
 		}
 
 		return nil, fmt.Errorf("create user: %w", err)
+	}
+
+	if _, err = tx.Exec(
+		ctx,
+		sqlCreateSignupBonusHistory,
+		user.ID,
+		signupBonusCoinsAmount,
+		signupBonusDescription,
+	); err != nil {
+		return nil, fmt.Errorf("create signup bonus history: %w", err)
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("commit create user transaction: %w", err)
 	}
 
 	return &user, nil

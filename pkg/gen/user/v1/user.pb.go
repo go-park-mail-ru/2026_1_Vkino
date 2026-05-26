@@ -66,14 +66,16 @@ func (x *GetProfileRequest) GetUserId() int64 {
 }
 
 type GetProfileResponse struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	Email             string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
-	Birthdate         string                 `protobuf:"bytes,2,opt,name=birthdate,proto3" json:"birthdate,omitempty"`
-	AvatarUrl         string                 `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
-	Role              string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
-	VkinoCoinsBalance int32                  `protobuf:"varint,5,opt,name=vkino_coins_balance,json=vkinoCoinsBalance,proto3" json:"vkino_coins_balance,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state                       protoimpl.MessageState   `protogen:"open.v1"`
+	Email                       string                   `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	Birthdate                   string                   `protobuf:"bytes,2,opt,name=birthdate,proto3" json:"birthdate,omitempty"`
+	AvatarUrl                   string                   `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	Role                        string                   `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	VkinoCoinsBalance           int32                    `protobuf:"varint,5,opt,name=vkino_coins_balance,json=vkinoCoinsBalance,proto3" json:"vkino_coins_balance,omitempty"`
+	VkinoCoinsHistory           []*VKinoCoinsHistoryItem `protobuf:"bytes,6,rep,name=vkino_coins_history,json=vkinoCoinsHistory,proto3" json:"vkino_coins_history,omitempty"`
+	VkinoCoinsHistoryTotalCount int32                    `protobuf:"varint,7,opt,name=vkino_coins_history_total_count,json=vkinoCoinsHistoryTotalCount,proto3" json:"vkino_coins_history_total_count,omitempty"`
+	unknownFields               protoimpl.UnknownFields
+	sizeCache                   protoimpl.SizeCache
 }
 
 func (x *GetProfileResponse) Reset() {
@@ -137,6 +139,20 @@ func (x *GetProfileResponse) GetRole() string {
 func (x *GetProfileResponse) GetVkinoCoinsBalance() int32 {
 	if x != nil {
 		return x.VkinoCoinsBalance
+	}
+	return 0
+}
+
+func (x *GetProfileResponse) GetVkinoCoinsHistory() []*VKinoCoinsHistoryItem {
+	if x != nil {
+		return x.VkinoCoinsHistory
+	}
+	return nil
+}
+
+func (x *GetProfileResponse) GetVkinoCoinsHistoryTotalCount() int32 {
+	if x != nil {
+		return x.VkinoCoinsHistoryTotalCount
 	}
 	return 0
 }
@@ -3059,14 +3075,16 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"\x12user/v1/user.proto\x12\auser.v1\",\n" +
 	"\x11GetProfileRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\"\xab\x01\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\"\xc1\x02\n" +
 	"\x12GetProfileResponse\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1c\n" +
 	"\tbirthdate\x18\x02 \x01(\tR\tbirthdate\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12.\n" +
-	"\x13vkino_coins_balance\x18\x05 \x01(\x05R\x11vkinoCoinsBalance\"/\n" +
+	"\x13vkino_coins_balance\x18\x05 \x01(\x05R\x11vkinoCoinsBalance\x12N\n" +
+	"\x13vkino_coins_history\x18\x06 \x03(\v2\x1e.user.v1.VKinoCoinsHistoryItemR\x11vkinoCoinsHistory\x12D\n" +
+	"\x1fvkino_coins_history_total_count\x18\a \x01(\x05R\x1bvkinoCoinsHistoryTotalCount\"/\n" +
 	"\x10GetFriendRequest\x12\x1b\n" +
 	"\tfriend_id\x18\x01 \x01(\x03R\bfriendId\"X\n" +
 	"\x11GetFriendResponse\x12\x0e\n" +
@@ -3371,71 +3389,72 @@ var file_user_v1_user_proto_goTypes = []any{
 	(*GetFriendsListResponse)(nil),                // 55: user.v1.GetFriendsListResponse
 }
 var file_user_v1_user_proto_depIdxs = []int32{
-	5,  // 0: user.v1.GetSubscriptionCapabilitiesResponse.subscription:type_name -> user.v1.SubscriptionInfo
-	6,  // 1: user.v1.GetSubscriptionCapabilitiesResponse.capabilities:type_name -> user.v1.SubscriptionCapabilities
-	7,  // 2: user.v1.GetSubscriptionCapabilitiesResponse.usage:type_name -> user.v1.SubscriptionUsage
-	10, // 3: user.v1.GetVKinoCoinsHistoryResponse.items:type_name -> user.v1.VKinoCoinsHistoryItem
-	5,  // 4: user.v1.ActivateSubscriptionResponse.subscription:type_name -> user.v1.SubscriptionInfo
-	5,  // 5: user.v1.BuySubscriptionWithVKinoCoinsResponse.subscription:type_name -> user.v1.SubscriptionInfo
-	21, // 6: user.v1.SearchUsersByEmailResponse.users:type_name -> user.v1.UserSearchResult
-	21, // 7: user.v1.SearchUsersResponse.users:type_name -> user.v1.UserSearchResult
-	52, // 8: user.v1.GetFriendRequestsResponse.requests:type_name -> user.v1.FriendRequestItem
-	21, // 9: user.v1.GetFriendsListResponse.friends:type_name -> user.v1.UserSearchResult
-	0,  // 10: user.v1.UserService.GetProfile:input_type -> user.v1.GetProfileRequest
-	2,  // 11: user.v1.UserService.GetFriend:input_type -> user.v1.GetFriendRequest
-	4,  // 12: user.v1.UserService.GetSubscriptionCapabilities:input_type -> user.v1.GetSubscriptionCapabilitiesRequest
-	9,  // 13: user.v1.UserService.GetVKinoCoinsHistory:input_type -> user.v1.GetVKinoCoinsHistoryRequest
-	12, // 14: user.v1.UserService.ActivateSubscription:input_type -> user.v1.ActivateSubscriptionRequest
-	14, // 15: user.v1.UserService.BuySubscriptionWithVKinoCoins:input_type -> user.v1.BuySubscriptionWithVKinoCoinsRequest
-	16, // 16: user.v1.UserService.SpendVKinoCoins:input_type -> user.v1.SpendVKinoCoinsRequest
-	18, // 17: user.v1.UserService.UpdateProfile:input_type -> user.v1.UpdateProfileRequest
-	20, // 18: user.v1.UserService.SearchUsersByEmail:input_type -> user.v1.SearchUsersByEmailRequest
-	23, // 19: user.v1.UserService.AddFriend:input_type -> user.v1.AddFriendRequest
-	25, // 20: user.v1.UserService.DeleteFriend:input_type -> user.v1.DeleteFriendRequest
-	27, // 21: user.v1.UserService.AddMovieToFavorites:input_type -> user.v1.AddMovieToFavoritesRequest
-	29, // 22: user.v1.UserService.SetMovieRating:input_type -> user.v1.SetMovieRatingRequest
-	31, // 23: user.v1.UserService.SetMovieReview:input_type -> user.v1.SetMovieReviewRequest
-	33, // 24: user.v1.UserService.DeleteMovieReview:input_type -> user.v1.DeleteMovieReviewRequest
-	35, // 25: user.v1.UserService.SetReviewReaction:input_type -> user.v1.SetReviewReactionRequest
-	37, // 26: user.v1.UserService.DeleteReviewReaction:input_type -> user.v1.DeleteReviewReactionRequest
-	39, // 27: user.v1.UserService.ToggleFavorite:input_type -> user.v1.ToggleFavoriteRequest
-	41, // 28: user.v1.UserService.GetFavorites:input_type -> user.v1.GetFavoritesRequest
-	43, // 29: user.v1.UserService.SearchUsers:input_type -> user.v1.SearchUsersRequest
-	45, // 30: user.v1.UserService.SendFriendRequest:input_type -> user.v1.SendFriendRequestRequest
-	47, // 31: user.v1.UserService.RespondToFriendRequest:input_type -> user.v1.RespondToFriendRequestRequest
-	49, // 32: user.v1.UserService.DeleteOutgoingFriendRequest:input_type -> user.v1.DeleteOutgoingFriendRequestRequest
-	51, // 33: user.v1.UserService.GetFriendRequests:input_type -> user.v1.GetFriendRequestsRequest
-	54, // 34: user.v1.UserService.GetFriendsList:input_type -> user.v1.GetFriendsListRequest
-	1,  // 35: user.v1.UserService.GetProfile:output_type -> user.v1.GetProfileResponse
-	3,  // 36: user.v1.UserService.GetFriend:output_type -> user.v1.GetFriendResponse
-	8,  // 37: user.v1.UserService.GetSubscriptionCapabilities:output_type -> user.v1.GetSubscriptionCapabilitiesResponse
-	11, // 38: user.v1.UserService.GetVKinoCoinsHistory:output_type -> user.v1.GetVKinoCoinsHistoryResponse
-	13, // 39: user.v1.UserService.ActivateSubscription:output_type -> user.v1.ActivateSubscriptionResponse
-	15, // 40: user.v1.UserService.BuySubscriptionWithVKinoCoins:output_type -> user.v1.BuySubscriptionWithVKinoCoinsResponse
-	17, // 41: user.v1.UserService.SpendVKinoCoins:output_type -> user.v1.SpendVKinoCoinsResponse
-	19, // 42: user.v1.UserService.UpdateProfile:output_type -> user.v1.UpdateProfileResponse
-	22, // 43: user.v1.UserService.SearchUsersByEmail:output_type -> user.v1.SearchUsersByEmailResponse
-	24, // 44: user.v1.UserService.AddFriend:output_type -> user.v1.AddFriendResponse
-	26, // 45: user.v1.UserService.DeleteFriend:output_type -> user.v1.DeleteFriendResponse
-	28, // 46: user.v1.UserService.AddMovieToFavorites:output_type -> user.v1.AddMovieToFavoritesResponse
-	30, // 47: user.v1.UserService.SetMovieRating:output_type -> user.v1.SetMovieRatingResponse
-	32, // 48: user.v1.UserService.SetMovieReview:output_type -> user.v1.SetMovieReviewResponse
-	34, // 49: user.v1.UserService.DeleteMovieReview:output_type -> user.v1.DeleteMovieReviewResponse
-	36, // 50: user.v1.UserService.SetReviewReaction:output_type -> user.v1.SetReviewReactionResponse
-	38, // 51: user.v1.UserService.DeleteReviewReaction:output_type -> user.v1.DeleteReviewReactionResponse
-	40, // 52: user.v1.UserService.ToggleFavorite:output_type -> user.v1.ToggleFavoriteResponse
-	42, // 53: user.v1.UserService.GetFavorites:output_type -> user.v1.GetFavoritesResponse
-	44, // 54: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
-	46, // 55: user.v1.UserService.SendFriendRequest:output_type -> user.v1.SendFriendRequestResponse
-	48, // 56: user.v1.UserService.RespondToFriendRequest:output_type -> user.v1.RespondToFriendRequestResponse
-	50, // 57: user.v1.UserService.DeleteOutgoingFriendRequest:output_type -> user.v1.DeleteOutgoingFriendRequestResponse
-	53, // 58: user.v1.UserService.GetFriendRequests:output_type -> user.v1.GetFriendRequestsResponse
-	55, // 59: user.v1.UserService.GetFriendsList:output_type -> user.v1.GetFriendsListResponse
-	35, // [35:60] is the sub-list for method output_type
-	10, // [10:35] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	10, // 0: user.v1.GetProfileResponse.vkino_coins_history:type_name -> user.v1.VKinoCoinsHistoryItem
+	5,  // 1: user.v1.GetSubscriptionCapabilitiesResponse.subscription:type_name -> user.v1.SubscriptionInfo
+	6,  // 2: user.v1.GetSubscriptionCapabilitiesResponse.capabilities:type_name -> user.v1.SubscriptionCapabilities
+	7,  // 3: user.v1.GetSubscriptionCapabilitiesResponse.usage:type_name -> user.v1.SubscriptionUsage
+	10, // 4: user.v1.GetVKinoCoinsHistoryResponse.items:type_name -> user.v1.VKinoCoinsHistoryItem
+	5,  // 5: user.v1.ActivateSubscriptionResponse.subscription:type_name -> user.v1.SubscriptionInfo
+	5,  // 6: user.v1.BuySubscriptionWithVKinoCoinsResponse.subscription:type_name -> user.v1.SubscriptionInfo
+	21, // 7: user.v1.SearchUsersByEmailResponse.users:type_name -> user.v1.UserSearchResult
+	21, // 8: user.v1.SearchUsersResponse.users:type_name -> user.v1.UserSearchResult
+	52, // 9: user.v1.GetFriendRequestsResponse.requests:type_name -> user.v1.FriendRequestItem
+	21, // 10: user.v1.GetFriendsListResponse.friends:type_name -> user.v1.UserSearchResult
+	0,  // 11: user.v1.UserService.GetProfile:input_type -> user.v1.GetProfileRequest
+	2,  // 12: user.v1.UserService.GetFriend:input_type -> user.v1.GetFriendRequest
+	4,  // 13: user.v1.UserService.GetSubscriptionCapabilities:input_type -> user.v1.GetSubscriptionCapabilitiesRequest
+	9,  // 14: user.v1.UserService.GetVKinoCoinsHistory:input_type -> user.v1.GetVKinoCoinsHistoryRequest
+	12, // 15: user.v1.UserService.ActivateSubscription:input_type -> user.v1.ActivateSubscriptionRequest
+	14, // 16: user.v1.UserService.BuySubscriptionWithVKinoCoins:input_type -> user.v1.BuySubscriptionWithVKinoCoinsRequest
+	16, // 17: user.v1.UserService.SpendVKinoCoins:input_type -> user.v1.SpendVKinoCoinsRequest
+	18, // 18: user.v1.UserService.UpdateProfile:input_type -> user.v1.UpdateProfileRequest
+	20, // 19: user.v1.UserService.SearchUsersByEmail:input_type -> user.v1.SearchUsersByEmailRequest
+	23, // 20: user.v1.UserService.AddFriend:input_type -> user.v1.AddFriendRequest
+	25, // 21: user.v1.UserService.DeleteFriend:input_type -> user.v1.DeleteFriendRequest
+	27, // 22: user.v1.UserService.AddMovieToFavorites:input_type -> user.v1.AddMovieToFavoritesRequest
+	29, // 23: user.v1.UserService.SetMovieRating:input_type -> user.v1.SetMovieRatingRequest
+	31, // 24: user.v1.UserService.SetMovieReview:input_type -> user.v1.SetMovieReviewRequest
+	33, // 25: user.v1.UserService.DeleteMovieReview:input_type -> user.v1.DeleteMovieReviewRequest
+	35, // 26: user.v1.UserService.SetReviewReaction:input_type -> user.v1.SetReviewReactionRequest
+	37, // 27: user.v1.UserService.DeleteReviewReaction:input_type -> user.v1.DeleteReviewReactionRequest
+	39, // 28: user.v1.UserService.ToggleFavorite:input_type -> user.v1.ToggleFavoriteRequest
+	41, // 29: user.v1.UserService.GetFavorites:input_type -> user.v1.GetFavoritesRequest
+	43, // 30: user.v1.UserService.SearchUsers:input_type -> user.v1.SearchUsersRequest
+	45, // 31: user.v1.UserService.SendFriendRequest:input_type -> user.v1.SendFriendRequestRequest
+	47, // 32: user.v1.UserService.RespondToFriendRequest:input_type -> user.v1.RespondToFriendRequestRequest
+	49, // 33: user.v1.UserService.DeleteOutgoingFriendRequest:input_type -> user.v1.DeleteOutgoingFriendRequestRequest
+	51, // 34: user.v1.UserService.GetFriendRequests:input_type -> user.v1.GetFriendRequestsRequest
+	54, // 35: user.v1.UserService.GetFriendsList:input_type -> user.v1.GetFriendsListRequest
+	1,  // 36: user.v1.UserService.GetProfile:output_type -> user.v1.GetProfileResponse
+	3,  // 37: user.v1.UserService.GetFriend:output_type -> user.v1.GetFriendResponse
+	8,  // 38: user.v1.UserService.GetSubscriptionCapabilities:output_type -> user.v1.GetSubscriptionCapabilitiesResponse
+	11, // 39: user.v1.UserService.GetVKinoCoinsHistory:output_type -> user.v1.GetVKinoCoinsHistoryResponse
+	13, // 40: user.v1.UserService.ActivateSubscription:output_type -> user.v1.ActivateSubscriptionResponse
+	15, // 41: user.v1.UserService.BuySubscriptionWithVKinoCoins:output_type -> user.v1.BuySubscriptionWithVKinoCoinsResponse
+	17, // 42: user.v1.UserService.SpendVKinoCoins:output_type -> user.v1.SpendVKinoCoinsResponse
+	19, // 43: user.v1.UserService.UpdateProfile:output_type -> user.v1.UpdateProfileResponse
+	22, // 44: user.v1.UserService.SearchUsersByEmail:output_type -> user.v1.SearchUsersByEmailResponse
+	24, // 45: user.v1.UserService.AddFriend:output_type -> user.v1.AddFriendResponse
+	26, // 46: user.v1.UserService.DeleteFriend:output_type -> user.v1.DeleteFriendResponse
+	28, // 47: user.v1.UserService.AddMovieToFavorites:output_type -> user.v1.AddMovieToFavoritesResponse
+	30, // 48: user.v1.UserService.SetMovieRating:output_type -> user.v1.SetMovieRatingResponse
+	32, // 49: user.v1.UserService.SetMovieReview:output_type -> user.v1.SetMovieReviewResponse
+	34, // 50: user.v1.UserService.DeleteMovieReview:output_type -> user.v1.DeleteMovieReviewResponse
+	36, // 51: user.v1.UserService.SetReviewReaction:output_type -> user.v1.SetReviewReactionResponse
+	38, // 52: user.v1.UserService.DeleteReviewReaction:output_type -> user.v1.DeleteReviewReactionResponse
+	40, // 53: user.v1.UserService.ToggleFavorite:output_type -> user.v1.ToggleFavoriteResponse
+	42, // 54: user.v1.UserService.GetFavorites:output_type -> user.v1.GetFavoritesResponse
+	44, // 55: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
+	46, // 56: user.v1.UserService.SendFriendRequest:output_type -> user.v1.SendFriendRequestResponse
+	48, // 57: user.v1.UserService.RespondToFriendRequest:output_type -> user.v1.RespondToFriendRequestResponse
+	50, // 58: user.v1.UserService.DeleteOutgoingFriendRequest:output_type -> user.v1.DeleteOutgoingFriendRequestResponse
+	53, // 59: user.v1.UserService.GetFriendRequests:output_type -> user.v1.GetFriendRequestsResponse
+	55, // 60: user.v1.UserService.GetFriendsList:output_type -> user.v1.GetFriendsListResponse
+	36, // [36:61] is the sub-list for method output_type
+	11, // [11:36] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_user_v1_user_proto_init() }

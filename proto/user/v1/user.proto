@@ -43,6 +43,8 @@ message GetProfileResponse {
   string avatar_url = 3;
   string role = 4;
   int32 vkino_coins_balance = 5;
+  repeated VKinoCoinsHistoryItem vkino_coins_history = 6;
+  int32 vkino_coins_history_total_count = 7;
 }
 
 message GetFriendRequest {

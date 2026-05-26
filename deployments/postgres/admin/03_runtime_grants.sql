@@ -8,6 +8,9 @@ SELECT format('GRANT SELECT, INSERT, UPDATE ON TABLE users TO %I', :'auth_user')
 SELECT format('GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE user_session TO %I', :'auth_user')
 \gexec
 
+SELECT format('GRANT SELECT, INSERT ON TABLE vkino_coins_history TO %I', :'auth_user')
+\gexec
+
 SELECT format('GRANT SELECT, UPDATE ON TABLE users TO %I', :'user_user')
 \gexec
 
@@ -48,9 +51,12 @@ SELECT format(
 \gexec
 
 SELECT format(
-    'GRANT SELECT, INSERT ON TABLE vkino_room_chat_message, vkino_room_chat_bet, vkino_room_chat_bet_variant, vkino_room_chat_bet_answer TO %I',
+    'GRANT SELECT, INSERT ON TABLE vkino_room_chat_message, vkino_room_chat_bet, vkino_room_chat_bet_variant TO %I',
     :'party_user'
 )
+\gexec
+
+SELECT format('GRANT SELECT, INSERT, UPDATE ON TABLE vkino_room_chat_bet_answer TO %I', :'party_user')
 \gexec
 
 SELECT format('GRANT SELECT, INSERT, UPDATE ON TABLE watch_progress_episode TO %I', :'movie_user')
