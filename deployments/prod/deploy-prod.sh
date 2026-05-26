@@ -71,8 +71,7 @@ compose() {
 rollout() {
   local service="$1"
 
-  docker rollout \
-    --project-name "${PROJECT_NAME}" \
+  COMPOSE_PROJECT_NAME="${PROJECT_NAME}" docker rollout \
     -f "${COMPOSE_FILE}" \
     --env-file "${ENV_FILE}" \
     --timeout "${ROLLOUT_TIMEOUT_SECONDS}" \
