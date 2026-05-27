@@ -9,7 +9,20 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 )
 
-const jsonKeyAccessToken = "access_token"
+//go:generate go run -mod=mod github.com/mailru/easyjson/easyjson auth.go
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type authAccessTokenResponse struct {
+	//nolint:gosec // This is an HTTP response field name, not stored secret material.
+	AccessToken string `json:"access_token"`
+}
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type authMessageResponse struct {
+	Message string `json:"message"`
+}
 
 func Auth(
 	cfg Config,
@@ -45,7 +58,7 @@ func newSignUpHandler(cfg Config, authClient authv1.AuthServiceClient) http.Hand
 		}
 
 		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
-		httppkg.Response(w, http.StatusCreated, map[string]string{jsonKeyAccessToken: resp.GetAccessToken()})
+		httppkg.Response(w, http.StatusCreated, authAccessTokenResponse{AccessToken: resp.GetAccessToken()})
 	}
 }
 
@@ -70,7 +83,7 @@ func newSignInHandler(cfg Config, authClient authv1.AuthServiceClient) http.Hand
 		}
 
 		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
-		httppkg.Response(w, http.StatusOK, map[string]string{jsonKeyAccessToken: resp.GetAccessToken()})
+		httppkg.Response(w, http.StatusOK, authAccessTokenResponse{AccessToken: resp.GetAccessToken()})
 	}
 }
 
@@ -96,7 +109,7 @@ func newRefreshHandler(cfg Config, authClient authv1.AuthServiceClient) http.Han
 		}
 
 		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
-		httppkg.Response(w, http.StatusOK, map[string]string{jsonKeyAccessToken: resp.GetAccessToken()})
+		httppkg.Response(w, http.StatusOK, authAccessTokenResponse{AccessToken: resp.GetAccessToken()})
 	}
 }
 
@@ -112,7 +125,7 @@ func newLogoutHandler(cfg Config, authClient authv1.AuthServiceClient) http.Hand
 		}
 
 		writeAuthCookie(w, cfg, "", true)
-		httppkg.Response(w, http.StatusOK, map[string]string{"message": "successfully log out"})
+		httppkg.Response(w, http.StatusOK, authMessageResponse{Message: "successfully log out"})
 	}
 }
 
@@ -135,7 +148,7 @@ func newChangePasswordHandler(cfg Config, authClient authv1.AuthServiceClient) h
 			return
 		}
 
-		httppkg.Response(w, http.StatusOK, map[string]string{"message": "password updated"})
+		httppkg.Response(w, http.StatusOK, authMessageResponse{Message: "password updated"})
 	}
 }
 

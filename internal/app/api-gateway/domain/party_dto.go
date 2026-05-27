@@ -2,12 +2,18 @@ package domain
 
 import userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 
+//go:generate go run -mod=mod github.com/mailru/easyjson/easyjson party_dto.go
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type PartyOverviewResponse struct {
 	ActiveRooms   []PartyRoomCardHTTP `json:"active_rooms"`
 	MyRooms       []PartyRoomCardHTTP `json:"my_rooms"`
 	FeaturedRooms []PartyRoomCardHTTP `json:"featured_rooms"`
 }
 
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type PartyRoomCardHTTP struct {
 	ID                int64                   `json:"id"`
 	Name              string                  `json:"name"`
@@ -20,6 +26,8 @@ type PartyRoomCardHTTP struct {
 	UpdatedAt         string                  `json:"updated_at"`
 }
 
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type PartyPlaybackStateHTTP struct {
 	MovieID         int64   `json:"movie_id"`
 	MovieTitle      *string `json:"movie_title"`
@@ -32,6 +40,7 @@ type PartyPlaybackStateHTTP struct {
 	UpdatedAt       string  `json:"updated_at"`
 }
 
+//easyjson:skip
 type PartyFriendInviteHTTP struct {
 	RoomID int64                     `json:"room_id"`
 	Status string                    `json:"status"`

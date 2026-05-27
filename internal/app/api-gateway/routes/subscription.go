@@ -7,10 +7,14 @@ import (
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 )
 
+//go:generate go run -mod=mod github.com/mailru/easyjson/easyjson -all subscription.go
+
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type subscriptionHTTPErrorResponse struct {
 	Error subscriptionHTTPError `json:"error"`
 }
 
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type subscriptionHTTPError struct {
 	Code          string `json:"code"`
 	Feature       string `json:"feature"`

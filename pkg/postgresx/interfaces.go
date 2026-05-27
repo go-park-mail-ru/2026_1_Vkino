@@ -6,7 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-//go:generate mockgen -source=./interfaces.go -destination=./mocks/db_mock.go -package=mocks
+//go:generate go run -mod=mod go.uber.org/mock/mockgen -source=./interfaces.go -destination=./mocks/db_mock.go -package=mocks
 
 type Row interface {
 	Scan(dest ...any) error

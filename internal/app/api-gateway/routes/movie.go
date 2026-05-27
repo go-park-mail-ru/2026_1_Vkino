@@ -9,6 +9,14 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 )
 
+//go:generate go run -mod=mod github.com/mailru/easyjson/easyjson -disallow_unknown_fields movie.go
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type saveEpisodeProgressRequest struct {
+	PositionSeconds int64 `json:"position_seconds"`
+}
+
 func Movie(
 	cfg Config,
 	movieClient moviev1.MovieServiceClient,
@@ -225,9 +233,7 @@ func newSaveEpisodeProgressHandler(cfg Config, movieClient moviev1.MovieServiceC
 			return
 		}
 
-		var req struct {
-			PositionSeconds int64 `json:"position_seconds"`
-		}
+		var req saveEpisodeProgressRequest
 		if !readJSON(w, r, &req) {
 			return
 		}

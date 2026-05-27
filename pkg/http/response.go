@@ -6,6 +6,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/mailru/easyjson"
+	"github.com/mailru/easyjson/jlexer"
 )
 
 var ErrInvalidJson = errors.New("invalid json body")
@@ -21,7 +24,7 @@ func ErrResponse(w http.ResponseWriter, status int, message string) {
 func Response(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	b, err := json.Marshal(v)
+	b, err := marshalJSON(v)
 	if err != nil {
 		log.Printf("marshal json error: %v", err)
 		ErrResponse(w, http.StatusInternalServerError, "internal server error")
@@ -44,6 +47,10 @@ func Read(r *http.Request, dst any) error {
 		}
 	}(r.Body)
 
+	if easyDst, ok := dst.(easyjson.Unmarshaler); ok {
+		return readEasyJSON(r, easyDst)
+	}
+
 	dec := json.NewDecoder(r.Body)
 
 	// если клиент пришлёт лишние поля, которых нет в dst, будет ошибка.
@@ -63,4 +70,25 @@ func Read(r *http.Request, dst any) error {
 	}
 
 	return ErrInvalidJson
+}
+
+func marshalJSON(v any) ([]byte, error) {
+	if easyValue, ok := v.(easyjson.Marshaler); ok {
+		return easyjson.Marshal(easyValue)
+	}
+
+	return json.Marshal(v)
+}
+
+func readEasyJSON(r *http.Request, dst easyjson.Unmarshaler) error {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	lexer := jlexer.Lexer{Data: body}
+	dst.UnmarshalEasyJSON(&lexer)
+	lexer.Consumed()
+
+	return lexer.Error()
 }
