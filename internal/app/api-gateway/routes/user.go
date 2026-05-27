@@ -561,6 +561,7 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 		route("GET /user/me", newUserProfileHandler(cfg, userClient)),
 		route("GET /user/subscription/capabilities", newUserSubscriptionCapabilitiesHandler(cfg, userClient)),
 		route("GET /user/coins/history", newUserVKinoCoinsHistoryHandler(cfg, userClient)),
+		route("POST /user/coins/feed-monkey", newUserFeedMonkeyHandler(cfg, userClient)),
 		route("GET /user/search", newUserSearchHandler(cfg, userClient)),
 		route("PUT /user/profile", newUserUpdateProfileHandler(cfg, userClient)),
 		route("POST /user/friends/{id}", newUserSendFriendRequestHandler(cfg, userClient)),
@@ -588,6 +589,29 @@ func User(cfg Config, userClient UserClient) []httpserver.Option {
 		httpserver.WithRoute("GET /support/tickets/{id}/subscribe", newSupportTicketSubscribeHandler(userClient)),
 		route("POST /support/tickets/{id}/messages", newSupportCreateTicketMessageHandler(cfg, userClient)),
 		route("GET /support/statistics", newSupportStatisticsHandler(cfg, userClient)),
+	}
+}
+
+func newUserFeedMonkeyHandler(cfg Config, userClient UserClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cancel := grpcContext(r, cfg.UserRequestTimeout())
+		defer cancel()
+
+		resp, err := userClient.SpendVKinoCoins(r.Context(), &userv1.SpendVKinoCoinsRequest{
+			CoinsAmount:   1,
+			OperationType: "feed_monkey",
+			Description:   "Кормление обезьяны в комнате совместного просмотра",
+		})
+		if err != nil {
+			writeGRPCError(w, err)
+
+			return
+		}
+
+		httppkg.Response(w, http.StatusOK, map[string]any{
+			"coins_spent":         resp.GetCoinsSpent(),
+			"vkino_coins_balance": resp.GetVkinoCoinsBalance(),
+		})
 	}
 }
 

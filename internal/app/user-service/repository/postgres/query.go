@@ -108,7 +108,7 @@ const (
 		select coalesce(sum(
 			case
 				when operation_type in ('daily', 'signup_bonus', 'bet_win') then vkino_coins_count
-				when operation_type in ('bet_lose', 'bet_place', 'purchase') then -vkino_coins_count
+				when operation_type in ('bet_lose', 'bet_place', 'purchase', 'feed_monkey') then -vkino_coins_count
 				else 0
 			end
 		), 0)::int
