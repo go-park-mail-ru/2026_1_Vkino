@@ -9,10 +9,55 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/pkg/httpserver"
 )
 
+//go:generate go run -mod=mod github.com/mailru/easyjson/easyjson -all -disallow_unknown_fields payment.go
+
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type createPaymentRequest struct {
 	ProductType   string `json:"product_type"`
 	ProductRefID  int64  `json:"product_ref_id"`
 	PaymentMethod string `json:"payment_method,omitempty"`
+}
+
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type createPaymentResponse struct {
+	PaymentID         int64  `json:"payment_id"`
+	Status            string `json:"status"`
+	ConfirmationURL   string `json:"confirmation_url"`
+	PaymentMethod     string `json:"payment_method"`
+	CoinsSpent        *int32 `json:"coins_spent,omitempty"`
+	VkinoCoinsBalance *int32 `json:"vkino_coins_balance,omitempty"`
+}
+
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type getPaymentResponse struct {
+	PaymentID       int64   `json:"payment_id"`
+	ProductType     string  `json:"product_type"`
+	ProductRefID    int64   `json:"product_ref_id"`
+	Status          string  `json:"status"`
+	Amount          string  `json:"amount"`
+	Currency        string  `json:"currency"`
+	PaymentMethod   string  `json:"payment_method"`
+	ConfirmationURL *string `json:"confirmation_url,omitempty"`
+	PaidAt          *string `json:"paid_at,omitempty"`
+	CoinsSpent      *int32  `json:"coins_spent,omitempty"`
+}
+
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type moneyTariffResponse struct {
+	ID                      int64  `json:"id"`
+	Code                    string `json:"code"`
+	Title                   string `json:"title"`
+	PriceMoney              int32  `json:"price_money"`
+	PriceVkinoCoins         int32  `json:"price_vkino_coins"`
+	IsMoneyPaymentAvailable bool   `json:"is_money_payment_available"`
+	IsCoinsPaymentAvailable bool   `json:"is_coins_payment_available"`
+	DurationDays            int32  `json:"duration_days"`
+	Level                   int32  `json:"level"`
+}
+
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type listMoneyTariffsResponse struct {
+	Tariffs []moneyTariffResponse `json:"tariffs"`
 }
 
 func Payment(cfg Config, client paymentv1.PaymentServiceClient) []httpserver.Option {
@@ -45,22 +90,14 @@ func createPaymentHandler(cfg Config, client paymentv1.PaymentServiceClient) htt
 			return
 		}
 
-		body := map[string]any{
-			"payment_id":       resp.GetPaymentId(),
-			"status":           resp.GetStatus(),
-			"confirmation_url": resp.GetConfirmationUrl(),
-			"payment_method":   resp.GetPaymentMethod(),
-		}
-
-		if resp.CoinsSpent != nil {
-			body["coins_spent"] = resp.GetCoinsSpent()
-		}
-
-		if resp.VkinoCoinsBalance != nil {
-			body["vkino_coins_balance"] = resp.GetVkinoCoinsBalance()
-		}
-
-		httppkg.Response(w, http.StatusCreated, body)
+		httppkg.Response(w, http.StatusCreated, createPaymentResponse{
+			PaymentID:         resp.GetPaymentId(),
+			Status:            resp.GetStatus(),
+			ConfirmationURL:   resp.GetConfirmationUrl(),
+			PaymentMethod:     resp.GetPaymentMethod(),
+			CoinsSpent:        resp.CoinsSpent,
+			VkinoCoinsBalance: resp.VkinoCoinsBalance,
+		})
 	}
 }
 
@@ -83,29 +120,18 @@ func getPaymentHandler(cfg Config, client paymentv1.PaymentServiceClient) http.H
 			return
 		}
 
-		body := map[string]any{
-			"payment_id":     resp.GetPaymentId(),
-			"product_type":   resp.GetProductType(),
-			"product_ref_id": resp.GetProductRefId(),
-			"status":         resp.GetStatus(),
-			"amount":         resp.GetAmount(),
-			"currency":       resp.GetCurrency(),
-			"payment_method": resp.GetPaymentMethod(),
-		}
-
-		if resp.ConfirmationUrl != nil {
-			body["confirmation_url"] = resp.GetConfirmationUrl()
-		}
-
-		if resp.PaidAt != nil {
-			body["paid_at"] = resp.GetPaidAt()
-		}
-
-		if resp.CoinsSpent != nil {
-			body["coins_spent"] = resp.GetCoinsSpent()
-		}
-
-		httppkg.Response(w, http.StatusOK, body)
+		httppkg.Response(w, http.StatusOK, getPaymentResponse{
+			PaymentID:       resp.GetPaymentId(),
+			ProductType:     resp.GetProductType(),
+			ProductRefID:    resp.GetProductRefId(),
+			Status:          resp.GetStatus(),
+			Amount:          resp.GetAmount(),
+			Currency:        resp.GetCurrency(),
+			PaymentMethod:   resp.GetPaymentMethod(),
+			ConfirmationURL: resp.ConfirmationUrl,
+			PaidAt:          resp.PaidAt,
+			CoinsSpent:      resp.CoinsSpent,
+		})
 	}
 }
 
@@ -121,22 +147,22 @@ func listMoneyTariffsHandler(cfg Config, client paymentv1.PaymentServiceClient) 
 			return
 		}
 
-		tariffs := make([]map[string]any, 0, len(resp.GetTariffs()))
+		tariffs := make([]moneyTariffResponse, 0, len(resp.GetTariffs()))
 		for _, tariff := range resp.GetTariffs() {
-			tariffs = append(tariffs, map[string]any{
-				"id":                         tariff.GetId(),
-				"code":                       tariff.GetCode(),
-				"title":                      tariff.GetTitle(),
-				"price_money":                tariff.GetPriceMoney(),
-				"price_vkino_coins":          tariff.GetPriceVkinoCoins(),
-				"is_money_payment_available": tariff.GetIsMoneyPaymentAvailable(),
-				"is_coins_payment_available": tariff.GetIsCoinsPaymentAvailable(),
-				"duration_days":              tariff.GetDurationDays(),
-				"level":                      tariff.GetLevel(),
+			tariffs = append(tariffs, moneyTariffResponse{
+				ID:                      tariff.GetId(),
+				Code:                    tariff.GetCode(),
+				Title:                   tariff.GetTitle(),
+				PriceMoney:              tariff.GetPriceMoney(),
+				PriceVkinoCoins:         tariff.GetPriceVkinoCoins(),
+				IsMoneyPaymentAvailable: tariff.GetIsMoneyPaymentAvailable(),
+				IsCoinsPaymentAvailable: tariff.GetIsCoinsPaymentAvailable(),
+				DurationDays:            tariff.GetDurationDays(),
+				Level:                   tariff.GetLevel(),
 			})
 		}
 
-		httppkg.Response(w, http.StatusOK, map[string]any{"tariffs": tariffs})
+		httppkg.Response(w, http.StatusOK, listMoneyTariffsResponse{Tariffs: tariffs})
 	}
 }
 

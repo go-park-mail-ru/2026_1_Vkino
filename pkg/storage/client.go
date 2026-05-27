@@ -9,7 +9,7 @@ import (
 	"github.com/minio/minio-go/v7"
 )
 
-//go:generate mockgen -source=./client.go -destination=./mocks/client_mock.go -package=mocks
+//go:generate go run -mod=mod go.uber.org/mock/mockgen -source=./client.go -destination=./mocks/client_mock.go -package=mocks
 
 type MinioClient interface {
 	PutObject(

@@ -2,6 +2,8 @@ package routes
 
 import userv1 "github.com/go-park-mail-ru/2026_1_VKino/pkg/gen/user/v1"
 
+//go:generate go run -mod=mod github.com/mailru/easyjson/easyjson -all -disallow_unknown_fields subscription_state.go
+
 const (
 	defaultSubscriptionCode        = "free"
 	defaultSubscriptionName        = "Free"
@@ -12,12 +14,14 @@ const (
 	defaultAdPolicy                = "no_skip"
 )
 
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type subscriptionStateResponse struct {
 	Subscription subscriptionInfoResponse         `json:"subscription"`
 	Capabilities subscriptionCapabilitiesResponse `json:"capabilities"`
 	Usage        subscriptionUsageResponse        `json:"usage"`
 }
 
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type subscriptionInfoResponse struct {
 	ID          int64   `json:"id"`
 	Code        string  `json:"code"`
@@ -26,6 +30,7 @@ type subscriptionInfoResponse struct {
 	ActiveUntil *string `json:"active_until,omitempty"`
 }
 
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type subscriptionCapabilitiesResponse struct {
 	CanWatchPaidContent bool   `json:"can_watch_paid_content"`
 	CanUseSmartContinue bool   `json:"can_use_smart_continue"`
@@ -35,6 +40,7 @@ type subscriptionCapabilitiesResponse struct {
 	MaxRoomMembers      int32  `json:"max_room_members"`
 }
 
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type subscriptionUsageResponse struct {
 	CoinsReceivedToday      int32  `json:"coins_received_today"`
 	CoinsRemainingToday     int32  `json:"coins_remaining_today"`

@@ -16,21 +16,23 @@ generate:
 	go generate ./...
 
 MIGRATIONS_DIR := ./migrations
+COVER_EXCLUDE_PATTERN = /\/pkg\/gen\/|\/mocks\/|_mock\.go:|_easyjson\.go:|\.pb\.go:|_grpc\.pb\.go:/
 
 test:
 	go test $(PACKAGES_NO_MOCKS) -cover
 
 cover:
 	-go test $(PACKAGES_NO_MOCKS) -coverprofile=coverage.out
-	go tool cover -html=coverage.out
+	@awk 'NR==1{print;next} $$1 !~ $(COVER_EXCLUDE_PATTERN)' coverage.out > coverage.filtered.out
+	go tool cover -html=coverage.filtered.out
 
 clean:
-	rm -f coverage.out
+	rm -f coverage.out coverage.filtered.out
 
 cover-total:
 	@echo "=== Total project coverage ==="
 	@go test $(PACKAGES_NO_MOCKS) -coverprofile=coverage.out > /dev/null 2>&1 || true
-	@awk 'NR==1{print;next} {file=$$1; sub(/:.*/, "", file); if ($$1 ~ /\/pkg\/gen\/|\/mocks\/|_mock\.go:|\.pb\.go:|_grpc\.pb\.go:/) next; stmts=$$2+0; cnt=$$3+0; total[file]+=stmts; if (cnt>0) covered[file]+=stmts; lines[++n]=$$0; files[n]=file} END {for (i=1; i<=n; i++) {f=files[i]; if (covered[f]>0) print lines[i]}}' coverage.out > coverage.filtered.out
+	@awk 'NR==1{print;next} {file=$$1; sub(/:.*/, "", file); if ($$1 ~ $(COVER_EXCLUDE_PATTERN)) next; stmts=$$2+0; cnt=$$3+0; total[file]+=stmts; if (cnt>0) covered[file]+=stmts; lines[++n]=$$0; files[n]=file} END {for (i=1; i<=n; i++) {f=files[i]; if (covered[f]>0) print lines[i]}}' coverage.out > coverage.filtered.out
 	@go tool cover -func=coverage.filtered.out | grep total | awk '{print $$3}'
 
 run-build:

@@ -6,6 +6,8 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.9.1
+	github.com/josharian/intern v1.0.0 // indirect
+	github.com/mailru/easyjson v0.7.7
 	github.com/minio/minio-go/v7 v7.0.100
 	github.com/prometheus/client_golang v1.23.2
 	github.com/sirupsen/logrus v1.9.4
@@ -13,6 +15,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.48.0
+	golang.org/x/mod v0.32.0 // indirect
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 )
@@ -54,6 +57,7 @@ require (
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/tools v0.41.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260120221211-b8f7ae30c516 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

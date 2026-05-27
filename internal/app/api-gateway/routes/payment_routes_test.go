@@ -129,6 +129,23 @@ func TestPaymentRoutes_CreatePayment_InvalidJSON(t *testing.T) {
 	requireJSONError(t, rr, http.StatusBadRequest, "invalid json body")
 }
 
+func TestPaymentRoutes_CreatePayment_UnknownField(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	client := NewMockPaymentServiceClient(ctrl)
+
+	handler := newPaymentHandler(t, client)
+	rr := doRequest(
+		handler,
+		http.MethodPost,
+		"/payments",
+		bytes.NewReader([]byte(`{"product_type":"subscription","product_ref_id":2,"extra":"field"}`)),
+	)
+
+	requireJSONError(t, rr, http.StatusBadRequest, "invalid json body")
+}
+
 func TestPaymentRoutes_GetPayment(t *testing.T) {
 	t.Parallel()
 

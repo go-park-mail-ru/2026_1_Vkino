@@ -14,6 +14,67 @@ import (
 	"google.golang.org/grpc"
 )
 
+//go:generate go run -mod=mod github.com/mailru/easyjson/easyjson -disallow_unknown_fields party.go
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type createPartyRoomRequest struct {
+	Name       string `json:"name"`
+	Visibility string `json:"visibility"`
+	MovieID    int64  `json:"movie_id"`
+	EpisodeID  int64  `json:"episode_id"`
+}
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type inviteFriendToPartyRequest struct {
+	RoomID int64 `json:"room_id"`
+}
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type joinPartyRequest struct {
+	InviteLink string `json:"invite_link"`
+}
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type partyActionRequest struct {
+	Action          string `json:"action"`
+	MovieID         int64  `json:"movie_id"`
+	EpisodeID       int64  `json:"episode_id"`
+	PlaybackURL     string `json:"playback_url"`
+	DurationSeconds int64  `json:"duration_seconds"`
+	PositionSeconds int64  `json:"position_seconds"`
+	Status          string `json:"status"`
+}
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type partyMessageRequest struct {
+	Content string `json:"content"`
+}
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type partyPollRequest struct {
+	Question string   `json:"question"`
+	Options  []string `json:"options"`
+}
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type partyVoteRequest struct {
+	OptionID    int64 `json:"option_id"`
+	CoinsAmount int32 `json:"coins_amount"`
+}
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type partyResolvePollRequest struct {
+	OptionID int64 `json:"option_id"`
+}
+
 type PartyClient interface {
 	PartyOverviewClient
 	PartyRoomClient
@@ -134,12 +195,7 @@ func newPartyRoomHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 
 func newCreatePartyRoomHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			Name       string `json:"name"`
-			Visibility string `json:"visibility"`
-			MovieID    int64  `json:"movie_id"`
-			EpisodeID  int64  `json:"episode_id"`
-		}
+		var req createPartyRoomRequest
 		if !readJSON(w, r, &req) {
 			return
 		}
@@ -192,9 +248,7 @@ func newInviteFriendToPartyHandler(
 			return
 		}
 
-		var req struct {
-			RoomID int64 `json:"room_id"`
-		}
+		var req inviteFriendToPartyRequest
 		if !readJSON(w, r, &req) {
 			return
 		}
@@ -229,9 +283,7 @@ func newInviteFriendToPartyHandler(
 
 func newJoinPartyHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			InviteLink string `json:"invite_link"`
-		}
+		var req joinPartyRequest
 		if !readJSON(w, r, &req) {
 			return
 		}
@@ -295,15 +347,7 @@ func newPartyActionHandler(cfg Config, partyClient PartyClient) http.HandlerFunc
 			return
 		}
 
-		var req struct {
-			Action          string `json:"action"`
-			MovieID         int64  `json:"movie_id"`
-			EpisodeID       int64  `json:"episode_id"`
-			PlaybackURL     string `json:"playback_url"`
-			DurationSeconds int64  `json:"duration_seconds"`
-			PositionSeconds int64  `json:"position_seconds"`
-			Status          string `json:"status"`
-		}
+		var req partyActionRequest
 		if !readJSON(w, r, &req) {
 			return
 		}
@@ -333,9 +377,7 @@ func newPartyMessageHandler(cfg Config, partyClient PartyClient) http.HandlerFun
 			return
 		}
 
-		var req struct {
-			Content string `json:"content"`
-		}
+		var req partyMessageRequest
 		if !readJSON(w, r, &req) {
 			return
 		}
@@ -363,10 +405,7 @@ func newPartyPollHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 			return
 		}
 
-		var req struct {
-			Question string   `json:"question"`
-			Options  []string `json:"options"`
-		}
+		var req partyPollRequest
 		if !readJSON(w, r, &req) {
 			return
 		}
@@ -399,10 +438,7 @@ func newPartyVoteHandler(cfg Config, partyClient PartyClient) http.HandlerFunc {
 			return
 		}
 
-		var req struct {
-			OptionID    int64 `json:"option_id"`
-			CoinsAmount int32 `json:"coins_amount"`
-		}
+		var req partyVoteRequest
 		if !readJSON(w, r, &req) {
 			return
 		}
@@ -435,9 +471,7 @@ func newPartyResolvePollHandler(cfg Config, partyClient PartyClient) http.Handle
 			return
 		}
 
-		var req struct {
-			OptionID int64 `json:"option_id"`
-		}
+		var req partyResolvePollRequest
 		if !readJSON(w, r, &req) {
 			return
 		}

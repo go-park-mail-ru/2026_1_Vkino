@@ -1,6 +1,6 @@
 package repository
 
-//go:generate mockgen -source=./interface.go -destination=./mocks/user_repo_mock.go -package=mocks
+//go:generate go run -mod=mod go.uber.org/mock/mockgen -source=./interface.go -destination=./mocks/user_repo_mock.go -package=mocks
 
 import (
 	"context"

@@ -7,11 +7,15 @@ import (
 	httppkg "github.com/go-park-mail-ru/2026_1_VKino/pkg/http"
 )
 
+//go:generate go run -mod=mod github.com/mailru/easyjson/easyjson -all coins_history.go
+
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type vkinoCoinsHistoryHTTPResponse struct {
 	Items      []vkinoCoinsHistoryHTTPItem `json:"items"`
 	TotalCount int32                       `json:"total_count"`
 }
 
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type vkinoCoinsHistoryHTTPItem struct {
 	ID              int64  `json:"id"`
 	VKinoCoinsCount int32  `json:"vkino_coins_count"`

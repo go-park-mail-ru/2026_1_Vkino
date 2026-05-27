@@ -29,6 +29,8 @@ const (
 	jsonKeySuccess                = "success"
 )
 
+//go:generate go run -mod=mod github.com/mailru/easyjson/easyjson -disallow_unknown_fields user.go
+
 type UserClient interface {
 	userv1.UserServiceClient
 	supportRPC
@@ -366,6 +368,8 @@ func (c grpcUserClient) SubscribeTicket(
 	return c.sup.SubscribeTicket(ctx, in, opts...)
 }
 
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type updateProfileJSONRequest struct {
 	Birthdate string `json:"birthdate"`
 }
@@ -376,18 +380,36 @@ type updateProfilePayload struct {
 	AvatarContentType string
 }
 
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type setMovieRatingRequest struct {
 	Rating float64 `json:"rating"`
 }
 
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type setMovieReviewRequest struct {
 	Rating  *float64 `json:"rating"`
 	Comment *string  `json:"comment,omitempty"`
 	Message *string  `json:"message,omitempty"`
 }
 
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type setReviewReactionRequest struct {
 	Reaction string `json:"reaction"`
+}
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type friendRequestActionRequest struct {
+	Action string `json:"action"`
+}
+
+//easyjson:json
+//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+type successResponse struct {
+	Success bool `json:"success"`
 }
 
 func (r setMovieReviewRequest) reviewComment() *string {
@@ -715,9 +737,7 @@ func newUserDeleteFriendHandler(cfg Config, userClient UserClient) http.HandlerF
 			return
 		}
 
-		httppkg.Response(w, http.StatusOK, map[string]bool{
-			jsonKeySuccess: true,
-		})
+		httppkg.Response(w, http.StatusOK, successResponse{Success: true})
 	}
 }
 
@@ -822,9 +842,7 @@ func newUserDeleteMovieReviewHandler(cfg Config, userClient UserClient) http.Han
 			return
 		}
 
-		httppkg.Response(w, http.StatusOK, map[string]bool{
-			jsonKeySuccess: true,
-		})
+		httppkg.Response(w, http.StatusOK, successResponse{Success: true})
 	}
 }
 
@@ -876,9 +894,7 @@ func newUserDeleteReviewReactionHandler(cfg Config, userClient UserClient) http.
 			return
 		}
 
-		httppkg.Response(w, http.StatusOK, map[string]bool{
-			jsonKeySuccess: true,
-		})
+		httppkg.Response(w, http.StatusOK, successResponse{Success: true})
 	}
 }
 
@@ -990,9 +1006,7 @@ func newUserRespondFriendRequestHandler(cfg Config, userClient UserClient) http.
 			return
 		}
 
-		var req struct {
-			Action string `json:"action"`
-		}
+		var req friendRequestActionRequest
 		if !readJSON(w, r, &req) {
 			return
 		}
@@ -1033,9 +1047,7 @@ func newUserDeleteOutgoingFriendRequestHandler(cfg Config, userClient UserClient
 			return
 		}
 
-		httppkg.Response(w, http.StatusOK, map[string]bool{
-			jsonKeySuccess: true,
-		})
+		httppkg.Response(w, http.StatusOK, successResponse{Success: true})
 	}
 }
 
