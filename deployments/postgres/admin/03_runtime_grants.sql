@@ -51,9 +51,12 @@ SELECT format(
 \gexec
 
 SELECT format(
-    'GRANT SELECT, INSERT ON TABLE vkino_room_chat_message, vkino_room_chat_bet, vkino_room_chat_bet_variant TO %I',
+    'GRANT SELECT, INSERT ON TABLE vkino_room_chat_message, vkino_room_chat_bet_variant TO %I',
     :'party_user'
 )
+\gexec
+
+SELECT format('GRANT SELECT, INSERT, UPDATE ON TABLE vkino_room_chat_bet TO %I', :'party_user')
 \gexec
 
 SELECT format('GRANT SELECT, INSERT, UPDATE ON TABLE vkino_room_chat_bet_answer TO %I', :'party_user')
