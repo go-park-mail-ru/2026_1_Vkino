@@ -24,6 +24,31 @@ const (
 		limit 1
 	`
 
+	sqlGetCoinsPack = `
+		select
+			cp.id,
+			cp.code,
+			cp.title,
+			cp.coins_amount,
+			cp.price_money
+		from vkino_coins_pack cp
+		where cp.id = $1
+			and cp.is_active = true
+		limit 1
+	`
+
+	sqlListCoinsPacks = `
+		select
+			cp.id,
+			cp.code,
+			cp.title,
+			cp.coins_amount,
+			cp.price_money
+		from vkino_coins_pack cp
+		where cp.is_active = true
+		order by cp.sort_order, cp.id
+	`
+
 	sqlListMoneyTariffs = `
 		select
 			st.id,
@@ -123,5 +148,20 @@ const (
 		values ($1, $2, $3)
 		on conflict (yookassa_payment_id, event) do nothing
 		returning id
+	`
+
+	sqlInsertCoinsHistoryForPayment = `
+		insert into vkino_coins_history (
+			user_id,
+			vkino_coins_count,
+			operation_type,
+			description,
+			operation_date,
+			reference_key
+		)
+		values ($1, $2, 'coins_purchase', $3, current_date, $4)
+		on conflict (reference_key)
+			where reference_key is not null
+		do nothing
 	`
 )

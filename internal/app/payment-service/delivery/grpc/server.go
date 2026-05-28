@@ -101,6 +101,32 @@ func (s *Server) GetPayment(
 	return resp, nil
 }
 
+func (s *Server) ListCoinsPacks(
+	ctx context.Context,
+	_ *paymentv1.ListCoinsPacksRequest,
+) (*paymentv1.ListCoinsPacksResponse, error) {
+	packs, err := s.usecase.ListCoinsPacks(ctx)
+	if err != nil {
+		return nil, mapError(err)
+	}
+
+	resp := &paymentv1.ListCoinsPacksResponse{
+		Packs: make([]*paymentv1.CoinsPack, 0, len(packs)),
+	}
+
+	for _, pack := range packs {
+		resp.Packs = append(resp.Packs, &paymentv1.CoinsPack{
+			Id:          pack.ID,
+			Code:        pack.Code,
+			Title:       pack.Title,
+			CoinsAmount: pack.CoinsAmount,
+			PriceMoney:  pack.PriceMoney,
+		})
+	}
+
+	return resp, nil
+}
+
 func (s *Server) ListMoneyTariffs(
 	ctx context.Context,
 	_ *paymentv1.ListMoneyTariffsRequest,

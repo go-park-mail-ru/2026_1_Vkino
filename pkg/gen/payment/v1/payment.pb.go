@@ -513,6 +513,162 @@ func (x *ListMoneyTariffsResponse) GetTariffs() []*MoneyTariff {
 	return nil
 }
 
+type ListCoinsPacksRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListCoinsPacksRequest) Reset() {
+	*x = ListCoinsPacksRequest{}
+	mi := &file_payment_v1_payment_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListCoinsPacksRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCoinsPacksRequest) ProtoMessage() {}
+
+func (x *ListCoinsPacksRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_v1_payment_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCoinsPacksRequest.ProtoReflect.Descriptor instead.
+func (*ListCoinsPacksRequest) Descriptor() ([]byte, []int) {
+	return file_payment_v1_payment_proto_rawDescGZIP(), []int{7}
+}
+
+type CoinsPack struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Code          string                 `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	CoinsAmount   int32                  `protobuf:"varint,4,opt,name=coins_amount,json=coinsAmount,proto3" json:"coins_amount,omitempty"`
+	PriceMoney    int32                  `protobuf:"varint,5,opt,name=price_money,json=priceMoney,proto3" json:"price_money,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CoinsPack) Reset() {
+	*x = CoinsPack{}
+	mi := &file_payment_v1_payment_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CoinsPack) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CoinsPack) ProtoMessage() {}
+
+func (x *CoinsPack) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_v1_payment_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CoinsPack.ProtoReflect.Descriptor instead.
+func (*CoinsPack) Descriptor() ([]byte, []int) {
+	return file_payment_v1_payment_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *CoinsPack) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *CoinsPack) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *CoinsPack) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *CoinsPack) GetCoinsAmount() int32 {
+	if x != nil {
+		return x.CoinsAmount
+	}
+	return 0
+}
+
+func (x *CoinsPack) GetPriceMoney() int32 {
+	if x != nil {
+		return x.PriceMoney
+	}
+	return 0
+}
+
+type ListCoinsPacksResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Packs         []*CoinsPack           `protobuf:"bytes,1,rep,name=packs,proto3" json:"packs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListCoinsPacksResponse) Reset() {
+	*x = ListCoinsPacksResponse{}
+	mi := &file_payment_v1_payment_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListCoinsPacksResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCoinsPacksResponse) ProtoMessage() {}
+
+func (x *ListCoinsPacksResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_v1_payment_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCoinsPacksResponse.ProtoReflect.Descriptor instead.
+func (*ListCoinsPacksResponse) Descriptor() ([]byte, []int) {
+	return file_payment_v1_payment_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ListCoinsPacksResponse) GetPacks() []*CoinsPack {
+	if x != nil {
+		return x.Packs
+	}
+	return nil
+}
+
 type HandleYooKassaWebhookRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Body          []byte                 `protobuf:"bytes,1,opt,name=body,proto3" json:"body,omitempty"`
@@ -523,7 +679,7 @@ type HandleYooKassaWebhookRequest struct {
 
 func (x *HandleYooKassaWebhookRequest) Reset() {
 	*x = HandleYooKassaWebhookRequest{}
-	mi := &file_payment_v1_payment_proto_msgTypes[7]
+	mi := &file_payment_v1_payment_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -535,7 +691,7 @@ func (x *HandleYooKassaWebhookRequest) String() string {
 func (*HandleYooKassaWebhookRequest) ProtoMessage() {}
 
 func (x *HandleYooKassaWebhookRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_v1_payment_proto_msgTypes[7]
+	mi := &file_payment_v1_payment_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -548,7 +704,7 @@ func (x *HandleYooKassaWebhookRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HandleYooKassaWebhookRequest.ProtoReflect.Descriptor instead.
 func (*HandleYooKassaWebhookRequest) Descriptor() ([]byte, []int) {
-	return file_payment_v1_payment_proto_rawDescGZIP(), []int{7}
+	return file_payment_v1_payment_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *HandleYooKassaWebhookRequest) GetBody() []byte {
@@ -573,7 +729,7 @@ type HandleYooKassaWebhookResponse struct {
 
 func (x *HandleYooKassaWebhookResponse) Reset() {
 	*x = HandleYooKassaWebhookResponse{}
-	mi := &file_payment_v1_payment_proto_msgTypes[8]
+	mi := &file_payment_v1_payment_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -585,7 +741,7 @@ func (x *HandleYooKassaWebhookResponse) String() string {
 func (*HandleYooKassaWebhookResponse) ProtoMessage() {}
 
 func (x *HandleYooKassaWebhookResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_v1_payment_proto_msgTypes[8]
+	mi := &file_payment_v1_payment_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -598,7 +754,7 @@ func (x *HandleYooKassaWebhookResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HandleYooKassaWebhookResponse.ProtoReflect.Descriptor instead.
 func (*HandleYooKassaWebhookResponse) Descriptor() ([]byte, []int) {
-	return file_payment_v1_payment_proto_rawDescGZIP(), []int{8}
+	return file_payment_v1_payment_proto_rawDescGZIP(), []int{11}
 }
 
 var File_payment_v1_payment_proto protoreflect.FileDescriptor
@@ -656,16 +812,27 @@ const file_payment_v1_payment_proto_rawDesc = "" +
 	"\x1ais_coins_payment_available\x18\b \x01(\bR\x17isCoinsPaymentAvailable\x12;\n" +
 	"\x1ais_money_payment_available\x18\t \x01(\bR\x17isMoneyPaymentAvailable\"M\n" +
 	"\x18ListMoneyTariffsResponse\x121\n" +
-	"\atariffs\x18\x01 \x03(\v2\x17.payment.v1.MoneyTariffR\atariffs\"O\n" +
+	"\atariffs\x18\x01 \x03(\v2\x17.payment.v1.MoneyTariffR\atariffs\"\x17\n" +
+	"\x15ListCoinsPacksRequest\"\x89\x01\n" +
+	"\tCoinsPack\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04code\x18\x02 \x01(\tR\x04code\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12!\n" +
+	"\fcoins_amount\x18\x04 \x01(\x05R\vcoinsAmount\x12\x1f\n" +
+	"\vprice_money\x18\x05 \x01(\x05R\n" +
+	"priceMoney\"E\n" +
+	"\x16ListCoinsPacksResponse\x12+\n" +
+	"\x05packs\x18\x01 \x03(\v2\x15.payment.v1.CoinsPackR\x05packs\"O\n" +
 	"\x1cHandleYooKassaWebhookRequest\x12\x12\n" +
 	"\x04body\x18\x01 \x01(\fR\x04body\x12\x1b\n" +
 	"\tclient_ip\x18\x02 \x01(\tR\bclientIp\"\x1f\n" +
-	"\x1dHandleYooKassaWebhookResponse2\x80\x03\n" +
+	"\x1dHandleYooKassaWebhookResponse2\xd9\x03\n" +
 	"\x0ePaymentService\x12T\n" +
 	"\rCreatePayment\x12 .payment.v1.CreatePaymentRequest\x1a!.payment.v1.CreatePaymentResponse\x12K\n" +
 	"\n" +
 	"GetPayment\x12\x1d.payment.v1.GetPaymentRequest\x1a\x1e.payment.v1.GetPaymentResponse\x12]\n" +
-	"\x10ListMoneyTariffs\x12#.payment.v1.ListMoneyTariffsRequest\x1a$.payment.v1.ListMoneyTariffsResponse\x12l\n" +
+	"\x10ListMoneyTariffs\x12#.payment.v1.ListMoneyTariffsRequest\x1a$.payment.v1.ListMoneyTariffsResponse\x12W\n" +
+	"\x0eListCoinsPacks\x12!.payment.v1.ListCoinsPacksRequest\x1a\".payment.v1.ListCoinsPacksResponse\x12l\n" +
 	"\x15HandleYooKassaWebhook\x12(.payment.v1.HandleYooKassaWebhookRequest\x1a).payment.v1.HandleYooKassaWebhookResponseBFZDgithub.com/go-park-mail-ru/2026_1_VKino/pkg/gen/payment/v1;paymentv1b\x06proto3"
 
 var (
@@ -680,7 +847,7 @@ func file_payment_v1_payment_proto_rawDescGZIP() []byte {
 	return file_payment_v1_payment_proto_rawDescData
 }
 
-var file_payment_v1_payment_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_payment_v1_payment_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_payment_v1_payment_proto_goTypes = []any{
 	(*CreatePaymentRequest)(nil),          // 0: payment.v1.CreatePaymentRequest
 	(*CreatePaymentResponse)(nil),         // 1: payment.v1.CreatePaymentResponse
@@ -689,24 +856,30 @@ var file_payment_v1_payment_proto_goTypes = []any{
 	(*ListMoneyTariffsRequest)(nil),       // 4: payment.v1.ListMoneyTariffsRequest
 	(*MoneyTariff)(nil),                   // 5: payment.v1.MoneyTariff
 	(*ListMoneyTariffsResponse)(nil),      // 6: payment.v1.ListMoneyTariffsResponse
-	(*HandleYooKassaWebhookRequest)(nil),  // 7: payment.v1.HandleYooKassaWebhookRequest
-	(*HandleYooKassaWebhookResponse)(nil), // 8: payment.v1.HandleYooKassaWebhookResponse
+	(*ListCoinsPacksRequest)(nil),         // 7: payment.v1.ListCoinsPacksRequest
+	(*CoinsPack)(nil),                     // 8: payment.v1.CoinsPack
+	(*ListCoinsPacksResponse)(nil),        // 9: payment.v1.ListCoinsPacksResponse
+	(*HandleYooKassaWebhookRequest)(nil),  // 10: payment.v1.HandleYooKassaWebhookRequest
+	(*HandleYooKassaWebhookResponse)(nil), // 11: payment.v1.HandleYooKassaWebhookResponse
 }
 var file_payment_v1_payment_proto_depIdxs = []int32{
-	5, // 0: payment.v1.ListMoneyTariffsResponse.tariffs:type_name -> payment.v1.MoneyTariff
-	0, // 1: payment.v1.PaymentService.CreatePayment:input_type -> payment.v1.CreatePaymentRequest
-	2, // 2: payment.v1.PaymentService.GetPayment:input_type -> payment.v1.GetPaymentRequest
-	4, // 3: payment.v1.PaymentService.ListMoneyTariffs:input_type -> payment.v1.ListMoneyTariffsRequest
-	7, // 4: payment.v1.PaymentService.HandleYooKassaWebhook:input_type -> payment.v1.HandleYooKassaWebhookRequest
-	1, // 5: payment.v1.PaymentService.CreatePayment:output_type -> payment.v1.CreatePaymentResponse
-	3, // 6: payment.v1.PaymentService.GetPayment:output_type -> payment.v1.GetPaymentResponse
-	6, // 7: payment.v1.PaymentService.ListMoneyTariffs:output_type -> payment.v1.ListMoneyTariffsResponse
-	8, // 8: payment.v1.PaymentService.HandleYooKassaWebhook:output_type -> payment.v1.HandleYooKassaWebhookResponse
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	5,  // 0: payment.v1.ListMoneyTariffsResponse.tariffs:type_name -> payment.v1.MoneyTariff
+	8,  // 1: payment.v1.ListCoinsPacksResponse.packs:type_name -> payment.v1.CoinsPack
+	0,  // 2: payment.v1.PaymentService.CreatePayment:input_type -> payment.v1.CreatePaymentRequest
+	2,  // 3: payment.v1.PaymentService.GetPayment:input_type -> payment.v1.GetPaymentRequest
+	4,  // 4: payment.v1.PaymentService.ListMoneyTariffs:input_type -> payment.v1.ListMoneyTariffsRequest
+	7,  // 5: payment.v1.PaymentService.ListCoinsPacks:input_type -> payment.v1.ListCoinsPacksRequest
+	10, // 6: payment.v1.PaymentService.HandleYooKassaWebhook:input_type -> payment.v1.HandleYooKassaWebhookRequest
+	1,  // 7: payment.v1.PaymentService.CreatePayment:output_type -> payment.v1.CreatePaymentResponse
+	3,  // 8: payment.v1.PaymentService.GetPayment:output_type -> payment.v1.GetPaymentResponse
+	6,  // 9: payment.v1.PaymentService.ListMoneyTariffs:output_type -> payment.v1.ListMoneyTariffsResponse
+	9,  // 10: payment.v1.PaymentService.ListCoinsPacks:output_type -> payment.v1.ListCoinsPacksResponse
+	11, // 11: payment.v1.PaymentService.HandleYooKassaWebhook:output_type -> payment.v1.HandleYooKassaWebhookResponse
+	7,  // [7:12] is the sub-list for method output_type
+	2,  // [2:7] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_payment_v1_payment_proto_init() }
@@ -722,7 +895,7 @@ func file_payment_v1_payment_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_payment_v1_payment_proto_rawDesc), len(file_payment_v1_payment_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

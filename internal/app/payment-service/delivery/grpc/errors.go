@@ -13,6 +13,7 @@ var paymentGRPCErrorMapper = grpcx.New(
 		domain.ErrInvalidProductRef,
 		domain.ErrInvalidPaymentMethod,
 		domain.ErrTariffNotFound,
+		domain.ErrCoinsPackNotFound,
 		domain.ErrTariffNotAvailable,
 		domain.ErrTariffNotAvailableForCoins,
 		domain.ErrInsufficientVKinoCoins,
@@ -29,6 +30,7 @@ var paymentGRPCErrorMapper = grpcx.New(
 		domain.ErrInvalidProductRef:    {Code: codes.InvalidArgument, Message: "invalid product reference"},
 		domain.ErrInvalidPaymentMethod: {Code: codes.InvalidArgument, Message: "invalid payment method"},
 		domain.ErrTariffNotFound:       {Code: codes.NotFound, Message: "tariff not found"},
+		domain.ErrCoinsPackNotFound:    {Code: codes.NotFound, Message: "coins pack not found"},
 		domain.ErrTariffNotAvailable: {
 			Code: codes.FailedPrecondition, Message: "tariff is not available for money payment",
 		},

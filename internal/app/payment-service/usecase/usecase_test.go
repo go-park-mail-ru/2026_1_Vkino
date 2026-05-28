@@ -94,7 +94,7 @@ func TestCreatePayment_InvalidProductType(t *testing.T) {
 
 	_, err := u.CreatePayment(context.Background(), usecase.CreatePaymentInput{
 		UserID:       42,
-		ProductType:  "coins",
+		ProductType:  "paid_content",
 		ProductRefID: 2,
 	})
 	require.ErrorIs(t, err, domain.ErrInvalidProductType)
@@ -613,5 +613,5 @@ func TestCreatePayment_VKinoCoinsInvalidProductType(t *testing.T) {
 		ProductRefID:  2,
 		PaymentMethod: "vkino_coins",
 	})
-	require.ErrorIs(t, err, domain.ErrInvalidProductType)
+	require.ErrorIs(t, err, domain.ErrInvalidPaymentMethod)
 }

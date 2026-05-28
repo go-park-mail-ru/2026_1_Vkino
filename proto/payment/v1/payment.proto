@@ -8,6 +8,7 @@ service PaymentService {
   rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
   rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
   rpc ListMoneyTariffs(ListMoneyTariffsRequest) returns (ListMoneyTariffsResponse);
+  rpc ListCoinsPacks(ListCoinsPacksRequest) returns (ListCoinsPacksResponse);
   rpc HandleYooKassaWebhook(HandleYooKassaWebhookRequest) returns (HandleYooKassaWebhookResponse);
 }
 
@@ -59,6 +60,20 @@ message MoneyTariff {
 
 message ListMoneyTariffsResponse {
   repeated MoneyTariff tariffs = 1;
+}
+
+message ListCoinsPacksRequest {}
+
+message CoinsPack {
+  int64 id = 1;
+  string code = 2;
+  string title = 3;
+  int32 coins_amount = 4;
+  int32 price_money = 5;
+}
+
+message ListCoinsPacksResponse {
+  repeated CoinsPack packs = 1;
 }
 
 message HandleYooKassaWebhookRequest {

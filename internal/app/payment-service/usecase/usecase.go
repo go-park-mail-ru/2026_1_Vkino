@@ -57,13 +57,22 @@ type CreatePaymentResult struct {
 }
 
 func (u *Usecase) CreatePayment(ctx context.Context, input CreatePaymentInput) (CreatePaymentResult, error) {
-	switch normalizePaymentMethod(input.PaymentMethod) {
-	case domain.PaymentMethodYooKassa:
-		return u.createYooKassaSubscriptionPayment(ctx, input)
-	case domain.PaymentMethodVKinoCoins:
-		return u.createVKinoCoinsSubscriptionPayment(ctx, input)
+	productType := domain.ProductType(strings.TrimSpace(input.ProductType))
+
+	switch productType {
+	case domain.ProductTypeSubscription:
+		switch normalizePaymentMethod(input.PaymentMethod) {
+		case domain.PaymentMethodYooKassa:
+			return u.createYooKassaSubscriptionPayment(ctx, input)
+		case domain.PaymentMethodVKinoCoins:
+			return u.createVKinoCoinsSubscriptionPayment(ctx, input)
+		default:
+			return CreatePaymentResult{}, domain.ErrInvalidPaymentMethod
+		}
+	case domain.ProductTypeCoins:
+		return u.createYooKassaCoinsPayment(ctx, input)
 	default:
-		return CreatePaymentResult{}, domain.ErrInvalidPaymentMethod
+		return CreatePaymentResult{}, domain.ErrInvalidProductType
 	}
 }
 
@@ -89,6 +98,15 @@ func (u *Usecase) GetPayment(ctx context.Context, userID, paymentID int64) (doma
 	}
 
 	return payment, nil
+}
+
+func (u *Usecase) ListCoinsPacks(ctx context.Context) ([]domain.CoinsPack, error) {
+	packs, err := u.payments.ListCoinsPacks(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", domain.ErrInternal, err)
+	}
+
+	return packs, nil
 }
 
 func (u *Usecase) ListMoneyTariffs(ctx context.Context) ([]domain.MoneyTariff, error) {
@@ -172,10 +190,18 @@ func (u *Usecase) finalizeSucceededPayment(ctx context.Context, payment domain.P
 		return fmt.Errorf("%w: %w", domain.ErrInternal, err)
 	}
 
-	if payment.ProductType != domain.ProductTypeSubscription {
-		return nil
+	switch payment.ProductType {
+	case domain.ProductTypeSubscription:
+		return u.activateSubscriptionForPayment(ctx, payment)
+	case domain.ProductTypeCoins:
+		return u.creditCoinsForPayment(ctx, payment)
+	default:
+		return domain.ErrInvalidProductType
 	}
+}
 
+
+func (u *Usecase) activateSubscriptionForPayment(ctx context.Context, payment domain.Payment) error {
 	if err := u.activator.ActivateSubscription(
 		ctx,
 		payment.UserID,
