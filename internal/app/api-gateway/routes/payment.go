@@ -60,11 +60,25 @@ type listMoneyTariffsResponse struct {
 	Tariffs []moneyTariffResponse `json:"tariffs"`
 }
 
+//nolint:recvcheck // easyjson: Marshal* on value receiver, Unmarshal* on pointer receiver.
+type coinsPackResponse struct {
+	ID          int64  `json:"id"`
+	Title       string `json:"title"`
+	CoinsAmount int32  `json:"coins_amount"`
+	PriceMoney  int32  `json:"price_money"`
+}
+
+//nolint:recvcheck // easyjson: Marshal* on value receiver, Unmarshal* on pointer receiver.
+type listCoinsPacksResponse struct {
+	Packs []coinsPackResponse `json:"packs"`
+}
+
 func Payment(cfg Config, client paymentv1.PaymentServiceClient) []httpserver.Option {
 	return []httpserver.Option{
 		route("POST /payments", createPaymentHandler(cfg, client)),
 		route("GET /payments/{id}", getPaymentHandler(cfg, client)),
 		route("GET /payments/tariffs", listMoneyTariffsHandler(cfg, client)),
+		route("GET /payments/coins-packs", listCoinsPacksHandler(cfg, client)),
 		route("POST /payments/webhook/yookassa", yooKassaWebhookHandler(cfg, client)),
 	}
 }
@@ -132,6 +146,32 @@ func getPaymentHandler(cfg Config, client paymentv1.PaymentServiceClient) http.H
 			PaidAt:          resp.PaidAt,
 			CoinsSpent:      resp.CoinsSpent,
 		})
+	}
+}
+
+func listCoinsPacksHandler(cfg Config, client paymentv1.PaymentServiceClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cancel := grpcContext(r, cfg.PaymentRequestTimeout())
+		defer cancel()
+
+		resp, err := client.ListCoinsPacks(r.Context(), &paymentv1.ListCoinsPacksRequest{})
+		if err != nil {
+			writeGRPCError(w, err)
+
+			return
+		}
+
+		packs := make([]coinsPackResponse, 0, len(resp.GetPacks()))
+		for _, pack := range resp.GetPacks() {
+			packs = append(packs, coinsPackResponse{
+				ID:          pack.GetId(),
+				Title:       pack.GetTitle(),
+				CoinsAmount: pack.GetCoinsAmount(),
+				PriceMoney:  pack.GetPriceMoney(),
+			})
+		}
+
+		httppkg.Response(w, http.StatusOK, listCoinsPacksResponse{Packs: packs})
 	}
 }
 

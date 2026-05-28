@@ -74,6 +74,12 @@ SELECT format('GRANT SELECT, INSERT ON TABLE payment_webhook_event TO %I', :'pay
 SELECT format('GRANT SELECT ON TABLE subscription_tariff, users TO %I', :'payment_user')
 \gexec
 
+SELECT format('GRANT SELECT ON TABLE vkino_coins_pack TO %I', :'payment_user')
+\gexec
+
+SELECT format('GRANT SELECT, INSERT ON TABLE vkino_coins_history TO %I', :'payment_user')
+\gexec
+
 SELECT format(
     'GRANT SELECT ON TABLE user_subscription, subscription_tariff, subscription_tariff_option, subscription_option TO %I',
     :'user_user'

@@ -102,6 +102,26 @@ func (mr *MockPaymentServiceClientMockRecorder) HandleYooKassaWebhook(ctx, in an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleYooKassaWebhook", reflect.TypeOf((*MockPaymentServiceClient)(nil).HandleYooKassaWebhook), varargs...)
 }
 
+// ListCoinsPacks mocks base method.
+func (m *MockPaymentServiceClient) ListCoinsPacks(ctx context.Context, in *paymentv1.ListCoinsPacksRequest, opts ...grpc.CallOption) (*paymentv1.ListCoinsPacksResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListCoinsPacks", varargs...)
+	ret0, _ := ret[0].(*paymentv1.ListCoinsPacksResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCoinsPacks indicates an expected call of ListCoinsPacks.
+func (mr *MockPaymentServiceClientMockRecorder) ListCoinsPacks(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCoinsPacks", reflect.TypeOf((*MockPaymentServiceClient)(nil).ListCoinsPacks), varargs...)
+}
+
 // ListMoneyTariffs mocks base method.
 func (m *MockPaymentServiceClient) ListMoneyTariffs(ctx context.Context, in *paymentv1.ListMoneyTariffsRequest, opts ...grpc.CallOption) (*paymentv1.ListMoneyTariffsResponse, error) {
 	m.ctrl.T.Helper()

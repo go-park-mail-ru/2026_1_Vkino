@@ -22,6 +22,7 @@ const (
 	PaymentService_CreatePayment_FullMethodName         = "/payment.v1.PaymentService/CreatePayment"
 	PaymentService_GetPayment_FullMethodName            = "/payment.v1.PaymentService/GetPayment"
 	PaymentService_ListMoneyTariffs_FullMethodName      = "/payment.v1.PaymentService/ListMoneyTariffs"
+	PaymentService_ListCoinsPacks_FullMethodName        = "/payment.v1.PaymentService/ListCoinsPacks"
 	PaymentService_HandleYooKassaWebhook_FullMethodName = "/payment.v1.PaymentService/HandleYooKassaWebhook"
 )
 
@@ -32,6 +33,7 @@ type PaymentServiceClient interface {
 	CreatePayment(ctx context.Context, in *CreatePaymentRequest, opts ...grpc.CallOption) (*CreatePaymentResponse, error)
 	GetPayment(ctx context.Context, in *GetPaymentRequest, opts ...grpc.CallOption) (*GetPaymentResponse, error)
 	ListMoneyTariffs(ctx context.Context, in *ListMoneyTariffsRequest, opts ...grpc.CallOption) (*ListMoneyTariffsResponse, error)
+	ListCoinsPacks(ctx context.Context, in *ListCoinsPacksRequest, opts ...grpc.CallOption) (*ListCoinsPacksResponse, error)
 	HandleYooKassaWebhook(ctx context.Context, in *HandleYooKassaWebhookRequest, opts ...grpc.CallOption) (*HandleYooKassaWebhookResponse, error)
 }
 
@@ -73,6 +75,16 @@ func (c *paymentServiceClient) ListMoneyTariffs(ctx context.Context, in *ListMon
 	return out, nil
 }
 
+func (c *paymentServiceClient) ListCoinsPacks(ctx context.Context, in *ListCoinsPacksRequest, opts ...grpc.CallOption) (*ListCoinsPacksResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListCoinsPacksResponse)
+	err := c.cc.Invoke(ctx, PaymentService_ListCoinsPacks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *paymentServiceClient) HandleYooKassaWebhook(ctx context.Context, in *HandleYooKassaWebhookRequest, opts ...grpc.CallOption) (*HandleYooKassaWebhookResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(HandleYooKassaWebhookResponse)
@@ -90,6 +102,7 @@ type PaymentServiceServer interface {
 	CreatePayment(context.Context, *CreatePaymentRequest) (*CreatePaymentResponse, error)
 	GetPayment(context.Context, *GetPaymentRequest) (*GetPaymentResponse, error)
 	ListMoneyTariffs(context.Context, *ListMoneyTariffsRequest) (*ListMoneyTariffsResponse, error)
+	ListCoinsPacks(context.Context, *ListCoinsPacksRequest) (*ListCoinsPacksResponse, error)
 	HandleYooKassaWebhook(context.Context, *HandleYooKassaWebhookRequest) (*HandleYooKassaWebhookResponse, error)
 	mustEmbedUnimplementedPaymentServiceServer()
 }
@@ -109,6 +122,9 @@ func (UnimplementedPaymentServiceServer) GetPayment(context.Context, *GetPayment
 }
 func (UnimplementedPaymentServiceServer) ListMoneyTariffs(context.Context, *ListMoneyTariffsRequest) (*ListMoneyTariffsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListMoneyTariffs not implemented")
+}
+func (UnimplementedPaymentServiceServer) ListCoinsPacks(context.Context, *ListCoinsPacksRequest) (*ListCoinsPacksResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListCoinsPacks not implemented")
 }
 func (UnimplementedPaymentServiceServer) HandleYooKassaWebhook(context.Context, *HandleYooKassaWebhookRequest) (*HandleYooKassaWebhookResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method HandleYooKassaWebhook not implemented")
@@ -188,6 +204,24 @@ func _PaymentService_ListMoneyTariffs_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PaymentService_ListCoinsPacks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCoinsPacksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).ListCoinsPacks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PaymentService_ListCoinsPacks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).ListCoinsPacks(ctx, req.(*ListCoinsPacksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PaymentService_HandleYooKassaWebhook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(HandleYooKassaWebhookRequest)
 	if err := dec(in); err != nil {
@@ -224,6 +258,10 @@ var PaymentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListMoneyTariffs",
 			Handler:    _PaymentService_ListMoneyTariffs_Handler,
+		},
+		{
+			MethodName: "ListCoinsPacks",
+			Handler:    _PaymentService_ListCoinsPacks_Handler,
 		},
 		{
 			MethodName: "HandleYooKassaWebhook",
