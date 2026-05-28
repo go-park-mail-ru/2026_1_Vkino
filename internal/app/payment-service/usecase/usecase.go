@@ -71,6 +71,8 @@ func (u *Usecase) CreatePayment(ctx context.Context, input CreatePaymentInput) (
 		}
 	case domain.ProductTypeCoins:
 		return u.createYooKassaCoinsPayment(ctx, input)
+	case domain.ProductTypePaidContent:
+		return CreatePaymentResult{}, domain.ErrInvalidProductType
 	default:
 		return CreatePaymentResult{}, domain.ErrInvalidProductType
 	}
@@ -195,11 +197,12 @@ func (u *Usecase) finalizeSucceededPayment(ctx context.Context, payment domain.P
 		return u.activateSubscriptionForPayment(ctx, payment)
 	case domain.ProductTypeCoins:
 		return u.creditCoinsForPayment(ctx, payment)
+	case domain.ProductTypePaidContent:
+		return domain.ErrInvalidProductType
 	default:
 		return domain.ErrInvalidProductType
 	}
 }
-
 
 func (u *Usecase) activateSubscriptionForPayment(ctx context.Context, payment domain.Payment) error {
 	if err := u.activator.ActivateSubscription(

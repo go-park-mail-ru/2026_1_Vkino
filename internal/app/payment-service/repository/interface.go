@@ -9,6 +9,7 @@ import (
 
 //go:generate go run -mod=mod go.uber.org/mock/mockgen -source=./interface.go -destination=./mocks/repository_mock.go -package=mocks
 
+//nolint:interfacebloat // единый репозиторий платежей: YooKassa, подписка, coins-пакеты, webhook.
 type PaymentRepo interface {
 	UserExists(ctx context.Context, userID int64) (bool, error)
 	GetSubscriptionTariff(ctx context.Context, tariffID int64) (domain.SubscriptionTariff, error)

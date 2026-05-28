@@ -54,6 +54,16 @@ func (u *Usecase) createYooKassaCoinsPayment(
 		return CreatePaymentResult{}, err
 	}
 
+	return u.confirmCoinsPaymentWithYooKassa(ctx, input, pack, payment, amountValue)
+}
+
+func (u *Usecase) confirmCoinsPaymentWithYooKassa(
+	ctx context.Context,
+	input CreatePaymentInput,
+	pack domain.CoinsPack,
+	payment domain.Payment,
+	amountValue string,
+) (CreatePaymentResult, error) {
 	ykPayment, err := u.requestYooKassaPaymentForCoinsPack(ctx, input, pack, payment, amountValue)
 	if err != nil {
 		if cancelErr := u.cancelPaymentAfterYooKassaFailure(ctx, payment.ID); cancelErr != nil {

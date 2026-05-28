@@ -60,7 +60,7 @@ type listMoneyTariffsResponse struct {
 	Tariffs []moneyTariffResponse `json:"tariffs"`
 }
 
-//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+//nolint:recvcheck // easyjson: Marshal* on value receiver, Unmarshal* on pointer receiver.
 type coinsPackResponse struct {
 	ID          int64  `json:"id"`
 	Title       string `json:"title"`
@@ -68,7 +68,7 @@ type coinsPackResponse struct {
 	PriceMoney  int32  `json:"price_money"`
 }
 
-//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
+//nolint:recvcheck // easyjson: Marshal* on value receiver, Unmarshal* on pointer receiver.
 type listCoinsPacksResponse struct {
 	Packs []coinsPackResponse `json:"packs"`
 }
