@@ -91,6 +91,7 @@ const (
 		) member_counts on member_counts.vkino_room_id = r.id
 		left join vkino_room_invite inv on inv.vkino_room_id = r.id
 		left join vkino_room_playback_state ps on ps.vkino_room_id = r.id
+		where r.visibility = 'public'
 		order by coalesce(member_counts.participants_count, 0) desc, r.updated_at desc, r.id desc
 		limit 2
 	`

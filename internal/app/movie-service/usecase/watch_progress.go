@@ -28,7 +28,7 @@ func (u *MovieUsecase) GetContinueWatching(
 		return nil, domain.ErrInternal
 	}
 
-	return buildWatchProgressResponses(items), nil
+	return u.buildWatchProgressResponses(ctx, items)
 }
 
 func (u *MovieUsecase) GetWatchHistory(
@@ -50,14 +50,23 @@ func (u *MovieUsecase) GetWatchHistory(
 		return nil, domain.ErrInternal
 	}
 
-	return buildWatchProgressResponses(items), nil
+	return u.buildWatchProgressResponses(ctx, items)
 }
 
-func buildWatchProgressResponses(items []domain.WatchProgressItem) []domain.WatchProgressItemResponse {
+func (u *MovieUsecase) buildWatchProgressResponses(
+	ctx context.Context,
+	items []domain.WatchProgressItem,
+) ([]domain.WatchProgressItemResponse, error) {
 	resp := make([]domain.WatchProgressItemResponse, 0, len(items))
 	for _, item := range items {
+		posterURL, err := u.presignPoster(ctx, item.PosterURL)
+		if err != nil {
+			return nil, domain.ErrInternal
+		}
+
+		item.PosterURL = posterURL
 		resp = append(resp, domain.WatchProgressItemResponse(item))
 	}
 
-	return resp
+	return resp, nil
 }
