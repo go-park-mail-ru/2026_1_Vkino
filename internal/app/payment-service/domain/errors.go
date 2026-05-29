@@ -8,6 +8,7 @@ var (
 	ErrInvalidProductRef          = errors.New("invalid product reference")
 	ErrInvalidPaymentMethod       = errors.New("invalid payment method")
 	ErrTariffNotFound             = errors.New("tariff not found")
+	ErrCoinsPackNotFound          = errors.New("coins pack not found")
 	ErrTariffNotAvailable         = errors.New("tariff is not available for money payment")
 	ErrTariffNotAvailableForCoins = errors.New("tariff is not available for vkino coins payment")
 	ErrInsufficientVKinoCoins     = errors.New("insufficient vkino coins")

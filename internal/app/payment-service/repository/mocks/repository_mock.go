@@ -58,6 +58,21 @@ func (mr *MockPaymentRepoMockRecorder) CreatePayment(ctx, payment any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePayment", reflect.TypeOf((*MockPaymentRepo)(nil).CreatePayment), ctx, payment)
 }
 
+// GetCoinsPack mocks base method.
+func (m *MockPaymentRepo) GetCoinsPack(ctx context.Context, packID int64) (domain.CoinsPack, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCoinsPack", ctx, packID)
+	ret0, _ := ret[0].(domain.CoinsPack)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCoinsPack indicates an expected call of GetCoinsPack.
+func (mr *MockPaymentRepoMockRecorder) GetCoinsPack(ctx, packID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCoinsPack", reflect.TypeOf((*MockPaymentRepo)(nil).GetCoinsPack), ctx, packID)
+}
+
 // GetPaymentByID mocks base method.
 func (m *MockPaymentRepo) GetPaymentByID(ctx context.Context, paymentID int64) (domain.Payment, error) {
 	m.ctrl.T.Helper()
@@ -101,6 +116,35 @@ func (m *MockPaymentRepo) GetSubscriptionTariff(ctx context.Context, tariffID in
 func (mr *MockPaymentRepoMockRecorder) GetSubscriptionTariff(ctx, tariffID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionTariff", reflect.TypeOf((*MockPaymentRepo)(nil).GetSubscriptionTariff), ctx, tariffID)
+}
+
+// InsertCoinsHistoryForPayment mocks base method.
+func (m *MockPaymentRepo) InsertCoinsHistoryForPayment(ctx context.Context, userID, paymentID int64, coinsAmount int32, description string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertCoinsHistoryForPayment", ctx, userID, paymentID, coinsAmount, description)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertCoinsHistoryForPayment indicates an expected call of InsertCoinsHistoryForPayment.
+func (mr *MockPaymentRepoMockRecorder) InsertCoinsHistoryForPayment(ctx, userID, paymentID, coinsAmount, description any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertCoinsHistoryForPayment", reflect.TypeOf((*MockPaymentRepo)(nil).InsertCoinsHistoryForPayment), ctx, userID, paymentID, coinsAmount, description)
+}
+
+// ListCoinsPacks mocks base method.
+func (m *MockPaymentRepo) ListCoinsPacks(ctx context.Context) ([]domain.CoinsPack, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListCoinsPacks", ctx)
+	ret0, _ := ret[0].([]domain.CoinsPack)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCoinsPacks indicates an expected call of ListCoinsPacks.
+func (mr *MockPaymentRepoMockRecorder) ListCoinsPacks(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCoinsPacks", reflect.TypeOf((*MockPaymentRepo)(nil).ListCoinsPacks), ctx)
 }
 
 // ListMoneyTariffs mocks base method.

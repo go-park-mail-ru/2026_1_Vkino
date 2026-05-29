@@ -9,9 +9,12 @@ import (
 
 //go:generate go run -mod=mod go.uber.org/mock/mockgen -source=./interface.go -destination=./mocks/repository_mock.go -package=mocks
 
+//nolint:interfacebloat // единый репозиторий платежей: YooKassa, подписка, coins-пакеты, webhook.
 type PaymentRepo interface {
 	UserExists(ctx context.Context, userID int64) (bool, error)
 	GetSubscriptionTariff(ctx context.Context, tariffID int64) (domain.SubscriptionTariff, error)
+	GetCoinsPack(ctx context.Context, packID int64) (domain.CoinsPack, error)
+	ListCoinsPacks(ctx context.Context) ([]domain.CoinsPack, error)
 	ListMoneyTariffs(ctx context.Context) ([]domain.MoneyTariff, error)
 	CreatePayment(ctx context.Context, payment domain.Payment) (domain.Payment, error)
 	UpdatePaymentYooKassa(
@@ -26,6 +29,14 @@ type PaymentRepo interface {
 		ctx context.Context,
 		yookassaPaymentID, event, payloadHash string,
 	) (bool, error)
+	// InsertCoinsHistoryForPayment пишет начисление в vkino_coins_history (operation_type = coins_purchase).
+	// reference_key = payment:{paymentID} — повторный вызов безопасен (ON CONFLICT DO NOTHING).
+	InsertCoinsHistoryForPayment(
+		ctx context.Context,
+		userID, paymentID int64,
+		coinsAmount int32,
+		description string,
+	) error
 }
 
 type YooKassaCreateRequest struct {

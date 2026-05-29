@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/payment-service/domain"
@@ -56,6 +57,59 @@ func (r *PaymentRepo) GetSubscriptionTariff(
 	}
 
 	return tariff, nil
+}
+
+func (r *PaymentRepo) GetCoinsPack(ctx context.Context, packID int64) (domain.CoinsPack, error) {
+	var pack domain.CoinsPack
+
+	err := r.db.QueryRow(ctx, sqlGetCoinsPack, packID).Scan(
+		&pack.ID,
+		&pack.Code,
+		&pack.Title,
+		&pack.CoinsAmount,
+		&pack.PriceMoney,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.CoinsPack{}, domain.ErrCoinsPackNotFound
+		}
+
+		return domain.CoinsPack{}, fmt.Errorf("get coins pack: %w", err)
+	}
+
+	return pack, nil
+}
+
+func (r *PaymentRepo) ListCoinsPacks(ctx context.Context) ([]domain.CoinsPack, error) {
+	rows, err := r.db.Query(ctx, sqlListCoinsPacks)
+	if err != nil {
+		return nil, fmt.Errorf("list coins packs: %w", err)
+	}
+	defer rows.Close()
+
+	packs := make([]domain.CoinsPack, 0)
+
+	for rows.Next() {
+		var pack domain.CoinsPack
+
+		if err = rows.Scan(
+			&pack.ID,
+			&pack.Code,
+			&pack.Title,
+			&pack.CoinsAmount,
+			&pack.PriceMoney,
+		); err != nil {
+			return nil, fmt.Errorf("scan coins pack: %w", err)
+		}
+
+		packs = append(packs, pack)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate coins packs: %w", err)
+	}
+
+	return packs, nil
 }
 
 func (r *PaymentRepo) ListMoneyTariffs(ctx context.Context) ([]domain.MoneyTariff, error) {
@@ -156,6 +210,29 @@ func (r *PaymentRepo) GetPaymentByYooKassaID(
 	yookassaPaymentID string,
 ) (domain.Payment, error) {
 	return r.scanPayment(r.db.QueryRow(ctx, sqlGetPaymentByYooKassaID, yookassaPaymentID))
+}
+
+func (r *PaymentRepo) InsertCoinsHistoryForPayment(
+	ctx context.Context,
+	userID, paymentID int64,
+	coinsAmount int32,
+	description string,
+) error {
+	referenceKey := "payment:" + strconv.FormatInt(paymentID, 10)
+
+	_, err := r.db.Exec(
+		ctx,
+		sqlInsertCoinsHistoryForPayment,
+		userID,
+		coinsAmount,
+		description,
+		referenceKey,
+	)
+	if err != nil {
+		return fmt.Errorf("insert vkino coins history for payment: %w", err)
+	}
+
+	return nil
 }
 
 func (r *PaymentRepo) TryRegisterWebhookEvent(

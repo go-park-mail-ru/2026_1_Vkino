@@ -72,3 +72,11 @@ type CoinsSubscriptionPurchase struct {
 	CoinsSpent        int32
 	VKinoCoinsBalance int32
 }
+
+type CoinsPack struct {
+	ID          int64
+	Code        string
+	Title       string
+	CoinsAmount int32
+	PriceMoney  int32
+}
