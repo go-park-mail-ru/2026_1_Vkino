@@ -61,6 +61,7 @@ func TestRoomEventBrokerPublishDoesNotBlockOnSlowSubscriber(t *testing.T) {
 	defer unsubscribeFast()
 
 	publishDone := make(chan error, 1)
+
 	go func() {
 		for {
 			select {
@@ -109,17 +110,6 @@ func assertBufferedEventCount(t *testing.T, events <-chan domain.RoomEvent, want
 	case event := <-events:
 		t.Fatalf("expected slow subscriber buffer to stop at %d events, got extra event %+v", want, event)
 	default:
-	}
-}
-
-func assertPublishedEventOrder(t *testing.T, events <-chan domain.RoomEvent, eventsCount int) {
-	t.Helper()
-
-	for i := range eventsCount {
-		event := readEvent(t, events)
-		if event.ActorUserID != int64(i) {
-			t.Fatalf("unexpected event order at index %d: got actor_user_id=%d want=%d", i, event.ActorUserID, i)
-		}
 	}
 }
 

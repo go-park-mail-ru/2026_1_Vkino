@@ -49,26 +49,6 @@ func (b *RoomEventBroker) Publish(ctx context.Context, event domain.RoomEvent) e
 	return nil
 }
 
-func (b *RoomEventBroker) roomSubscribers(roomID int64) []roomSubscriberSnapshot {
-	b.mu.RLock()
-	defer b.mu.RUnlock()
-
-	roomSubs := b.subscribers[roomID]
-	if len(roomSubs) == 0 {
-		return nil
-	}
-
-	snapshots := make([]roomSubscriberSnapshot, 0, len(roomSubs))
-	for _, subscriber := range roomSubs {
-		snapshots = append(snapshots, roomSubscriberSnapshot{
-			userID: subscriber.userID,
-			ch:     subscriber.ch,
-		})
-	}
-
-	return snapshots
-}
-
 func (b *RoomEventBroker) Subscribe(
 	_ context.Context,
 	roomID int64,
@@ -145,4 +125,21 @@ func (b *RoomEventBroker) IsUserActive(roomID, userID int64) bool {
 	}
 
 	return false
+}
+
+func (b *RoomEventBroker) roomSubscribers(roomID int64) []roomSubscriberSnapshot {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	roomSubs := b.subscribers[roomID]
+	if len(roomSubs) == 0 {
+		return nil
+	}
+
+	snapshots := make([]roomSubscriberSnapshot, 0, len(roomSubs))
+	for _, subscriber := range roomSubs {
+		snapshots = append(snapshots, roomSubscriberSnapshot(subscriber))
+	}
+
+	return snapshots
 }
