@@ -38,5 +38,7 @@ s3:
   bucket_avatars: "vkino-avatars"
   bucket_support: "vkino-support"
   use_ssl: false
+  internal_use_ssl: false
+  public_use_ssl: true
   use_path_style: true
   presign_ttl: "15m"

@@ -39,30 +39,46 @@ func TestRoomEventBrokerPublishDeliversToAllSubscribers(t *testing.T) {
 	assertEvent(t, second, event)
 }
 
-func TestRoomEventBrokerPublishWaitsInsteadOfDropping(t *testing.T) {
+func TestRoomEventBrokerPublishDoesNotBlockOnSlowSubscriber(t *testing.T) {
 	t.Parallel()
 
 	const roomID int64 = 9
 
-	const eventsCount = 17
+	const eventsCount = subscriberBufferSize + 1
 
 	broker := NewRoomEventBroker()
 
-	events, unsubscribe, err := broker.Subscribe(context.Background(), roomID, 1)
+	slowEvents, unsubscribeSlow, err := broker.Subscribe(context.Background(), roomID, 1)
 	if err != nil {
-		t.Fatalf("subscribe: %v", err)
+		t.Fatalf("subscribe slow: %v", err)
 	}
-	defer unsubscribe()
+	defer unsubscribeSlow()
 
-	done := make(chan error, 1)
+	fastEvents, unsubscribeFast, err := broker.Subscribe(context.Background(), roomID, 2)
+	if err != nil {
+		t.Fatalf("subscribe fast: %v", err)
+	}
+	defer unsubscribeFast()
 
+	publishDone := make(chan error, 1)
 	go func() {
-		done <- publishRoomEvents(broker, roomID, eventsCount)
+		for {
+			select {
+			case <-publishDone:
+				return
+			case <-fastEvents:
+			case <-time.After(100 * time.Millisecond):
+				return
+			}
+		}
 	}()
 
-	assertPublishBlocks(t, done)
-	assertPublishedEventOrder(t, events, eventsCount)
-	assertPublishCompletes(t, done)
+	go func() {
+		publishDone <- publishRoomEvents(broker, roomID, eventsCount)
+	}()
+
+	assertPublishCompletes(t, publishDone)
+	assertBufferedEventCount(t, slowEvents, subscriberBufferSize)
 }
 
 func publishRoomEvents(broker *RoomEventBroker, roomID int64, eventsCount int) error {
@@ -79,13 +95,20 @@ func publishRoomEvents(broker *RoomEventBroker, roomID int64, eventsCount int) e
 	return nil
 }
 
-func assertPublishBlocks(t *testing.T, done <-chan error) {
+func assertBufferedEventCount(t *testing.T, events <-chan domain.RoomEvent, want int) {
 	t.Helper()
 
+	for i := range want {
+		event := readEvent(t, events)
+		if event.ActorUserID != int64(i) {
+			t.Fatalf("unexpected buffered event order at index %d: got actor_user_id=%d want=%d", i, event.ActorUserID, i)
+		}
+	}
+
 	select {
-	case err := <-done:
-		t.Fatalf("publish finished early, expected blocking after buffer fill: %v", err)
-	case <-time.After(50 * time.Millisecond):
+	case event := <-events:
+		t.Fatalf("expected slow subscriber buffer to stop at %d events, got extra event %+v", want, event)
+	default:
 	}
 }
 
@@ -106,10 +129,10 @@ func assertPublishCompletes(t *testing.T, done <-chan error) {
 	select {
 	case err := <-done:
 		if err != nil {
-			t.Fatalf("publish after drain: %v", err)
+			t.Fatalf("publish returned error: %v", err)
 		}
 	case <-time.After(time.Second):
-		t.Fatal("publish did not finish after subscriber drained events")
+		t.Fatal("publish blocked on slow subscriber")
 	}
 }
 
