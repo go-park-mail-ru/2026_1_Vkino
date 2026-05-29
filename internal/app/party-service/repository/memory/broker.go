@@ -24,6 +24,11 @@ type roomSubscriber struct {
 	ch     chan domain.RoomEvent
 }
 
+type roomSubscriberSnapshot struct {
+	userID int64
+	ch     chan domain.RoomEvent
+}
+
 func NewRoomEventBroker() *RoomEventBroker {
 	return &RoomEventBroker{
 		subscribers: make(map[int64]map[int64]roomSubscriber),
@@ -31,14 +36,13 @@ func NewRoomEventBroker() *RoomEventBroker {
 }
 
 func (b *RoomEventBroker) Publish(ctx context.Context, event domain.RoomEvent) error {
-	b.mu.RLock()
-	defer b.mu.RUnlock()
-
-	for _, subscriber := range b.subscribers[event.RoomID] {
+	subscribers := b.roomSubscribers(event.RoomID)
+	for _, subscriber := range subscribers {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case subscriber.ch <- event:
+		default:
 		}
 	}
 
@@ -121,4 +125,21 @@ func (b *RoomEventBroker) IsUserActive(roomID, userID int64) bool {
 	}
 
 	return false
+}
+
+func (b *RoomEventBroker) roomSubscribers(roomID int64) []roomSubscriberSnapshot {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	roomSubs := b.subscribers[roomID]
+	if len(roomSubs) == 0 {
+		return nil
+	}
+
+	snapshots := make([]roomSubscriberSnapshot, 0, len(roomSubs))
+	for _, subscriber := range roomSubs {
+		snapshots = append(snapshots, roomSubscriberSnapshot(subscriber))
+	}
+
+	return snapshots
 }

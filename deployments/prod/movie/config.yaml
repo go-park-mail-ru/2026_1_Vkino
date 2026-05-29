@@ -44,5 +44,7 @@ s3:
   bucket_cards: "vkino-cards"
   bucket_videos: "vkino-videos"
   use_ssl: false
+  internal_use_ssl: false
+  public_use_ssl: true
   use_path_style: true
   presign_ttl: "15m"
