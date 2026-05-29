@@ -68,9 +68,19 @@ func (s *Server) SpendVKinoCoins(
 	ctx context.Context,
 	req *userv1.SpendVKinoCoinsRequest,
 ) (*userv1.SpendVKinoCoinsResponse, error) {
+	authCtx, err := s.authorize(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	userID := authCtx.UserID
+	if req.GetUserId() > 0 {
+		userID = req.GetUserId()
+	}
+
 	spend, err := s.usecase.SpendVKinoCoins(
 		ctx,
-		req.GetUserId(),
+		userID,
 		req.GetCoinsAmount(),
 		req.GetOperationType(),
 		req.GetDescription(),

@@ -65,3 +65,30 @@ func TestUserRoutes_GetVKinoCoinsHistory_GRPCError(t *testing.T) {
 
 	requireJSONError(t, rr, http.StatusInternalServerError, "internal server error")
 }
+
+func TestUserRoutes_FeedMonkeySpendsOneCoin(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	client := NewMockUserClient(ctrl)
+
+	client.EXPECT().
+		SpendVKinoCoins(gomock.Any(), &userv1.SpendVKinoCoinsRequest{
+			CoinsAmount:   1,
+			OperationType: "feed_monkey",
+			Description:   "Кормление обезьяны в комнате совместного просмотра",
+		}).
+		Return(&userv1.SpendVKinoCoinsResponse{
+			CoinsSpent:        1,
+			VkinoCoinsBalance: 9,
+		}, nil)
+
+	handler := newUserHandler(t, client)
+	rr := doRequest(handler, http.MethodPost, "/user/coins/feed-monkey", nil)
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	require.JSONEq(t, `{
+		"coins_spent": 1,
+		"vkino_coins_balance": 9
+	}`, rr.Body.String())
+}
