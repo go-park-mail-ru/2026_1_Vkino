@@ -3,4 +3,13 @@ ALTER TABLE vkino_coins_history
 
 ALTER TABLE vkino_coins_history
     ADD CONSTRAINT vkino_coins_history_operation_type_check
-        CHECK (operation_type IN ('daily', 'signup_bonus', 'bet_win', 'bet_lose', 'bet_place', 'purchase', 'feed_monkey'));
+        CHECK (operation_type IN (
+            'daily',
+            'signup_bonus',
+            'bet_win',
+            'bet_lose',
+            'bet_place',
+            'purchase',
+            'coins_purchase',
+            'feed_monkey'
+        ));

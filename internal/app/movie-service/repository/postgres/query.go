@@ -362,7 +362,7 @@ const (
 
 	sqlGetContinueWatching = `
 		select
-			wpe.episode_id, m.id, m.title, m.picture_file_key, m.content_type,
+			wpe.episode_id, m.id, m.title, m.poster_file_key, m.content_type,
 			e.season_number, e.episode_number, coalesce(e.title, m.title),
 			wpe.position_seconds, e.duration_seconds, wpe.updated_at
 		from watch_progress_episode wpe
