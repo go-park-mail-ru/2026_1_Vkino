@@ -129,6 +129,14 @@ func (s *service) ensureActiveRoomMember(
 	roomID int64,
 	room *domain.Room,
 ) (*domain.Room, error) {
+	if room.Visibility != roomVisibilityPrivate && !isRoomMember(room.Members, userID) {
+		if err := s.ensureRoomMemberCapacity(ctx, room, userID); err != nil {
+			return nil, err
+		}
+
+		return s.partyRepo.AddMember(ctx, roomID, userID)
+	}
+
 	if !isRoomMember(room.Members, userID) {
 		return nil, domain.ErrAccessDenied
 	}
