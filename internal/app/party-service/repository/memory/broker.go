@@ -38,6 +38,10 @@ func NewRoomEventBroker() *RoomEventBroker {
 func (b *RoomEventBroker) Publish(ctx context.Context, event domain.RoomEvent) error {
 	subscribers := b.roomSubscribers(event.RoomID)
 	for _, subscriber := range subscribers {
+		if shouldSkipActorPlaybackEvent(event, subscriber.userID) {
+			continue
+		}
+
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -47,6 +51,12 @@ func (b *RoomEventBroker) Publish(ctx context.Context, event domain.RoomEvent) e
 	}
 
 	return nil
+}
+
+func shouldSkipActorPlaybackEvent(event domain.RoomEvent, subscriberUserID int64) bool {
+	return event.Playback != nil &&
+		event.ActorUserID > 0 &&
+		subscriberUserID == event.ActorUserID
 }
 
 func (b *RoomEventBroker) Subscribe(

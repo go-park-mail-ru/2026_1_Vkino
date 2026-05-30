@@ -11,15 +11,18 @@ import (
 
 const testInviteLink = "invite-123"
 
-func TestGetRoomRequiresMembershipEvenForPublicRoom(t *testing.T) {
+func TestGetRoomAutoJoinsPublicRoomForNonMember(t *testing.T) {
 	t.Parallel()
 
 	repo := newRoomUsecaseRepo()
 	svc := New(repo, &roomUsecaseBroker{}, nil, nil)
 
-	_, err := svc.GetRoom(context.Background(), 3, 5)
+	resp, err := svc.GetRoom(context.Background(), 3, 5)
 
-	require.ErrorIs(t, err, domain.ErrAccessDenied)
+	require.NoError(t, err)
+	require.Equal(t, int64(5), repo.addMemberRoomID)
+	require.Equal(t, int64(3), repo.addMemberUserID)
+	require.Equal(t, memberStatusActive, findMemberStatus(t, resp.Room.Members, 3))
 }
 
 func TestGetRoomHidesInviteForNonHost(t *testing.T) {

@@ -186,22 +186,38 @@ func (u *Usecase) finalizeSucceededPayment(ctx context.Context, payment domain.P
 		return nil
 	}
 
-	now := u.now()
-
-	if err := u.payments.UpdatePaymentStatus(ctx, payment.ID, domain.PaymentStatusSucceeded, &now); err != nil {
-		return fmt.Errorf("%w: %w", domain.ErrInternal, err)
-	}
-
 	switch payment.ProductType {
 	case domain.ProductTypeSubscription:
+		if err := u.markPaymentSucceeded(ctx, payment.ID); err != nil {
+			return err
+		}
+
 		return u.activateSubscriptionForPayment(ctx, payment)
 	case domain.ProductTypeCoins:
-		return u.creditCoinsForPayment(ctx, payment)
+		return u.finalizeCoinsPayment(ctx, payment)
 	case domain.ProductTypePaidContent:
 		return domain.ErrInvalidProductType
 	default:
 		return domain.ErrInvalidProductType
 	}
+}
+
+func (u *Usecase) finalizeCoinsPayment(ctx context.Context, payment domain.Payment) error {
+	if err := u.creditCoinsForPayment(ctx, payment); err != nil {
+		return err
+	}
+
+	return u.markPaymentSucceeded(ctx, payment.ID)
+}
+
+func (u *Usecase) markPaymentSucceeded(ctx context.Context, paymentID int64) error {
+	now := u.now()
+
+	if err := u.payments.UpdatePaymentStatus(ctx, paymentID, domain.PaymentStatusSucceeded, &now); err != nil {
+		return fmt.Errorf("%w: %w", domain.ErrInternal, err)
+	}
+
+	return nil
 }
 
 func (u *Usecase) activateSubscriptionForPayment(ctx context.Context, payment domain.Payment) error {

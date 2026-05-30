@@ -191,3 +191,58 @@ func TestHandleYooKassaWebhook_Coins_AlreadySucceededSkipsHistory(t *testing.T) 
 	err := u.HandleYooKassaWebhook(context.Background(), body, yooKassaTestIP)
 	require.NoError(t, err)
 }
+
+func TestHandleYooKassaWebhook_Coins_CreditsBeforeStatusUpdate(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	payments := mocks.NewMockPaymentRepo(ctrl)
+	yookassa := mocks.NewMockYooKassaClient(ctrl)
+
+	body := []byte(`{
+		"type":"notification",
+		"event":"payment.succeeded",
+		"object":{"id":"yk-coins-40","status":"succeeded","paid":true}
+	}`)
+
+	gomock.InOrder(
+		payments.EXPECT().TryRegisterWebhookEvent(gomock.Any(), "yk-coins-40", "payment.succeeded", gomock.Any()).
+			Return(true, nil),
+		yookassa.EXPECT().GetPayment(gomock.Any(), "yk-coins-40").Return(repository.YooKassaPayment{
+			ID:     "yk-coins-40",
+			Status: yooKassaStatusSucceeded,
+			Paid:   true,
+		}, nil),
+		payments.EXPECT().GetPaymentByYooKassaID(gomock.Any(), "yk-coins-40").Return(domain.Payment{
+			ID:            40,
+			UserID:        42,
+			ProductType:   domain.ProductTypeCoins,
+			ProductRefID:  2,
+			Status:        domain.PaymentStatusPending,
+			PaymentMethod: domain.PaymentMethodYooKassa,
+		}, nil),
+		payments.EXPECT().GetCoinsPack(gomock.Any(), int64(2)).Return(domain.CoinsPack{
+			ID:          2,
+			Code:        "pack_150",
+			Title:       "150 VKino coins",
+			CoinsAmount: 150,
+			PriceMoney:  249,
+		}, nil),
+		payments.EXPECT().InsertCoinsHistoryForPayment(
+			gomock.Any(),
+			int64(42),
+			int64(40),
+			int32(150),
+			"Покупка 150 VKino coins",
+		).Return(nil),
+		payments.EXPECT().UpdatePaymentStatus(gomock.Any(), int64(40), domain.PaymentStatusSucceeded, gomock.Any()).
+			Return(nil),
+	)
+
+	u := usecase.New(payments, yookassa, nil, nil, "http://localhost:3000/payments/return", true)
+
+	err := u.HandleYooKassaWebhook(context.Background(), body, yooKassaTestIP)
+	require.NoError(t, err)
+}
