@@ -186,17 +186,27 @@ func (u *Usecase) finalizeSucceededPayment(ctx context.Context, payment domain.P
 		return nil
 	}
 
-	now := u.now()
-
-	if err := u.payments.UpdatePaymentStatus(ctx, payment.ID, domain.PaymentStatusSucceeded, &now); err != nil {
-		return fmt.Errorf("%w: %w", domain.ErrInternal, err)
-	}
-
 	switch payment.ProductType {
 	case domain.ProductTypeSubscription:
+		now := u.now()
+
+		if err := u.payments.UpdatePaymentStatus(ctx, payment.ID, domain.PaymentStatusSucceeded, &now); err != nil {
+			return fmt.Errorf("%w: %w", domain.ErrInternal, err)
+		}
+
 		return u.activateSubscriptionForPayment(ctx, payment)
 	case domain.ProductTypeCoins:
-		return u.creditCoinsForPayment(ctx, payment)
+		if err := u.creditCoinsForPayment(ctx, payment); err != nil {
+			return err
+		}
+
+		now := u.now()
+
+		if err := u.payments.UpdatePaymentStatus(ctx, payment.ID, domain.PaymentStatusSucceeded, &now); err != nil {
+			return fmt.Errorf("%w: %w", domain.ErrInternal, err)
+		}
+
+		return nil
 	case domain.ProductTypePaidContent:
 		return domain.ErrInvalidProductType
 	default:
