@@ -13,14 +13,12 @@ import (
 
 //easyjson:json
 //nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
-type authAccessTokenResponse struct {
-	AccessToken string `json:"access_token"`
-}
-
-//easyjson:json
-//nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type authMessageResponse struct {
 	Message string `json:"message"`
+}
+
+func accessTokenResponse(token string) map[string]string {
+	return map[string]string{"access_token": token}
 }
 
 func Auth(
@@ -57,7 +55,7 @@ func newSignUpHandler(cfg Config, authClient authv1.AuthServiceClient) http.Hand
 		}
 
 		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
-		httppkg.Response(w, http.StatusCreated, authAccessTokenResponse{AccessToken: resp.GetAccessToken()})
+		httppkg.Response(w, http.StatusCreated, accessTokenResponse(resp.GetAccessToken()))
 	}
 }
 
@@ -82,7 +80,7 @@ func newSignInHandler(cfg Config, authClient authv1.AuthServiceClient) http.Hand
 		}
 
 		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
-		httppkg.Response(w, http.StatusOK, authAccessTokenResponse{AccessToken: resp.GetAccessToken()})
+		httppkg.Response(w, http.StatusOK, accessTokenResponse(resp.GetAccessToken()))
 	}
 }
 
@@ -108,7 +106,7 @@ func newRefreshHandler(cfg Config, authClient authv1.AuthServiceClient) http.Han
 		}
 
 		writeAuthCookie(w, cfg, resp.GetRefreshToken(), false)
-		httppkg.Response(w, http.StatusOK, authAccessTokenResponse{AccessToken: resp.GetAccessToken()})
+		httppkg.Response(w, http.StatusOK, accessTokenResponse(resp.GetAccessToken()))
 	}
 }
 
