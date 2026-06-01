@@ -14,7 +14,6 @@ import (
 //easyjson:json
 //nolint:recvcheck // easyjson generates Marshal* on value receiver and Unmarshal* on pointer receiver.
 type authAccessTokenResponse struct {
-	//nolint:gosec // This is an HTTP response field name, not stored secret material.
 	AccessToken string `json:"access_token"`
 }
 

@@ -84,7 +84,7 @@ type UserMovieRepo interface {
 }
 
 type UserFriendRepo interface {
-	AddFriend(ctx context.Context, userID int64, friendID int64) error
+	AddFriend(ctx context.Context, userID int64, friendID int64) (*domain.User, error)
 	DeleteFriend(ctx context.Context, userID int64, friendID int64) error
 	SendFriendRequest(ctx context.Context, fromUserID, toUserID int64) (int64, error)
 	RespondToFriendRequest(ctx context.Context, requestID, userID int64, action string) error

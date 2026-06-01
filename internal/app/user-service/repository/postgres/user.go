@@ -11,7 +11,6 @@ import (
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type UserRepo struct {
@@ -1050,26 +1049,49 @@ func (r *UserRepo) GetFavorites(ctx context.Context, userID int64, limit, offset
 	return movieIDs, total, nil
 }
 
-func (r *UserRepo) AddFriend(ctx context.Context, userID int64, friendID int64) error {
-	u1, u2 := orderedFriendPair(userID, friendID)
-
-	_, err := r.db.Exec(ctx, sqlAddFriend, u1, u2)
+func (r *UserRepo) AddFriend(ctx context.Context, userID int64, friendID int64) (*domain.User, error) {
+	tx, err := r.db.Begin(ctx)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return domain.ErrAlreadyFriends
-		}
-
-		return fmt.Errorf("add friend: %w", err)
+		return nil, fmt.Errorf("begin add friend tx: %w", err)
 	}
 
-	return nil
+	defer func() {
+		ignoreRollbackError(tx.Rollback(ctx))
+	}()
+
+	if _, err = getUserByIDTx(ctx, tx, userID); err != nil {
+		return nil, err
+	}
+
+	friend, err := prepareFriendForAddTx(ctx, tx, friendID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = createFriendshipTx(ctx, tx, userID, friendID); err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("commit add friend tx: %w", err)
+	}
+
+	return friend, nil
 }
 
 func (r *UserRepo) DeleteFriend(ctx context.Context, userID int64, friendID int64) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin delete friend tx: %w", err)
+	}
+
+	defer func() {
+		ignoreRollbackError(tx.Rollback(ctx))
+	}()
+
 	u1, u2 := orderedFriendPair(userID, friendID)
 
-	tag, err := r.db.Exec(ctx, sqlDeleteFriend, u1, u2)
+	tag, err := tx.Exec(ctx, sqlDeleteFriend, u1, u2)
 	if err != nil {
 		return fmt.Errorf("delete friend: %w", err)
 	}
@@ -1078,8 +1100,12 @@ func (r *UserRepo) DeleteFriend(ctx context.Context, userID int64, friendID int6
 		return domain.ErrFriendNotFound
 	}
 
-	if _, err := r.db.Exec(ctx, sqlDeleteFriendRequestsBetweenUsers, userID, friendID); err != nil {
+	if _, err = tx.Exec(ctx, sqlDeleteFriendRequestsBetweenUsers, userID, friendID); err != nil {
 		return fmt.Errorf("cleanup friend requests after delete friend: %w", err)
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit delete friend tx: %w", err)
 	}
 
 	return nil
@@ -1105,6 +1131,14 @@ func (r *UserRepo) SendFriendRequest(ctx context.Context, fromUserID, toUserID i
 
 	err = r.db.QueryRow(ctx, sqlSendFriendRequest, fromUserID, toUserID).Scan(&requestID)
 	if err != nil {
+		if isForeignKeyViolation(
+			err,
+			friendRequestFromUserIDForeignKey,
+			friendRequestToUserIDForeignKey,
+		) {
+			return 0, domain.ErrUserNotFound
+		}
+
 		return 0, fmt.Errorf("send friend request: %w", err)
 	}
 
@@ -1320,4 +1354,64 @@ func ignoreRollbackError(err error) {
 	if err != nil {
 		return
 	}
+}
+
+func prepareFriendForAddTx(ctx context.Context, tx pgx.Tx, friendID int64) (*domain.User, error) {
+	friend, err := getUserByIDTx(ctx, tx, friendID)
+	if err != nil {
+		return nil, err
+	}
+
+	return friend, nil
+}
+
+func createFriendshipTx(ctx context.Context, tx pgx.Tx, userID int64, friendID int64) error {
+	u1, u2 := orderedFriendPair(userID, friendID)
+
+	if _, err := tx.Exec(ctx, sqlAddFriend, u1, u2); err != nil {
+		return mapAddFriendError(err)
+	}
+
+	if _, err := tx.Exec(ctx, sqlDeleteFriendRequestsBetweenUsers, userID, friendID); err != nil {
+		return fmt.Errorf("cleanup friend requests after add friend: %w", err)
+	}
+
+	return nil
+}
+
+func mapAddFriendError(err error) error {
+	switch {
+	case isUniqueConstraintViolation(err, friendUniqueConstraint):
+		return domain.ErrAlreadyFriends
+	case isForeignKeyViolation(err, friendUser1IDForeignKey, friendUser2IDForeignKey):
+		return domain.ErrUserNotFound
+	default:
+		return fmt.Errorf("add friend: %w", err)
+	}
+}
+
+func getUserByIDTx(ctx context.Context, tx pgx.Tx, userID int64) (*domain.User, error) {
+	var user domain.User
+
+	err := tx.QueryRow(ctx, sqlGetUserByID, userID).Scan(
+		&user.ID,
+		&user.Email,
+		&user.CredentialHash,
+		&user.Role,
+		&user.Birthdate,
+		&user.AvatarFileKey,
+		&user.RegistrationDate,
+		&user.IsActive,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
+
+		return nil, fmt.Errorf("get user by id in tx: %w", err)
+	}
+
+	return &user, nil
 }

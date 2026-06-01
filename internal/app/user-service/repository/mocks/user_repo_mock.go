@@ -594,11 +594,12 @@ func (m *MockUserFriendRepo) EXPECT() *MockUserFriendRepoMockRecorder {
 }
 
 // AddFriend mocks base method.
-func (m *MockUserFriendRepo) AddFriend(ctx context.Context, userID, friendID int64) error {
+func (m *MockUserFriendRepo) AddFriend(ctx context.Context, userID, friendID int64) (*domain.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddFriend", ctx, userID, friendID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AddFriend indicates an expected call of AddFriend.
@@ -720,11 +721,12 @@ func (m *MockUserRepo) EXPECT() *MockUserRepoMockRecorder {
 }
 
 // AddFriend mocks base method.
-func (m *MockUserRepo) AddFriend(ctx context.Context, userID, friendID int64) error {
+func (m *MockUserRepo) AddFriend(ctx context.Context, userID, friendID int64) (*domain.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddFriend", ctx, userID, friendID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AddFriend indicates an expected call of AddFriend.

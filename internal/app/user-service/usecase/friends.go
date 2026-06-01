@@ -89,21 +89,13 @@ func (u *UserUsecase) SearchUsers(
 }
 
 func (u *UserUsecase) AddFriend(ctx context.Context, userID int64, friendID int64) (domain.FriendResponse, error) {
-	if err := u.ensureFriendActionAllowed(ctx, userID, friendID); err != nil {
+	if err := validateFriendPair(userID, friendID); err != nil {
 		return domain.FriendResponse{}, err
 	}
 
-	friend, err := u.userRepo.GetUserByID(ctx, friendID)
+	friend, err := u.userRepo.AddFriend(ctx, userID, friendID)
 	if err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return domain.FriendResponse{}, domain.ErrUserNotFound
-		}
-
-		return domain.FriendResponse{}, fmt.Errorf("get friend by id: %w", err)
-	}
-
-	if err = u.userRepo.AddFriend(ctx, userID, friendID); err != nil {
-		if errors.Is(err, domain.ErrAlreadyFriends) {
+		if errors.Is(err, domain.ErrAlreadyFriends) || errors.Is(err, domain.ErrUserNotFound) {
 			return domain.FriendResponse{}, err
 		}
 
@@ -118,20 +110,12 @@ func (u *UserUsecase) AddFriend(ctx context.Context, userID int64, friendID int6
 }
 
 func (u *UserUsecase) DeleteFriend(ctx context.Context, userID int64, friendID int64) error {
-	if _, err := u.userRepo.GetUserByID(ctx, userID); err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return domain.ErrUserNotFound
-		}
-
-		return fmt.Errorf("get user by id: %w", err)
-	}
-
-	if userID == friendID {
-		return domain.ErrSelfFriendship
+	if err := validateFriendPair(userID, friendID); err != nil {
+		return err
 	}
 
 	if err := u.userRepo.DeleteFriend(ctx, userID, friendID); err != nil {
-		if errors.Is(err, domain.ErrFriendNotFound) {
+		if errors.Is(err, domain.ErrFriendNotFound) || errors.Is(err, domain.ErrUserNotFound) {
 			return err
 		}
 
@@ -148,8 +132,8 @@ func (u *UserUsecase) SendFriendRequest(ctx context.Context, userID, toUserID in
 
 	requestID, err := u.userRepo.SendFriendRequest(ctx, userID, toUserID)
 	if err != nil {
-		if errors.Is(err, domain.ErrAlreadyFriends) {
-			return 0, domain.ErrAlreadyFriends
+		if errors.Is(err, domain.ErrAlreadyFriends) || errors.Is(err, domain.ErrUserNotFound) {
+			return 0, err
 		}
 
 		return 0, fmt.Errorf("send friend request: %w", err)
@@ -267,6 +251,10 @@ func (u *UserUsecase) ensureFriendActionAllowed(ctx context.Context, userID, fri
 		return err
 	}
 
+	return validateFriendPair(userID, friendID)
+}
+
+func validateFriendPair(userID, friendID int64) error {
 	if userID == friendID {
 		return domain.ErrSelfFriendship
 	}

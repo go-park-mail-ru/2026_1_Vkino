@@ -8,7 +8,6 @@ import (
 	"github.com/go-park-mail-ru/2026_1_VKino/internal/app/auth-service/domain"
 	corepostgres "github.com/go-park-mail-ru/2026_1_VKino/pkg/postgresx"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type UserRepo struct {
@@ -103,8 +102,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, email, passwordHash string) (
 		&user.UpdatedAt,
 	)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		if isUniqueConstraintViolation(err, userEmailUniqueConstraint) {
 			return nil, ErrUserAlreadyExists
 		}
 
