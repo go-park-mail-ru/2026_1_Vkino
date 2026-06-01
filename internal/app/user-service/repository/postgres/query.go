@@ -235,14 +235,11 @@ const (
 			u.id,
 			u.email,
 			coalesce(u.avatar_file_key, '') as avatar_file_key,
-			exists(
-				select 1
-				from friend f
-				where
-					(f.user1_id = $1 and f.user2_id = u.id)
-					or (f.user1_id = u.id and f.user2_id = $1)
-			) as is_friend
+			(f.user1_id is not null) as is_friend
 		from users u
+		left join friend f
+			on f.user1_id = least($1, u.id)
+			and f.user2_id = greatest($1, u.id)
 		where u.id <> $1
 			and u.is_active = true
 			and u.email ilike '%' || $2 || '%'
