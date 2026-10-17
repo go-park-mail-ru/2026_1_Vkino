@@ -1,4 +1,4 @@
-![Vkino](https://komarev.com/ghpvc/?username=2026-1-Vkino&color=blue&abbreviated=true&style=flat&label=Views)
+![views](https://hits.sh/github.com/go-park-mail-ru/2026_1_Vkino.svg?style=flat&label=views&color=007ec6)
 
 # 🎬 Vkino – Ваш мир кино и сериалов!
 
